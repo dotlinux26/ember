@@ -467,7 +467,7 @@ namespace Ember
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name=="beacon"||name.StartsWith("tree")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||(name.StartsWith("beacon")&&!name.Contains("crystal"))||name.StartsWith("tree")||name.StartsWith("rock")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -547,8 +547,24 @@ namespace Ember
             float viewHalfW=cam.orthographicSize*cam.aspect+2.4f;
             if(Mathf.Abs(center.X)<=viewHalfW+3f&&Mathf.Abs(center.Y)<=viewHalfH+3f)
             {
-                var br=Put("beacon",Primitive("beacon"),new V2(0,-.15f),State.BeaconHP>0?Color.white:new Color(.65f,.65f,.72f),1.8f);
-                if(emissionMaterial!=null)br.sharedMaterial=emissionMaterial;
+                bool beaconLit=State.BeaconHP>0;
+                string beaconArt=beaconLit?"beacon":"beacon_dark";
+                var br=Put("beacon",Primitive(beaconArt),new V2(0,-.15f),Color.white,1.8f);
+                if(beaconLit&&emissionMaterial!=null)br.sharedMaterial=emissionMaterial;
+
+                // Floating levitating crystal shards orbiting around the obelisk
+                Color crystalColor=beaconLit?Color.white:new Color(.68f,.72f,.82f,.85f);
+                for(int ci=0;ci<4;ci++)
+                {
+                    float angle=clock*.75f+ci*(Mathf.PI*.5f);
+                    float floatY=Mathf.Sin(clock*2.2f+ci*1.57f)*.16f;
+                    float rx=Mathf.Cos(angle)*1.25f;
+                    float depthY=Mathf.Sin(angle)*.42f;
+                    float ry=1.35f+depthY+floatY;
+                    var cr=Put("beacon_crystal_"+ci,Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(rx,ry),crystalColor,1.15f);
+                    cr.sortingOrder=depthY<0?1005:995;
+                    if(beaconLit&&emissionMaterial!=null)cr.sharedMaterial=emissionMaterial;
+                }
             }
             if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
             if(State.Phase==Phase.Extraction&&Mathf.Abs(center.X)<=viewHalfW+4f&&Mathf.Abs(center.Y)<=viewHalfH+4f)
@@ -745,8 +761,8 @@ namespace Ember
                 else if(r>=size*.22f)treeArt=(hash%4==0)?"tree_pine":"tree_dead";
                 else
                 {
-                    int m=hash%6;
-                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_autumn":"tree_pine";
+                    int m=hash%8;
+                    treeArt=(m<=3)?"tree_oak":(m<=5)?"tree_autumn":(m==6)?"tree_pine":"rock_large";
                 }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
@@ -757,7 +773,8 @@ namespace Ember
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
-                tree.transform.localScale=Vector3.one*1.35f;
+                float scale=treeArt=="rock_large"?1.15f:1.35f;
+                tree.transform.localScale=Vector3.one*scale;
                 tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
                 tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
