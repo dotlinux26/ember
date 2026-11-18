@@ -152,6 +152,8 @@ namespace Ember
         public BossTelegraph[] BossTelegraphs=Array.Empty<BossTelegraph>();
         public TransientLight[] Lights=Array.Empty<TransientLight>();
         public CombatPopup[] Popups=Array.Empty<CombatPopup>();
+        public TreeRespawn[] TreeRespawns=Array.Empty<TreeRespawn>();
+        public int PeriodicWave=1;
         public DisconnectedSeat[] Disconnected=Array.Empty<DisconnectedSeat>();
     }
     [Serializable] public sealed class PendingMeteor
@@ -312,6 +314,7 @@ namespace Ember
     {
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
+        public static float GetBossEventInterval(Difficulty d)=>d==Difficulty.Hard?120f:d==Difficulty.Normal?300f:600f;
         public const float SimActiveRadius=36f,DespawnRadius=56f;
         static readonly V2 BeaconColliderPos=new V2(0,.35f);
         const float BeaconColliderRadius=1.35f;
@@ -547,12 +550,28 @@ namespace Ember
             {
                 var pos=new V2(rng.Next(6,S.Size-6)-S.Size/2,rng.Next(6,S.Size-6)-S.Size/2);
                 if(!Walkable(pos)||pos.Length<5)continue;
+                int tx=(int)Math.Floor(pos.X+S.Size/2f),ty=(int)Math.Floor(pos.Y+S.Size/2f);
+                if(tx<3||ty<3||tx>=S.Size-3||ty>=S.Size-3)continue;
+                byte tile=Tiles[ty*S.Size+tx];
+                if(tile==5||tile==6)continue;
+                bool nearBridge=false;
+                for(int ny=-1;ny<=1;ny++)for(int nx=-1;nx<=1;nx++)
+                {
+                    if(Tiles[(ty+ny)*S.Size+(tx+nx)]==5){nearBridge=true;break;}
+                }
+                if(nearBridge)continue;
                 float radius=pos.Length;Resource resource=new[]{Resource.Dust,Resource.Core,Resource.Wood,Resource.Ore}[rng.Next(4)];
                 if(radius<15)resource=i%3==0?Resource.Core:Resource.Dust;
                 nodes.Add(new Node{Id=nextId++,Pos=pos,Resource=resource,Amount=resource==Resource.Core?(radius>S.Size*.35f?5:2):4});
             }
             // Guaranteed accessible starter resources, regardless of seed.
-            for(int i=0;i<12;i++)nodes.Add(new Node{Id=nextId++,Pos=new V2(6+i%4*3,4+i/4*3),Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5});
+            for(int i=0;i<12;i++)
+            {
+                var sp=new V2(6+i%4*3,4+i/4*3);
+                int stx=(int)Math.Floor(sp.X+S.Size/2f),sty=(int)Math.Floor(sp.Y+S.Size/2f);
+                if(stx>=0&&sty>=0&&stx<S.Size&&sty<S.Size&&(Tiles[sty*S.Size+stx]==5||Tiles[sty*S.Size+stx]==6))continue;
+                nodes.Add(new Node{Id=nextId++,Pos=sp,Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5});
+            }
             for(int i=0;i<10;i++)
             {
                 double a=i*Math.PI*.2;V2 pos=new V2((float)Math.Cos(a),(float)Math.Sin(a))*(52+i*5);
@@ -723,8 +742,8 @@ namespace Ember
         {
             if(players.Count==0||S.Phase!=Phase.Sanctuary||(requireReady&&players.Any(p=>!p.Ready)))return false;
             spawnClock=18f;
-            S.NextBossEventTime=S.Time+BossEventInterval;
-            S.Phase=Phase.Explore;Announce("Thu thập lõi, nạp hải đăng, giữ lửa.");return true;
+            S.NextBossEventTime=S.Time+GetBossEventInterval(S.Difficulty);
+            S.Phase=Phase.Explore;return true;
         }
         public void Submit(int id,Command c)
         {
@@ -876,7 +895,20 @@ namespace Ember
         {
             if(dt<=0||dt>.2f)throw new ArgumentOutOfRangeException(nameof(dt));
             if(S.Phase==Phase.Sanctuary||S.Phase==Phase.Won||S.Phase==Phase.Lost){Publish();return;}
-            S.Tick++;S.Time+=dt;float oldFuel=S.Fuel;if(players.Any(p=>p.HasHeldTorch))S.Fuel=Math.Max(0,S.Fuel-dt*.13f);S.LastLight=Math.Max(0,S.LastLight-dt);
+            S.Tick++;S.Time+=dt;float oldFuel=S.Fuel;if(players.Any(p=>p.HasHeldTorch))S.Fuel=Math.Max(0,S.Fuel-dt*.13f);if(S.Phase==Phase.Explore&&S.Time>=60f)S.Fuel=Math.Max(0,S.Fuel-dt*.35f);S.LastLight=Math.Max(0,S.LastLight-dt);
+            if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Explore&&S.Time>=S.PeriodicWave*60f)
+            {
+                S.PeriodicWave++;
+                foreach(var lp in players.Where(p=>!p.Ghost&&!p.Extracted))
+                {
+                    for(int wi=0;wi<2;wi++)
+                    {
+                        double wa=rng.NextDouble()*Math.PI*2;
+                        V2 wpos=lp.Pos+new V2((float)Math.Cos(wa)*10f,(float)Math.Sin(wa)*10f);
+                        if(Walkable(wpos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.VoidStalker,Pos=wpos,HP=85,MaxHP=85,AttackCD=1.5f});
+                    }
+                }
+            }
             S.BossAlertTimer=Math.Max(0,S.BossAlertTimer-dt);
             S.BossSkillCalloutTimer=Math.Max(0,S.BossSkillCalloutTimer-dt);
             if(DebugEnabled&&DebugInfiniteFuel)S.Fuel=100;
@@ -976,7 +1008,12 @@ namespace Ember
             if(c.Dash&&p.DashCD<=0&&p.Stamina>=dashCost)
             {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=stats.DashCooldown;p.DashTime=.16f;p.Invulnerable=.16f;}
             if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
-            if(c.Refuel&&p.Bag[0]>0){int amount=Math.Min(p.Bag[0],(int)Math.Ceiling((100-S.Fuel)/2));p.Bag[0]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*2);}
+            if(c.Refuel)
+            {
+                if(p.Bag[0]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[0],(int)Math.Ceiling((100-S.Fuel)/15f));p.Bag[0]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*15f);}
+                if(p.Bag[3]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[3],(int)Math.Ceiling((100-S.Fuel)/12f));p.Bag[3]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*12f);}
+                if(p.Bag[1]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[1],(int)Math.Ceiling((100-S.Fuel)/50f));p.Bag[1]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*50f);}
+            }
             if(c.Deposit&&p.Pos.Length<4&&S.Phase==Phase.Explore){int amount=Math.Min(p.Bag[1],(int)Math.Ceiling((S.ChargeTarget-S.Charge)/CoreChargeValue));p.Bag[1]-=amount;S.Charge=Math.Min(S.ChargeTarget,S.Charge+amount*CoreChargeValue);if(S.Charge>=S.ChargeTarget){S.BeaconHP=600;S.Phase=Phase.Eclipse;S.Wave=90;Announce("NHẬT THỰC — bảo vệ hải đăng 90 giây!");}}
             if(c.Revive)ReviveAtBeacon(p);
             if(c.Interact)
@@ -1076,11 +1113,14 @@ namespace Ember
                 if(bestTx>=0)
                 {
                     if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
+                    float staminaCost=15f*p.Stats.StaminaCostMultiplier;
+                    if(p.Stamina<staminaCost)return false;
+                    p.Stamina=Math.Max(0,p.Stamina-staminaCost);
                     p.HeldSlot=8;
                     V2 blockPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
                     if(Math.Abs(blockPos.X-p.Pos.X)>.05f)p.Right=blockPos.X>p.Pos.X;
                     float tierSpeedBonus=p.PickaxeTier*0.12f;
-                    p.HarvestCD=(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus);
+                    p.HarvestCD=Math.Max(0.55f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
                     FX(p.Pos,blockPos,7);
                     Resource res=targetTile==3?Resource.Wood:Resource.Ore;
                     int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8?p.PickaxeTier:0);
@@ -1114,6 +1154,9 @@ namespace Ember
             if(!dustOnly&&!node.Dropped)
             {
                 if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
+                float staminaCost=15f*p.Stats.StaminaCostMultiplier;
+                if(p.Stamina<staminaCost)return false;
+                p.Stamina=Math.Max(0,p.Stamina-staminaCost);
                 p.HeldSlot=8;
             }
             int nodeYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?p.PickaxeTier:0);
@@ -1123,7 +1166,7 @@ namespace Ember
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
                 float tierSpeedBonus=p.PickaxeTier*0.12f;
-                p.HarvestCD=(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus);
+                p.HarvestCD=Math.Max(0.55f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
                 if(!node.Dropped)
                 {
                     FX(p.Pos,node.Pos,7);
@@ -1904,6 +1947,6 @@ namespace Ember
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
+        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
     }
 }

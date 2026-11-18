@@ -589,20 +589,68 @@ namespace Ember
             {
                 var n=nodesArr[ni];
                 if(Mathf.Abs(n.Pos.X-center.X)>viewHalfW||Mathf.Abs(n.Pos.Y-center.Y)>viewHalfH)continue;
-                bool tree=!n.Dropped&&(n.Resource==Resource.Wood||n.Resource==Resource.Dust);
-                Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Gold:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
-                Sprite sprite=tree?Primitive("tree"):n.Dropped&&n.Resource==Resource.Wood?Primitive("wood"):n.Dropped&&n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
-                float scale=tree?1.5f:n.Dropped?.70f:.62f;
+                bool isWoodTree=!n.Dropped&&n.Resource==Resource.Wood;
+                bool isDustBush=!n.Dropped&&n.Resource==Resource.Dust;
+                Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Cyan:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
+                Sprite sprite=isWoodTree?Primitive("tree_oak"):isDustBush?Primitive("lumidust_bush"):n.Dropped&&n.Resource==Resource.Wood?Primitive("wood"):n.Dropped&&n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+                float scale=isWoodTree?1.45f:isDustBush?1.35f:n.Dropped?.70f:.62f;
                 V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
+                if(isDustBush)
+                {
+                    float sway=Mathf.Sin(clock*2.8f+n.Id*1.5f)*.06f;
+                    float squish=1f+Mathf.Sin(clock*3.8f+n.Id*2f)*.08f;
+                    drawPos=drawPos+new V2(sway*.08f,0);
+                    scale*=squish;
+                }
                 int order=5000-Mathf.RoundToInt(n.Pos.Y*10);
-                bool showGoldGlow=n.Dropped||!tree||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
+                bool showGoldGlow=n.Dropped||(!isWoodTree&&!isDustBush)||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
                 if(showGoldGlow)
                 {
                     float pulse=.82f+.18f*Mathf.Sin(clock*6f+n.Id);
-                    Color glowGold=new Color(1f,.84f,.24f,pulse);
-                    Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowGold,scale,order-1),sprite);
+                    Color glowColor=isDustBush?new Color(.4f,1f,.95f,pulse):new Color(1f,.84f,.24f,pulse);
+                    Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowColor,scale,order-1),sprite);
                 }
-                Put("node"+n.Id,sprite,drawPos,tree?(n.Resource==Resource.Dust?new Color(.6f,1,.8f):color):Color.white,scale,order);
+                Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
+            }
+            if(State.TreeRespawns!=null)
+            {
+                int size=State.Size;
+                for(int tri=0;tri<State.TreeRespawns.Length;tri++)
+                {
+                    var tr=State.TreeRespawns[tri];
+                    V2 stumpPos=new V2(tr.Tx-size/2f+.5f,tr.Ty-size/2f+.15f);
+                    if(Mathf.Abs(stumpPos.X-center.X)>viewHalfW||Mathf.Abs(stumpPos.Y-center.Y)>viewHalfH)continue;
+                    int sOrder=5000-Mathf.RoundToInt(stumpPos.Y*10);
+                    if(tr.Tile==3)
+                        Put("stump_"+tr.Tx+"_"+tr.Ty,Primitive("tree_stump"),stumpPos,Color.white,1.25f,sOrder);
+                    else if(tr.Tile==2)
+                        Put("rubble_"+tr.Tx+"_"+tr.Ty,Primitive("rock_small"),stumpPos,Color.white,0.85f,sOrder);
+                }
+            }
+            if(local!=null&&!local.Ghost&&currentTiles!=null)
+            {
+                int size=State.Size;
+                int px=(int)Math.Floor(localVisual.X+size/2f),py=(int)Math.Floor(localVisual.Y+size/2f);
+                int targetTx=-1,targetTy=-1;float closestD=2.4f;
+                for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                {
+                    int tx=px+dx,ty=py+dy;
+                    if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                    byte t=currentTiles[ty*size+tx];
+                    if(t==3||t==2)
+                    {
+                        V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                        float d=V2.Distance(localVisual,blockPos);
+                        if(d<closestD){closestD=d;targetTx=tx;targetTy=ty;}
+                    }
+                }
+                if(targetTx>=0)
+                {
+                    V2 targetPos=new V2(targetTx-size/2f+.5f,targetTy-size/2f+.15f);
+                    float pulse=.82f+.18f*Mathf.Sin(clock*6f);
+                    Color targetGlow=currentTiles[targetTy*size+targetTx]==3?new Color(1f,.86f,.3f,pulse):new Color(.65f,.9f,1f,pulse);
+                    Put("blockTargetGlow",Primitive("ring"),targetPos,targetGlow,1.1f,4999);
+                }
             }
             var structsArr=State.Structures;
             for(int si=0;si<structsArr.Length;si++)
@@ -769,9 +817,34 @@ namespace Ember
                 if(wPix!=null)Blit16(mapColors,px,tx,ty,wPix,wW,h%4,0); // water base
                 if(bPix!=null)
                 {
-                    bool vert=Math.Abs(dy)>=Math.Abs(dx);
-                    if(vert)Blit16(mapColors,px,tx,ty,bPix,bW,3,0,blend:true);
-                    else Blit16(mapColors,px,tx,ty,bPix,bW,(h%2==0?0:1),1,blend:true);
+                    bool bNorth=(ty+1<size)&&currentTiles[(ty+1)*size+tx]==5;
+                    bool bSouth=(ty-1>=0)&&currentTiles[(ty-1)*size+tx]==5;
+                    bool bWest=(tx-1>=0)&&currentTiles[ty*size+(tx-1)]==5;
+                    bool bEast=(tx+1<size)&&currentTiles[ty*size+(tx+1)]==5;
+
+                    bool landNorth=(ty+1<size)&&(currentTiles[(ty+1)*size+tx]==0||currentTiles[(ty+1)*size+tx]==6);
+                    bool landSouth=(ty-1>=0)&&(currentTiles[(ty-1)*size+tx]==0||currentTiles[(ty-1)*size+tx]==6);
+                    bool landWest=(tx-1>=0)&&(currentTiles[ty*size+(tx-1)]==0||currentTiles[ty*size+(tx-1)]==6);
+                    bool landEast=(tx+1<size)&&(currentTiles[ty*size+(tx+1)]==0||currentTiles[ty*size+(tx+1)]==6);
+
+                    bool isVert=(bNorth||bSouth)||(landNorth&&landSouth)||(!bWest&&!bEast&&(landNorth||landSouth));
+                    if(!isVert&&!bWest&&!bEast&&!landWest&&!landEast)
+                        isVert=Math.Abs(dy)>=Math.Abs(dx);
+
+                    if(isVert)
+                    {
+                        int col=h%2==0?0:1;
+                        if(!bNorth)Blit16(mapColors,px,tx,ty,bPix,bW,col,0,blend:true);
+                        else if(!bSouth)Blit16(mapColors,px,tx,ty,bPix,bW,col,2,blend:true);
+                        else Blit16(mapColors,px,tx,ty,bPix,bW,col,1,blend:true);
+                    }
+                    else
+                    {
+                        int row=h%2==0?0:1;
+                        if(!bWest)Blit16(mapColors,px,tx,ty,bPix,bW,2,row,blend:true);
+                        else if(!bEast)Blit16(mapColors,px,tx,ty,bPix,bW,4,row,blend:true);
+                        else Blit16(mapColors,px,tx,ty,bPix,bW,3,row,blend:true);
+                    }
                 }
             }
             else if(tile==6) // Dirt Path

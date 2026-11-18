@@ -362,8 +362,11 @@ namespace Ember
             if(Event.current.type!=EventType.Repaint)return;
             if(!string.IsNullOrEmpty(State.Event)&&State.Tick-State.EventTick<240)
             {
-                string message=(State.EventActor??"")+EmberLanguage.Text(State.Event)+(State.EventTarget??"");
-                y+=DrawFieldNotice(y,"beacon",message);
+                if(!State.Event.Contains("Thu thập lõi")&&!State.Event.Contains("Gather cores"))
+                {
+                    string message=(State.EventActor??"")+EmberLanguage.Text(State.Event)+(State.EventTarget??"");
+                    y+=DrawFieldNotice(y,"beacon",message);
+                }
             }
 
             if(player.Pet==(int)Pet.Bat&&State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,player.Pos)<10))
@@ -454,6 +457,17 @@ namespace Ember
                 :State.Phase==Phase.Explore?L("Thời gian trận · Boss tiếp theo sau ","Match time · Next Boss in ")+(bossRem/60).ToString("00")+":"+(bossRem%60).ToString("00")
                 :L("Thời gian trong trận","In-game match time");
             GUI.Label(box,new GUIContent("",tip),GUIStyle.none);
+            if(State.Phase==Phase.Explore)
+            {
+                var waveBox=new Rect(Mathf.Round((Screen.width-90)*.5f),43f,90f,18f);
+                PixelPanel(waveBox,new Color(.18f,.12f,.26f,.9f));
+                if(Event.current.type==EventType.Repaint)
+                {
+                    var waveStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,fontStyle=FontStyle.Bold};
+                    waveStyle.normal.textColor=new Color(1f,.88f,.45f);
+                    GUI.Label(waveBox,L("ĐỢT ","WAVE ")+State.PeriodicWave,waveStyle);
+                }
+            }
         }
 
         void DrawCornerPauseButton()
