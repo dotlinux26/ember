@@ -34,14 +34,28 @@ namespace Ember
             V2 focus=CameraTarget()?.Pos??new V2();
             foreach(var s in State.Structures)
             {
-                if(s.Kind>1||s.Life<=0||V2.Distance(s.Pos,focus)>23)continue;
-                float maxLife=s.MaxLife>0?s.MaxLife:(s.Kind==0?45f:12f);
-                float ratio=Mathf.Clamp01(s.Life/maxLife);
-                Vector2 anchor=ScreenPos(s.Pos+new V2(0,.62f));
-                float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
-                Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
-                Color fill=ratio<.25f?Coral:s.Kind==1?new Color(1f,.56f,.36f):Gold;
-                Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                if(s.Kind>2||s.Life<=0||V2.Distance(s.Pos,focus)>23)continue;
+                if(s.Kind==2)
+                {
+                    // Wall / Fence health bar (HP 150)
+                    if(s.HP>=150f||s.HP<=0)continue;
+                    float ratio=Mathf.Clamp01(s.HP/150f);
+                    Vector2 anchor=ScreenPos(s.Pos+new V2(0,.78f));
+                    float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
+                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
+                    Color fill=ratio<.3f?Coral:new Color(.82f,.62f,.38f);
+                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                }
+                else
+                {
+                    float maxLife=s.MaxLife>0?s.MaxLife:(s.Kind==0?45f:12f);
+                    float ratio=Mathf.Clamp01(s.Life/maxLife);
+                    Vector2 anchor=ScreenPos(s.Pos+new V2(0,.62f));
+                    float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
+                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
+                    Color fill=ratio<.25f?Coral:s.Kind==1?new Color(1f,.56f,.36f):Gold;
+                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                }
             }
         }
 
@@ -67,12 +81,48 @@ namespace Ember
                 {
                     var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
                         .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
-                    if(node==null)return;
-                    string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
-                    bool needsPick=!node.Dropped&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
-                    string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
-                    targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
-                    caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
+                    if(node!=null)
+                    {
+                        string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
+                        bool needsPick=!node.Dropped&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
+                        string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
+                        targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
+                        caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
+                    }
+                    else
+                    {
+                        // Check for natural trees (tile 3) and rock cliffs (tile 2)
+                        int size=State.Size;
+                        int px=(int)Mathf.Floor(p.Pos.X+size/2f);
+                        int py=(int)Mathf.Floor(p.Pos.Y+size/2f);
+                        int bestTx=-1,bestTy=-1;float bestDist=float.MaxValue;byte targetTile=0;
+                        byte[] tiles=currentTiles??(host?World?.Tiles:null);
+                        if(tiles!=null)
+                        {
+                            for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                            {
+                                int tx=px+dx,ty=py+dy;
+                                if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                                byte t=tiles[ty*size+tx];
+                                if(t==3||t==2)
+                                {
+                                    V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                                    float d=V2.Distance(p.Pos,blockPos);
+                                    if(d<2.2f&&d<bestDist){bestDist=d;bestTx=tx;bestTy=ty;targetTile=t;}
+                                }
+                            }
+                        }
+                        if(bestTx>=0)
+                        {
+                            bool isTree=targetTile==3;
+                            targetPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
+                            bool needsPick=!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
+                            string verb=isTree?L("Chặt","Chop"):L("Đào","Mine");
+                            string resName=isTree?L("Gỗ","Wood"):L("Quặng","Ore");
+                            caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×2";
+                        }
+                        else return;
+                    }
                 }
             }
 

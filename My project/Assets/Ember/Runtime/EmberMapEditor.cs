@@ -157,7 +157,7 @@ namespace Ember
             GUI.Box(box, "");
 
             GUILayout.BeginArea(new Rect(box.x + 10, box.y + 10, w - 20, h - 20));
-            GUILayout.Label("🗺️ <b>BỘ BIÊN TẬP BẢN ĐỒ (TILEMAP EDITOR)</b>", HeaderStyle);
+            GUILayout.Label("🗺️ <b>BỘ BIÊN TẬP BẢN ĐỒ (TILEMAP EDITOR)</b>");
             GUILayout.Label("<color=#a0a4c0>Click trái: Vẽ | Click phải: Xóa về cỏ | F2: Ẩn/Hiện</color>");
             GUILayout.Space(6);
 

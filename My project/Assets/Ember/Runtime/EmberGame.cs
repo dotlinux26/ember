@@ -807,9 +807,9 @@ namespace Ember
         void BuildMap()
         {
             renderedSeed=State.Seed;foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
-            visibleTrees.Clear();treePool.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+            visibleTrees.Clear();treePool.Clear();treeSpawnClock.Clear();treeBaseScale.Clear();treeBasePos.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
             float edgeWorld=State.Size/2f-3;
-            var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=10000;
+            var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=2;
             var fogMaterial=Resources.Load<Material>("Ember/EmberAbyss");if(fogMaterial!=null){fog.material=new Material(fogMaterial);fog.material.SetFloat("_Boundary",edgeWorld);}
             foreach(var side in new[]{new Vector3(-edgeWorld-2,0),new Vector3(edgeWorld+2,0),new Vector3(0,-edgeWorld-2),new Vector3(0,edgeWorld+2)})
             {
@@ -852,8 +852,55 @@ namespace Ember
         }
         readonly HashSet<int> keepTrees=new HashSet<int>();
         readonly List<int> dropTrees=new List<int>();
+        readonly Dictionary<int,float> treeSpawnClock=new Dictionary<int,float>();
+        readonly Dictionary<int,float> treeBaseScale=new Dictionary<int,float>();
+        readonly Dictionary<int,Vector3> treeBasePos=new Dictionary<int,Vector3>();
+
+        void AnimateEmergingTrees()
+        {
+            if(treeSpawnClock.Count==0)return;
+            List<int> done=null;
+            foreach(var kv in treeSpawnClock)
+            {
+                if(!visibleTrees.TryGetValue(kv.Key,out var tSr))
+                {
+                    if(done==null)done=new List<int>();
+                    done.Add(kv.Key);
+                    continue;
+                }
+                float age=clock-kv.Value;
+                const float dur=0.65f;
+                if(age>=dur)
+                {
+                    if(treeBaseScale.TryGetValue(kv.Key,out var bs))tSr.transform.localScale=Vector3.one*bs;
+                    if(treeBasePos.TryGetValue(kv.Key,out var bp))tSr.transform.position=bp;
+                    tSr.color=Color.white;
+                    if(done==null)done=new List<int>();
+                    done.Add(kv.Key);
+                }
+                else
+                {
+                    float t=Mathf.Clamp01(age/dur);
+                    float ease=Mathf.SmoothStep(0f,1f,t);
+                    if(treeBaseScale.TryGetValue(kv.Key,out var bs))tSr.transform.localScale=Vector3.one*Mathf.Lerp(bs*0.15f,bs,ease);
+                    if(treeBasePos.TryGetValue(kv.Key,out var bp))tSr.transform.position=bp+new Vector3(0,Mathf.Lerp(-0.4f,0f,ease),0);
+                    tSr.color=new Color(1f,1f,1f,ease);
+                }
+            }
+            if(done!=null)
+            {
+                for(int i=0;i<done.Count;i++)
+                {
+                    treeSpawnClock.Remove(done[i]);
+                    treeBaseScale.Remove(done[i]);
+                    treeBasePos.Remove(done[i]);
+                }
+            }
+        }
+
         void StreamTrees()
         {
+            AnimateEmergingTrees();
             if(currentTiles==null||State==null)return;var pos=CameraTarget()?.Pos??new V2();int size=State.Size;
             var chunk=new Vector2Int(Mathf.FloorToInt(pos.X/4),Mathf.FloorToInt(pos.Y/4));if(chunk==visibleChunk)return;visibleChunk=chunk;
             int halfX=Mathf.CeilToInt(cam.orthographicSize*cam.aspect)+6;
@@ -894,8 +941,23 @@ namespace Ember
                 }
                 tree.sprite=Primitive(treeArt);
                 float scale=treeArt=="rock_large"?1.2f:treeArt=="rock_small"?1.0f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.1f:1.35f;
-                tree.transform.localScale=Vector3.one*scale;
-                tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
+                Vector3 basePos=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
+                bool outsideSanctuary=r>14f;
+                if(outsideSanctuary&&!treeSpawnClock.ContainsKey(key))
+                {
+                    treeSpawnClock[key]=clock;
+                    treeBaseScale[key]=scale;
+                    treeBasePos[key]=basePos;
+                    tree.color=new Color(1f,1f,1f,0f);
+                    tree.transform.localScale=Vector3.one*(scale*0.15f);
+                    tree.transform.position=basePos+new Vector3(0,-0.4f,0);
+                }
+                else
+                {
+                    tree.color=Color.white;
+                    tree.transform.localScale=Vector3.one*scale;
+                    tree.transform.position=basePos;
+                }
                 tree.sortingOrder=5000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
             }
@@ -907,6 +969,9 @@ namespace Ember
                 sr.enabled=false;
                 treePool.Push(sr);
                 visibleTrees.Remove(key);
+                treeSpawnClock.Remove(key);
+                treeBaseScale.Remove(key);
+                treeBasePos.Remove(key);
             }
         }
         void InitStyles()

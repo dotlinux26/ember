@@ -32,7 +32,7 @@ namespace Ember
         public static V2 operator /(V2 a,float b)=>new V2(a.X/b,a.Y/b);
         public static float Distance(V2 a,V2 b)=>(a-b).Length;
     }
-    [Serializable] public struct TreeRespawn { public int Tx, Ty; public float RespawnAt; }
+    [Serializable] public struct TreeRespawn { public int Tx, Ty; public float RespawnAt; public byte Tile; }
     [Serializable] public sealed class Command
     {
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
@@ -899,7 +899,9 @@ namespace Ember
             }
             structures.RemoveAll(s=>s.HP<=0||s.Life<=0);
             foreach(var e in effects)e.Life-=dt;effects.RemoveAll(e=>e.Life<=0);
-            spawnClock-=dt;if((!DebugEnabled||!DebugNoEnemies)&&spawnClock<=0&&enemies.Count(e=>e.Kind!=EnemyKind.Nest)<MaxActiveEnemies){SpawnEnemy();spawnClock=S.Phase==Phase.Eclipse?EclipseSpawnInterval:ExploreSpawnInterval;}
+            bool beaconActive=S.Fuel>0||S.BeaconHP>0;
+            float spawnRate=(beaconActive&&S.Phase==Phase.Explore)?1.65f:1f;
+            spawnClock-=dt*spawnRate;if((!DebugEnabled||!DebugNoEnemies)&&spawnClock<=0&&enemies.Count(e=>e.Kind!=EnemyKind.Nest)<MaxActiveEnemies){SpawnEnemy();spawnClock=S.Phase==Phase.Eclipse?EclipseSpawnInterval:ExploreSpawnInterval;}
             if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Eclipse&&S.Wave<60&&!bossSpawned)
             {
                 bossSpawned=true;var pos=new V2(0,18);float hp=450+players.Count*180;enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=pos,HP=hp,MaxHP=hp,SkillCD=3.2f});Announce("Một thực thể lớn đang tiến về hải đăng.");
@@ -915,7 +917,7 @@ namespace Ember
                     if(occupied){tr.RespawnAt=S.Time+5f;treeRespawns[tri]=tr;}
                     else
                     {
-                        Tiles[tr.Ty*S.Size+tr.Tx]=3;
+                        Tiles[tr.Ty*S.Size+tr.Tx]=tr.Tile==2?(byte)2:(byte)3;
                         treeRespawns.RemoveAt(tri);
                         FX(treePos,treePos,7);
                         Publish();
@@ -1058,30 +1060,32 @@ namespace Ember
                 int size=S.Size;
                 int px=(int)Math.Floor(p.Pos.X+size/2f);
                 int py=(int)Math.Floor(p.Pos.Y+size/2f);
-                int bestTx=-1,bestTy=-1;float bestDist=float.MaxValue;
+                int bestTx=-1,bestTy=-1;float bestDist=float.MaxValue;byte targetTile=0;
                 for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
                 {
                     int tx=px+dx,ty=py+dy;
                     if(tx<0||ty<0||tx>=size||ty>=size)continue;
-                    if(Tiles[ty*size+tx]==3)
+                    byte t=Tiles[ty*size+tx];
+                    if(t==3||t==2)
                     {
-                        V2 treePos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
-                        float d=V2.Distance(p.Pos,treePos);
-                        if(d<range+.4f&&d<bestDist){bestDist=d;bestTx=tx;bestTy=ty;}
+                        V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                        float d=V2.Distance(p.Pos,blockPos);
+                        if(d<range+.4f&&d<bestDist){bestDist=d;bestTx=tx;bestTy=ty;targetTile=t;}
                     }
                 }
                 if(bestTx>=0)
                 {
                     if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
                     p.HeldSlot=8;
-                    V2 treePos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
-                    if(Math.Abs(treePos.X-p.Pos.X)>.05f)p.Right=treePos.X>p.Pos.X;
+                    V2 blockPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
+                    if(Math.Abs(blockPos.X-p.Pos.X)>.05f)p.Right=blockPos.X>p.Pos.X;
                     float tierSpeedBonus=p.PickaxeTier*0.12f;
                     p.HarvestCD=(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus);
-                    FX(p.Pos,treePos,7);
+                    FX(p.Pos,blockPos,7);
+                    Resource res=targetTile==3?Resource.Wood:Resource.Ore;
                     int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8?p.PickaxeTier:0);
-                    p.Bag[(int)Resource.Wood]+=yield;p.Gathered+=yield;
-                    EmitPopup(treePos,3,yield,(int)Resource.Wood,.95f);
+                    p.Bag[(int)res]+=yield;p.Gathered+=yield;
+                    EmitPopup(blockPos,3,yield,(int)res,.95f);
                     if(p.HasPickaxe)
                     {
                         p.PickaxeDurability=Math.Max(0,p.PickaxeDurability-1);
@@ -1100,8 +1104,8 @@ namespace Ember
                         }
                     }
                     Tiles[bestTy*size+bestTx]=0;
-                    nodes.Add(new Node{Id=nextId++,Pos=treePos,Resource=Resource.Wood,Amount=2,Dropped=true});
-                    treeRespawns.Add(new TreeRespawn{Tx=bestTx,Ty=bestTy,RespawnAt=S.Time+45f});
+                    nodes.Add(new Node{Id=nextId++,Pos=blockPos,Resource=res,Amount=2,Dropped=true});
+                    treeRespawns.Add(new TreeRespawn{Tx=bestTx,Ty=bestTy,RespawnAt=S.Time+45f,Tile=targetTile});
                     Publish();
                     return true;
                 }
@@ -1151,7 +1155,7 @@ namespace Ember
             for(int i=0;i<5;i++)if(p.Bag[i]<cost[i])return false;
             for(int i=0;i<5;i++)p.Bag[i]-=cost[i];
             if(index<4)p.Items[index]++;
-            else if(index<7)structures.Add(new Structure{Id=nextId++,Kind=index-2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=index==5?90:999999});
+            else if(index<7){float life=index==5?90f:999999f;float hp=index==4?150f:100f;structures.Add(new Structure{Id=nextId++,Kind=index-2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=life,MaxLife=life,HP=hp});}
             else if(index<9){p.Lantern=index==7?Lantern.Inferno:Lantern.Relic;p.CarriesLantern=true;}
             else p.Weapon=(Weapon)(index-8);
             p.Crafted++;Announce("Đã chế tạo: "+Catalog.Recipes[index].Name);return true;
@@ -1766,10 +1770,12 @@ namespace Ember
             }
             if(target==null)return;
             bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
+            bool beaconLit=S.Fuel>0||S.BeaconHP>0;
+            bool targetBeacon=defendingBeacon||(beaconLit&&distToPlayer>9f&&e.Pos.Length<45f);
             // Minecraft-style Simulation Distance & Despawn Sphere:
             // Distant normal mobs beyond DespawnRadius despawn cleanly to free CPU & mob cap;
             // Nests/Bosses never despawn, and anything outside SimActiveRadius hibernates at 0 CPU.
-            if(!defendingBeacon&&!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss)
+            if(!defendingBeacon&&!targetBeacon&&!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss)
             {
                 if(e.Kind!=EnemyKind.Nest&&distToPlayer>DespawnRadius){e.HP=0;return;}
                 if(distToPlayer>SimActiveRadius)return;
@@ -1780,7 +1786,7 @@ namespace Ember
             {
                 if(S.Time>20f&&e.AttackCD<=0&&distToPlayer<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale,SkillCD=2.8f+(float)rng.NextDouble()*2f});e.AttackCD=16;}return;
             }
-            if(!defendingBeacon&&distToPlayer>18f)
+            if(!defendingBeacon&&!targetBeacon&&distToPlayer>18f)
             {
                 if(e.SkillCD>1.2f)e.SkillCD=Math.Max(1.2f,e.SkillCD-dt);
                 // Gentle patrol within simulation distance while staying away from home.
@@ -1793,10 +1799,10 @@ namespace Ember
                 return;
             }
             if(e.SkillCD>0)e.SkillCD=Math.Max(0,e.SkillCD-dt);
-            V2 goal=defendingBeacon?new V2():target.Pos;
+            V2 goal=targetBeacon?new V2(0,.35f):target.Pos;
             if(e.Blind<=0)
             {
-                var direction=Navigate(e.Pos,goal,defendingBeacon?-1:target.Id);
+                var direction=Navigate(e.Pos,goal,targetBeacon?-1:target.Id);
                 float baseSpeed=e.Kind==EnemyKind.Boss?1.55f:e.Elite?1.65f:1.35f;
                 float speed=baseSpeed*DifficultyEnemySpeedScale*dt;
                 var next=Move(e.Pos,direction*speed,monster:e);
@@ -1811,8 +1817,40 @@ namespace Ember
             if(e.AttackCD<=0)
             {
                 if(curDist<1.1f){Hurt(target,(e.Elite?18:9)*DifficultyEnemyScale);e.AttackCD=1;}
-                else if(goal.Length<.01f&&e.Pos.Length<2){S.BeaconHP=Math.Max(0,S.BeaconHP-(e.Elite?15:6));e.AttackCD=1;}
-                else {var wall=structures.Find(s=>s.Kind==2&&V2.Distance(s.Pos,e.Pos)<1.5f);if(wall!=null){wall.HP-=10;e.AttackCD=1;}}
+                else if(e.Pos.Length<2.2f)
+                {
+                    float drain=e.Elite?4f:2f;
+                    if(S.Fuel>0)
+                    {
+                        S.Fuel=Math.Max(0,S.Fuel-drain);
+                        EmitPopup(new V2(0,.35f),1,(int)drain);
+                        FX(e.Pos,new V2(0,.35f),1);
+                        if(rng.NextDouble()<0.15)Announce(EmberLanguage.English?"Monsters are attacking the beacon and draining fuel!":"Quái vật đang tấn công trụ và cắn mất nhiên liệu!");
+                    }
+                    else if(S.Charge>0)
+                    {
+                        float cDrain=Math.Min(S.Charge,drain*2.5f);
+                        S.Charge-=cDrain;
+                        EmitPopup(new V2(0,.35f),1,(int)cDrain);
+                        FX(e.Pos,new V2(0,.35f),1);
+                        if(rng.NextDouble()<0.15)Announce(EmberLanguage.English?"Monsters are siphoning energy from the beacon!":"Quái vật đang cắn mất năng lượng nạp của trụ!");
+                    }
+                    if(S.BeaconHP>0)S.BeaconHP=Math.Max(0,S.BeaconHP-(e.Elite?15:6));
+                    e.AttackCD=1.2f;
+                }
+                else
+                {
+                    var wall=structures.Find(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,e.Pos)<1.5f);
+                    if(wall!=null)
+                    {
+                        float dmg=(e.Elite?18:8)*DifficultyEnemyScale;
+                        wall.HP-=dmg;
+                        e.AttackCD=1f;
+                        EmitPopup(wall.Pos,1,(int)dmg);
+                        FX(e.Pos,wall.Pos,1);
+                        if(wall.HP<=0)FX(wall.Pos,wall.Pos,7);
+                    }
+                }
             }
             if(e.SkillCD<=0&&e.Blind<=0&&!S.BossArenaActive)TryFireEnemyShot(e,target,curDist);
         }
