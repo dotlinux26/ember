@@ -12,6 +12,8 @@ namespace Ember
     public enum EnemyKind { Shade, SwampLeech, VoidStalker, Sentinel, Nest, Boss }
     public enum BossType { VoidSovereign, CinderBehemoth, EclipseWeaver }
     public enum BossSkillKind { CircleRain, BulletStorm, RectCharge }
+    public enum LightAnchor { None, Caster, Target, Both }
+    public enum LightColorKind { Starlight, Moonlight, Flash, RuneGold, VoidPurple, Ember }
     public enum Lantern { Oil, Inferno, Relic }
     public enum Perk { SteelNerves, StrongBack, GhostStep, Prepared, Miner, LastLight, ReluctantHealer }
     public enum Hat { Straw, Witch, Candle, Jester }
@@ -79,6 +81,14 @@ namespace Ember
         public V2 Pos,Dir;
         public float Radius,Length,Timer,Duration,Damage;
     }
+    [Serializable] public sealed class TransientLight
+    {
+        public int Id,FollowPlayerId;
+        public LightColorKind ColorKind;
+        public V2 Pos;
+        public float Radius,Intensity,Life,MaxLife;
+        public bool GrantsSafety;
+    }
     [Serializable] public sealed class Node
     {
         public int Id; public V2 Pos; public Resource Resource; public int Amount; public bool Dropped;
@@ -110,6 +120,7 @@ namespace Ember
         public float BossAlertTimer,BossSkillCalloutTimer,NextBossEventTime=600f;
         public string BossAlertText="",BossSkillCallout="";
         public BossTelegraph[] BossTelegraphs=Array.Empty<BossTelegraph>();
+        public TransientLight[] Lights=Array.Empty<TransientLight>();
     }
     [Serializable] public sealed class PendingMeteor
     {
@@ -157,8 +168,26 @@ namespace Ember
         public bool BulletChaotic;
         public float ChargeLength,ChargeWidth,ChargeDelay,ChargeDamage;
     }
+    public readonly struct SkillLightProfile
+    {
+        public readonly LightAnchor Anchor;
+        public readonly LightColorKind ColorKind;
+        public readonly float CasterRadius,TargetRadius,Duration,Intensity;
+        public readonly bool GrantsSafety;
+        public SkillLightProfile(LightAnchor anchor,LightColorKind colorKind,float casterRadius,float targetRadius,float duration,float intensity,bool grantsSafety)
+        {Anchor=anchor;ColorKind=colorKind;CasterRadius=casterRadius;TargetRadius=targetRadius;Duration=duration;Intensity=intensity;GrantsSafety=grantsSafety;}
+    }
     public static class Catalog
     {
+        public static readonly SkillLightProfile[] SkillLights={
+            new SkillLightProfile(LightAnchor.None,LightColorKind.Ember,0,0,0,0,false),                       // Wanderer
+            new SkillLightProfile(LightAnchor.Target,LightColorKind.Moonlight,0,6f,2.5f,1.25f,true),          // MoonMender
+            new SkillLightProfile(LightAnchor.Target,LightColorKind.Flash,0,8f,3.0f,1.45f,true),              // BombTrapper
+            new SkillLightProfile(LightAnchor.Caster,LightColorKind.RuneGold,6f,0,4.0f,1.25f,true),           // RuneWarden
+            new SkillLightProfile(LightAnchor.Target,LightColorKind.VoidPurple,0,5f,1.5f,1.1f,false),         // SpaceWraith
+            new SkillLightProfile(LightAnchor.Both,LightColorKind.Starlight,6f,8f,2.2f,1.35f,true),           // LittleMoone
+        };
+        public static SkillLightProfile SkillLightFor(Vessel vessel)=>SkillLights[Math.Max(0,Math.Min(SkillLights.Length-1,(int)vessel))];
         public static readonly BossSpec[] BossSpecs={
             new BossSpec{
                 NameVi="Chúa Tể Hư Không",NameEn="Void Sovereign",
@@ -242,6 +271,7 @@ namespace Ember
         readonly List<Node> nodes=new List<Node>(); readonly List<Structure> structures=new List<Structure>(); readonly List<Effect> effects=new List<Effect>();
         readonly List<Projectile> projectiles=new List<Projectile>();
         readonly List<BossTelegraph> bossTelegraphs=new List<BossTelegraph>();
+        readonly List<TransientLight> transientLights=new List<TransientLight>();
         readonly Dictionary<int,Command> commands=new Dictionary<int,Command>();
         readonly Dictionary<int,Queue<Command>> actions=new Dictionary<int,Queue<Command>>();
         readonly Dictionary<int,float> inputAt=new Dictionary<int,float>();
@@ -304,6 +334,7 @@ namespace Ember
             if(s.Effects==null)s.Effects=Array.Empty<Effect>();
             if(s.Projectiles==null)s.Projectiles=Array.Empty<Projectile>();
             if(s.BossTelegraphs==null)s.BossTelegraphs=Array.Empty<BossTelegraph>();
+            if(s.Lights==null)s.Lights=Array.Empty<TransientLight>();
             if(s.NextBossEventTime<=0)s.NextBossEventTime=s.Time+BossEventInterval;
             if(data.Chest==null||data.Chest.Length!=5)data.Chest=new int[5];
             if(data.PendingMeteors==null)data.PendingMeteors=Array.Empty<PendingMeteor>();
@@ -323,6 +354,7 @@ namespace Ember
             w.effects.AddRange(w.S.Effects);
             w.projectiles.AddRange(w.S.Projectiles);
             w.bossTelegraphs.AddRange(w.S.BossTelegraphs);
+            w.transientLights.AddRange(w.S.Lights);
             int maxId=Math.Max(10,data.NextId);
             foreach(var p in w.players)maxId=Math.Max(maxId,p.Id+1);
             foreach(var e in w.enemies)maxId=Math.Max(maxId,e.Id+1);
@@ -330,6 +362,7 @@ namespace Ember
             foreach(var st in w.structures)maxId=Math.Max(maxId,st.Id+1);
             foreach(var pr in w.projectiles)maxId=Math.Max(maxId,pr.Id+1);
             foreach(var bt in w.bossTelegraphs)maxId=Math.Max(maxId,bt.Id+1);
+            foreach(var tl in w.transientLights)maxId=Math.Max(maxId,tl.Id+1);
             w.nextId=maxId;
             w.lastBossType=data.LastBossType;
             w.spawnClock=Math.Max(0,data.SpawnClock);
@@ -528,6 +561,7 @@ namespace Ember
                 bool lit=p.HasHeldTorch&&(S.Fuel>0||S.LastLight>0);
                 if(lit&&V2.Distance(pos,p.Pos)<(p.Lantern==Lantern.Relic?8:5))return true;
             }
+            if(transientLights.Any(l=>l.GrantsSafety&&l.Life>0&&V2.Distance(pos,l.Pos)<l.Radius*.85f))return true;
             return structures.Any(s=>(s.Kind==0||s.Kind==1)&&s.Life>0&&V2.Distance(pos,s.Pos)<(s.Kind==1?8:4));
         }
         public bool CanHarm(Player a,Player b)
@@ -593,6 +627,7 @@ namespace Ember
             UpdateProjectiles(dt);
             UpdateMeteors(dt);
             UpdateBossTelegraphs(dt);
+            UpdateTransientLights(dt);
             enemies.RemoveAll(e=>e.HP<=0);
             if(S.BossArenaActive&&!enemies.Any(e=>e.Id==S.BossId&&e.HP>0))EndBossArena();
             foreach(var s in structures)
@@ -848,6 +883,47 @@ namespace Ember
             }
             FX(p.Pos,target.Pos,0);
         }
+        public void EmitLight(V2 pos,float radius,float duration,LightColorKind colorKind,float intensity=1.2f,bool grantsSafety=true,int followPlayerId=0)
+        {
+            if(radius<=0||duration<=0)return;
+            transientLights.Add(new TransientLight
+            {
+                Id=nextId++,
+                FollowPlayerId=followPlayerId,
+                ColorKind=colorKind,
+                Pos=pos,
+                Radius=radius,
+                Intensity=intensity,
+                Life=duration,
+                MaxLife=duration,
+                GrantsSafety=grantsSafety
+            });
+        }
+        void EmitSkillLight(Player caster,V2 targetPos,int followTargetPlayerId=0,float? durationOverride=null)
+        {
+            var profile=Catalog.SkillLightFor(caster.Vessel);
+            if(profile.Anchor==LightAnchor.None)return;
+            float duration=durationOverride??profile.Duration;
+            if(profile.Anchor==LightAnchor.Caster||profile.Anchor==LightAnchor.Both)
+                EmitLight(caster.Pos,profile.CasterRadius,duration,profile.ColorKind,profile.Intensity,profile.GrantsSafety,caster.Id);
+            if(profile.Anchor==LightAnchor.Target||profile.Anchor==LightAnchor.Both)
+                EmitLight(targetPos,profile.TargetRadius,duration,profile.ColorKind,profile.Intensity,profile.GrantsSafety,followTargetPlayerId);
+        }
+        void UpdateTransientLights(float dt)
+        {
+            for(int i=transientLights.Count-1;i>=0;i--)
+            {
+                var l=transientLights[i];
+                l.Life-=dt;
+                if(l.Life<=0){transientLights.RemoveAt(i);continue;}
+                if(l.FollowPlayerId>0)
+                {
+                    var holder=PlayerById(l.FollowPlayerId);
+                    if(holder!=null&&!holder.Ghost&&!holder.Extracted)l.Pos=holder.Pos;
+                    else l.FollowPlayerId=0;
+                }
+            }
+        }
         void Skill(Player p)
         {
             if(p.Vessel==Vessel.Wanderer)return;
@@ -858,6 +934,7 @@ namespace Ember
                 var q=players.Where(q=>!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange&&(q.HP<q.MaxHP||q.Dread>0)).OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
                 if(q==null){p.CastTime=0;return;}
                 q.HP=Math.Min(q.MaxHP,q.HP+35);q.Dread=Math.Max(0,q.Dread-40);p.SkillCD=25;FX(p.Pos,q.Pos,2);
+                EmitSkillLight(p,q.Pos,followTargetPlayerId:q.Id);
             }
             if(p.Vessel==Vessel.BombTrapper)
             {
@@ -867,6 +944,7 @@ namespace Ember
                 foreach(var victim in enemies.Where(q=>V2.Distance(q.Pos,center)<3).ToArray()){Damage(victim,bombDamage);victim.Blind=3;}
                 foreach(var victim in players.Where(q=>CanHarm(p,q)&&V2.Distance(q.Pos,center)<3)){Hurt(victim,FriendlyDamage(p,bombDamage));retaliation[((long)victim.Id<<32)|(uint)p.Id]=S.Time;}
                 p.SkillCD=20;FX(center,center,3);
+                EmitSkillLight(p,center);
             }
             if(p.Vessel==Vessel.RuneWarden)
             {
@@ -874,6 +952,7 @@ namespace Ember
                 foreach(var e in enemies.Where(e=>e.Kind!=EnemyKind.Nest&&V2.Distance(e.Pos,p.Pos)<p.SkillRange)){e.Pos=Move(e.Pos,(e.Pos-p.Pos).Normal*3);e.Blind=1;}
                 foreach(var ally in players.Where(q=>CanHarm(p,q)&&V2.Distance(q.Pos,p.Pos)<p.SkillRange))ally.Pos=Move(ally.Pos,(ally.Pos-p.Pos).Normal*3);
                 p.Shield=40;p.ShieldTime=4;p.SkillCD=18;FX(p.Pos,p.Pos,4);
+                EmitSkillLight(p,p.Pos);
             }
             if(p.Vessel==Vessel.SpaceWraith)
             {
@@ -889,6 +968,7 @@ namespace Ember
                     p.Pos=BeaconSpawnSpot(p.PartySlot-1,2.4f);
                 }
                 p.SkillCD=60;FX(p.Pos,p.Pos,2);
+                EmitSkillLight(p,p.Pos);
             }
         }
         public static V2 EightWay(V2 direction)
@@ -912,6 +992,7 @@ namespace Ember
             V2 center=ally!=null&&(enemy==null||V2.Distance(ally.Pos,p.Pos)<V2.Distance(enemy.Pos,p.Pos))?ally.Pos:enemy.Pos;
             p.CastTime=8f/6;
             p.SkillCD=24;
+            EmitSkillLight(p,center);
             const int count=12;
             for(int i=0;i<count;i++)
             {
@@ -1312,6 +1393,6 @@ namespace Ember
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();}
+        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();}
     }
 }

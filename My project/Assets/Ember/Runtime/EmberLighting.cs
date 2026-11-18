@@ -22,6 +22,18 @@ namespace Ember
             activeLights.Add(light);
             if(!light.enabled)light.enabled=true;light.transform.position=new Vector3(pos.X,pos.Y+.35f,0);light.pointLightOuterRadius=radius;light.pointLightInnerRadius=radius*.4f;light.falloffIntensity=.65f;light.color=color;light.intensity=intensity;
         }
+        static Color TransientLightColor(LightColorKind kind)
+        {
+            switch(kind)
+            {
+                case LightColorKind.Starlight:return new Color(.84f,.95f,1f);
+                case LightColorKind.Moonlight:return new Color(.56f,.94f,.96f);
+                case LightColorKind.Flash:return new Color(1f,.72f,.32f);
+                case LightColorKind.RuneGold:return new Color(1f,.84f,.42f);
+                case LightColorKind.VoidPurple:return new Color(.74f,.46f,1f);
+                default:return new Color(1f,.78f,.48f);
+            }
+        }
         void RenderLighting()
         {
             activeLights.Clear();
@@ -43,6 +55,16 @@ namespace Ember
                 else if(p.Hat==(int)Hat.Candle)Illuminate("candle"+p.Id,p.Pos,1.5f,Gold,.7f);
             }
             foreach(var s in State.Structures.Where(s=>s.Kind<2||s.Kind==5).OrderBy(s=>focus==null?0:V2.Distance(s.Pos,focus.Pos)).Take(24))Illuminate("structure"+s.Id,s.Pos,s.Kind==1?9:s.Kind==5?2:5,s.Kind==5?Cyan:Gold,s.Kind==5?.3f:1.1f);
+            foreach(var l in (State.Lights??System.Array.Empty<TransientLight>()).OrderBy(l=>focus==null?0:V2.Distance(l.Pos,focus.Pos)).Take(16))
+            {
+                if(l.Life<=0||l.MaxLife<=0)continue;
+                float elapsed=l.MaxLife-l.Life;
+                float fadeIn=Mathf.Clamp01(elapsed/.12f);
+                float fadeOut=Mathf.Clamp01(l.Life/Mathf.Min(.45f,l.MaxLife*.35f));
+                float envelope=fadeIn*fadeOut;
+                float radius=l.Radius*(.75f+.25f*envelope);
+                Illuminate("fxlight"+l.Id,l.Pos,radius,TransientLightColor(l.ColorKind),l.Intensity*envelope);
+            }
             foreach(var light in lights.Values)
                 if(light.enabled&&!activeLights.Contains(light))light.enabled=false;
             if(lights.Count>64)foreach(var key in lights.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(lights[key].gameObject);lights.Remove(key);}

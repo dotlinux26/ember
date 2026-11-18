@@ -322,6 +322,32 @@ timerBossWorld.StartRun();
 timerBossWorld.S.Time=EmberWorld.BossEventInterval;
 timerBossWorld.Tick();
 Check(timerBossWorld.S.BossArenaActive&&Catalog.BossSpecs.Length==3,"10-minute timer automatically spawns one of the 3 random world bosses");
+
+var lightSkillWorld=new EmberWorld(55){DebugEnabled=true,DebugNoEnemies=true};
+var mooneLight=lightSkillWorld.AddPlayer(1,"Moone",Vessel.LittleMoone);
+lightSkillWorld.StartRun();
+mooneLight.HeldSlot=1;mooneLight.LampOn=false;mooneLight.Pos=new V2(14,8);
+// Out of range -> no skill cast, no transient light emitted.
+lightSkillWorld.Submit(1,new Command{Skill=true});
+lightSkillWorld.Tick();
+Check(lightSkillWorld.S.Lights.Length==0&&!lightSkillWorld.IsSafe(mooneLight.Pos),"failed out-of-range skill cast emits no transient light");
+// Enemy in range -> Little Moone emits Both caster + target starlight and grants temporary torch-like safety.
+lightSkillWorld.DebugAction("enemy",1);
+lightSkillWorld.Submit(1,new Command{Skill=true});
+lightSkillWorld.Tick();
+Check(lightSkillWorld.S.Lights.Length==2&&lightSkillWorld.IsSafe(mooneLight.Pos),"successful Little Moone cast emits caster+target transient lights and grants temporary safety");
+for(int k=0;k<75;k++)lightSkillWorld.Tick();
+Check(lightSkillWorld.S.Lights.Length==0&&!lightSkillWorld.IsSafe(mooneLight.Pos),"transient skill light expires automatically once skill finishes");
+var wardenLightWorld=new EmberWorld(56){DebugEnabled=true,DebugNoEnemies=true};
+var wardenLight=wardenLightWorld.AddPlayer(1,"Warden",Vessel.RuneWarden);
+wardenLightWorld.StartRun();
+wardenLight.HeldSlot=1;wardenLight.LampOn=false;wardenLight.Pos=new V2(10,6);
+wardenLightWorld.DebugAction("enemy",1);
+wardenLightWorld.Submit(1,new Command{Skill=true});
+wardenLightWorld.Tick();
+var startLightPos=wardenLightWorld.S.Lights[0].Pos;
+for(int k=0;k<10;k++){wardenLightWorld.Submit(1,new Command{X=1,Y=0});wardenLightWorld.Tick();}
+Check(wardenLightWorld.S.Lights.Length==1&&V2.Distance(wardenLightWorld.S.Lights[0].Pos,wardenLight.Pos)<.05f&&V2.Distance(wardenLightWorld.S.Lights[0].Pos,startLightPos)>.2f,"caster-anchored skill light tracks moving player smoothly");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random
