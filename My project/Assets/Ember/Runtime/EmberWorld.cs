@@ -89,6 +89,12 @@ namespace Ember
         public float Radius,Intensity,Life,MaxLife;
         public bool GrantsSafety;
     }
+    [Serializable] public sealed class CombatPopup
+    {
+        public int Id,Kind,Amount,SubKind; // Kind: 0 enemy dmg, 1 player dmg, 2 heal, 3 harvest
+        public V2 Pos;
+        public float Life,MaxLife;
+    }
     [Serializable] public sealed class Node
     {
         public int Id; public V2 Pos; public Resource Resource; public int Amount; public bool Dropped;
@@ -121,6 +127,7 @@ namespace Ember
         public string BossAlertText="",BossSkillCallout="";
         public BossTelegraph[] BossTelegraphs=Array.Empty<BossTelegraph>();
         public TransientLight[] Lights=Array.Empty<TransientLight>();
+        public CombatPopup[] Popups=Array.Empty<CombatPopup>();
     }
     [Serializable] public sealed class PendingMeteor
     {
@@ -272,6 +279,7 @@ namespace Ember
         readonly List<Projectile> projectiles=new List<Projectile>();
         readonly List<BossTelegraph> bossTelegraphs=new List<BossTelegraph>();
         readonly List<TransientLight> transientLights=new List<TransientLight>();
+        readonly List<CombatPopup> combatPopups=new List<CombatPopup>();
         readonly Dictionary<int,Command> commands=new Dictionary<int,Command>();
         readonly Dictionary<int,Queue<Command>> actions=new Dictionary<int,Queue<Command>>();
         readonly Dictionary<int,float> inputAt=new Dictionary<int,float>();
@@ -335,6 +343,7 @@ namespace Ember
             if(s.Projectiles==null)s.Projectiles=Array.Empty<Projectile>();
             if(s.BossTelegraphs==null)s.BossTelegraphs=Array.Empty<BossTelegraph>();
             if(s.Lights==null)s.Lights=Array.Empty<TransientLight>();
+            if(s.Popups==null)s.Popups=Array.Empty<CombatPopup>();
             if(s.NextBossEventTime<=0)s.NextBossEventTime=s.Time+BossEventInterval;
             if(data.Chest==null||data.Chest.Length!=5)data.Chest=new int[5];
             if(data.PendingMeteors==null)data.PendingMeteors=Array.Empty<PendingMeteor>();
@@ -628,6 +637,7 @@ namespace Ember
             UpdateMeteors(dt);
             UpdateBossTelegraphs(dt);
             UpdateTransientLights(dt);
+            for(int i=combatPopups.Count-1;i>=0;i--){combatPopups[i].Life-=dt;if(combatPopups[i].Life<=0)combatPopups.RemoveAt(i);}
             enemies.RemoveAll(e=>e.HP<=0);
             if(S.BossArenaActive&&!enemies.Any(e=>e.Id==S.BossId&&e.HP>0))EndBossArena();
             foreach(var s in structures)
@@ -745,6 +755,7 @@ namespace Ember
             }
             int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?1:0);
             int n=Math.Min(node.Amount,yield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
+            if(n>0)EmitPopup(node.Pos,3,n,(int)node.Resource,.95f);
             if(!dustOnly)
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
@@ -934,6 +945,7 @@ namespace Ember
                 var q=players.Where(q=>!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange&&(q.HP<q.MaxHP||q.Dread>0)).OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
                 if(q==null){p.CastTime=0;return;}
                 q.HP=Math.Min(q.MaxHP,q.HP+35);q.Dread=Math.Max(0,q.Dread-40);p.SkillCD=25;FX(p.Pos,q.Pos,2);
+                EmitPopup(q.Pos,2,35);
                 EmitSkillLight(p,q.Pos,followTargetPlayerId:q.Id);
             }
             if(p.Vessel==Vessel.BombTrapper)
@@ -1049,9 +1061,19 @@ namespace Ember
             }
             projectiles.RemoveAll(p=>p.Life<=0);
         }
+        void EmitPopup(V2 pos,int kind,int amount,int subKind=0,float duration=.88f)
+        {
+            if(amount<=0)return;
+            if(combatPopups.Count>=48)combatPopups.RemoveAt(0);
+            float jx=(float)(rng.NextDouble()-.5)*.65f;
+            float jy=.55f+(float)rng.NextDouble()*.22f;
+            combatPopups.Add(new CombatPopup{Id=nextId++,Kind=kind,Amount=amount,SubKind=subKind,Pos=pos+new V2(jx,jy),Life=duration,MaxLife=duration});
+        }
         void Damage(Enemy e,float damage)
         {
-            if(e.HP<=0)return;e.HP-=damage;if(e.HP<=0)
+            if(e.HP<=0)return;
+            if(damage>=1f)EmitPopup(e.Pos,0,Math.Max(1,(int)Math.Round(damage)));
+            e.HP-=damage;if(e.HP<=0)
             {
                 if(e.IsWorldBoss)
                 {
@@ -1075,7 +1097,9 @@ namespace Ember
             if(DebugEnabled&&DebugInvulnerable)return;
             if(p.Invulnerable>0)return;
             damage*=p.Stats.DamageTakenMultiplier;
+            float totalHit=damage;
             float absorbed=Math.Min(p.Shield,damage);p.Shield-=absorbed;damage-=absorbed;p.HP=Math.Max(0,p.HP-damage);p.Invulnerable=.5f;
+            if(totalHit>=1f)EmitPopup(p.Pos,1,Math.Max(1,(int)Math.Round(damage>0?damage:totalHit)));
             if(p.Ghost){Announce(" đã gục. Chờ hồi sinh tại hải đăng.",p.Name);if(p.Pet==(int)Pet.LittleGhost)structures.Add(new Structure{Id=nextId++,Kind=5,Pos=p.Pos,Life=999999});}
         }
         void SpawnEnemy()
@@ -1393,6 +1417,6 @@ namespace Ember
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();}
+        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();}
     }
 }

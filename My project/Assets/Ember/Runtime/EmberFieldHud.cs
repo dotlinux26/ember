@@ -364,6 +364,187 @@ namespace Ember
             UiLabel(new Rect(panel.x+16,panel.y+44,panel.width-32,26),detail,small);
         }
 
+        GUIStyle marqueeStyle,popupStyle,popupBigStyle;
+
+        void DrawMarqueeLabel(Rect rect,string text,GUIStyle baseStyle,float speed=44f)
+        {
+            if(string.IsNullOrEmpty(text))return;
+            if(marqueeStyle==null)
+            {
+                marqueeStyle=new GUIStyle(baseStyle)
+                {
+                    wordWrap=false,
+                    clipping=TextClipping.Clip,
+                    alignment=TextAnchor.MiddleLeft
+                };
+            }
+            marqueeStyle.fontSize=baseStyle.fontSize;
+            marqueeStyle.fontStyle=baseStyle.fontStyle;
+            marqueeStyle.normal.textColor=baseStyle.normal.textColor;
+
+            float textW=marqueeStyle.CalcSize(new GUIContent(text)).x;
+            if(textW<=rect.width-2f)
+            {
+                GUI.Label(rect,text,marqueeStyle);
+                return;
+            }
+            string loop=text+"   •   ";
+            float cycleW=marqueeStyle.CalcSize(new GUIContent(loop)).x;
+            if(cycleW<1f)cycleW=textW+32f;
+            float offset=(clock*speed)%cycleW;
+            GUI.BeginClip(rect);
+            GUI.Label(new Rect(-offset,0,cycleW+12f,rect.height),loop,marqueeStyle);
+            GUI.Label(new Rect(cycleW-offset,0,cycleW+12f,rect.height),loop,marqueeStyle);
+            if(cycleW<rect.width)GUI.Label(new Rect(cycleW*2f-offset,0,cycleW+12f,rect.height),loop,marqueeStyle);
+            GUI.EndClip();
+        }
+
+        string BuildHoldingInfo(Player p)
+        {
+            if(IsHoldingWeaponSlot(heldSlot))
+            {
+                Weapon activeW=WeaponForSlot(p,heldSlot);
+                bool ranged=activeW==Weapon.Crossbow||activeW==Weapon.LumenGun||activeW==Weapon.MirrorShield;
+                float range=WeaponRangeFor(activeW);
+                float baseDmg=activeW==Weapon.Stick?18f:activeW==Weapon.CrystalAxe?36f:25f;
+                float powerMult=p.Stats.PowerMultiplier*(p.Hat==(int)Hat.Jester&&p.Dread>=90?1.15f:1f);
+                int dmg=Mathf.Max(1,Mathf.RoundToInt(baseDmg*powerMult));
+                float cd=activeW==Weapon.ShadowBlades?.2f:activeW==Weapon.LumenGun?.32f:.5f;
+                string kind=heldSlot==8?L("Đào & Chặt","Mine & Chop"):ranged?L("Tầm xa","Ranged"):L("Cận chiến","Melee");
+                string info=InventorySlotName(p,heldSlot)+" · "+kind
+                    +" · "+L("ST ","DMG ")+dmg
+                    +" · "+L("Tầm ","Range ")+range.ToString("0.#")+L(" ô"," tiles")
+                    +" · "+L("Nhịp ","CD ")+cd.ToString("0.##")+"s";
+                int mag=Catalog.WeaponMagSize(activeW);
+                if(mag>0)
+                {
+                    int curAmmo=p.Ammo<0||p.AmmoWeapon!=activeW?mag:Mathf.Clamp(p.Ammo,0,mag);
+                    float reloadSec=Catalog.WeaponReloadTime(activeW);
+                    info+=p.Reloading
+                        ?" · "+L("Đang nạp ","Reloading ")+p.ReloadTimer.ToString("0.0")+"s"
+                        :" · "+L("Đạn ","Ammo ")+curAmmo+"/"+mag+" ("+L("nạp ","reload ")+reloadSec.ToString("0.#")+"s)";
+                }
+                if(activeW==Weapon.Pickaxe)
+                {
+                    int mineYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+1;
+                    info+=" · "+L("Đào +"+mineYield+" tài nguyên/nhát · Tốn 8 thể lực","Mines +"+mineYield+" yield/hit · 8 stamina");
+                }
+                else if(activeW==Weapon.CrystalAxe)
+                    info+=" · "+L("Đánh lan 1.6 ô & đẩy lùi mạnh · Tốn 8 thể lực","1.6-tile cleave & strong knockback · 8 stamina");
+                else if(activeW==Weapon.ShadowBlades)
+                    info+=" · "+L("Tốc đánh siêu nhanh · +0.5 Hoảng loạn/s trong tối","Ultra-fast strikes · +0.5 Dread/s in darkness");
+                else if(activeW==Weapon.MirrorShield)
+                    info+=" · "+L("Bắn tia phản xạ · Tốn 8 thể lực","Reflective bolt · 8 stamina");
+                else if(ranged)
+                    info+=" · "+L("Tự ngắm mục tiêu gần nhất & đẩy lùi","Auto-aims nearest target & knockback");
+                else
+                    info+=" · "+L("Đẩy lùi nhẹ · Không tốn thể lực","Light knockback · 0 stamina");
+                return info;
+            }
+            if(heldSlot==6)
+                return L("Tay không · Không đốt nhiên liệu đèn · Phím 1–4 đổi trang bị nhanh · [E] Tự cầm cuốc đào mỏ hoặc nhặt đồ",
+                    "Empty hands · Saves torch fuel · Keys 1–4 swap quick slots · [E] Auto-equip pickaxe to mine or loot");
+
+            int idx=Mathf.Clamp(heldSlot-2,0,3);
+            string itemName=(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[idx];
+            int count=p.Items[idx];
+            string qty=count>0?L("Còn x","x")+count:L("Đã hết","Empty");
+            string detail;
+            if(idx==0)detail=L("Cầm tay soi sáng (tốn nhiên liệu) · [F] Đặt xuống đất sáng 45s (mất 1 đuốc) · [L] Tắt/Bật lửa",
+                "Hold to light area (uses fuel) · [F] Place on ground for 45s (consumes 1) · [L] Toggle flame");
+            else if(idx==1)detail=L("[F] Ném pháo sáng soi rộng 8 ô trong 12s · Xua bóng tối & chống Hoảng loạn",
+                "[F] Deploy 8-tile flare for 12s · Banishes dark & prevents Dread");
+            else if(idx==2)detail=L("[F] Uống giảm ngay 40% Hoảng loạn để tránh ảo giác & đánh nhầm đồng đội",
+                "[F] Drink to calm 40% Dread and prevent hallucinations");
+            else detail=L("Đứng gần Hải Đăng bấm [F] để hồi sinh đồng đội gục với 50% HP & 3s bất tử",
+                "Stand near Beacon and press [F] to revive a downed ally at 50% HP");
+            return itemName+" ("+qty+") · "+detail;
+        }
+
+        void DrawEnemyHealthBars()
+        {
+            if(State?.Enemies==null||Event.current.type!=EventType.Repaint)return;
+            var focus=CameraTarget();
+            V2 center=focus?.Pos??new V2();
+            foreach(var e in State.Enemies)
+            {
+                if(e.HP<=0||e.IsWorldBoss||e.HP>=e.MaxHP-.1f||V2.Distance(e.Pos,center)>24f)continue;
+                Vector2 top=ScreenPos(e.Pos+new V2(0,e.Kind==EnemyKind.Boss?1.35f:e.Elite?1.05f:.85f));
+                float w=e.Kind==EnemyKind.Boss?56f:e.Elite?46f:36f;
+                float h=5f;
+                var rail=new Rect(Mathf.Round(top.x-w*.5f),Mathf.Round(top.y-8f),w,h);
+                Panel(new Rect(rail.x-1,rail.y-1,rail.width+2,rail.height+2),new Color(.04f,.02f,.06f,.85f));
+                Panel(rail,new Color(.24f,.10f,.14f,.92f));
+                float ratio=Mathf.Clamp01(e.HP/Mathf.Max(1f,e.MaxHP));
+                Panel(new Rect(rail.x,rail.y,Mathf.Round(rail.width*ratio),rail.height),new Color(.96f,.26f,.32f,.98f));
+            }
+        }
+
+        void DrawCombatPopups()
+        {
+            if(State?.Popups==null||State.Popups.Length==0||Event.current.type!=EventType.Repaint)return;
+            if(popupStyle==null)
+            {
+                popupStyle=new GUIStyle(small)
+                {
+                    alignment=TextAnchor.MiddleCenter,
+                    fontStyle=FontStyle.Bold,
+                    fontSize=13,
+                    wordWrap=false,
+                    clipping=TextClipping.Overflow
+                };
+                popupBigStyle=new GUIStyle(popupStyle){fontSize=16};
+            }
+            string[] resVi=Catalog.ResourceNames;
+            string[] resEn={"Dust","Core","Umbra","Wood","Ore"};
+            foreach(var pop in State.Popups)
+            {
+                if(pop.Life<=0||pop.MaxLife<=0)continue;
+                float progress=1f-Mathf.Clamp01(pop.Life/pop.MaxLife);
+                float rise=Mathf.Pow(progress,.65f)*1.15f;
+                float alpha=Mathf.Clamp01(pop.Life/Mathf.Min(.32f,pop.MaxLife*.4f));
+                Vector2 pt=ScreenPos(pop.Pos+new V2(0,rise));
+
+                string text;
+                Color tint;
+                bool big=false;
+                if(pop.Kind==0)
+                {
+                    text="-"+pop.Amount;
+                    big=pop.Amount>=30;
+                    tint=big?new Color(1f,.66f,.18f,alpha):new Color(1f,.94f,.62f,alpha);
+                }
+                else if(pop.Kind==1)
+                {
+                    text="-"+pop.Amount;
+                    big=pop.Amount>=22;
+                    tint=new Color(1f,.26f,.32f,alpha);
+                }
+                else if(pop.Kind==2)
+                {
+                    text="+"+pop.Amount+" HP";
+                    tint=new Color(.34f,1f,.66f,alpha);
+                }
+                else
+                {
+                    int rIdx=Mathf.Clamp(pop.SubKind,0,resVi.Length-1);
+                    string resName=(EmberLanguage.English?resEn:resVi)[rIdx];
+                    text="+"+pop.Amount+" "+resName;
+                    tint=rIdx==1?new Color(.42f,.96f,1f,alpha):rIdx==2?new Color(.82f,.58f,1f,alpha):new Color(1f,.86f,.34f,alpha);
+                }
+
+                var style=big?popupBigStyle:popupStyle;
+                var box=new Rect(Mathf.Round(pt.x-72f),Mathf.Round(pt.y-12f),144f,24f);
+                style.normal.textColor=new Color(0,0,0,.85f*alpha);
+                GUI.Label(new Rect(box.x-1,box.y,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x+1,box.y,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x,box.y-1,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x,box.y+1,box.width,box.height),text,style);
+                style.normal.textColor=tint;
+                GUI.Label(box,text,style);
+            }
+        }
+
         void DrawFieldHud(Player p)
         {
             if(p.Ghost){DrawSpectateHud();return;}
@@ -406,37 +587,18 @@ namespace Ember
 
             var itemChip=new Rect(x,y-36,width,32);
             PixelPanel(itemChip,FieldPaper);
-            string itemName=(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[selectedItem];
-            string itemStatus=p.Items[selectedItem]==0?L("Hết đồ","Empty"):
-                !CanUseSelectedItem(p)&&selectedItem==3?L("Cần hải đăng và đồng đội gục","Requires beacon and a downed teammate"):
-                L("Đã chọn","Selected");
-            string holdingLabel;
-            int activeMag=0;
-            if(IsHoldingWeaponSlot(heldSlot))
-            {
-                Weapon activeW=WeaponForSlot(p,heldSlot);
-                bool ranged=activeW==Weapon.Crossbow||activeW==Weapon.LumenGun||activeW==Weapon.MirrorShield;
-                float range=WeaponRangeFor(activeW);
-                string kind=heldSlot==8?L("Đào/Chặt","Mine/Chop"):ranged?L("Tầm xa","Ranged"):L("Cận chiến","Melee");
-                holdingLabel=InventorySlotName(p,heldSlot)+" · "+kind+" ("+range.ToString("0.#")+L(" ô)"," tiles)");
-                activeMag=Catalog.WeaponMagSize(activeW);
-                if(activeMag>0)
-                {
-                    int curAmmo=p.Ammo<0||p.AmmoWeapon!=activeW?activeMag:Mathf.Clamp(p.Ammo,0,activeMag);
-                    holdingLabel+=p.Reloading
-                        ?" · "+L("Đang nạp ","Reloading ")+p.ReloadTimer.ToString("0.0")+"s"
-                        :" · "+L("Đạn ","Ammo ")+curAmmo+"/"+activeMag;
-                }
-            }
-            else holdingLabel=heldSlot==6?L("Tay không","Empty hands"):itemName+" · "+itemStatus;
-            UiLabel(new Rect(x+8,itemChip.y+2,width-110,22),holdingLabel,small);
-            if(IsHoldingWeaponSlot(heldSlot)&&activeMag>0&&!p.Reloading&&p.CurrentAmmo<activeMag)
+            int activeMag=IsHoldingWeaponSlot(heldSlot)?Catalog.WeaponMagSize(WeaponForSlot(p,heldSlot)):0;
+            bool showReloadBtn=IsHoldingWeaponSlot(heldSlot)&&activeMag>0&&!p.Reloading&&p.CurrentAmmo<activeMag;
+            bool showUseBtn=!showReloadBtn&&heldSlot>=2&&heldSlot<=5;
+            float rightReserve=(showReloadBtn||showUseBtn)?106f:16f;
+            DrawMarqueeLabel(new Rect(itemChip.x+8,itemChip.y+4,Mathf.Max(40,itemChip.width-rightReserve),24),BuildHoldingInfo(p),small);
+            if(showReloadBtn)
             {
                 GUI.enabled=!debugOpen;
                 if(UiButton(new Rect(itemChip.xMax-96,itemChip.y+2,92,28),L("Nạp [X]","Reload [X]")))intent.Reload=true;
                 GUI.enabled=true;
             }
-            else if(heldSlot>=2&&heldSlot<=5)
+            else if(showUseBtn)
             {
                 GUI.enabled=CanUseSelectedItem(p)&&!debugOpen;
                 if(UiButton(new Rect(itemChip.xMax-96,itemChip.y+2,92,28),L("Dùng [U]","Use [U]")))intent.Use=selectedItem;
@@ -446,7 +608,7 @@ namespace Ember
             {
                 var rangeChip=new Rect(x,y-63,width,25);
                 PixelPanel(rangeChip,FieldPaper);
-                UiLabel(new Rect(rangeChip.x+9,rangeChip.y+2,width-18,22),SkillRangeText(p.Vessel),small);
+                DrawMarqueeLabel(new Rect(rangeChip.x+9,rangeChip.y+2,rangeChip.width-18,21),SkillRangeText(p.Vessel)+" · "+EmberLanguage.Text(Catalog.VesselDescriptions[(int)p.Vessel]),small);
             }
             int count=p.Vessel==Vessel.Wanderer?4:5;
             float cell=Mathf.Min(72,(width-12)/count);

@@ -557,6 +557,8 @@ namespace Ember
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
+            DrawEnemyHealthBars();
+            DrawCombatPopups();
             foreach(var q in State.Players)
             {
                 if(q.Extracted||q.Ghost||(!p.Ghost&&p.Mad&&q.Id!=p.Id))continue;

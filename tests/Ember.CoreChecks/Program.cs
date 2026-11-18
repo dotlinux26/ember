@@ -348,6 +348,23 @@ wardenLightWorld.Tick();
 var startLightPos=wardenLightWorld.S.Lights[0].Pos;
 for(int k=0;k<10;k++){wardenLightWorld.Submit(1,new Command{X=1,Y=0});wardenLightWorld.Tick();}
 Check(wardenLightWorld.S.Lights.Length==1&&V2.Distance(wardenLightWorld.S.Lights[0].Pos,wardenLight.Pos)<.05f&&V2.Distance(wardenLightWorld.S.Lights[0].Pos,startLightPos)>.2f,"caster-anchored skill light tracks moving player smoothly");
+
+var popupWorld=new EmberWorld(88){DebugEnabled=true,DebugNoEnemies=true};
+var popPlayer=popupWorld.AddPlayer(1,"Tester",Vessel.Wanderer);
+popupWorld.StartRun();
+popupWorld.DebugAction("enemy",1);
+var popEnemy=popupWorld.S.Enemies.First(e=>e.Kind==EnemyKind.Shade);
+popPlayer.Pos=popEnemy.Pos-new V2(1,0);
+popupWorld.Submit(1,new Command{Equip=1,Attack=true});
+popupWorld.Tick();
+Check(popupWorld.S.Popups.Any(p=>p.Kind==0&&p.Amount>0),"attacking an enemy spawns a floating damage popup");
+var popNode=popupWorld.S.Nodes.OrderBy(n=>V2.Distance(n.Pos,popPlayer.Pos)).First();
+popPlayer.Pos=popNode.Pos-new V2(1,0);
+popupWorld.Submit(1,new Command{Interact=true});
+popupWorld.Tick();
+Check(popupWorld.S.Popups.Any(p=>p.Kind==3&&p.Amount>0),"mining a node spawns a floating harvest popup");
+for(int k=0;k<40;k++)popupWorld.Tick();
+Check(popupWorld.S.Popups.Length==0,"combat and harvest popups expire automatically");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random
