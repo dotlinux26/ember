@@ -44,3 +44,7 @@ Thumbs.db
 Desktop.ini
 *.log
 *.pid
+
+# External reference downloads / scrap assets (keep git clean)
+/art/references/
+/scratch/

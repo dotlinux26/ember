@@ -467,7 +467,7 @@ namespace Ember
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -782,12 +782,20 @@ namespace Ember
                 float r=Mathf.Sqrt(dx*dx+dy*dy);
                 int hash=((x*374761393)^(y*668265263))&0x7FFFFFFF;
                 string treeArt;
-                if(r>=size*.37f)treeArt=(hash%5==0)?"tree_dead":"tree_void";
-                else if(r>=size*.22f)treeArt=(hash%4==0)?"tree_pine":(hash%7==0)?"bush_wide":"tree_dead";
+                if(r>=size*.37f)
+                {
+                    int m=hash%8;
+                    treeArt=(m<=2)?"tree_void":(m<=4)?"tree_dead":(m==5)?"tree_snow":"rock_large";
+                }
+                else if(r>=size*.22f)
+                {
+                    int m=hash%8;
+                    treeArt=(m<=2)?"tree_pine":(m==3)?"log_fallen":(m==4)?"bush_wide":(m==5)?"tree_palm":"tree_dead";
+                }
                 else
                 {
-                    int m=hash%12;
-                    treeArt=(m<=3)?"tree_oak":(m<=5)?"tree_autumn":(m==6)?"tree_pine":(m==7)?"tree_stump":(m==8)?"bush_round":(m==9)?"bush_wide":"rock_large";
+                    int m=hash%16;
+                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_apple":(m<=6)?"tree_autumn":(m==7)?"tree_pine":(m==8)?"tree_stump":(m==9)?"log_fallen":(m==10)?"bush_round":(m<=12)?"bush_wide":"rock_large";
                 }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
@@ -798,7 +806,7 @@ namespace Ember
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
-                float scale=treeArt=="rock_large"?1.15f:treeArt=="tree_stump"?1.0f:treeArt.StartsWith("bush")?1.05f:1.35f;
+                float scale=treeArt=="rock_large"?1.15f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.05f:1.35f;
                 tree.transform.localScale=Vector3.one*scale;
                 tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
                 tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
