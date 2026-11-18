@@ -244,7 +244,7 @@ namespace Ember
                 if(inventoryOpen)
                 {
                     if(pendingQuickAssign>0)pendingQuickAssign=0;
-                    else {inventoryOpen=false;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}
+                    else {inventoryOpen=false;dragFromCell=-1;draggingItem=false;}
                 }
                 else if(craftOpen)craftOpen=false;
                 else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
@@ -259,7 +259,7 @@ namespace Ember
                 if(Press(Key.D)||Press(Key.RightArrow)||Press(Key.E)||Press(Key.Space))CycleSpectate(1);
                 return;
             }
-            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}craftOpen=false;path.Clear();}
+            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}craftOpen=false;path.Clear();}
             if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;pendingQuickAssign=0;}
             if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
             if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}

@@ -418,7 +418,7 @@ namespace Ember
             if(GUI.Button(rect,new GUIContent("",L("Tạm dừng [Esc]","Pause [Esc]")),GUIStyle.none))
             {
                 inventoryOpen=false;craftOpen=false;pendingQuickAssign=0;
-                dragFromCell=-1;dragFromQuick=-1;draggingItem=false;
+                dragFromCell=-1;draggingItem=false;
                 pauseConfirm=false;pauseSettings=false;
                 path.Clear();
                 menu=true;

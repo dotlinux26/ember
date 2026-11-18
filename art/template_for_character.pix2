@@ -1,0 +1,679 @@
+@pix2 1.1
+
+@meta
+  title: "Silver Wanderer / approved concept reconstruction"
+  author: "User"
+  version: "1.1"
+  color_mode: "RGBA"
+  coordinate_origin: "top-left"
+
+@grid
+  columns: 8
+  rows: 4
+  default_cell: 48x48
+  background: none
+
+@palette
+  1: #09080e
+  2: #252330
+  3: #3a374b
+  4: #514c64
+  5: #aaa0b7
+  6: #d1c8da
+  7: #f8f3f6
+  8: #ffceb4
+  9: #ed9897
+  10: #ffd8bd
+  11: #d8546e
+  12: #a12543
+  13: #601630
+  14: #bb2634
+  15: #51617a
+  16: #303b50
+  17: #eae8ed
+  18: #64cde8
+  19: #9bd9e8
+
+@cell cell_0_0
+  name: "idle right 0"
+  direction: right
+  frame: 0
+  grid_pos: 0,0
+@layer view_right_hat_coat_layer
+  cell: cell_0_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat
+  cell: cell_0_0
+  parent: view_right_hat_coat_layer
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+@layer view_right_skin_layer
+  cell: cell_0_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin
+  cell: cell_0_0
+  parent: view_right_skin_layer
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+@layer view_right_outline_layer
+  cell: cell_0_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline
+  cell: cell_0_0
+  parent: view_right_outline_layer
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+@layer view_right_silver_hair_metal_layer
+  cell: cell_0_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal
+  cell: cell_0_0
+  parent: view_right_silver_hair_metal_layer
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+@layer view_right_wine_accents_layer
+  cell: cell_0_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents
+  cell: cell_0_0
+  parent: view_right_wine_accents_layer
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+
+@cell cell_0_1
+  name: "idle right 1"
+  frame: 1
+  grid_pos: 0,1
+@layer layer_legacy_cell_0_1
+  cell: cell_0_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1
+  cell: cell_0_1
+  parent: layer_legacy_cell_0_1
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_0_2
+  name: "idle right 2"
+  frame: 2
+  grid_pos: 0,2
+@layer layer_legacy_cell_0_2
+  cell: cell_0_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2
+  cell: cell_0_2
+  parent: layer_legacy_cell_0_2
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_0_3
+  name: "idle right 3"
+  frame: 3
+  grid_pos: 0,3
+@layer layer_legacy_cell_0_3
+  cell: cell_0_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3
+  cell: cell_0_3
+  parent: layer_legacy_cell_0_3
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cell_0_4
+  name: "idle right 4"
+  frame: 4
+  grid_pos: 0,4
+
+@cell cell_0_5
+  name: "idle right 5"
+  frame: 5
+  grid_pos: 0,5
+
+@cell cell_0_6
+  name: "idle right 6"
+  frame: 6
+  grid_pos: 0,6
+
+@cell cell_0_7
+  name: "idle right 7"
+  frame: 7
+  grid_pos: 0,7
+
+@cell cell_1_0
+  name: "walk_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 1,0
+@layer view_right_hat_coat_layer_copy
+  cell: cell_1_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy
+  cell: cell_1_0
+  parent: view_right_hat_coat_layer_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+@layer view_right_skin_layer_copy
+  cell: cell_1_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy
+  cell: cell_1_0
+  parent: view_right_skin_layer_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+@layer view_right_outline_layer_copy
+  cell: cell_1_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy
+  cell: cell_1_0
+  parent: view_right_outline_layer_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+@layer view_right_silver_hair_metal_layer_copy
+  cell: cell_1_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy
+  cell: cell_1_0
+  parent: view_right_silver_hair_metal_layer_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+@layer view_right_wine_accents_layer_copy
+  cell: cell_1_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy
+  cell: cell_1_0
+  parent: view_right_wine_accents_layer_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+
+@cell cell_1_1
+  name: "walk_right - Frame 1"
+  frame: 1
+  grid_pos: 1,1
+@layer layer_legacy_cell_0_1_copy
+  cell: cell_1_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy
+  cell: cell_1_1
+  parent: layer_legacy_cell_0_1_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_1_2
+  name: "walk_right - Frame 2"
+  frame: 2
+  grid_pos: 1,2
+@layer layer_legacy_cell_0_2_copy
+  cell: cell_1_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy
+  cell: cell_1_2
+  parent: layer_legacy_cell_0_2_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_1_3
+  name: "walk_right - Frame 3"
+  frame: 3
+  grid_pos: 1,3
+@layer layer_legacy_cell_0_4_copy_copy_2
+  cell: cell_1_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_4_copy_copy_2
+  cell: cell_1_3
+  parent: layer_legacy_cell_0_4_copy_copy_2
+  name: "idle right 4"
+  visible: true
+  locked: false
+
+@cell cell_1_4
+  name: "walk_right - Frame 4"
+  frame: 4
+  grid_pos: 1,4
+
+@cell cell_1_5
+  name: "walk_right - Frame 5"
+  frame: 5
+  grid_pos: 1,5
+
+@cell cell_1_6
+  name: "walk_right - Frame 6"
+  frame: 6
+  grid_pos: 1,6
+
+@cell cell_1_7
+  name: "walk_right - Frame 7"
+  frame: 7
+  grid_pos: 1,7
+
+@cell cell_2_0
+  name: "cast_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 2,0
+@layer view_right_hat_coat_layer_copy_copy
+  cell: cell_2_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy_copy
+  cell: cell_2_0
+  parent: view_right_hat_coat_layer_copy_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+@layer view_right_skin_layer_copy_copy
+  cell: cell_2_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy_copy
+  cell: cell_2_0
+  parent: view_right_skin_layer_copy_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+@layer view_right_outline_layer_copy_copy
+  cell: cell_2_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy_copy
+  cell: cell_2_0
+  parent: view_right_outline_layer_copy_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+@layer view_right_silver_hair_metal_layer_copy_copy
+  cell: cell_2_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy_copy
+  cell: cell_2_0
+  parent: view_right_silver_hair_metal_layer_copy_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+@layer view_right_wine_accents_layer_copy_copy
+  cell: cell_2_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy_copy
+  cell: cell_2_0
+  parent: view_right_wine_accents_layer_copy_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+
+@cell cell_2_1
+  name: "cast_right - Frame 1"
+  frame: 1
+  grid_pos: 2,1
+@layer layer_legacy_cell_0_1_copy_copy
+  cell: cell_2_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy_copy
+  cell: cell_2_1
+  parent: layer_legacy_cell_0_1_copy_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_2_2
+  name: "cast_right - Frame 2"
+  frame: 2
+  grid_pos: 2,2
+@layer layer_legacy_cell_0_2_copy_copy
+  cell: cell_2_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy_copy
+  cell: cell_2_2
+  parent: layer_legacy_cell_0_2_copy_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_2_3
+  name: "cast_right - Frame 3"
+  frame: 3
+  grid_pos: 2,3
+@layer layer_legacy_cell_0_3_copy_copy
+  cell: cell_2_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3_copy_copy
+  cell: cell_2_3
+  parent: layer_legacy_cell_0_3_copy_copy
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cell_2_4
+  name: "cast_right - Frame 4"
+  frame: 4
+  grid_pos: 2,4
+
+@cell cell_2_5
+  name: "cast_right - Frame 5"
+  frame: 5
+  grid_pos: 2,5
+
+@cell cell_2_6
+  name: "cast_right - Frame 6"
+  frame: 6
+  grid_pos: 2,6
+
+@cell cell_2_7
+  name: "cast_right - Frame 7"
+  frame: 7
+  grid_pos: 2,7
+
+@cell cell_3_0
+  name: "hurt_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 3,0
+@layer view_right_hat_coat_layer_copy_copy_copy
+  cell: cell_3_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy_copy_copy
+  cell: cell_3_0
+  parent: view_right_hat_coat_layer_copy_copy_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+@layer view_right_skin_layer_copy_copy_copy
+  cell: cell_3_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy_copy_copy
+  cell: cell_3_0
+  parent: view_right_skin_layer_copy_copy_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+@layer view_right_outline_layer_copy_copy_copy
+  cell: cell_3_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy_copy_copy
+  cell: cell_3_0
+  parent: view_right_outline_layer_copy_copy_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+@layer view_right_silver_hair_metal_layer_copy_copy_copy
+  cell: cell_3_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy_copy_copy
+  cell: cell_3_0
+  parent: view_right_silver_hair_metal_layer_copy_copy_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+@layer view_right_wine_accents_layer_copy_copy_copy
+  cell: cell_3_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy_copy_copy
+  cell: cell_3_0
+  parent: view_right_wine_accents_layer_copy_copy_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+
+@cell cell_3_1
+  name: "hurt_right - Frame 1"
+  frame: 1
+  grid_pos: 3,1
+@layer layer_legacy_cell_0_1_copy_copy_copy
+  cell: cell_3_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy_copy_copy
+  cell: cell_3_1
+  parent: layer_legacy_cell_0_1_copy_copy_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_3_2
+  name: "hurt_right - Frame 2"
+  frame: 2
+  grid_pos: 3,2
+@layer layer_legacy_cell_0_2_copy_copy_copy
+  cell: cell_3_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy_copy_copy
+  cell: cell_3_2
+  parent: layer_legacy_cell_0_2_copy_copy_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_3_3
+  name: "hurt_right - Frame 3"
+  frame: 3
+  grid_pos: 3,3
+@layer layer_legacy_cell_0_3_copy_copy_copy
+  cell: cell_3_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3_copy_copy_copy
+  cell: cell_3_3
+  parent: layer_legacy_cell_0_3_copy_copy_copy
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cell_3_4
+  name: "hurt_right - Frame 4"
+  frame: 4
+  grid_pos: 3,4
+
+@cell cell_3_5
+  name: "hurt_right - Frame 5"
+  frame: 5
+  grid_pos: 3,5
+
+@cell cell_3_6
+  name: "hurt_right - Frame 6"
+  frame: 6
+  grid_pos: 3,6
+
+@cell cell_3_7
+  name: "hurt_right - Frame 7"
+  frame: 7
+  grid_pos: 3,7
+
+@animation idle_right
+  name: "idle_right"
+  frames: [cell_0_0, cell_0_1, cell_0_2, cell_0_3, cell_0_4, cell_0_5, cell_0_6, cell_0_7]
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation idle_left
+  name: "idle_left"
+  frames: []
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation walk_right
+  name: "walk_right"
+  frames: [cell_1_0, cell_1_1, cell_1_2, cell_1_3, cell_1_4, cell_1_5, cell_1_6, cell_1_7]
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation walk_left
+  name: "walk_left"
+  frames: []
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation cast_right
+  name: "cast_right"
+  frames: [cell_2_0, cell_2_1, cell_2_2, cell_2_3, cell_2_4, cell_2_5, cell_2_6, cell_2_7]
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation hurt_right
+  name: "hurt_right"
+  frames: [cell_3_0, cell_3_1, cell_3_2, cell_3_3, cell_3_4, cell_3_5, cell_3_6, cell_3_7]
+  fps: 6
+  loop: true
+  mode: loop
+
+@end
