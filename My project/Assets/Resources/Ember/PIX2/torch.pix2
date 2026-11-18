@@ -1,0 +1,95 @@
+@pix2 1.1
+
+@meta
+  title: "Ancient Ember Torch"
+  author: "NOIRADIX Studio v2.1.0"
+  version: "1.1"
+  color_mode: "RGBA"
+  coordinate_origin: "top-left"
+
+@grid
+  columns: 1
+  rows: 1
+  default_cell: 32x32
+  background: none
+
+@palette
+  1: #0a0812  ; Dark contour
+  2: #241812  ; Timber shadow
+  3: #422d20  ; Wood midtone
+  4: #664632  ; Wood highlight
+  5: #282e3c  ; Iron band
+  6: #4d576e  ; Iron highlight
+  7: #7a2818  ; Ember deep flame
+  8: #d4481e  ; Vibrant flame orange
+  9: #f89624  ; Flame golden core
+  10: #ffe87a ; White-hot spark core
+
+@cell cell_0_0
+  name: "Ember Torch"
+  direction: down
+  frame: 0
+  grid_pos: 0,0
+  @layer post_layer
+    cell: cell_0_0
+    name: "Wooden Post & Iron"
+    opacity: 1.0
+    blend: normal
+    @group post_grp
+      cell: cell_0_0
+      parent: post_layer
+      name: "Post Group"
+      tags: [post, wood]
+    @region reg_post
+      cell: cell_0_0
+      parent: post_grp
+      name: "Carved Stake"
+      tags: [wood]
+      p 14,14 1 p 15,14 4 p 16,14 3 p 17,14 1
+      p 14,15 1 p 15,15 4 p 16,15 3 p 17,15 1
+      p 14,16 1 p 15,16 4 p 16,16 3 p 17,16 1
+      p 14,17 1 p 15,17 4 p 16,17 3 p 17,17 1
+      p 14,18 1 p 15,18 4 p 16,18 3 p 17,18 1
+      p 14,19 1 p 15,19 4 p 16,19 3 p 17,19 1
+      p 14,20 1 p 15,20 4 p 16,20 3 p 17,20 1 p 13,20 1 p 18,20 1 p 14,20 6 p 15,20 6 p 16,20 5 p 17,20 5
+      p 14,21 1 p 15,21 4 p 16,21 3 p 17,21 1
+      p 14,22 1 p 15,22 4 p 16,22 3 p 17,22 1
+      p 14,23 1 p 15,23 4 p 16,23 3 p 17,23 1
+      p 14,24 1 p 15,24 4 p 16,24 3 p 17,24 1
+      p 14,25 1 p 15,25 4 p 16,25 3 p 17,25 1
+      p 14,26 1 p 15,26 4 p 16,26 3 p 17,26 1 p 13,26 1 p 18,26 1 p 14,26 6 p 15,26 6 p 16,26 5 p 17,26 5
+      p 14,27 1 p 15,27 4 p 16,27 3 p 17,27 1
+      p 14,28 1 p 15,28 4 p 16,28 3 p 17,28 1
+      p 14,29 1 p 15,29 4 p 16,29 3 p 17,29 1
+      p 14,30 1 p 15,30 1 p 16,30 1 p 17,30 1
+
+  @layer flame_layer
+    cell: cell_0_0
+    name: "Crackling Ember Flame"
+    opacity: 1.0
+    blend: normal
+    @group flame_grp
+      cell: cell_0_0
+      parent: flame_layer
+      name: "Flame Group"
+      tags: [fire, flame]
+    @region reg_flame
+      cell: cell_0_0
+      parent: flame_grp
+      name: "Ember Flame"
+      tags: [fire]
+      p 11,11 1 p 12,11 6 p 13,11 6 p 14,11 6 p 15,11 5 p 16,11 5 p 17,11 5 p 18,11 5 p 19,11 5 p 20,11 1
+      p 11,12 1 p 12,12 6 p 13,12 6 p 14,12 6 p 15,12 5 p 16,12 5 p 17,12 5 p 18,12 5 p 19,12 5 p 20,12 1
+      p 11,13 1 p 12,13 1 p 13,13 1 p 14,13 1 p 15,13 1 p 16,13 1 p 17,13 1 p 18,13 1 p 19,13 1 p 20,13 1
+      p 15,2 9 p 16,2 10
+      p 15,3 7 p 16,3 7 p 14,3 8 p 17,3 9
+      p 13,4 7 p 14,4 8 p 15,4 8 p 16,4 8 p 17,4 8 p 18,4 7
+      p 13,5 8 p 14,5 9 p 15,5 9 p 16,5 9 p 17,5 9 p 18,5 8
+      p 12,6 7 p 13,6 8 p 14,6 9 p 15,6 10 p 16,6 10 p 17,6 9 p 18,6 8 p 19,6 7
+      p 12,7 7 p 13,7 8 p 14,7 9 p 15,7 10 p 16,7 10 p 17,7 9 p 18,7 8 p 19,7 7
+      p 12,8 7 p 13,8 8 p 14,8 9 p 15,8 10 p 16,8 10 p 17,8 9 p 18,8 8 p 19,8 7
+      p 13,9 8 p 14,9 9 p 15,9 9 p 16,9 9 p 17,9 9 p 18,9 8
+      p 13,10 7 p 14,10 8 p 15,10 8 p 16,10 8 p 17,10 8 p 18,10 7
+
+
+@end

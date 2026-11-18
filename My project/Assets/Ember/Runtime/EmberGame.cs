@@ -467,7 +467,7 @@ namespace Ember
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name=="beacon";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name=="beacon"||name.StartsWith("tree")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -546,7 +546,10 @@ namespace Ember
             float viewHalfH=cam.orthographicSize+2.4f;
             float viewHalfW=cam.orthographicSize*cam.aspect+2.4f;
             if(Mathf.Abs(center.X)<=viewHalfW+3f&&Mathf.Abs(center.Y)<=viewHalfH+3f)
-                Put("beacon",Primitive("beacon"),new V2(),State.BeaconHP>0&&State.Charge>=State.ChargeTarget?Color.white:Color.gray,3);
+            {
+                var br=Put("beacon",Primitive("beacon"),new V2(0,-.15f),State.BeaconHP>0?Color.white:new Color(.65f,.65f,.72f),1.8f);
+                if(emissionMaterial!=null)br.sharedMaterial=emissionMaterial;
+            }
             if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
             if(State.Phase==Phase.Extraction&&Mathf.Abs(center.X)<=viewHalfW+4f&&Mathf.Abs(center.Y)<=viewHalfH+4f)
                 Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,-20);
@@ -664,14 +667,60 @@ namespace Ember
                 var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
             }
             byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
-            // One texture for all floor tiles; point sampling preserves 8px terrain.
-            int px=size*4;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];var random=new System.Random(State.Seed);
-            Color[] bases={new Color(.3f,.42f,.36f),new Color(.26f,.36f,.4f),new Color(.34f,.25f,.42f),new Color(.12f,.19f,.19f),Color.black};
-            for(int y=0;y<px;y++)for(int x=0;x<px;x++)
+            int px=size*8;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];
+            for(int ty=0;ty<size;ty++)for(int tx=0;tx<size;tx++)
             {
-                byte tile=tiles[(y/4)*size+x/4];Color c=bases[tile];float noise=tile==4?0:(float)random.NextDouble()*.045f;bool edge=x%4==0||y%4==0;colors[y*px+x]=c*(edge?.83f:1)+new Color(noise,noise,noise,0);
+                byte tile=tiles[ty*size+tx];
+                int dx=tx-size/2,dy=ty-size/2;
+                int dist2=dx*dx+dy*dy;
+                bool isSanctuary=dist2<=38;
+                for(int ly=0;ly<8;ly++)for(int lx=0;lx<8;lx++)
+                {
+                    int gx=tx*8+lx,gy=ty*8+ly;
+                    int n=(gx*374761393+gy*668265263)^0x5bf03635;
+                    n=((n^(n>>13))*1274126177);
+                    int h=(n^(n>>16))&0x7FFFFFFF;
+                    Color32 col;
+                    if(isSanctuary)
+                    {
+                        if(lx==0||ly==0)col=new Color32(22,19,30,255);
+                        else if(lx==1||ly==1)col=new Color32(58,52,74,255);
+                        else if(dist2>8&&(h%31==0))col=new Color32(45,215,245,255);
+                        else col=new Color32(40,36,52,255);
+                    }
+                    else if(tile==4)col=new Color32(4,3,7,255);
+                    else if(tile==3)col=(h%5==0)?new Color32(34,24,40,255):new Color32(22,16,28,255);
+                    else if(tile==0)
+                    {
+                        int m=h%64;
+                        if(m<3)col=new Color32(120,235,215,255);
+                        else if(m<14)col=new Color32(56,92,76,255);
+                        else if(m<30)col=new Color32(40,64,52,255);
+                        else if(m<36)col=new Color32(50,46,60,255);
+                        else col=new Color32(26,38,32,255);
+                    }
+                    else if(tile==1)
+                    {
+                        int m=h%64;
+                        if(m<2)col=new Color32(65,235,160,255);
+                        else if(m<12)col=new Color32(48,88,72,255);
+                        else if(m<26)col=new Color32(34,60,50,255);
+                        else if(m<38)col=new Color32(15,25,25,255);
+                        else col=new Color32(22,34,32,255);
+                    }
+                    else
+                    {
+                        int m=h%64;
+                        if(m<2)col=new Color32(205,170,255,255);
+                        else if(m<8)col=new Color32(145,80,230,255);
+                        else if(m<20)col=new Color32(95,50,155,255);
+                        else if(m<36)col=new Color32(46,28,70,255);
+                        else col=new Color32(18,12,28,255);
+                    }
+                    colors[gy*px+gx]=col;
+                }
             }
-            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),4);floor.sortingOrder=-100;
+            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),8);floor.sortingOrder=-100;
         }
         readonly HashSet<int> keepTrees=new HashSet<int>();
         readonly List<int> dropTrees=new List<int>();
@@ -683,12 +732,22 @@ namespace Ember
             int halfY=Mathf.CeilToInt(cam.orthographicSize)+6;
             int cx=chunk.x*4+size/2,cy=chunk.y*4+size/2;
             keepTrees.Clear();dropTrees.Clear();
-            var treeSprite=Primitive("tree");
             int yMin=Mathf.Max(3,cy-halfY),yMax=Mathf.Min(size-3,cy+halfY+2);
             int xMin=Mathf.Max(3,cx-halfX),xMax=Mathf.Min(size-3,cx+halfX+2);
             for(int y=yMin;y<yMax;y++)for(int x=xMin;x<xMax;x++)if(currentTiles[y*size+x]==3)
             {
                 int key=y*size+x;keepTrees.Add(key);if(visibleTrees.ContainsKey(key))continue;
+                float dx=x-size/2f,dy=y-size/2f;
+                float r=Mathf.Sqrt(dx*dx+dy*dy);
+                int hash=((x*374761393)^(y*668265263))&0x7FFFFFFF;
+                string treeArt;
+                if(r>=size*.37f)treeArt=(hash%5==0)?"tree_dead":"tree_void";
+                else if(r>=size*.22f)treeArt=(hash%4==0)?"tree_pine":"tree_dead";
+                else
+                {
+                    int m=hash%6;
+                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_autumn":"tree_pine";
+                }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
                 else
@@ -696,11 +755,11 @@ namespace Ember
                     tree=new GameObject("Ancient tree").AddComponent<SpriteRenderer>();
                     tree.transform.SetParent(mapRoot.transform);
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
-                    tree.sprite=treeSprite;
-                    tree.transform.localScale=new Vector3(1.5f,2,1);
                 }
-                tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.75f,0);
-                tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.5f)*10);
+                tree.sprite=Primitive(treeArt);
+                tree.transform.localScale=Vector3.one*1.35f;
+                tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
+                tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
             }
             foreach(var kv in visibleTrees)if(!keepTrees.Contains(kv.Key))dropTrees.Add(kv.Key);
