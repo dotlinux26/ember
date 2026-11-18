@@ -73,6 +73,16 @@ namespace Ember
                 handPivotEditorOpen=!handPivotEditorOpen;
                 if(handPivotEditorOpen&&Local!=null)handPivotSelected=(int)Local.Vessel;
             }
+            if((Application.isEditor||Debug.isDebugBuild)&&host&&World!=null&&State!=null&&State.Phase!=Phase.Sanctuary&&State.Phase!=Phase.Won&&State.Phase!=Phase.Lost)
+            {
+                GUILayout.Label(L("Test Boss Sự Kiện (không cần chờ 10 phút):","Test World Boss Event (instant spawn):"));
+                GUILayout.BeginHorizontal();
+                if(GUILayout.Button(L("Boss Random","Random Boss"))){World.TriggerWorldBossEvent(null,localId);debugOpen=false;}
+                if(GUILayout.Button(L("1 · Hư Không","1 · Void"))){World.TriggerWorldBossEvent((int)BossType.VoidSovereign,localId);debugOpen=false;}
+                if(GUILayout.Button(L("2 · Tro Tàn","2 · Cinder"))){World.TriggerWorldBossEvent((int)BossType.CinderBehemoth,localId);debugOpen=false;}
+                if(GUILayout.Button(L("3 · Nhật Thực","3 · Eclipse"))){World.TriggerWorldBossEvent((int)BossType.EclipseWeaver,localId);debugOpen=false;}
+                GUILayout.EndHorizontal();
+            }
             if(handPivotEditorOpen)
             {
                 handPivotScroll=GUILayout.BeginScrollView(handPivotScroll);

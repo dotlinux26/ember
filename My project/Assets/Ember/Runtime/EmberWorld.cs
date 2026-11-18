@@ -10,6 +10,8 @@ namespace Ember
     public enum Resource { Dust, Core, Umbra, Wood, Ore, Count }
     public enum Weapon { Stick, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield, Pickaxe }
     public enum EnemyKind { Shade, SwampLeech, VoidStalker, Sentinel, Nest, Boss }
+    public enum BossType { VoidSovereign, CinderBehemoth, EclipseWeaver }
+    public enum BossSkillKind { CircleRain, BulletStorm, RectCharge }
     public enum Lantern { Oil, Inferno, Relic }
     public enum Perk { SteelNerves, StrongBack, GhostStep, Prepared, Miner, LastLight, ReluctantHealer }
     public enum Hat { Straw, Witch, Candle, Jester }
@@ -65,6 +67,17 @@ namespace Ember
     [Serializable] public sealed class Enemy
     {
         public int Id; public V2 Pos; public float HP=42,MaxHP=42,AttackCD,Blind; public bool Elite;public EnemyKind Kind;
+        public BossType BossType; public bool IsWorldBoss;
+        public float SkillCD,ChargeTime,ChargeSpeed,ChargeDamage,WindupTime;
+        public V2 ChargeDir;
+        public int SkillIndex;
+    }
+    [Serializable] public sealed class BossTelegraph
+    {
+        public int Id,OwnerId,Kind,Wave; // Kind: 0 circle AoE, 1 rect charge, 2 bullet storm warning
+        public BossType BossType;
+        public V2 Pos,Dir;
+        public float Radius,Length,Timer,Duration,Damage;
     }
     [Serializable] public sealed class Node
     {
@@ -81,6 +94,7 @@ namespace Ember
     [Serializable] public sealed class Projectile
     {
         public int Id,Owner;public V2 Pos,Velocity;public float Damage,Life=1;public Weapon Weapon;
+        public bool FromEnemy; public int ColorKind;
     }
     [Serializable] public sealed class Snapshot
     {
@@ -88,6 +102,14 @@ namespace Ember
         public Player[] Players; public Enemy[] Enemies; public Node[] Nodes; public Structure[] Structures; public Effect[] Effects;public Projectile[] Projectiles=Array.Empty<Projectile>();
         public string Event,EventActor,EventTarget;public int EventTick;
         public bool Sandbox;
+        public bool BossArenaActive;
+        public int BossId;
+        public BossType BossType;
+        public V2 BossArenaCenter;
+        public float BossArenaRadius;
+        public float BossAlertTimer,BossSkillCalloutTimer,NextBossEventTime=600f;
+        public string BossAlertText="",BossSkillCallout="";
+        public BossTelegraph[] BossTelegraphs=Array.Empty<BossTelegraph>();
     }
     [Serializable] public sealed class PendingMeteor
     {
@@ -100,7 +122,7 @@ namespace Ember
         public int HeldSlot=1;
         public Snapshot Snapshot;
         public int[] Chest=new int[5];
-        public int NextId=10;
+        public int NextId=10,LastBossType=-1;
         public float SpawnClock,PetClock;
         public bool LastLightSpent,BossSpawned;
         public PendingMeteor[] PendingMeteors=Array.Empty<PendingMeteor>();
@@ -124,8 +146,55 @@ namespace Ember
         public float StaminaCostMultiplier=>1f-(Endurance-5)*.04f;
         public float HarvestCooldown=>.5f-Gathering*.022f;
     }
+    public sealed class BossSpec
+    {
+        public string NameVi,NameEn,SubtitleVi,SubtitleEn;
+        public string RainNameVi,RainNameEn,BulletNameVi,BulletNameEn,ChargeNameVi,ChargeNameEn;
+        public float BaseHP,MoveSpeed,SkillInterval,Scale;
+        public int CircleCount,BulletWaves,BulletCount;
+        public float CircleRadius,CircleDelay,CircleDamage;
+        public float BulletSpeed,BulletDelay,BulletDamage;
+        public bool BulletChaotic;
+        public float ChargeLength,ChargeWidth,ChargeDelay,ChargeDamage;
+    }
     public static class Catalog
     {
+        public static readonly BossSpec[] BossSpecs={
+            new BossSpec{
+                NameVi="Chúa Tể Hư Không",NameEn="Void Sovereign",
+                SubtitleVi="Thực Thể Vực Thẳm",SubtitleEn="Abyssal Sovereign",
+                RainNameVi="Mưa Hư Không",RainNameEn="Void Rain",
+                BulletNameVi="Bão Đạn Tỏa",BulletNameEn="Radial Volley",
+                ChargeNameVi="Xung Kích Xé Đêm",ChargeNameEn="Night Cleave",
+                BaseHP=950,MoveSpeed=1.75f,SkillInterval=4.6f,Scale=2.05f,
+                CircleCount=5,CircleRadius=2.25f,CircleDelay=1.45f,CircleDamage=26f,
+                BulletWaves=2,BulletCount=12,BulletSpeed=8.5f,BulletDelay=.85f,BulletDamage=14f,BulletChaotic=false,
+                ChargeLength=11f,ChargeWidth=2.5f,ChargeDelay=1.35f,ChargeDamage=28f
+            },
+            new BossSpec{
+                NameVi="Cự Thú Tro Tàn",NameEn="Cinder Behemoth",
+                SubtitleVi="Lò Lửa Hủy Diệt",SubtitleEn="Molten Titan",
+                RainNameVi="Mưa Thiên Thạch Tro",RainNameEn="Cinder Barrage",
+                BulletNameVi="Pháo Hỏa Loạn Xạ",BulletNameEn="Chaotic Embers",
+                ChargeNameVi="Húc Lửa Liên Hoàn",ChargeNameEn="Blazing Ram",
+                BaseHP=1200,MoveSpeed=1.55f,SkillInterval=4.9f,Scale=2.25f,
+                CircleCount=6,CircleRadius=2.6f,CircleDelay=1.6f,CircleDamage=30f,
+                BulletWaves=2,BulletCount=14,BulletSpeed=7.8f,BulletDelay=.9f,BulletDamage=15f,BulletChaotic=true,
+                ChargeLength=12f,ChargeWidth=3.0f,ChargeDelay=1.3f,ChargeDamage=32f
+            },
+            new BossSpec{
+                NameVi="Kẻ Dệt Nhật Thực",NameEn="Eclipse Weaver",
+                SubtitleVi="Bóng Ma Huyết Nguyệt",SubtitleEn="Bloodmoon Weaver",
+                RainNameVi="Ấn Nguyệt Giáng Thế",RainNameEn="Lunar Marks",
+                BulletNameVi="Loạn Đạn Xoắn Ốc",BulletNameEn="Eclipse Spiral",
+                ChargeNameVi="Lưỡi Cắt Nhật Thực",ChargeNameEn="Eclipse Lunge",
+                BaseHP=820,MoveSpeed=2.05f,SkillInterval=4.0f,Scale=1.95f,
+                CircleCount=4,CircleRadius=2.0f,CircleDelay=1.3f,CircleDamage=24f,
+                BulletWaves=3,BulletCount=10,BulletSpeed=9.6f,BulletDelay=.75f,BulletDamage=13f,BulletChaotic=true,
+                ChargeLength=13f,ChargeWidth=2.2f,ChargeDelay=1.2f,ChargeDamage=26f
+            }
+        };
+        public static BossSpec BossFor(BossType type)=>BossSpecs[Math.Max(0,Math.Min(BossSpecs.Length-1,(int)type))];
         public static readonly VesselStats[] VesselStatTable={
             new VesselStats(6,6,6,5,6,7),   // Wanderer (36)
             new VesselStats(5,4,9,4,8,5),   // MoonMender (35)
@@ -164,6 +233,7 @@ namespace Ember
     public sealed class EmberWorld
     {
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
+        public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
         static readonly V2 BeaconColliderPos=new V2(0,.35f);
         const float BeaconColliderRadius=1.35f;
         public Snapshot S=new Snapshot();
@@ -171,13 +241,14 @@ namespace Ember
         readonly List<Player> players=new List<Player>(); readonly List<Enemy> enemies=new List<Enemy>();
         readonly List<Node> nodes=new List<Node>(); readonly List<Structure> structures=new List<Structure>(); readonly List<Effect> effects=new List<Effect>();
         readonly List<Projectile> projectiles=new List<Projectile>();
+        readonly List<BossTelegraph> bossTelegraphs=new List<BossTelegraph>();
         readonly Dictionary<int,Command> commands=new Dictionary<int,Command>();
         readonly Dictionary<int,Queue<Command>> actions=new Dictionary<int,Queue<Command>>();
         readonly Dictionary<int,float> inputAt=new Dictionary<int,float>();
         readonly Dictionary<long,float> retaliation=new Dictionary<long,float>();
         readonly Dictionary<int,FlowField> navigation=new Dictionary<int,FlowField>();
         sealed class FlowField{public int[] Distance;public int Goal=-1;public float Built=-100;}
-        Random rng;int nextId=10;float spawnClock,petClock;bool lastLightSpent,bossSpawned;
+        Random rng;int nextId=10,lastBossType=-1;float spawnClock,petClock;bool lastLightSpent,bossSpawned;
         float DifficultyEnemyScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Easy?.85f:1f;
         float DifficultyDreadScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Normal?1.05f:1f;
         float DifficultyEnemySpeedScale=>S.Difficulty==Difficulty.Hard?1.12f:S.Difficulty==Difficulty.Easy?.9f:1f;
@@ -203,6 +274,7 @@ namespace Ember
                 Snapshot=S,
                 Chest=(int[])Chest.Clone(),
                 NextId=nextId,
+                LastBossType=lastBossType,
                 SpawnClock=spawnClock,
                 PetClock=petClock,
                 LastLightSpent=lastLightSpent,
@@ -231,6 +303,8 @@ namespace Ember
             if(s.Structures==null)s.Structures=Array.Empty<Structure>();
             if(s.Effects==null)s.Effects=Array.Empty<Effect>();
             if(s.Projectiles==null)s.Projectiles=Array.Empty<Projectile>();
+            if(s.BossTelegraphs==null)s.BossTelegraphs=Array.Empty<BossTelegraph>();
+            if(s.NextBossEventTime<=0)s.NextBossEventTime=s.Time+BossEventInterval;
             if(data.Chest==null||data.Chest.Length!=5)data.Chest=new int[5];
             if(data.PendingMeteors==null)data.PendingMeteors=Array.Empty<PendingMeteor>();
         }
@@ -248,13 +322,16 @@ namespace Ember
             w.structures.AddRange(w.S.Structures);
             w.effects.AddRange(w.S.Effects);
             w.projectiles.AddRange(w.S.Projectiles);
+            w.bossTelegraphs.AddRange(w.S.BossTelegraphs);
             int maxId=Math.Max(10,data.NextId);
             foreach(var p in w.players)maxId=Math.Max(maxId,p.Id+1);
             foreach(var e in w.enemies)maxId=Math.Max(maxId,e.Id+1);
             foreach(var n in w.nodes)maxId=Math.Max(maxId,n.Id+1);
             foreach(var st in w.structures)maxId=Math.Max(maxId,st.Id+1);
             foreach(var pr in w.projectiles)maxId=Math.Max(maxId,pr.Id+1);
+            foreach(var bt in w.bossTelegraphs)maxId=Math.Max(maxId,bt.Id+1);
             w.nextId=maxId;
+            w.lastBossType=data.LastBossType;
             w.spawnClock=Math.Max(0,data.SpawnClock);
             w.petClock=Math.Max(0,data.PetClock);
             w.lastLightSpent=data.LastLightSpent;
@@ -353,6 +430,7 @@ namespace Ember
         {
             if(players.Count==0||S.Phase!=Phase.Sanctuary||(requireReady&&players.Any(p=>!p.Ready)))return false;
             spawnClock=18f;
+            S.NextBossEventTime=S.Time+BossEventInterval;
             S.Phase=Phase.Explore;Announce("Thu thập lõi, nạp hải đăng, giữ lửa.");return true;
         }
         public void Submit(int id,Command c)
@@ -387,6 +465,19 @@ namespace Ember
             if(!Walkable(to+new V2(radius,0))||!Walkable(to-new V2(radius,0))||
                !Walkable(to+new V2(0,radius))||!Walkable(to-new V2(0,radius)))return false;
             if(ApproachesBody(from,to,BeaconColliderPos,BeaconColliderRadius))return false;
+            if(S.BossArenaActive)
+            {
+                if(body!=null)
+                {
+                    float maxR=Math.Max(2f,S.BossArenaRadius-.35f);
+                    if(V2.Distance(to,S.BossArenaCenter)>maxR&&V2.Distance(to,S.BossArenaCenter)>V2.Distance(from,S.BossArenaCenter))return false;
+                }
+                else if(monster!=null&&monster.Id==S.BossId)
+                {
+                    float maxR=Math.Max(2f,S.BossArenaRadius-.75f);
+                    if(V2.Distance(to,S.BossArenaCenter)>maxR&&V2.Distance(to,S.BossArenaCenter)>V2.Distance(from,S.BossArenaCenter))return false;
+                }
+            }
             foreach(var player in players)
                 if(player!=body&&!player.Ghost&&!player.Extracted&&ApproachesBody(from,to,player.Pos,.55f))return false;
             foreach(var enemy in enemies)
@@ -478,6 +569,10 @@ namespace Ember
                 case "blackout":DebugInfiniteFuel=false;S.Fuel=0;S.LastLight=0;S.BeaconHP=0;lastLightSpent=true;break;
                 case "enemy":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Shade,Pos=p.Pos+new V2(3,0),HP=42,MaxHP=42});break;
                 case "boss":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=p.Pos+new V2(5,0),HP=600,MaxHP=600});break;
+                case "boss_event":return TriggerWorldBossEvent(null,playerId);
+                case "boss_void":return TriggerWorldBossEvent((int)BossType.VoidSovereign,playerId);
+                case "boss_cinder":return TriggerWorldBossEvent((int)BossType.CinderBehemoth,playerId);
+                case "boss_eclipse":return TriggerWorldBossEvent((int)BossType.EclipseWeaver,playerId);
                 default:return false;
             }
             Announce("DEBUG "+action);Publish();return true;
@@ -487,13 +582,19 @@ namespace Ember
             if(dt<=0||dt>.2f)throw new ArgumentOutOfRangeException(nameof(dt));
             if(S.Phase==Phase.Sanctuary||S.Phase==Phase.Won||S.Phase==Phase.Lost){Publish();return;}
             S.Tick++;S.Time+=dt;float oldFuel=S.Fuel;if(players.Any(p=>p.HasHeldTorch))S.Fuel=Math.Max(0,S.Fuel-dt*.13f);S.LastLight=Math.Max(0,S.LastLight-dt);
+            S.BossAlertTimer=Math.Max(0,S.BossAlertTimer-dt);
+            S.BossSkillCalloutTimer=Math.Max(0,S.BossSkillCalloutTimer-dt);
             if(DebugEnabled&&DebugInfiniteFuel)S.Fuel=100;
             if(oldFuel>0&&S.Fuel<=0&&!lastLightSpent&&players.Any(p=>p.Has(Perk.LastLight))){S.LastLight=5*players.Where(p=>p.Has(Perk.LastLight)).Max(p=>p.PerkStrength(Perk.LastLight));lastLightSpent=true;Announce("Tia sáng cuối — "+S.LastLight.ToString("0")+" giây!");}
+            if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Explore&&!S.BossArenaActive&&S.Time>=S.NextBossEventTime&&players.Any(p=>!p.Ghost&&!p.Extracted))
+                TriggerWorldBossEvent();
             foreach(var p in players)UpdatePlayer(p,dt);
             if(!DebugEnabled||!DebugNoEnemies)foreach(var e in enemies.ToArray())UpdateEnemy(e,dt);
             UpdateProjectiles(dt);
             UpdateMeteors(dt);
+            UpdateBossTelegraphs(dt);
             enemies.RemoveAll(e=>e.HP<=0);
+            if(S.BossArenaActive&&!enemies.Any(e=>e.Id==S.BossId&&e.HP>0))EndBossArena();
             foreach(var s in structures)
             {
                 if(s.Kind<=1)s.Life-=dt;
@@ -776,7 +877,18 @@ namespace Ember
             }
             if(p.Vessel==Vessel.SpaceWraith)
             {
-                var q=players.Find(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange);if(q!=null)q.Pos=BeaconSpawnSpot(q.PartySlot,2.4f);p.Pos=BeaconSpawnSpot(p.PartySlot-1,2.4f);p.SkillCD=60;FX(p.Pos,p.Pos,2);
+                var q=players.Find(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange);
+                if(S.BossArenaActive)
+                {
+                    if(q!=null)q.Pos=FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,q.PartySlot);
+                    p.Pos=FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,p.PartySlot+3);
+                }
+                else
+                {
+                    if(q!=null)q.Pos=BeaconSpawnSpot(q.PartySlot,2.4f);
+                    p.Pos=BeaconSpawnSpot(p.PartySlot-1,2.4f);
+                }
+                p.SkillCD=60;FX(p.Pos,p.Pos,2);
             }
         }
         public static V2 EightWay(V2 direction)
@@ -838,8 +950,16 @@ namespace Ember
         {
             foreach(var shot in projectiles)
             {
-                var start=shot.Pos;shot.Pos+=shot.Velocity*dt;shot.Life-=dt;var owner=PlayerById(shot.Owner);if(owner==null){shot.Life=0;continue;}
-                var enemy=enemies.Where(e=>e.HP>0&&SegmentDistance(e.Pos,start,shot.Pos)<(e.Kind==EnemyKind.Boss?1:.45f)).OrderBy(e=>V2.Distance(start,e.Pos)).FirstOrDefault();
+                var start=shot.Pos;shot.Pos+=shot.Velocity*dt;shot.Life-=dt;
+                if(shot.FromEnemy)
+                {
+                    var victim=players.Where(p=>!p.Ghost&&!p.Extracted&&SegmentDistance(p.Pos,start,shot.Pos)<.48f).OrderBy(p=>V2.Distance(start,p.Pos)).FirstOrDefault();
+                    if(victim!=null){Hurt(victim,shot.Damage);shot.Life=0;FX(start,victim.Pos,3);}
+                    else if(!Walkable(shot.Pos)||(S.BossArenaActive&&V2.Distance(shot.Pos,S.BossArenaCenter)>S.BossArenaRadius+.5f))shot.Life=0;
+                    continue;
+                }
+                var owner=PlayerById(shot.Owner);if(owner==null){shot.Life=0;continue;}
+                var enemy=enemies.Where(e=>e.HP>0&&SegmentDistance(e.Pos,start,shot.Pos)<(e.Kind==EnemyKind.Boss?1.15f:.45f)).OrderBy(e=>V2.Distance(start,e.Pos)).FirstOrDefault();
                 var ally=players.Where(p=>CanHarm(owner,p)&&SegmentDistance(p.Pos,start,shot.Pos)<.45f).OrderBy(p=>V2.Distance(start,p.Pos)).FirstOrDefault();
                 if(ally!=null&&(enemy==null||V2.Distance(start,ally.Pos)<V2.Distance(start,enemy.Pos)))
                 {Hurt(ally,FriendlyDamage(owner,shot.Damage));retaliation[((long)ally.Id<<32)|(uint)owner.Id]=S.Time;shot.Life=0;FX(start,ally.Pos,1);}
@@ -852,6 +972,17 @@ namespace Ember
         {
             if(e.HP<=0)return;e.HP-=damage;if(e.HP<=0)
             {
+                if(e.IsWorldBoss)
+                {
+                    var spec=Catalog.BossFor(e.BossType);
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(-1.1f,.4f),Resource=Resource.Core,Amount=6,Dropped=true});
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(1.1f,.4f),Resource=Resource.Umbra,Amount=8,Dropped=true});
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(0,-1.0f),Resource=Resource.Dust,Amount=15,Dropped=true});
+                    S.BossesDefeated++;
+                    if(S.BossId==e.Id)EndBossArena();
+                    Announce("ĐÃ HẠ GỤC BOSS: "+spec.NameVi+"! Viền phong ấn đã tan biến.");
+                    return;
+                }
                 bool umbra=e.Elite||e.Kind==EnemyKind.Nest;nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2,Dropped=true});
                 if(e.Kind==EnemyKind.Boss){S.BossesDefeated++;Announce("Thực thể đã gục — nhận mảnh ký ức khi kết thúc trận.");}else if(umbra)Announce("Thu được mảnh bóng tối.");
             }
@@ -886,10 +1017,260 @@ namespace Ember
             var kind=elite?EnemyKind.Sentinel:pos.Length>S.Size*.35f?EnemyKind.VoidStalker:pos.Length>S.Size*.22f?EnemyKind.SwampLeech:EnemyKind.Shade;
             enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp});
         }
+        V2 FindArenaSpot(V2 center,float minR,float maxR,int seedOffset=0)
+        {
+            for(int attempt=0;attempt<24;attempt++)
+            {
+                double a=(attempt+seedOffset)*2.39996;
+                float r=minR+(maxR-minR)*((attempt%5)/4f);
+                V2 candidate=center+new V2((float)Math.Cos(a)*r,(float)Math.Sin(a)*r);
+                if(Walkable(candidate)&&V2.Distance(candidate,BeaconColliderPos)>BeaconColliderRadius+.5f)
+                    return candidate;
+            }
+            return Walkable(center)?center:BeaconSpawnSpot(seedOffset,3f);
+        }
+        public bool TriggerWorldBossEvent(int? forcedBossType=null,int? triggerPlayerId=null)
+        {
+            var living=players.Where(p=>!p.Ghost&&!p.Extracted).ToList();
+            if(living.Count==0)return false;
+            if(S.BossArenaActive)
+            {
+                if(forcedBossType==null&&triggerPlayerId==null)return false;
+                enemies.RemoveAll(e=>e.Id==S.BossId);
+                EndBossArena();
+            }
+            var trigger=triggerPlayerId.HasValue?living.Find(p=>p.Id==triggerPlayerId.Value)??living[0]:living[rng.Next(living.Count)];
+            int typeCount=Catalog.BossSpecs.Length;
+            int pickedType=forcedBossType.HasValue?Math.Max(0,Math.Min(typeCount-1,forcedBossType.Value)):rng.Next(typeCount);
+            if(!forcedBossType.HasValue&&typeCount>1&&pickedType==lastBossType)pickedType=(pickedType+1+rng.Next(typeCount-1))%typeCount;
+            lastBossType=pickedType;
+            var bossType=(BossType)pickedType;
+            var spec=Catalog.BossFor(bossType);
+
+            float bound=S.Size/2f-BossArenaDefaultRadius-5f;
+            V2 arenaCenter=new V2(Clamp(trigger.Pos.X,-bound,bound),Clamp(trigger.Pos.Y,-bound,bound));
+            if(!Walkable(arenaCenter))arenaCenter=FindArenaSpot(arenaCenter,0f,4f,0);
+
+            V2 bossPos=FindArenaSpot(arenaCenter,6.2f,8.2f,rng.Next(8));
+            V2 awayDir=(arenaCenter-bossPos).Normal;
+            if(awayDir.Length<.01f)awayDir=new V2(0,-1);
+            float baseAngle=(float)Math.Atan2(awayDir.Y,awayDir.X);
+
+            for(int i=0;i<living.Count;i++)
+            {
+                var lp=living[i];
+                V2 dest=arenaCenter+awayDir*2.8f;
+                bool placed=false;
+                for(int attempt=0;attempt<16;attempt++)
+                {
+                    float spread=(i-living.Count*.5f)*.55f+(attempt==0?0:(attempt%2==0?1:-1)*attempt*.28f);
+                    float dist=2.2f+(attempt/4)*1.1f;
+                    V2 cand=arenaCenter+new V2((float)Math.Cos(baseAngle+spread)*dist,(float)Math.Sin(baseAngle+spread)*dist);
+                    if(Walkable(cand)&&V2.Distance(cand,BeaconColliderPos)>BeaconColliderRadius+.5f&&V2.Distance(cand,bossPos)>4.5f)
+                    {dest=cand;placed=true;break;}
+                }
+                if(!placed)dest=FindArenaSpot(arenaCenter,1.5f,4.5f,i+3);
+                lp.Pos=dest;
+                lp.MirageLife=0;
+                lp.Invulnerable=Math.Max(lp.Invulnerable,1.6f);
+                FX(lp.Pos,lp.Pos,2);
+            }
+
+            float hp=(spec.BaseHP+Math.Max(0,living.Count-1)*280f)*DifficultyEnemyScale;
+            var boss=new Enemy
+            {
+                Id=nextId++,Kind=EnemyKind.Boss,Elite=true,IsWorldBoss=true,BossType=bossType,
+                Pos=bossPos,HP=hp,MaxHP=hp,AttackCD=1.2f,SkillCD=2.6f,SkillIndex=rng.Next(3)
+            };
+            enemies.Add(boss);
+            S.BossArenaActive=true;
+            S.BossId=boss.Id;
+            S.BossType=bossType;
+            S.BossArenaCenter=arenaCenter;
+            S.BossArenaRadius=BossArenaDefaultRadius;
+            S.BossAlertTimer=5.5f;
+            S.BossAlertText=spec.NameVi+" — "+spec.SubtitleVi;
+            S.BossSkillCallout="";
+            S.BossSkillCalloutTimer=0;
+            S.NextBossEventTime=S.Time+BossEventInterval;
+            Announce("CẢNH BÁO ĐỎ: "+spec.NameVi+" xuất hiện! Toàn đội đã bị kéo vào vùng phong ấn!",trigger.Name);
+            Publish();
+            return true;
+        }
+        void EndBossArena()
+        {
+            int oldBossId=S.BossId;
+            S.BossArenaActive=false;
+            S.BossId=0;
+            S.BossSkillCallout="";
+            S.BossSkillCalloutTimer=0;
+            S.NextBossEventTime=Math.Max(S.NextBossEventTime,S.Time+BossEventInterval);
+            bossTelegraphs.RemoveAll(t=>oldBossId==0||t.OwnerId==oldBossId);
+            projectiles.RemoveAll(p=>p.FromEnemy&&(oldBossId==0||p.Owner==oldBossId));
+        }
+        void CastBossSkill(Enemy e,Player target,BossSpec spec)
+        {
+            var skill=(BossSkillKind)(e.SkillIndex%3);
+            e.SkillIndex++;
+            e.SkillCD=spec.SkillInterval/(S.Difficulty==Difficulty.Hard?1.15f:S.Difficulty==Difficulty.Easy?.88f:1f);
+            if(skill==BossSkillKind.CircleRain)
+            {
+                var living=players.Where(p=>!p.Ghost&&!p.Extracted).ToList();
+                for(int i=0;i<spec.CircleCount;i++)
+                {
+                    V2 pos;
+                    if(i<living.Count)pos=living[i].Pos;
+                    else
+                    {
+                        double a=rng.NextDouble()*Math.PI*2;
+                        float r=(float)(.25+rng.NextDouble()*.70)*Math.Max(3f,S.BossArenaRadius-spec.CircleRadius-.5f);
+                        pos=S.BossArenaCenter+new V2((float)Math.Cos(a)*r,(float)Math.Sin(a)*r);
+                    }
+                    bossTelegraphs.Add(new BossTelegraph
+                    {
+                        Id=nextId++,OwnerId=e.Id,Kind=0,BossType=e.BossType,
+                        Pos=pos,Radius=spec.CircleRadius,Timer=spec.CircleDelay,Duration=spec.CircleDelay,
+                        Damage=spec.CircleDamage*DifficultyEnemyScale
+                    });
+                }
+                e.WindupTime=.55f;
+                S.BossSkillCallout=spec.RainNameVi+"|"+spec.RainNameEn;
+                S.BossSkillCalloutTimer=spec.CircleDelay+.4f;
+            }
+            else if(skill==BossSkillKind.BulletStorm)
+            {
+                bossTelegraphs.Add(new BossTelegraph
+                {
+                    Id=nextId++,OwnerId=e.Id,Kind=2,BossType=e.BossType,
+                    Pos=e.Pos,Radius=2.6f,Timer=spec.BulletDelay,Duration=spec.BulletDelay,
+                    Damage=spec.BulletDamage*DifficultyEnemyScale,Wave=spec.BulletWaves
+                });
+                e.WindupTime=spec.BulletDelay+.45f;
+                S.BossSkillCallout=spec.BulletNameVi+"|"+spec.BulletNameEn;
+                S.BossSkillCalloutTimer=spec.BulletDelay+spec.BulletWaves*.5f;
+            }
+            else
+            {
+                V2 dir=(target.Pos-e.Pos).Normal;
+                if(dir.Length<.01f)dir=new V2(1,0);
+                bossTelegraphs.Add(new BossTelegraph
+                {
+                    Id=nextId++,OwnerId=e.Id,Kind=1,BossType=e.BossType,
+                    Pos=e.Pos,Dir=dir,Radius=spec.ChargeWidth*.5f,Length=spec.ChargeLength,
+                    Timer=spec.ChargeDelay,Duration=spec.ChargeDelay,
+                    Damage=spec.ChargeDamage*DifficultyEnemyScale
+                });
+                e.WindupTime=spec.ChargeDelay+.15f;
+                S.BossSkillCallout=spec.ChargeNameVi+"|"+spec.ChargeNameEn;
+                S.BossSkillCalloutTimer=spec.ChargeDelay+.6f;
+            }
+        }
+        void FireBossBulletWave(Enemy boss,BossSpec spec,float damage,int waveIndex)
+        {
+            int count=spec.BulletCount;
+            double baseAngle=waveIndex*.38+S.Time*.7;
+            int colorKind=(int)boss.BossType+1;
+            for(int i=0;i<count;i++)
+            {
+                double angle=spec.BulletChaotic
+                    ?baseAngle+i*(Math.PI*2/count)+(rng.NextDouble()-.5)*.45
+                    :baseAngle+i*(Math.PI*2/count);
+                float speed=spec.BulletSpeed*(spec.BulletChaotic?(float)(.78+rng.NextDouble()*.44):1f);
+                V2 dir=new V2((float)Math.Cos(angle),(float)Math.Sin(angle));
+                projectiles.Add(new Projectile
+                {
+                    Id=nextId++,Owner=boss.Id,FromEnemy=true,ColorKind=colorKind,
+                    Pos=boss.Pos+dir*.8f,Velocity=dir*speed,Damage=damage,Life=3.2f
+                });
+            }
+            FX(boss.Pos,boss.Pos,3);
+        }
+        void UpdateBossTelegraphs(float dt)
+        {
+            for(int i=bossTelegraphs.Count-1;i>=0;i--)
+            {
+                var bt=bossTelegraphs[i];
+                var owner=enemies.Find(e=>e.Id==bt.OwnerId&&e.HP>0);
+                if(owner==null){bossTelegraphs.RemoveAt(i);continue;}
+                if(bt.Kind==2)bt.Pos=owner.Pos;
+                bt.Timer-=dt;
+                if(bt.Timer>0)continue;
+                bossTelegraphs.RemoveAt(i);
+                var spec=Catalog.BossFor(bt.BossType);
+                if(bt.Kind==0)
+                {
+                    foreach(var p in players.Where(p=>!p.Ghost&&!p.Extracted&&V2.Distance(p.Pos,bt.Pos)<=bt.Radius))
+                    {
+                        Hurt(p,bt.Damage);
+                        V2 push=(p.Pos-bt.Pos).Normal;
+                        if(push.Length>.01f)p.Pos=Move(p.Pos,push*.9f,body:p);
+                    }
+                    effects.Add(new Effect{From=bt.Pos,To=bt.Pos,Kind=3,Life=.42f});
+                }
+                else if(bt.Kind==2)
+                {
+                    FireBossBulletWave(owner,spec,bt.Damage,spec.BulletWaves-bt.Wave);
+                    if(bt.Wave>1)
+                    {
+                        bossTelegraphs.Add(new BossTelegraph
+                        {
+                            Id=nextId++,OwnerId=owner.Id,Kind=2,BossType=owner.BossType,
+                            Pos=owner.Pos,Radius=1.8f,Timer=.48f,Duration=.48f,
+                            Damage=bt.Damage,Wave=bt.Wave-1
+                        });
+                    }
+                }
+                else if(bt.Kind==1)
+                {
+                    owner.ChargeDir=bt.Dir;
+                    owner.ChargeTime=.42f;
+                    owner.ChargeSpeed=bt.Length/.42f;
+                    owner.ChargeDamage=bt.Damage;
+                    owner.WindupTime=0;
+                    FX(owner.Pos,owner.Pos+bt.Dir*bt.Length,3);
+                }
+            }
+        }
+        void UpdateWorldBoss(Enemy e,Player target,float dt)
+        {
+            var spec=Catalog.BossFor(e.BossType);
+            if(e.ChargeTime>0)
+            {
+                e.ChargeTime-=dt;
+                e.Pos=Move(e.Pos,e.ChargeDir*(e.ChargeSpeed*dt),monster:e,ignoreEnemies:true);
+                foreach(var p in players.Where(p=>!p.Ghost&&!p.Extracted&&V2.Distance(p.Pos,e.Pos)<1.35f))
+                {
+                    Hurt(p,e.ChargeDamage);
+                    V2 side=new V2(-e.ChargeDir.Y,e.ChargeDir.X);
+                    p.Pos=Move(p.Pos,(e.ChargeDir*.6f+side*.8f)*1.1f,body:p);
+                }
+                if(e.ChargeTime<=0&&e.BossType==BossType.CinderBehemoth)
+                {
+                    foreach(var p in players.Where(p=>!p.Ghost&&!p.Extracted&&V2.Distance(p.Pos,e.Pos)<2.6f))Hurt(p,e.ChargeDamage*.65f);
+                    FX(e.Pos,e.Pos,3);
+                }
+                return;
+            }
+            if(e.WindupTime>0){e.WindupTime=Math.Max(0,e.WindupTime-dt);return;}
+            e.SkillCD-=dt;
+            if(e.SkillCD<=0&&e.Blind<=0){CastBossSkill(e,target,spec);return;}
+            if(e.Blind<=0)
+            {
+                var direction=Navigate(e.Pos,target.Pos,target.Id);
+                float speed=spec.MoveSpeed*DifficultyEnemySpeedScale*dt;
+                e.Pos=Move(e.Pos,direction*speed,monster:e);
+            }
+            if(e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<1.45f)
+            {
+                Hurt(target,20f*DifficultyEnemyScale);
+                e.AttackCD=1.1f;
+            }
+        }
         void UpdateEnemy(Enemy e,float dt)
         {
             if(e.HP<=0)return;e.AttackCD-=dt;e.Blind=Math.Max(0,e.Blind-dt);
             var target=players.Where(p=>!p.Ghost&&!p.Extracted).OrderBy(p=>V2.Distance(p.Pos,e.Pos)).FirstOrDefault();if(target==null)return;
+            if(e.IsWorldBoss){UpdateWorldBoss(e,target,dt);return;}
             if(e.Kind==EnemyKind.Nest)
             {
                 if(S.Time>20f&&e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
@@ -931,6 +1312,6 @@ namespace Ember
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();}
+        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();}
     }
 }

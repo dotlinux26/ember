@@ -287,6 +287,41 @@ Check(resumedWorld.S.Structures.Any(s=>s.Kind==0&&s.MaxLife==45&&s.Life>0)&&resu
 int tickBeforeResume=resumedWorld.S.Tick;
 resumedWorld.Tick();
 Check(resumedWorld.S.Tick==tickBeforeResume+1,"restored solo run continues advancing simulation cleanly");
+
+var bossWorld=new EmberWorld(909,250,Difficulty.Normal);
+var bP1=bossWorld.AddPlayer(1,"Leader",Vessel.Wanderer);
+var bP2=bossWorld.AddPlayer(2,"Scout",Vessel.SpaceWraith);
+bossWorld.StartRun();
+bP1.Pos=new V2(12,8);
+bP2.Pos=new V2(-40,-35);
+Check(bossWorld.TriggerWorldBossEvent((int)BossType.VoidSovereign,1),"world boss event triggers near chosen player");
+Check(bossWorld.S.BossArenaActive&&bossWorld.S.BossAlertTimer>0&&V2.Distance(bP2.Pos,bossWorld.S.BossArenaCenter)<bossWorld.S.BossArenaRadius,"boss event teleports all living teammates into sealed arena with red alert");
+for(int k=0;k<220;k++){bossWorld.Submit(1,new Command{X=1,Y=0});bossWorld.Tick();}
+Check(V2.Distance(bP1.Pos,bossWorld.S.BossArenaCenter)<=bossWorld.S.BossArenaRadius,"boss arena barrier prevents player from leaving while boss lives");
+bool sawCircle=false,sawRect=false,sawBullet=false;
+var activeBoss=bossWorld.S.Enemies.First(e=>e.Id==bossWorld.S.BossId);
+activeBoss.SkillIndex=0;activeBoss.SkillCD=0;
+for(int step=0;step<480;step++)
+{
+    bP1.HP=100;bP2.HP=100;
+    bossWorld.Tick();
+    if(bossWorld.S.BossTelegraphs.Any(t=>t.Kind==0))sawCircle=true;
+    if(bossWorld.S.BossTelegraphs.Any(t=>t.Kind==1))sawRect=true;
+    if(bossWorld.S.Projectiles.Any(p=>p.FromEnemy))sawBullet=true;
+    if(sawCircle&&sawRect&&sawBullet)break;
+}
+Check(sawCircle&&sawRect&&sawBullet,"world boss executes all 3 telegraphed skills (circle rain, bullet storm, rect charge)");
+bP1.Pos=activeBoss.Pos+new V2(1,0);
+activeBoss.HP=1;
+bossWorld.Submit(1,new Command{Equip=1,Attack=true});
+bossWorld.Tick();
+Check(!bossWorld.S.BossArenaActive&&bossWorld.S.BossesDefeated==1&&bossWorld.S.BossTelegraphs.Length==0,"defeating world boss lifts arena barrier, clears telegraphs, and increments BossesDefeated");
+var timerBossWorld=new EmberWorld(313,250,Difficulty.Easy);
+timerBossWorld.AddPlayer(1,"Timer",Vessel.Wanderer);
+timerBossWorld.StartRun();
+timerBossWorld.S.Time=EmberWorld.BossEventInterval;
+timerBossWorld.Tick();
+Check(timerBossWorld.S.BossArenaActive&&Catalog.BossSpecs.Length==3,"10-minute timer automatically spawns one of the 3 random world bosses");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

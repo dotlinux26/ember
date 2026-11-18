@@ -350,9 +350,12 @@ namespace Ember
             foreach(var e in State.Enemies)
             {
                 if(V2.Distance(e.Pos,center)>24)continue;
-                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite?"enemy_sentinel":"enemy_shade";float scale=e.Kind==EnemyKind.Boss?1.5f:e.Elite?1.4f:1;
-                Outline(Put("enemyGlow"+e.Id,Primitive(art),e.Pos,Coral,scale,1000-Mathf.RoundToInt(e.Pos.Y*10)-1),Primitive(art));
-                Put("enemy"+e.Id,Primitive(art),e.Pos,e.Blind>0?new Color(.6f,.7f,.8f):Color.white,scale);
+                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite?"enemy_sentinel":"enemy_shade";
+                float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite?1.4f:1;
+                Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):Coral;
+                Color bodyTint=e.Blind>0?new Color(.6f,.7f,.8f):e.IsWorldBoss?BossTintColor(e.BossType):Color.white;
+                Outline(Put("enemyGlow"+e.Id,Primitive(art),e.Pos,glowColor,scale,1000-Mathf.RoundToInt(e.Pos.Y*10)-1),Primitive(art));
+                Put("enemy"+e.Id,Primitive(art),e.Pos,bodyTint,scale);
             }
             foreach(var p in State.Players)
             {
@@ -373,7 +376,15 @@ namespace Ember
             }
             foreach(var shot in State.Projectiles??Array.Empty<Projectile>())
             {
-                var r=Put("projectile"+shot.Id,Primitive("diamond"),shot.Pos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);r.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
+                if(shot.FromEnemy)
+                {
+                    Color orbColor=shot.ColorKind==2?new Color(1f,.48f,.16f):shot.ColorKind==3?new Color(1f,.26f,.62f):new Color(1f,.22f,.32f);
+                    var r=Put("projectile"+shot.Id,Primitive("circle"),shot.Pos+new V2(0,.3f),orbColor,.42f,1500);
+                    r.transform.rotation=Quaternion.identity;
+                    if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
+                    continue;
+                }
+                var pr=Put("projectile"+shot.Id,Primitive("diamond"),shot.Pos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);pr.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
             }
             if(local!=null&&local.Dread>=30&&!local.Safe&&Mathf.Sin(clock*.8f)>0.6f)
             {
@@ -537,6 +548,8 @@ namespace Ember
             if(p.Dread>=60&&!p.Safe&&Event.current.type==EventType.Repaint)
                 Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.8f,.2f,.4f,.2f));
             if(clock<clickMarkerUntil)Ring(clickMarker,.3f,new Color(1,.8f,.4f,(clickMarkerUntil-clock)/.8f));
+            DrawBossArena();
+            DrawBossTelegraphs();
             DrawRangeRulers(p);
             foreach(var e in State.Effects){
                 if(e.Kind==6){Ring(e.To,.35f+(.3f-e.Life)*2,new Color(.83f,.73f,1,e.Life/.3f));continue;}
@@ -552,6 +565,7 @@ namespace Ember
             if(!p.Ghost&&!inventoryOpen&&!craftOpen)DrawInteractPrompt(p);
             if(!p.Ghost&&inventoryOpen){DrawInventory(p);return;}
             DrawFieldHud(p);
+            DrawBossHud();
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
             DrawFieldNotices(p,objectiveY+80);

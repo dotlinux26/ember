@@ -28,6 +28,13 @@ namespace Ember
             var local=Local;
             var focus=CameraTarget();
             if(State.BeaconHP>0&&State.Charge>=State.ChargeTarget)Illuminate("beacon",new V2(),7,new Color(.72f,.95f,1),1.1f);
+            if(State.BossArenaActive)
+            {
+                Color accent=BossAccentColor(State.BossType);
+                Illuminate("bossArena",State.BossArenaCenter,State.BossArenaRadius+2.5f,Color.Lerp(accent,Color.white,.22f),.55f);
+                var boss=State.Enemies?.FirstOrDefault(e=>e.Id==State.BossId&&e.HP>0);
+                if(boss!=null)Illuminate("worldBoss",boss.Pos,5.5f,accent,.95f);
+            }
             foreach(var p in State.Players)
             {
                 if(p.Extracted||p.Ghost)continue;
