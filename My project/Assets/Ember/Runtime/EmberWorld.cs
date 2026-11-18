@@ -40,7 +40,7 @@ namespace Ember
         public V2 Pos,Move; public bool Right=true,Safe,Extracted,CarriesLantern,LampOn=true,Ready;
         public float HP=100,MaxHP=100,Stamina=100,Dread,AttackCD,SkillCD,DashCD,DashTime,CastTime,Invulnerable,ShieldTime,Shield,HarvestCD;
         public float PushCD,ReloadTimer;
-        public V2 DashDir; public Weapon Weapon; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6; public Lantern Lantern;
+        public V2 DashDir; public Weapon Weapon; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6; public bool HasPickaxe=true; public Lantern Lantern;
         public V2 MiragePos;public float MirageLife,MirageCD=12;
         public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
         public int[] Perks=Array.Empty<int>(); public int Hat=-1,Pet=-1;
@@ -509,13 +509,18 @@ namespace Ember
             if(!dustOnly&&p.HarvestCD>0)return false;
             var node=nodes.Where(n=>(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
             if(node==null)return false;
-            int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8&&!dustOnly?1:0);
+            if(!dustOnly&&!node.Dropped)
+            {
+                if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
+                p.HeldSlot=8;
+            }
+            int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?1:0);
             int n=Math.Min(node.Amount,yield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
             if(!dustOnly)
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
                 p.HarvestCD=p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f);
-                FX(p.Pos,node.Pos,7);
+                if(!node.Dropped)FX(p.Pos,node.Pos,7);
             }
             return true;
         }

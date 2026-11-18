@@ -67,6 +67,16 @@ namespace Ember
             return "—";
         }
 
+        bool ShouldAutoEquipPickaxe(Player p)
+        {
+            if(p==null||(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe))return false;
+            if(State.Phase==Phase.Extraction&&p.Pos.Length<3)return false;
+            if(State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
+            var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
+                .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+            return node!=null&&!node.Dropped;
+        }
+
         void EquipSlot(int slot)
         {
             if(heldSlot==slot)return;
@@ -78,9 +88,9 @@ namespace Ember
         void DrawHands(Player player,SpriteRenderer body)
         {
             int slot=player.Id==localId?heldSlot:player.HeldSlot;
-            bool harvesting=player.HarvestCD>0;
-            bool weapon=IsHoldingWeaponSlot(slot)||harvesting;
-            bool consumable=!harvesting&&slot>=2&&slot<=5&&player.Items[slot-2]>0;
+            bool harvesting=player.HarvestCD>0&&slot==8;
+            bool weapon=IsHoldingWeaponSlot(slot);
+            bool consumable=!weapon&&slot>=2&&slot<=5&&player.Items[slot-2]>0;
             float sign=player.Right?1:-1;
             int handOrder=body.sortingOrder+4;
             int heldOrder=handOrder-1;

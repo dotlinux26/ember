@@ -52,9 +52,10 @@ namespace Ember
                         .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
                     if(node==null)return;
                     string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
+                    bool needsPick=!node.Dropped&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
                     string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
                     targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
-                    caption=verb+" · "+resName+" ×"+node.Amount;
+                    caption=needsPick?L("Cần Cuốc Sắt để đào","Requires Iron Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
                 }
             }
 
@@ -72,7 +73,11 @@ namespace Ember
             GUI.contentColor=new Color(1f,.96f,.82f);
             GUI.Label(new Rect(keyBox.xMax+6,box.y+3,box.width-34,20),caption,small);
             GUI.contentColor=oldColor;
-            if(GUI.Button(box,GUIContent.none,GUIStyle.none))intent.Interact=true;
+            if(GUI.Button(box,GUIContent.none,GUIStyle.none))
+            {
+                if(ShouldAutoEquipPickaxe(p))EquipSlot(8);
+                intent.Interact=true;
+            }
         }
 
         void DrawOverheadStatus(Player player)

@@ -229,7 +229,9 @@ namespace Ember
             }
             intent.X=move.x;intent.Y=move.y;
             bool attack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
-            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=Press(Key.E);intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
+            bool pressedInteract=Press(Key.E);
+            if(pressedInteract&&Local!=null&&!Local.Ghost&&ShouldAutoEquipPickaxe(Local))EquipSlot(8);
+            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
             intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);intent.Revive|=Press(Key.H);intent.Reload|=Press(Key.X);
             if(Press(Key.U)&&CanUseSelectedItem(Local))intent.Use=selectedItem;
             ApplyTouchInput();
