@@ -89,6 +89,22 @@ namespace Ember
         public string Event,EventActor,EventTarget;public int EventTick;
         public bool Sandbox;
     }
+    [Serializable] public sealed class PendingMeteor
+    {
+        public int OwnerId; public V2 Center; public float Delay;
+    }
+    [Serializable] public sealed class RunSaveData
+    {
+        public int Version=1;
+        public string SavedAt="";
+        public int HeldSlot=1;
+        public Snapshot Snapshot;
+        public int[] Chest=new int[5];
+        public int NextId=10;
+        public float SpawnClock,PetClock;
+        public bool LastLightSpent,BossSpawned;
+        public PendingMeteor[] PendingMeteors=Array.Empty<PendingMeteor>();
+    }
     public sealed class RecipeData
     {
         public string Name; public int[] Cost; public RecipeData(string name,int dust=0,int core=0,int umbra=0,int wood=0,int ore=0){Name=name;Cost=new[]{dust,core,umbra,wood,ore};}
@@ -170,10 +186,87 @@ namespace Ember
         int MaxActiveEnemies=>S.Phase==Phase.Eclipse
             ?(S.Difficulty==Difficulty.Hard?75:S.Difficulty==Difficulty.Easy?40:55)
             :(S.Difficulty==Difficulty.Hard?30:S.Difficulty==Difficulty.Easy?16:22);
+        private EmberWorld(){}
         public EmberWorld(int seed,int size=250,Difficulty difficulty=Difficulty.Easy)
         {
             S.Seed=seed;S.Size=size;S.Phase=Phase.Sanctuary;S.Difficulty=difficulty;S.ChargeTarget=Catalog.BeaconChargeTarget(difficulty);S.Fuel=100;S.BeaconHP=0;S.Wave=90;rng=new Random(seed);
             Tiles=MakeTiles(seed,size);GenerateNodes();Publish();
+        }
+        public RunSaveData ExportRun(int heldSlot=1)
+        {
+            Publish();
+            return new RunSaveData
+            {
+                Version=1,
+                SavedAt=DateTime.UtcNow.ToString("O"),
+                HeldSlot=heldSlot,
+                Snapshot=S,
+                Chest=(int[])Chest.Clone(),
+                NextId=nextId,
+                SpawnClock=spawnClock,
+                PetClock=petClock,
+                LastLightSpent=lastLightSpent,
+                BossSpawned=bossSpawned,
+                PendingMeteors=meteors.Select(m=>new PendingMeteor{OwnerId=m.owner?.Id??0,Center=m.center,Delay=m.delay}).ToArray()
+            };
+        }
+        public static void ValidateRunSave(RunSaveData data)
+        {
+            if(data==null||data.Version!=1||data.Snapshot==null)throw new System.IO.InvalidDataException("Run save không hợp lệ.");
+            var s=data.Snapshot;
+            if(s.Size<32||s.Size>512)throw new System.IO.InvalidDataException("Kích thước bản đồ không hợp lệ.");
+            if(s.Phase!=Phase.Explore&&s.Phase!=Phase.Eclipse&&s.Phase!=Phase.Extraction)throw new System.IO.InvalidDataException("Trận đã kết thúc hoặc chưa bắt đầu.");
+            if(s.Players==null||s.Players.Length==0)throw new System.IO.InvalidDataException("Thiếu dữ liệu người chơi.");
+            foreach(var p in s.Players)
+            {
+                if(p==null||p.MaxHP<=0||(int)p.Vessel<0||(int)p.Vessel>=Catalog.VesselNames.Length)throw new System.IO.InvalidDataException("Dữ liệu nhân vật không hợp lệ.");
+                if(p.Bag==null||p.Bag.Length!=(int)Resource.Count)p.Bag=new int[(int)Resource.Count];
+                if(p.Items==null||p.Items.Length!=4)p.Items=new int[4];
+                if(p.Perks==null)p.Perks=Array.Empty<int>();
+                if(p.PerkRanks==null)p.PerkRanks=Array.Empty<int>();
+            }
+            if(s.ChargeTarget<=0)s.ChargeTarget=Catalog.BeaconChargeTarget(s.Difficulty);
+            if(s.Enemies==null)s.Enemies=Array.Empty<Enemy>();
+            if(s.Nodes==null)s.Nodes=Array.Empty<Node>();
+            if(s.Structures==null)s.Structures=Array.Empty<Structure>();
+            if(s.Effects==null)s.Effects=Array.Empty<Effect>();
+            if(s.Projectiles==null)s.Projectiles=Array.Empty<Projectile>();
+            if(data.Chest==null||data.Chest.Length!=5)data.Chest=new int[5];
+            if(data.PendingMeteors==null)data.PendingMeteors=Array.Empty<PendingMeteor>();
+        }
+        public static EmberWorld RestoreRun(RunSaveData data,string installationId=null)
+        {
+            ValidateRunSave(data);
+            var w=new EmberWorld();
+            w.S=data.Snapshot;
+            w.Tiles=MakeTiles(w.S.Seed,w.S.Size);
+            Array.Copy(data.Chest,w.Chest,5);
+            w.players.AddRange(w.S.Players);
+            if(!string.IsNullOrEmpty(installationId)&&w.players.Count>0)w.players[0].InstallationId=installationId;
+            w.enemies.AddRange(w.S.Enemies);
+            w.nodes.AddRange(w.S.Nodes);
+            w.structures.AddRange(w.S.Structures);
+            w.effects.AddRange(w.S.Effects);
+            w.projectiles.AddRange(w.S.Projectiles);
+            int maxId=Math.Max(10,data.NextId);
+            foreach(var p in w.players)maxId=Math.Max(maxId,p.Id+1);
+            foreach(var e in w.enemies)maxId=Math.Max(maxId,e.Id+1);
+            foreach(var n in w.nodes)maxId=Math.Max(maxId,n.Id+1);
+            foreach(var st in w.structures)maxId=Math.Max(maxId,st.Id+1);
+            foreach(var pr in w.projectiles)maxId=Math.Max(maxId,pr.Id+1);
+            w.nextId=maxId;
+            w.spawnClock=Math.Max(0,data.SpawnClock);
+            w.petClock=Math.Max(0,data.PetClock);
+            w.lastLightSpent=data.LastLightSpent;
+            w.bossSpawned=data.BossSpawned;
+            w.rng=new Random(unchecked(w.S.Seed^(w.S.Tick*397)^w.nextId));
+            foreach(var m in data.PendingMeteors)
+            {
+                var owner=w.PlayerById(m.OwnerId)??w.players.FirstOrDefault();
+                if(owner!=null&&m.Delay>0)w.meteors.Add((owner,m.Center,m.Delay));
+            }
+            w.Publish();
+            return w;
         }
         public static byte[] MakeTiles(int seed,int size)
         {

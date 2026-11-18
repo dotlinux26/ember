@@ -265,6 +265,28 @@ torchWorld.StartRun();
 torchWorld.Submit(1,new Command{Equip=2,Use=0});
 torchWorld.Tick();
 Check(torchUser.Items[0]==0&&torchUser.HeldSlot==6&&torchWorld.S.Structures.Any(s=>s.Kind==0&&s.MaxLife==45&&s.Life>0),"placing the last torch consumes it, clears the hand slot, and spawns a timed torch with max fuel");
+var runWorld=new EmberWorld(777,250,Difficulty.Hard);
+var runner=runWorld.AddPlayer(1,"Saver",Vessel.LittleMoone);
+runWorld.StartRun();
+runner.Bag[(int)Resource.Core]=4;
+runner.Bag[(int)Resource.Wood]=7;
+runner.HP=74;
+runner.Dread=28;
+runWorld.Chest[(int)Resource.Ore]=9;
+runWorld.Submit(1,new Command{Deposit=true,Use=0});
+for(int k=0;k<15;k++)runWorld.Tick();
+var exportedRun=runWorld.ExportRun(7);
+var runJsonOpts=new System.Text.Json.JsonSerializerOptions{IncludeFields=true,IgnoreReadOnlyProperties=true};
+var encryptedRun=EmberSave.Protect(System.Text.Json.JsonSerializer.Serialize(exportedRun,runJsonOpts),"device-local-key");
+var decryptedRun=System.Text.Json.JsonSerializer.Deserialize<RunSaveData>(EmberSave.Unprotect(encryptedRun,"device-local-key"),runJsonOpts);
+var resumedWorld=EmberWorld.RestoreRun(decryptedRun,"0123456789abcdef0123456789abcdef");
+var resumedPlayer=resumedWorld.PlayerById(1);
+Check(resumedWorld.S.Seed==777&&resumedWorld.S.Difficulty==Difficulty.Hard&&resumedWorld.S.ChargeTarget==1000&&resumedWorld.S.Charge>=100,"restored solo run preserves seed, difficulty, and beacon charge");
+Check(resumedPlayer!=null&&resumedPlayer.Vessel==Vessel.LittleMoone&&Math.Abs(resumedPlayer.HP-74)<.1f&&resumedPlayer.Bag[(int)Resource.Wood]==7&&resumedWorld.Chest[(int)Resource.Ore]==9,"restored solo run preserves player HP, bag, vessel, and shared chest");
+Check(resumedWorld.S.Structures.Any(s=>s.Kind==0&&s.MaxLife==45&&s.Life>0)&&resumedWorld.S.Nodes.Length==runWorld.S.Nodes.Length&&resumedWorld.S.Enemies.Length==runWorld.S.Enemies.Length,"restored solo run preserves placed structures, nodes, and enemies");
+int tickBeforeResume=resumedWorld.S.Tick;
+resumedWorld.Tick();
+Check(resumedWorld.S.Tick==tickBeforeResume+1,"restored solo run continues advancing simulation cleanly");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

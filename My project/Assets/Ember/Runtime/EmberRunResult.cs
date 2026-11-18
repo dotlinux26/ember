@@ -17,6 +17,7 @@ namespace Ember
             runStones=Profile.AwakeningStones-stones;
             if(runStones>0)Trace("reward.awakening_stone","count="+runStones);
             SaveProfile();
+            if(!network)ClearSavedRun();
             rewarded=true;
         }
 

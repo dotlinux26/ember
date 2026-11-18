@@ -23,6 +23,7 @@ namespace Ember
         string installationId;
         const string InstallationIdPref="Ember.PlayerId";
         const string DisplayNamePref="Ember.DisplayName";
+        const string DifficultyPref="Ember.Difficulty";
 
         void InitializeIdentity()
         {
@@ -59,8 +60,10 @@ namespace Ember
             InitializeIdentity();
             if(FindAnyObjectByType<AudioListener>()==null)cam.gameObject.AddComponent<AudioListener>();
             white=new Texture2D(1,1);white.SetPixel(0,0,Color.white);white.Apply();
+            selectedDifficulty=(Difficulty)Mathf.Clamp(PlayerPrefs.GetInt(DifficultyPref,(int)Difficulty.Normal),0,2);
             LoadProfile();selected=Profile.SelectedVessel;
             if(!Profile.CanPlay(selected))selected=0;
+            RefreshSavedRunPreview();
             NewWorld(Environment.TickCount);
             foreach(var arg in Environment.GetCommandLineArgs())
             {
@@ -98,7 +101,7 @@ namespace Ember
             var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();ClearActions();
         }
-        void StartSolo(){lan?.Leave();network=false;host=true;localId=1;NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();menu=false;}
+        void StartSolo(){lan?.Leave();network=false;host=true;localId=1;ClearSavedRun();NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();runAutoSaveClock=RunAutoSaveInterval;menu=false;SaveActiveRun(false);}
         void HostGame()
         {
             try{lan?.Leave();lan=new EmberLan{Capacity=roomCapacity,Mode=routeMode,Trace=Trace};
@@ -153,6 +156,7 @@ namespace Ember
             {
                 var p=Local;if(p!=null)RecordRunReward(p);
             }
+            TickRunAutoSave(Time.deltaTime);
         }
         int spectateId;
         Player Local=>State?.Players?.FirstOrDefault(p=>p.Id==localId);
@@ -197,7 +201,7 @@ namespace Ember
                 }
                 else if(craftOpen)craftOpen=false;
                 else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
-                else {menu=!menu;pauseConfirm=false;pauseSettings=false;}
+                else {menu=!menu;pauseConfirm=false;pauseSettings=false;if(menu)SaveActiveRun(false);}
                 path.Clear();
             }
             if(menu||debugOpen||State==null||State.Phase==Phase.Sanctuary||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))){intent.X=intent.Y=0;return;}
@@ -678,14 +682,20 @@ namespace Ember
             }
             GUILayout.Space(10);
             UiText(L("Độ khó · Năng lượng trụ","Difficulty · Beacon energy"),small);
-            selectedDifficulty=(Difficulty)DrawSpacedChoices((int)selectedDifficulty,new[]{
+            var nextDifficulty=(Difficulty)DrawSpacedChoices((int)selectedDifficulty,new[]{
                 L("Dễ · 500","Easy · 500"),
                 L("Trung bình · 750","Normal · 750"),
                 L("Khó · 1000","Hard · 1000")
             },38);
+            if(nextDifficulty!=selectedDifficulty)
+            {
+                selectedDifficulty=nextDifficulty;
+                if(!debugSession){PlayerPrefs.SetInt(DifficultyPref,(int)selectedDifficulty);PlayerPrefs.Save();}
+            }
             GUILayout.Space(8);
+            DrawSavedRunCard();
             GUI.enabled=Profile.CanPlay(selected);
-            if(UiButton("Chơi một mình",GUILayout.Height(PlayActionHeight)))StartSolo();
+            if(UiButton(savedRunPreview!=null?L("Bắt đầu trận mới (Solo)","Start new solo run"):L("Chơi một mình","Play solo"),GUILayout.Height(PlayActionHeight)))StartSolo();
             GUI.enabled=true;
             GUILayout.Space(8);
             if(UiButton(onlineExpanded?L("▾ Chơi cùng bạn","▾ Multiplayer"):L("▸ Chơi cùng bạn","▸ Multiplayer"),GUILayout.Height(PlayActionHeight)))onlineExpanded=!onlineExpanded;
@@ -749,7 +759,8 @@ namespace Ember
             try{string file=EmberFileDialog.Choose(false);if(string.IsNullOrEmpty(file))return;PreviewRestore(File.ReadAllBytes(file),Path.GetFileName(file));}
             catch(Exception ex){notice=ex.Message;}
         }
-        void OnApplicationQuit(){if(!netSmoke)SaveProfile();try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
+        void OnApplicationPause(bool paused){if(paused&&!netSmoke){SaveActiveRun(false);SaveProfile();PlayerPrefs.Save();}}
+        void OnApplicationQuit(){if(!netSmoke){SaveActiveRun(false);SaveProfile();PlayerPrefs.Save();}try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
         void OnDestroy(){lan?.Dispose();CloseDiagnostics();}
     }
 }

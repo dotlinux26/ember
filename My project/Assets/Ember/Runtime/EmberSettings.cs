@@ -75,12 +75,12 @@ namespace Ember
         void DrawPauseMenu()
         {
             float width=Mathf.Min(438,Screen.width-30);
-            float height=pauseSettings?Mathf.Min(520,Screen.height-56):300;
+            float height=pauseSettings?Mathf.Min(520,Screen.height-56):(!network&&CanSaveCurrentSoloRun()?344:300);
             var box=new Rect((Screen.width-width)/2,(Screen.height-height)/2,width,height);
             Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.035f,.025f,.075f,.70f));
             PixelPanel(box,FieldPaper);
             GUILayout.BeginArea(new Rect(box.x+17,box.y+12,box.width-34,box.height-24));
-            UiText(pauseSettings?L("Thiết lập","Settings"):pauseConfirm?L("Rời trận?","Leave the run?"):
+            UiText(pauseSettings?L("Thiết lập","Settings"):pauseConfirm?L("Bỏ trận đang chơi?","Discard current run?"):
                 network?L("Menu trận","Match menu"):L("Tạm dừng","Paused"),title);
             GUILayout.Space(6);
 
@@ -93,9 +93,16 @@ namespace Ember
             }
             else if(pauseConfirm)
             {
-                UiText(L("Anh sẽ về sảnh và bỏ trận đang chơi.","Return to Sanctuary and leave the current run."),label);
+                UiText(network
+                    ?L("Anh sẽ về sảnh và rời trận co-op hiện tại.","Return to Sanctuary and leave the current co-op run.")
+                    :L("Bản lưu trận dở sẽ bị xóa và không cộng thưởng.","The saved solo run will be discarded with no rewards."),label);
                 GUILayout.Space(12);
-                if(UiButton(L("Rời trận","Leave run"),GUILayout.Height(40))){pauseConfirm=false;LeaveRoom();}
+                if(UiButton(network?L("Rời trận","Leave run"):L("Xóa trận & Về sảnh","Discard & Sanctuary"),GUILayout.Height(40)))
+                {
+                    pauseConfirm=false;
+                    if(!network)ClearSavedRun();
+                    LeaveRoom();
+                }
                 if(UiButton(L("Quay lại","Back"),GUILayout.Height(40)))pauseConfirm=false;
             }
             else
@@ -109,7 +116,12 @@ namespace Ember
                 GUILayout.Space(10);
                 if(UiButton(L("Tiếp tục","Resume"),GUILayout.Height(40)))menu=false;
                 if(UiButton(L("Thiết lập","Settings"),GUILayout.Height(40))){pauseSettings=true;pauseScroll=Vector2.zero;}
-                if(UiButton(L("Về sảnh","Back to Sanctuary"),GUILayout.Height(40)))pauseConfirm=true;
+                if(!network&&CanSaveCurrentSoloRun())
+                {
+                    if(UiButton(L("Lưu & Về sảnh","Save & Sanctuary"),GUILayout.Height(40))){SaveActiveRun(true);LeaveRoom();}
+                    if(UiButton(L("Bỏ trận (xóa save)","Discard run"),GUILayout.Height(36)))pauseConfirm=true;
+                }
+                else if(UiButton(L("Về sảnh","Back to Sanctuary"),GUILayout.Height(40)))pauseConfirm=true;
             }
             GUILayout.EndArea();
         }

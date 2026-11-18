@@ -189,8 +189,8 @@ namespace Ember
             if(Event.current.type!=EventType.Layout)
             {
                 const float edge=48;
-                if(GUI.Button(new Rect(row.x+4,row.center.y-22,36,44),"‹"))selected=(selected+names.Length-1)%names.Length;
-                if(GUI.Button(new Rect(row.xMax-40,row.center.y-22,36,44),"›"))selected=(selected+1)%names.Length;
+                if(GUI.Button(new Rect(row.x+4,row.center.y-22,36,44),"‹")){selected=(selected+names.Length-1)%names.Length;if(Profile.CanPlay(selected))SaveProfile();}
+                if(GUI.Button(new Rect(row.xMax-40,row.center.y-22,36,44),"›")){selected=(selected+1)%names.Length;if(Profile.CanPlay(selected))SaveProfile();}
                 var card=new Rect(row.x+edge,row.y,row.width-2*edge,row.height);
                 PixelPanel(card,Lilac);
                 PixelArt(new Rect(card.x+7,card.y+7,card.width-14,112),"sanctuary",ScaleMode.ScaleAndCrop);
@@ -440,17 +440,44 @@ namespace Ember
 
         void DrawCharacterCheat()
         {
-            if(network||(!Application.isEditor&&!Debug.isDebugBuild))return;
-            if(!UiButton(L("Test · Mở khóa tất cả Bản Ngã","Test · Unlock all vessels")))return;
-            if(!debugSession)
+            if(network)return;
+            if(debugSession)
             {
-                Profile=JsonUtility.FromJson<Profile>(JsonUtility.ToJson(Profile));
-                debugSession=true;
+                UiText(L("Đang ở Sandbox tạm (F8) · Không ghi vào save thật.","Temporary Sandbox (F8) · Real save writes disabled."),small);
+                if(UiButton(L("Thoát Sandbox về save thật","Exit Sandbox to real save")))
+                {
+                    debugSession=false;
+                    LoadProfile();
+                    selected=Profile.CanPlay(Profile.SelectedVessel)?Profile.SelectedVessel:0;
+                    RefreshSavedRunPreview();
+                    notice=L("Đã quay lại save thật (profile.ember).","Returned to real save (profile.ember).");
+                }
+                GUILayout.Space(6);
+                return;
             }
-            Profile.Vessels=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Range(0,Catalog.VesselNames.Length));
-            Profile.LittleMooneAwake=true;
-            notice=L("Đã mở toàn bộ Bản Ngã trong phiên test.","All vessels unlocked for this test session.");
-            Trace("debug.unlock_vessels",notice);
+            if(!Application.isEditor&&!Debug.isDebugBuild)return;
+            GUILayout.BeginHorizontal();
+            if(UiButton(L("Test · Mở hết Bản Ngã (Lưu)","Test · Unlock vessels (Save)")))
+            {
+                Profile.Vessels=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Range(0,Catalog.VesselNames.Length));
+                Profile.LittleMooneAwake=true;
+                SaveProfile();
+                notice=L("Đã mở toàn bộ Bản Ngã và lưu vào profile.ember.","Unlocked all vessels and saved to profile.ember.");
+                Trace("debug.unlock_vessels_saved",notice);
+            }
+            GUILayout.Space(6);
+            if(UiButton(L("Test · +Tài nguyên (Lưu)","Test · +Resources (Save)")))
+            {
+                Profile.Ash+=1000;
+                Profile.Memory+=50;
+                Profile.Tokens+=20;
+                Profile.AwakeningStones+=5;
+                SaveProfile();
+                notice=L("Đã cộng +1000 Tro, +50 Ký ức, +20 Định Mệnh, +5 Thức tỉnh (đã lưu).","Added test currencies and saved to profile.ember.");
+                Trace("debug.grant_currencies_saved",notice);
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(4);
         }
 
         void DrawSanctuaryBackdrop()
