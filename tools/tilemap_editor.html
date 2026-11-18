@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Ember - Bộ Biên Tập Bản Đồ Web (Tilemap Editor)</title>
+  <style>
+    :root {
+      --bg: #0c0b16;
+      --panel: #161426;
+      --card: #1f1b34;
+      --accent: #9d72e8;
+      --accent-hover: #b48eff;
+      --text: #eae8f5;
+      --text-dim: #9793b5;
+      --border: #2d274c;
+      --gold: #ffd152;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+    header h1 span {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    button, .file-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    button:hover, .file-btn:hover {
+      background: var(--border);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.primary {
+      background: linear-gradient(135deg, #7c3aed, #9333ea);
+      border: none;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+    }
+    button.primary:hover {
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.6);
+    }
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .sidebar {
+      width: 280px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 5;
+    }
+    .sidebar-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .palette-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tile-opt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tile-opt:hover {
+      border-color: var(--accent);
+      background: rgba(157, 114, 232, 0.1);
+    }
+    .tile-opt.active {
+      border-color: var(--accent);
+      background: rgba(157, 114, 232, 0.22);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .tile-color-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+    .tile-info {
+      flex: 1;
+    }
+    .tile-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .tile-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .tool-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .tool-btn {
+      padding: 8px;
+      font-size: 12px;
+      justify-content: center;
+    }
+    .tool-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .canvas-container {
+      flex: 1;
+      background: #08070e;
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    canvas {
+      image-rendering: pixelated;
+      position: absolute;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+    footer {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 6px 16px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .status-left, .status-right {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+    .badge {
+      color: #fff;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🗺️ Ember Tilemap Editor <span>Web GUI</span></h1>
+    <div class="top-actions">
+      <button onclick="generateArchipelago()">🏝️ Tạo Mẫu Quần Đảo</button>
+      <button onclick="clearMap()">🗑️ Xóa Về Cỏ</button>
+      <label class="file-btn">
+        📂 Nạp custom_map.dat
+        <input type="file" id="fileInput" accept=".dat,.json" style="display:none" onchange="loadFromFile(event)">
+      </label>
+      <button class="primary" onclick="exportDat()">💾 Tải custom_map.dat</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Khối Địa Hình (Palette)</div>
+        <div class="palette-grid" id="palette"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Cỡ Cọ Vẽ (Brush Size)</div>
+        <div class="tool-group">
+          <button class="tool-btn active" id="b1" onclick="setBrush(1)">1x1</button>
+          <button class="tool-btn" id="b3" onclick="setBrush(3)">3x3</button>
+          <button class="tool-btn" id="b5" onclick="setBrush(5)">5x5</button>
+        </div>
+        <div class="tool-group" style="grid-template-columns: repeat(2, 1fr);">
+          <button class="tool-btn" id="toolPencil" onclick="setTool('pencil')">✏️ Cọ Vẽ</button>
+          <button class="tool-btn" id="toolBucket" onclick="setTool('bucket')">🪣 Đổ Màu</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Kích Thước Bản Đồ</div>
+        <div style="font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 6px;">250 x 250 ô (Chuẩn Ember)</div>
+        <p style="font-size: 11px; color: var(--text-dim); line-height: 1.5;">
+          • Click trái: Vẽ khối đã chọn<br>
+          • Click phải: Tẩy về Cỏ<br>
+          • Cuộn chuột: Phóng to / Thu nhỏ<br>
+          • Nhấn giữ chuột giữa hoặc Space + Kéo: Di chuyển góc nhìn (Pan)
+        </p>
+      </div>
+    </div>
+
+    <div class="canvas-container" id="container">
+      <canvas id="mapCanvas"></canvas>
+    </div>
+  </div>
+
+  <footer>
+    <div class="status-left">
+      <div>Tọa độ: <span class="badge" id="coordText">0, 0</span></div>
+      <div>Khối hiện tại: <span class="badge" id="currentTileText">Cỏ (Grass)</span></div>
+      <div>Zoom: <span class="badge" id="zoomText">100%</span></div>
+    </div>
+    <div class="status-right">
+      <div>Đảo Trung Tâm: <span class="badge" style="color:#7ee787;">Bán kính 22 ô</span></div>
+      <div>File mục tiêu: <span class="badge" style="color:var(--gold);">custom_map.dat</span></div>
+    </div>
+  </footer>
+
+  <script>
+    const SIZE = 250;
+    const TILES = [
+      { id: 0, name: "Cỏ xanh (Grass)", desc: "Đi lại tự do", color: "#3d7343" },
+      { id: 1, name: "Nước hồ (Water)", desc: "Chặn đi lại (Solid)", color: "#2d789b" },
+      { id: 2, name: "Vách đồi (Cliff)", desc: "Vách đá cao chặn đường", color: "#6e5082" },
+      { id: 3, name: "Cây rừng (Tree)", desc: "Chặn đường & Chặt được", color: "#1e522b" },
+      { id: 4, name: "Vực thẳm (Abyss)", desc: "Biên giới thế giới", color: "#06040b" },
+      { id: 5, name: "Cầu gỗ (Bridge)", desc: "Đi được trên mặt nước", color: "#8c5a36" },
+      { id: 6, name: "Đường mòn (Path)", desc: "Đất nền trung tâm", color: "#9e7a4e" }
+    ];
+
+    let map = new Uint8Array(SIZE * SIZE);
+    let selectedTile = 0;
+    let brushSize = 1;
+    let activeTool = 'pencil';
+    let zoom = 3;
+    let panX = 0, panY = 0;
+    let isMouseDown = false;
+    let isPanning = false;
+    let mouseButton = 0;
+    let startX = 0, startY = 0;
+
+    const canvas = document.getElementById("mapCanvas");
+    const ctx = canvas.getContext("2d");
+    const container = document.getElementById("container");
+
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+
+    function initPalette() {
+      const p = document.getElementById("palette");
+      TILES.forEach(t => {
+        const div = document.createElement("div");
+        div.className = `tile-opt ${t.id === selectedTile ? 'active' : ''}`;
+        div.onclick = () => selectTile(t.id);
+        div.innerHTML = `
+          <div class="tile-color-box" style="background:${t.color};"></div>
+          <div class="tile-info">
+            <div class="tile-name">[${t.id}] ${t.name}</div>
+            <div class="tile-desc">${t.desc}</div>
+          </div>
+        `;
+        p.appendChild(div);
+      });
+    }
+
+    function selectTile(id) {
+      selectedTile = id;
+      document.querySelectorAll(".tile-opt").forEach((el, idx) => {
+        el.classList.toggle("active", idx === id);
+      });
+      document.getElementById("currentTileText").innerText = TILES[id].name;
+    }
+
+    function setBrush(size) {
+      brushSize = size;
+      document.querySelectorAll(".tool-btn").forEach(b => {
+        if (b.id === `b${size}`) b.classList.add("active");
+        else if (b.id.startsWith("b")) b.classList.remove("active");
+      });
+    }
+
+    function setTool(t) {
+      activeTool = t;
+      document.getElementById("toolPencil").classList.toggle("active", t === 'pencil');
+      document.getElementById("toolBucket").classList.toggle("active", t === 'bucket');
+    }
+
+    function renderMap() {
+      const imgData = ctx.createImageData(SIZE, SIZE);
+      const hexToRgb = hex => {
+        const num = parseInt(hex.slice(1), 16);
+        return [num >> 16, (num >> 8) & 255, num & 255];
+      };
+      const colors = TILES.map(t => hexToRgb(t.color));
+
+      for (let i = 0; i < map.length; i++) {
+        const t = map[i];
+        const c = colors[t] || [255,255,255];
+        const idx = i * 4;
+        imgData.data[idx] = c[0];
+        imgData.data[idx + 1] = c[1];
+        imgData.data[idx + 2] = c[2];
+        imgData.data[idx + 3] = 255;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      updateCanvasTransform();
+    }
+
+    function updateCanvasTransform() {
+      canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      canvas.style.transformOrigin = "0 0";
+      document.getElementById("zoomText").innerText = `${Math.round(zoom * 33)}%`;
+    }
+
+    function generateArchipelago() {
+      const half = SIZE / 2;
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          if (x < 3 || y < 3 || x >= SIZE - 3 || y >= SIZE - 3) {
+            map[y * SIZE + x] = 4;
+            continue;
+          }
+          const dx = x - half, dy = y - half;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          if (r >= SIZE * 0.48) {
+            map[y * SIZE + x] = 4;
+            continue;
+          }
+          // Cardinal bridges across moat (radius 18 to 39)
+          if (r >= 18 && r <= 39 && (Math.abs(dx) <= 1 || Math.abs(dy) <= 1)) {
+            map[y * SIZE + x] = 5; // Bridge
+          } else if (r <= 22) {
+            map[y * SIZE + x] = 0; // Central Sanctuary
+          } else if (r <= 37) {
+            map[y * SIZE + x] = 1; // Moat water
+          } else if (r <= SIZE * 0.38) {
+            map[y * SIZE + x] = ((x ^ y) % 5 === 0) ? 0 : 1;
+          } else {
+            map[y * SIZE + x] = ((x ^ y) % 3 === 0) ? 2 : 1;
+          }
+        }
+      }
+      // Sanctuary paths
+      for (let y = 4; y < SIZE - 4; y++) {
+        for (let x = 4; x < SIZE - 4; x++) {
+          const dx = x - half, dy = y - half;
+          const r = Math.sqrt(dx * dx + dy * dy);
+          if (r <= 20 && (Math.abs(dx) <= 1 || Math.abs(dy) <= 1) && map[y * SIZE + x] === 0) {
+            map[y * SIZE + x] = 6;
+          }
+        }
+      }
+      renderMap();
+    }
+
+    function clearMap() {
+      map.fill(0);
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          if (x < 3 || y < 3 || x >= SIZE - 3 || y >= SIZE - 3) map[y * SIZE + x] = 4;
+        }
+      }
+      renderMap();
+    }
+
+    function getMapCoord(e) {
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left - panX;
+      const mouseY = e.clientY - rect.top - panY;
+      const tx = Math.floor(mouseX / zoom);
+      const ty = Math.floor(mouseY / zoom);
+      return { tx, ty };
+    }
+
+    function paint(tx, ty, tile) {
+      if (activeTool === 'bucket') {
+        floodFill(tx, ty, tile);
+        renderMap();
+        return;
+      }
+      const r = Math.floor(brushSize / 2);
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const px = tx + dx, py = ty + dy;
+          if (px >= 0 && px < SIZE && py >= 0 && py < SIZE) {
+            map[py * SIZE + px] = tile;
+          }
+        }
+      }
+      renderMap();
+    }
+
+    function floodFill(startX, startY, newTile) {
+      if (startX < 0 || startX >= SIZE || startY < 0 || startY >= SIZE) return;
+      const oldTile = map[startY * SIZE + startX];
+      if (oldTile === newTile) return;
+      const queue = [[startX, startY]];
+      while (queue.length > 0) {
+        const [x, y] = queue.pop();
+        if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) continue;
+        if (map[y * SIZE + x] !== oldTile) continue;
+        map[y * SIZE + x] = newTile;
+        queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+      }
+    }
+
+    container.addEventListener("mousedown", e => {
+      if (e.button === 1 || e.spaceKey || (e.button === 0 && e.altKey)) {
+        isPanning = true;
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        return;
+      }
+      isMouseDown = true;
+      mouseButton = e.button;
+      const { tx, ty } = getMapCoord(e);
+      paint(tx, ty, mouseButton === 2 ? 0 : selectedTile);
+    });
+
+    window.addEventListener("mouseup", () => {
+      isMouseDown = false;
+      isPanning = false;
+    });
+
+    window.addEventListener("contextmenu", e => {
+      if (container.contains(e.target)) e.preventDefault();
+    });
+
+    container.addEventListener("mousemove", e => {
+      const { tx, ty } = getMapCoord(e);
+      if (tx >= 0 && tx < SIZE && ty >= 0 && ty < SIZE) {
+        document.getElementById("coordText").innerText = `${tx}, ${ty}`;
+      }
+      if (isPanning) {
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        updateCanvasTransform();
+        return;
+      }
+      if (isMouseDown) {
+        paint(tx, ty, mouseButton === 2 ? 0 : selectedTile);
+      }
+    });
+
+    container.addEventListener("wheel", e => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.8 : 1.25;
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const newZoom = Math.max(1, Math.min(16, zoom * delta));
+      panX = mouseX - (mouseX - panX) * (newZoom / zoom);
+      panY = mouseY - (mouseY - panY) * (newZoom / zoom);
+      zoom = newZoom;
+      updateCanvasTransform();
+    });
+
+    function exportDat() {
+      const blob = new Blob([map], { type: "application/octet-stream" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "custom_map.dat";
+      a.click();
+    }
+
+    function loadFromFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const buffer = e.target.result;
+        const arr = new Uint8Array(buffer);
+        if (arr.length === SIZE * SIZE) {
+          map.set(arr);
+          renderMap();
+          alert("Nạp custom_map.dat thành công!");
+        } else {
+          alert(`File không khớp kích thước: nhận được ${arr.length} bytes, cần ${SIZE * SIZE} bytes.`);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Centering canvas initially
+    window.onload = () => {
+      initPalette();
+      generateArchipelago();
+      panX = (container.clientWidth - SIZE * zoom) / 2;
+      panY = (container.clientHeight - SIZE * zoom) / 2;
+      updateCanvasTransform();
+    };
+  </script>
+</body>
+</html>

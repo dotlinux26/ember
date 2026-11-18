@@ -103,7 +103,9 @@ namespace Ember
                             {
                                 int tx=px+dx,ty=py+dy;
                                 if(tx<0||ty<0||tx>=size||ty>=size)continue;
-                                byte t=tiles[ty*size+tx];
+                                int idx=ty*size+tx;
+                                if(idx<0||idx>=tiles.Length)continue;
+                                byte t=tiles[idx];
                                 if(t==3||t==2)
                                 {
                                     V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
@@ -752,12 +754,7 @@ namespace Ember
                 if(UiButton(new Rect(itemChip.xMax-96,itemChip.y+2,92,28),L("Dùng [U]","Use [U]")))intent.Use=selectedItem;
                 GUI.enabled=true;
             }
-            if(p.Vessel!=Vessel.Wanderer)
-            {
-                var rangeChip=new Rect(x,y-63,width,25);
-                PixelPanel(rangeChip,FieldPaper);
-                DrawMarqueeLabel(new Rect(rangeChip.x+9,rangeChip.y+2,rangeChip.width-18,21),SkillRangeText(p.Vessel)+" · "+EmberLanguage.Text(Catalog.VesselDescriptions[(int)p.Vessel]),small);
-            }
+            // Floating status banner removed by user request
             int count=p.Vessel==Vessel.Wanderer?4:5;
             float cell=Mathf.Min(72,(width-12)/count);
             float start=(Screen.width-count*cell)/2;

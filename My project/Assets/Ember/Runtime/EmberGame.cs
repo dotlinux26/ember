@@ -175,7 +175,7 @@ namespace Ember
             if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
             ReadInput();
             ReadCameraZoom();
-            UpdateMapEditor();
+            // Map Editor moved to web-based tool
             if(netSmoke&&!host){intent.X=State?.Phase==Phase.Explore&&State.Time<6?1:0;intent.Y=0;if(lan.LocalId>0&&!readyWanted){readyWanted=true;lan.SetReady(true);}}
             if(netSmoke&&host&&State.Players.Length==netExpected&&State.Players.All(p=>p.Ready))BeginRoomRun();
             if((!menu||network)&&host)
@@ -909,9 +909,13 @@ namespace Ember
             keepTrees.Clear();dropTrees.Clear();
             int yMin=Mathf.Max(3,cy-halfY),yMax=Mathf.Min(size-3,cy+halfY+2);
             int xMin=Mathf.Max(3,cx-halfX),xMax=Mathf.Min(size-3,cx+halfX+2);
-            for(int y=yMin;y<yMax;y++)for(int x=xMin;x<xMax;x++)if(currentTiles[y*size+x]==3)
+            for(int y=yMin;y<yMax;y++)for(int x=xMin;x<xMax;x++)
             {
-                int key=y*size+x;keepTrees.Add(key);if(visibleTrees.ContainsKey(key))continue;
+                int idx=y*size+x;
+                if(idx<0||idx>=currentTiles.Length)continue;
+                if(currentTiles[idx]==3)
+                {
+                    int key=idx;keepTrees.Add(key);if(visibleTrees.ContainsKey(key))continue;
                 float dx=x-size/2f,dy=y-size/2f;
                 float r=Mathf.Sqrt(dx*dx+dy*dy);
                 int hash=((x*374761393)^(y*668265263))&0x7FFFFFFF;
@@ -960,7 +964,7 @@ namespace Ember
                 }
                 tree.sortingOrder=5000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
-            }
+            }}
             foreach(var kv in visibleTrees)if(!keepTrees.Contains(kv.Key))dropTrees.Add(kv.Key);
             for(int i=0;i<dropTrees.Count;i++)
             {

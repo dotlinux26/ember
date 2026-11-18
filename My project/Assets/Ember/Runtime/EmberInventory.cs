@@ -719,7 +719,7 @@ namespace Ember
             var cell=backpackCells[contextMenuCell];
             if(cell.Empty){contextMenuOpen=false;return;}
             int eqSlot=EquipSlotForCell(cell);
-            float mw=210,mh=eqSlot>0?170:136;
+            float mw=256,mh=eqSlot>0?200:150;
             float mx=Mathf.Clamp(contextMenuPos.x,parentBox.x+10,parentBox.xMax-mw-10);
             float my=Mathf.Clamp(contextMenuPos.y,parentBox.y+10,parentBox.yMax-mh-10);
             var menuRect=new Rect(mx,my,mw,mh);
@@ -727,6 +727,13 @@ namespace Ember
             DrawSpritePreview(new Rect(menuRect.x+8,menuRect.y+7,26,26),CellSprite(p,cell));
             string titleName=cell.Kind==1&&cell.Id==8?p.PickaxeName:CellTitle(p,cell);
             UiLabel(new Rect(menuRect.x+38,menuRect.y+7,mw-46,24),titleName,small);
+
+            var menuBtnStyle=new GUIStyle(GUI.skin.button)
+            {
+                fontSize=12,
+                padding=new RectOffset(4,4,2,2),
+                alignment=TextAnchor.MiddleCenter
+            };
 
             float curY=menuRect.y+36;
             if(eqSlot>0)
@@ -737,7 +744,7 @@ namespace Ember
                 for(int k=0;k<4;k++)
                 {
                     int qSlot=k;
-                    if(GUI.Button(new Rect(menuRect.x+8+k*(bw+4),curY,bw,24),""+(k+1)))
+                    if(GUI.Button(new Rect(menuRect.x+8+k*(bw+4),curY,bw,24),""+(k+1),menuBtnStyle))
                     {
                         BindQuickSlot(qSlot,eqSlot);
                         contextMenuOpen=false;
@@ -745,50 +752,50 @@ namespace Ember
                 }
                 curY+=28;
                 string equipText=heldSlot==eqSlot?L("Cất đồ (Tay không)","Unequip (Hands)"):L("Cầm lên tay","Equip");
-                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),equipText))
+                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),equipText,menuBtnStyle))
                 {
                     EquipSlot(eqSlot);
                     contextMenuOpen=false;
                 }
-                curY+=28;
+                curY+=30;
             }
             if(cell.Kind==3||cell.Kind==2)
             {
                 if(cell.Count>1)
                 {
-                    float halfW=(mw-20)/2f;
-                    if(GUI.Button(new Rect(menuRect.x+8,curY,halfW,24),L("Vứt 1","Drop 1")))
+                    float halfW=(mw-22)/2f;
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,halfW,26),L("Vứt 1","Drop 1"),menuBtnStyle))
                     {
                         DropBackpackItem(p,contextMenuCell,1);
                         contextMenuOpen=false;
                     }
-                    if(GUI.Button(new Rect(menuRect.x+12+halfW,curY,halfW,24),L("Vứt hết ("+cell.Count+")","Drop all ("+cell.Count+")")))
+                    if(GUI.Button(new Rect(menuRect.x+12+halfW,curY,halfW,26),L("Vứt hết ("+cell.Count+")","Drop all ("+cell.Count+")"),menuBtnStyle))
                     {
                         DropBackpackItem(p,contextMenuCell,cell.Count);
                         contextMenuOpen=false;
                     }
-                    curY+=28;
+                    curY+=30;
                 }
                 else
                 {
-                    if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),L("Vứt ra đất","Drop to ground")))
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),L("Vứt ra đất","Drop to ground"),menuBtnStyle))
                     {
                         DropBackpackItem(p,contextMenuCell,1);
                         contextMenuOpen=false;
                     }
-                    curY+=28;
+                    curY+=30;
                 }
             }
             else if(cell.Kind==1&&cell.Id==8)
             {
-                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),L("Vứt cuốc đào","Drop pickaxe")))
+                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),L("Vứt cuốc đào","Drop pickaxe"),menuBtnStyle))
                 {
                     DropBackpackItem(p,contextMenuCell,1);
                     contextMenuOpen=false;
                 }
-                curY+=28;
+                curY+=30;
             }
-            if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,22),L("Đóng","Close")))
+            if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),L("Đóng","Close"),menuBtnStyle))
             {
                 contextMenuOpen=false;
             }
