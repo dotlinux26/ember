@@ -103,7 +103,8 @@ namespace Ember
             float top=body.bounds.max.y;
             if(renderers.TryGetValue("hat"+player.Id,out var hat)&&hat.enabled&&hat.sprite!=null)
                 top=Mathf.Max(top,hat.bounds.max.y);
-            Vector2 anchor=ScreenPos(new V2(player.Pos.X,top));
+            V2 pVis=VisualPlayerPos(player);
+            Vector2 anchor=ScreenPos(new V2(pVis.X,top));
             float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
             if(Event.current.type!=EventType.Repaint)return;
             if(overheadName==null)
@@ -516,8 +517,9 @@ namespace Ember
             V2 center=focus?.Pos??new V2();
             foreach(var e in State.Enemies)
             {
-                if(e.HP<=0||e.IsWorldBoss||e.HP>=e.MaxHP-.1f||V2.Distance(e.Pos,center)>24f)continue;
-                Vector2 top=ScreenPos(e.Pos+new V2(0,e.Kind==EnemyKind.Boss?1.35f:e.Elite?1.05f:.85f));
+                V2 eVis=VisualEnemyPos(e);
+                if(e.HP<=0||e.IsWorldBoss||e.HP>=e.MaxHP-.1f||V2.Distance(eVis,center)>24f)continue;
+                Vector2 top=ScreenPos(eVis+new V2(0,e.Kind==EnemyKind.Boss?1.35f:e.Elite?1.05f:.85f));
                 float w=e.Kind==EnemyKind.Boss?56f:e.Elite?46f:36f;
                 float h=5f;
                 var rail=new Rect(Mathf.Round(top.x-w*.5f),Mathf.Round(top.y-8f),w,h);

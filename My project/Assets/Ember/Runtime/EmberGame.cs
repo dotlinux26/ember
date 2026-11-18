@@ -728,6 +728,7 @@ namespace Ember
         void DrawRangeRulers(Player p)
         {
             if(Event.current.type!=EventType.Repaint||p.Ghost)return;
+            V2 pVis=VisualPlayerPos(p);
             if(ranges&&IsHoldingWeaponSlot(heldSlot))
             {
                 Weapon activeWeapon=WeaponForSlot(p,heldSlot);
@@ -736,7 +737,7 @@ namespace Ember
                 bool basic=State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<weaponRange)||
                     (p.Mad&&State.Players.Any(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&!q.Safe&&V2.Distance(q.Pos,p.Pos)<weaponRange));
                 Color weaponColor=hasNode?new Color(.52f,1f,.64f,.95f):basic?new Color(1f,.66f,.26f,.95f):new Color(.62f,.92f,1f,.54f);
-                GlowRing(p.Pos,weaponRange,weaponColor,basic||hasNode?2.4f:1.8f);
+                GlowRing(pVis,weaponRange,weaponColor,basic||hasNode?2.4f:1.8f);
             }
 
             if(p.Vessel!=Vessel.Wanderer&&p.SkillRange>0)
@@ -747,16 +748,16 @@ namespace Ember
                 {
                     float blink=.5f+.5f*Mathf.Sin(clock*14f);
                     Color activeColor=Color.Lerp(new Color(1f,.20f,.22f,.35f),new Color(1f,.58f,.58f,1f),blink);
-                    GlowRing(p.Pos,p.SkillRange,activeColor,2.2f+1.4f*blink);
+                    GlowRing(pVis,p.SkillRange,activeColor,2.2f+1.4f*blink);
                 }
                 else if(hasTarget)
                 {
                     float slow=.5f+.5f*Mathf.Sin(clock*5f);
-                    GlowRing(p.Pos,p.SkillRange,new Color(1f,.22f,.24f,.38f+.20f*slow),1.9f);
+                    GlowRing(pVis,p.SkillRange,new Color(1f,.22f,.24f,.38f+.20f*slow),1.9f);
                 }
                 else
                 {
-                    Ring(p.Pos,p.SkillRange,new Color(.95f,.20f,.24f,.45f),1.8f);
+                    Ring(pVis,p.SkillRange,new Color(.95f,.20f,.24f,.45f),1.8f);
                 }
             }
         }
