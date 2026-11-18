@@ -121,7 +121,7 @@ namespace Ember
             World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId);
             heldSlot=1;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
             var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
-            State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();ClearActions();
+            State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();enemyFacingLeft.Clear();ClearActions();
         }
         void StartSolo(){lan?.Leave();network=false;host=true;localId=1;ClearSavedRun();NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();runAutoSaveClock=RunAutoSaveInterval;menu=false;SaveActiveRun(false,asyncWrite:true);}
         void HostGame()
@@ -508,6 +508,25 @@ namespace Ember
             int row=clip=="run"?1:clip=="cast"?2:clip=="hurt"?3:0;
             return mooneSprites.TryGetValue(MooneFrames[row][frame%8],out var sprite)?sprite:Primitive("enemy");
         }
+        readonly Dictionary<string,Sprite[]> enemySprites=new Dictionary<string,Sprite[]>();
+        readonly Dictionary<int,bool> enemyFacingLeft=new Dictionary<int,bool>();
+        Sprite EnemyFrame(string art,int frame)
+        {
+            if(!enemySprites.TryGetValue(art,out var frames))
+            {
+                var tex=Resources.Load<Texture2D>("Ember/Props/"+art);
+                if(tex==null)return Primitive(art);
+                tex.filterMode=FilterMode.Point;
+                int frameH=tex.height;
+                int frameW=frameH;
+                int count=Mathf.Max(1,tex.width/frameW);
+                frames=new Sprite[count];
+                for(int i=0;i<count;i++)
+                    frames[i]=Sprite.Create(tex,new Rect(i*frameW,0,frameW,frameH),new Vector2(.5f,.05f),32);
+                enemySprites[art]=frames;
+            }
+            return frames[Mathf.Abs(frame)%frames.Length];
+        }
         Sprite Glove(bool grip)
         {
             string key=grip?"white_glove_grip":"white_glove_relaxed";if(primitives.TryGetValue(key,out var cached))return cached;
@@ -569,9 +588,20 @@ namespace Ember
                 float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite?1.4f:1;
                 Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):Coral;
                 Color bodyTint=e.Blind>0?new Color(.6f,.7f,.8f):e.IsWorldBoss?BossTintColor(e.BossType):Color.white;
-                var artSprite=Primitive(art);
-                Outline(Put("enemyGlow"+e.Id,artSprite,ePos,glowColor,scale,1000-Mathf.RoundToInt(ePos.Y*10)-1),artSprite);
-                Put("enemy"+e.Id,artSprite,ePos,bodyTint,scale);
+                bool moving=false;
+                if(prevEnemyPos.TryGetValue(e.Id,out var prevEPos))
+                {
+                    moving=V2.Distance(prevEPos,e.Pos)>0.02f;
+                    if(Mathf.Abs(e.Pos.X-prevEPos.X)>0.012f)enemyFacingLeft[e.Id]=e.Pos.X<prevEPos.X;
+                }
+                enemyFacingLeft.TryGetValue(e.Id,out bool flip);
+                float animFps=e.Kind==EnemyKind.Nest?0f:moving?7.5f:3.2f;
+                int animFrame=animFps<=0?0:Mathf.FloorToInt(clock*animFps+(e.Id*1.37f))%4;
+                var artSprite=EnemyFrame(art,animFrame);
+                float bob=e.Kind==EnemyKind.Nest?0f:moving?Mathf.Sin(clock*13f+e.Id)*.035f:Mathf.Sin(clock*3.2f+e.Id)*.018f;
+                V2 renderPos=ePos+new V2(0,bob);
+                Outline(Put("enemyGlow"+e.Id,artSprite,renderPos,glowColor,scale,1000-Mathf.RoundToInt(ePos.Y*10)-1,flip),artSprite);
+                Put("enemy"+e.Id,artSprite,renderPos,bodyTint,scale,flip:flip);
             }
             var playersArr=State.Players;
             for(int pi=0;pi<playersArr.Length;pi++)

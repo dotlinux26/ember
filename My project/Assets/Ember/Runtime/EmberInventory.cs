@@ -300,7 +300,7 @@ namespace Ember
         }
         readonly BackpackCell[] backpackCells=new BackpackCell[BackpackCapacity];
         Vector2 inventoryScroll;
-        int dragFromCell=-1,dragFromQuick=-1,inspectedCell=-1;
+        int dragFromCell=-1,inspectedCell=-1;
         Vector2 dragStartMouse;
         bool draggingItem;
 
@@ -492,7 +492,7 @@ namespace Ember
 
             if(UiButton(new Rect(box.xMax-208,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
             if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Tay 0","Empty"))){EquipSlot(6);inspectedCell=-1;}
-            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}
+            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}
 
             UiLabel(new Rect(box.x+14,box.y+42,width-28,20),
                 L("Kéo thả để sắp xếp hoặc kéo vào ô 1–4 · Nhấn để cầm · Chuột phải để gán nhanh",
@@ -570,7 +570,6 @@ namespace Ember
                     else if(ev.button==0&&!cell.Empty)
                     {
                         dragFromCell=i;
-                        dragFromQuick=-1;
                         dragStartMouse=globalMouse;
                         draggingItem=false;
                         inspectedCell=i;
@@ -649,7 +648,6 @@ namespace Ember
                     if(eqSlot>0){pendingQuickAssign=0;EquipSlot(eqSlot);}
                 }
                 dragFromCell=-1;
-                dragFromQuick=-1;
                 draggingItem=false;
                 ev.Use();
             }
