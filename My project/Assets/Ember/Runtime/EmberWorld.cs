@@ -124,7 +124,7 @@ namespace Ember
         public static float BeaconChargeTarget(Difficulty difficulty)=>difficulty==Difficulty.Hard?1000:difficulty==Difficulty.Normal?750:500;
         public static readonly string[] DifficultyNamesVi={"Dễ","Trung bình","Khó"};
         public static readonly string[] DifficultyNamesEn={"Easy","Normal","Hard"};
-        public static float SkillRange(Vessel vessel)=>vessel==Vessel.LittleMoone?18:vessel==Vessel.BombTrapper?10:vessel==Vessel.RuneWarden?5:vessel==Vessel.SpaceWraith?2:vessel==Vessel.MoonMender?8:0;
+        public static float SkillRange(Vessel vessel)=>vessel==Vessel.LittleMoone?9:vessel==Vessel.BombTrapper?8:vessel==Vessel.RuneWarden?5:vessel==Vessel.SpaceWraith?2:vessel==Vessel.MoonMender?7:0;
         public static readonly string[] VesselNames={"Lữ Hành Vô Danh","Y Sư Ánh Trăng","Kẻ Đặt Bẫy Hỏa Ngục","Hộ Vệ Cổ Ngữ","Bóng Ma Không Gian","Little Moone"};
         public static readonly string[] VesselRarities={"Phổ thông","Hiếm","Hiếm","Sử thi","Sử thi","Đặc biệt"};
         // Economy values not specified by the GDD are explicit test-build tuning.
