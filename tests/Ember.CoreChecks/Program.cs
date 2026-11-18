@@ -425,6 +425,13 @@ farShade.Pos=cullPlayer.Pos+new V2(70,0);
 int nestsBefore=cullWorld.S.Enemies.Count(e=>e.Kind==EnemyKind.Nest);
 cullWorld.Tick();
 Check(!cullWorld.S.Enemies.Any(e=>e.Id==farShade.Id)&&cullWorld.S.Enemies.Count(e=>e.Kind==EnemyKind.Nest)==nestsBefore,"Minecraft-style despawn removes distant normal mobs while preserving Nests");
+var bossStoneProfile=new Profile();
+var bossLossSnap=new Snapshot{BossesDefeated=2,Players=Array.Empty<Player>()};
+var bossLossPlayer=new Player{Extracted=false};
+bossStoneProfile.Reward(bossLossSnap,bossLossPlayer,new FixedDraw(25));
+Check(bossStoneProfile.AwakeningStones==0,"boss awakening drop excludes roll 25");
+bossStoneProfile.Reward(bossLossSnap,bossLossPlayer,new FixedDraw(24));
+Check(bossStoneProfile.AwakeningStones==2,"defeating bosses grants 25% awakening stone roll per boss even without extraction");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

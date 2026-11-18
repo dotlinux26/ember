@@ -549,7 +549,7 @@ namespace Ember
                 L("Tro Tàn · Mở/nâng Đặc quyền hoặc đổi 100 Tro → 1 Đá Định Mệnh","Ash · Unlock/upgrade Perks or exchange 100 Ash → 1 Void Token"),
                 L("Mảnh Ký Ức · Mở ô Đặc quyền và công thức chế tạo","Memory · Unlock Perk slots and crafting recipes"),
                 L("Đá Định Mệnh · Dùng 3 đá để Triệu hồi Bản Ngã, Mũ, Thú cưng","Void Tokens · Spend 3 to Summon Vessels, Hats, Pets"),
-                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone","Awakening Stones · Awaken Little Moone")
+                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone (rơi 30% khi thắng hoặc 25% mỗi Boss hạ gục)","Awakening Stones · Awaken Little Moone (30% on win or 25% per Boss defeated)")
             };
             const float chipW=130, chipH=38, gap=8;
             float y=58;
@@ -570,7 +570,7 @@ namespace Ember
                 L("Tro Tàn · Mở/nâng Đặc quyền hoặc đổi Đá Định Mệnh","Ash · Unlock/upgrade Perks or exchange for Void Tokens"),
                 L("Mảnh Ký Ức · Mở ô Đặc quyền và công thức chế tạo","Memory · Unlock Perk slots and crafting recipes"),
                 L("Đá Định Mệnh · Dùng 3 đá để Triệu hồi","Void Tokens · Spend 3 to Summon"),
-                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone","Awakening Stones · Awaken Little Moone")
+                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone (rơi 30% khi thắng hoặc 25% mỗi Boss hạ gục)","Awakening Stones · Awaken Little Moone (30% on win or 25% per Boss defeated)")
             };
             const float margin=4, gap=6;
             float innerW=Mathf.Max(120,raw.width-2*margin);
