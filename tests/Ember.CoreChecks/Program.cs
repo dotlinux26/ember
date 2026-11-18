@@ -415,6 +415,15 @@ using(var strangerClient=new EmberLan())
     }
     Check(strangerClient.Error!=null&&rejoinGuest.LocalId>=2&&admittedId==rejoinGuest.LocalId,"EmberLan rejects strangers after match start while selectively admitting rejoining teammates");
 }
+var cullWorld=new EmberWorld(404){DebugEnabled=true};
+var cullPlayer=cullWorld.AddPlayer(1,"Culler",Vessel.Wanderer);
+cullWorld.StartRun();
+cullWorld.DebugAction("enemy",1);
+var farShade=cullWorld.S.Enemies.First(e=>e.Kind==EnemyKind.Shade);
+farShade.Pos=cullPlayer.Pos+new V2(70,0);
+int nestsBefore=cullWorld.S.Enemies.Count(e=>e.Kind==EnemyKind.Nest);
+cullWorld.Tick();
+Check(!cullWorld.S.Enemies.Any(e=>e.Id==farShade.Id)&&cullWorld.S.Enemies.Count(e=>e.Kind==EnemyKind.Nest)==nestsBefore,"Minecraft-style despawn removes distant normal mobs while preserving Nests");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

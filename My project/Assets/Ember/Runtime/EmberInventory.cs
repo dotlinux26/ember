@@ -85,7 +85,7 @@ namespace Ember
             intent.Equip=slot;
         }
 
-        void DrawHands(Player player,SpriteRenderer body)
+        void DrawHands(Player player,SpriteRenderer body,V2 visualPos)
         {
             int slot=player.Id==localId?heldSlot:player.HeldSlot;
             bool harvesting=player.HarvestCD>0&&slot==8;
@@ -95,8 +95,8 @@ namespace Ember
             int handOrder=body.sortingOrder+4;
             int heldOrder=handOrder-1;
             var pivots=HandPivotFor(player.Vessel);
-            V2 holdingHand=player.Pos+new V2(sign*pivots.FrontX/48f,pivots.FrontY/48f);
-            V2 offHand=player.Pos+new V2(-sign*pivots.BackX/48f,pivots.BackY/48f);
+            V2 holdingHand=visualPos+new V2(sign*pivots.FrontX/48f,pivots.FrontY/48f);
+            V2 offHand=visualPos+new V2(-sign*pivots.BackX/48f,pivots.BackY/48f);
 
             Weapon activeWeapon=harvesting?Weapon.Pickaxe:WeaponForSlot(player,slot);
             float aimWeight=0;

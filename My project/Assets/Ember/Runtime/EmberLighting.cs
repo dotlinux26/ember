@@ -50,9 +50,10 @@ namespace Ember
             foreach(var p in State.Players)
             {
                 if(p.Extracted||p.Ghost)continue;
+                V2 pPos=VisualPlayerPos(p);
                 float flicker=local!=null&&!local.Ghost&&local.Id!=p.Id&&local.Dread>=60&&!local.Safe?.55f+.45f*Mathf.PerlinNoise(clock*7,p.Id):1;
-                if(p.HasHeldTorch&&(State.Fuel>0||State.LastLight>0))Illuminate("lamp"+p.Id,p.Pos,p.Lantern==Lantern.Relic?9:6,p.Lantern==Lantern.Relic?Cyan:p.Lantern==Lantern.Inferno?new Color(1,.43f,.16f):new Color(1,.78f,.48f),1.2f*flicker);
-                else if(p.Hat==(int)Hat.Candle)Illuminate("candle"+p.Id,p.Pos,1.5f,Gold,.7f);
+                if(p.HasHeldTorch&&(State.Fuel>0||State.LastLight>0))Illuminate("lamp"+p.Id,pPos,p.Lantern==Lantern.Relic?9:6,p.Lantern==Lantern.Relic?Cyan:p.Lantern==Lantern.Inferno?new Color(1,.43f,.16f):new Color(1,.78f,.48f),1.2f*flicker);
+                else if(p.Hat==(int)Hat.Candle)Illuminate("candle"+p.Id,pPos,1.5f,Gold,.7f);
             }
             foreach(var s in State.Structures.Where(s=>s.Kind<2||s.Kind==5).OrderBy(s=>focus==null?0:V2.Distance(s.Pos,focus.Pos)).Take(24))Illuminate("structure"+s.Id,s.Pos,s.Kind==1?9:s.Kind==5?2:5,s.Kind==5?Cyan:Gold,s.Kind==5?.3f:1.1f);
             foreach(var l in (State.Lights??System.Array.Empty<TransientLight>()).OrderBy(l=>focus==null?0:V2.Distance(l.Pos,focus.Pos)).Take(16))

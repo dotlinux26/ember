@@ -9,6 +9,8 @@ namespace Ember
         const float RunAutoSaveInterval=20f;
         RunSaveData savedRunPreview;
         float runAutoSaveClock=RunAutoSaveInterval;
+        readonly object runSaveIoLock=new object();
+        volatile bool runSaveInFlight;
 
         string RunSavePath=>Path.Combine(Application.persistentDataPath,"run.ember");
 
@@ -38,16 +40,37 @@ namespace Ember
             }
         }
 
-        void SaveActiveRun(bool showNotice=false)
+        void SaveActiveRun(bool showNotice=false,bool asyncWrite=false)
         {
             if(!CanSaveCurrentSoloRun())return;
+            if(asyncWrite&&runSaveInFlight)return;
             try
             {
                 var data=World.ExportRun(heldSlot);
                 string json=JsonUtility.ToJson(data);
-                EmberSave.WriteAtomic(RunSavePath,EmberSave.Protect(json,LocalPassword));
+                string path=RunSavePath;
+                string pwd=LocalPassword;
                 savedRunPreview=data;
                 runAutoSaveClock=RunAutoSaveInterval;
+                if(asyncWrite)
+                {
+                    runSaveInFlight=true;
+                    System.Threading.Tasks.Task.Run(()=>
+                    {
+                        try
+                        {
+                            byte[] protectedBytes=EmberSave.Protect(json,pwd);
+                            lock(runSaveIoLock){EmberSave.WriteAtomic(path,protectedBytes);}
+                        }
+                        catch(Exception ex){Debug.LogWarning("Async run save failed: "+ex.Message);}
+                        finally{runSaveInFlight=false;}
+                    });
+                }
+                else
+                {
+                    byte[] protectedBytes=EmberSave.Protect(json,pwd);
+                    lock(runSaveIoLock){EmberSave.WriteAtomic(path,protectedBytes);}
+                }
                 if(showNotice)notice=L("Đã lưu trận đang chơi (run.ember).","Saved current run (run.ember).");
                 Trace("runsave.saved","tick="+State.Tick+" phase="+State.Phase+" charge="+State.Charge);
             }
@@ -80,7 +103,7 @@ namespace Ember
             if(runAutoSaveClock<=0)
             {
                 runAutoSaveClock=RunAutoSaveInterval;
-                SaveActiveRun(false);
+                SaveActiveRun(false,asyncWrite:true);
             }
         }
 

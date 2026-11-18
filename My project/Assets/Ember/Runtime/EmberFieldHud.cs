@@ -383,7 +383,7 @@ namespace Ember
                 pauseConfirm=false;pauseSettings=false;
                 path.Clear();
                 menu=true;
-                SaveActiveRun(false);
+                SaveActiveRun(false,asyncWrite:true);
             }
         }
 
@@ -632,7 +632,14 @@ namespace Ember
                 PixelArt(new Rect(left,y+5,22,22),ResourceIcons[i]);
                 UiLabel(new Rect(left+25,y+6,step-23,22),p.Bag[i].ToString(),small);
             }
-            UiLabel(new Rect(x+9+5*step,y+6,step,22),p.Load+"/"+p.Capacity,small);
+            int maxCap=Mathf.FloorToInt(p.Capacity);
+            bool overloaded=p.Load>p.Capacity;
+            var prevCapCol=GUI.contentColor;
+            if(overloaded)GUI.contentColor=Coral;
+            GUI.Label(new Rect(x+6+5*step,y+6,step+6,22),
+                new GUIContent(L("Tải ","Wt ")+p.Load+"/"+maxCap,
+                    L("Tải trọng balo — vượt mức sẽ bị giảm 45% tốc chạy","Carry load — exceeding capacity slows movement by 45%")),small);
+            GUI.contentColor=prevCapCol;
 
             var itemChip=new Rect(x,y-36,width,32);
             PixelPanel(itemChip,FieldPaper);

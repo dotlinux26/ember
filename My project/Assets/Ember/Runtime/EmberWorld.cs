@@ -53,7 +53,7 @@ namespace Ember
         public float PerkStrength(Perk perk)=>1+.2f*Math.Max(0,Rank(perk)-1);
         public bool Ghost=>HP<=0; public bool Has(Perk perk)=>Array.IndexOf(Perks,(int)perk)>=0;
         public VesselStats Stats=>Catalog.StatsFor(Vessel);
-        public float BaseCapacity=>30f+Stats.Gathering*4.5f;
+        public float BaseCapacity=>30f+Stats.Gathering*5f;
         public int Load=>Bag.Sum(); public float Capacity=>BaseCapacity*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1);
         public bool HasHeldTorch=>HeldSlot==2&&Items[0]>0&&LampOn&&!Ghost&&!Extracted;
         public bool HoldingWeapon=>HeldSlot==1||HeldSlot==7||HeldSlot==8;
@@ -287,6 +287,7 @@ namespace Ember
     {
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
+        public const float SimActiveRadius=36f,DespawnRadius=56f;
         static readonly V2 BeaconColliderPos=new V2(0,.35f);
         const float BeaconColliderRadius=1.35f;
         public Snapshot S=new Snapshot();
@@ -1508,19 +1509,36 @@ namespace Ember
         }
         void UpdateEnemy(Enemy e,float dt)
         {
-            if(e.HP<=0)return;e.AttackCD-=dt;e.Blind=Math.Max(0,e.Blind-dt);
-            var target=players.Where(p=>!p.Ghost&&!p.Extracted).OrderBy(p=>V2.Distance(p.Pos,e.Pos)).FirstOrDefault();if(target==null)return;
+            if(e.HP<=0)return;
+            Player target=null;
+            float distToPlayer=float.MaxValue;
+            for(int i=0;i<players.Count;i++)
+            {
+                var p=players[i];
+                if(p.Ghost||p.Extracted)continue;
+                float d=V2.Distance(p.Pos,e.Pos);
+                if(d<distToPlayer){distToPlayer=d;target=p;}
+            }
+            if(target==null)return;
+            bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
+            // Minecraft-style Simulation Distance & Despawn Sphere:
+            // Distant normal mobs beyond DespawnRadius despawn cleanly to free CPU & mob cap;
+            // Nests/Bosses never despawn, and anything outside SimActiveRadius hibernates at 0 CPU.
+            if(!defendingBeacon&&!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss)
+            {
+                if(e.Kind!=EnemyKind.Nest&&distToPlayer>DespawnRadius){e.HP=0;return;}
+                if(distToPlayer>SimActiveRadius)return;
+            }
+            e.AttackCD-=dt;e.Blind=Math.Max(0,e.Blind-dt);
             if(e.IsWorldBoss){UpdateWorldBoss(e,target,dt);return;}
             if(e.Kind==EnemyKind.Nest)
             {
-                if(S.Time>20f&&e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
+                if(S.Time>20f&&e.AttackCD<=0&&distToPlayer<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
             }
-            bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
-            float distToPlayer=V2.Distance(target.Pos,e.Pos);
             if(!defendingBeacon&&distToPlayer>18f)
             {
-                // Gentle patrol outside aggro range so enemies never stand frozen like statues, while keeping away from home.
-                if(e.Blind<=0&&distToPlayer<42f)
+                // Gentle patrol within simulation distance while staying away from home.
+                if(e.Blind<=0)
                 {
                     double wanderAngle=S.Time*.55+e.Id*1.9;
                     V2 patrolDir=e.Pos.Length<22f?e.Pos.Normal:new V2((float)Math.Cos(wanderAngle),(float)Math.Sin(wanderAngle));

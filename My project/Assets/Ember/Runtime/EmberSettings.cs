@@ -23,15 +23,25 @@ namespace Ember
         void ReadCameraZoom()
         {
             var mouse=Mouse.current;
-            if(mouse==null||menu||craftOpen||debugOpen||State==null||Local==null||
+            if(mouse==null||menu||inventoryOpen||craftOpen||debugOpen||IsMouseOverHud()||State==null||Local==null||
                 State.Phase==Phase.Sanctuary||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
             float wheel=mouse.scroll.ReadValue().y;
             if(wheel!=0)SetCameraZoom(zoomLevel+(wheel>0?1:-1));
         }
 
+        static readonly int[] FpsLimits={60,120,144,-1};
+        int fpsLimitIndex;
         bool showFps=true;
-        float fpsSampleTime;
+        float fpsSampleTime,displayMs;
         int fpsSampleFrames,displayFps;
+
+        void ApplyFpsLimit(int index)
+        {
+            fpsLimitIndex=Mathf.Clamp(index,0,FpsLimits.Length-1);
+            QualitySettings.vSyncCount=0;
+            Application.targetFrameRate=FpsLimits[fpsLimitIndex];
+            PlayerPrefs.SetInt("Ember.FpsLimit",fpsLimitIndex);
+        }
 
         void SampleFrameRate()
         {
@@ -40,6 +50,7 @@ namespace Ember
             fpsSampleFrames++;
             if(fpsSampleTime<.5f)return;
             displayFps=Mathf.RoundToInt(fpsSampleFrames/fpsSampleTime);
+            displayMs=fpsSampleTime*1000f/Mathf.Max(1,fpsSampleFrames);
             fpsSampleFrames=0;
             fpsSampleTime=0;
         }
@@ -49,14 +60,17 @@ namespace Ember
             if(!showFps||displayFps<=0||menu||inventoryOpen||State==null||
                 State.Phase==Phase.Sanctuary||State.Phase==Phase.Won||State.Phase==Phase.Lost||
                 Event.current.type!=EventType.Repaint)return;
-            var badge=new Rect(10,Screen.height-34,80,24);
-
-            UiLabel(new Rect(badge.x+6,badge.y+2,badge.width-12,21),displayFps+" FPS",small);
+            var badge=new Rect(10,Screen.height-34,156,24);
+            var prev=GUI.contentColor;
+            GUI.contentColor=displayFps>=55?new Color(.72f,1f,.80f):displayFps>=35?Gold:Coral;
+            UiLabel(new Rect(badge.x+6,badge.y+2,badge.width-8,21),displayFps+" FPS · "+displayMs.ToString("0.0")+" ms",small);
+            GUI.contentColor=prev;
         }
 
         void InitializeSettings()
         {
             showFps=PlayerPrefs.GetInt("Ember.ShowFps",1)!=0;
+            ApplyFpsLimit(PlayerPrefs.GetInt("Ember.FpsLimit",0));
             zoomLevel=Mathf.Clamp(PlayerPrefs.GetInt("Ember.CameraZoom",DefaultZoom),0,CameraZoomPixels.Length-1);
             soundVolume=PlayerPrefs.GetFloat("Ember.Volume",.7f);AudioListener.volume=soundVolume;moba=PlayerPrefs.GetInt("Ember.Moba",1)==1;
             int count=22050;var samples=new float[count];
@@ -119,7 +133,7 @@ namespace Ember
                 if(UiButton(L("Thiết lập","Settings"),GUILayout.Height(40))){pauseSettings=true;pauseScroll=Vector2.zero;}
                 if(canSaveRun)
                 {
-                    if(UiButton(L("Lưu & Về sảnh","Save & Sanctuary"),GUILayout.Height(40))){SaveActiveRun(true);LeaveRoom();}
+                    if(UiButton(L("Lưu & Về sảnh","Save & Sanctuary"),GUILayout.Height(40))){SaveActiveRun(true,asyncWrite:true);LeaveRoom();}
                     if(UiButton(L("Bỏ trận (xóa save)","Discard run"),GUILayout.Height(36)))pauseConfirm=true;
                 }
                 else if(UiButton(L("Về sảnh","Back to Sanctuary"),GUILayout.Height(40)))pauseConfirm=true;
@@ -141,8 +155,13 @@ namespace Ember
             GUILayout.Space(14);
             UiText(L("Tầm nhìn","Camera zoom"),label);
             UiText(L("Cuộn chuột trong trận để đổi mức.","Scroll in game to change zoom."),small);
-            bool fps=GUILayout.Toggle(showFps,L("Hiện FPS","Show FPS"),GUILayout.Height(30));
+            bool fps=GUILayout.Toggle(showFps,L("Hiện FPS & độ trễ (ms)","Show FPS & frame time (ms)"),GUILayout.Height(30));
             if(fps!=showFps){showFps=fps;PlayerPrefs.SetInt("Ember.ShowFps",fps?1:0);}
+            UiText(L("Giới hạn khung hình (FPS)","Frame rate limit (FPS)"),small);
+            int nextFps=UiSelection(fpsLimitIndex,new[]{"60","120","144",L("Không giới hạn","Unlimited")},4);
+            if(nextFps!=fpsLimitIndex)ApplyFpsLimit(nextFps);
+            GUILayout.Space(8);
+            UiText(L("Mức thu phóng camera","Camera zoom level"),small);
             SetCameraZoom(UiSelection(zoomLevel,new[]{L("Xa","Far"),"2","3","4",L("Mặc định","Default"),"6",L("Gần","Near")},4));
             GUILayout.Space(14);
             UiText(L("Điều khiển","Controls"),label);
