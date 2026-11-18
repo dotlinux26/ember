@@ -68,7 +68,7 @@ namespace Ember
     }
     [Serializable] public sealed class Node
     {
-        public int Id; public V2 Pos; public Resource Resource; public int Amount;
+        public int Id; public V2 Pos; public Resource Resource; public int Amount; public bool Dropped;
     }
     [Serializable] public sealed class Structure
     {
@@ -162,6 +162,12 @@ namespace Ember
         Random rng;int nextId=10;float spawnClock,petClock;bool lastLightSpent,bossSpawned;
         float DifficultyEnemyScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Easy?.85f:1f;
         float DifficultyDreadScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Normal?1.05f:1f;
+        float DifficultyEnemySpeedScale=>S.Difficulty==Difficulty.Hard?1.12f:S.Difficulty==Difficulty.Easy?.9f:1f;
+        float ExploreSpawnInterval=>S.Difficulty==Difficulty.Hard?5.5f:S.Difficulty==Difficulty.Easy?9.5f:7.5f;
+        float EclipseSpawnInterval=>S.Difficulty==Difficulty.Hard?1.2f:S.Difficulty==Difficulty.Easy?2.2f:1.7f;
+        int MaxActiveEnemies=>S.Phase==Phase.Eclipse
+            ?(S.Difficulty==Difficulty.Hard?75:S.Difficulty==Difficulty.Easy?40:55)
+            :(S.Difficulty==Difficulty.Hard?30:S.Difficulty==Difficulty.Easy?16:22);
         public EmberWorld(int seed,int size=250,Difficulty difficulty=Difficulty.Easy)
         {
             S.Seed=seed;S.Size=size;S.Phase=Phase.Sanctuary;S.Difficulty=difficulty;S.ChargeTarget=Catalog.BeaconChargeTarget(difficulty);S.Fuel=100;S.BeaconHP=0;S.Wave=90;rng=new Random(seed);
@@ -237,6 +243,7 @@ namespace Ember
         public bool StartRun(bool requireReady=false)
         {
             if(players.Count==0||S.Phase!=Phase.Sanctuary||(requireReady&&players.Any(p=>!p.Ready)))return false;
+            spawnClock=18f;
             S.Phase=Phase.Explore;Announce("Thu thập lõi, nạp hải đăng, giữ lửa.");return true;
         }
         public void Submit(int id,Command c)
@@ -384,7 +391,7 @@ namespace Ember
             }
             structures.RemoveAll(s=>s.HP<=0||s.Life<=0);
             foreach(var e in effects)e.Life-=dt;effects.RemoveAll(e=>e.Life<=0);
-            spawnClock-=dt;if((!DebugEnabled||!DebugNoEnemies)&&spawnClock<=0&&enemies.Count<180){SpawnEnemy();spawnClock=S.Phase==Phase.Eclipse?.6f:3.5f;}
+            spawnClock-=dt;if((!DebugEnabled||!DebugNoEnemies)&&spawnClock<=0&&enemies.Count(e=>e.Kind!=EnemyKind.Nest)<MaxActiveEnemies){SpawnEnemy();spawnClock=S.Phase==Phase.Eclipse?EclipseSpawnInterval:ExploreSpawnInterval;}
             if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Eclipse&&S.Wave<60&&!bossSpawned)
             {
                 bossSpawned=true;var pos=new V2(0,18);float hp=450+players.Count*180;enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=pos,HP=hp,MaxHP=hp});Announce("Một thực thể lớn đang tiến về hải đăng.");
@@ -729,7 +736,7 @@ namespace Ember
         {
             if(e.HP<=0)return;e.HP-=damage;if(e.HP<=0)
             {
-                bool umbra=e.Elite||e.Kind==EnemyKind.Nest;nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2});
+                bool umbra=e.Elite||e.Kind==EnemyKind.Nest;nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2,Dropped=true});
                 if(e.Kind==EnemyKind.Boss){S.BossesDefeated++;Announce("Thực thể đã gục — nhận mảnh ký ức khi kết thúc trận.");}else if(umbra)Announce("Thu được mảnh bóng tối.");
             }
         }
@@ -747,7 +754,7 @@ namespace Ember
         {
             var target=players.FirstOrDefault(p=>!p.Ghost&&!p.Extracted);if(target==null)return;
             double a=rng.NextDouble()*Math.PI*2;V2 origin=S.Phase==Phase.Eclipse?new V2():target.Pos;V2 pos=origin+new V2((float)Math.Cos(a),(float)Math.Sin(a))*18;
-            if(!Walkable(pos))return;bool elite=rng.NextDouble()<.12;float hp=(elite?160:42)*DifficultyEnemyScale;
+            if(!Walkable(pos))return;bool elite=S.Time>75f&&rng.NextDouble()<.08;float hp=(elite?160:42)*DifficultyEnemyScale;
             var kind=elite?EnemyKind.Sentinel:pos.Length>S.Size*.35f?EnemyKind.VoidStalker:pos.Length>S.Size*.22f?EnemyKind.SwampLeech:EnemyKind.Shade;
             enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp});
         }
@@ -757,12 +764,17 @@ namespace Ember
             var target=players.Where(p=>!p.Ghost&&!p.Extracted).OrderBy(p=>V2.Distance(p.Pos,e.Pos)).FirstOrDefault();if(target==null)return;
             if(e.Kind==EnemyKind.Nest)
             {
-                if(e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<18&&enemies.Count<180){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker});e.AttackCD=8;}return;
+                if(S.Time>20f&&e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
             }
-            V2 goal=S.Phase==Phase.Eclipse&&S.BeaconHP>0?new V2():target.Pos;
+            bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
+            if(!defendingBeacon&&V2.Distance(target.Pos,e.Pos)>22f)return;
+            V2 goal=defendingBeacon?new V2():target.Pos;
             if(e.Blind<=0)
             {
-                var direction=Navigate(e.Pos,goal,S.Phase==Phase.Eclipse&&S.BeaconHP>0?-1:target.Id);float speed=(e.Elite?2.2f:1.9f)*dt;var next=Move(e.Pos,direction*speed,monster:e);
+                var direction=Navigate(e.Pos,goal,defendingBeacon?-1:target.Id);
+                float baseSpeed=e.Kind==EnemyKind.Boss?1.55f:e.Elite?1.65f:1.35f;
+                float speed=baseSpeed*DifficultyEnemySpeedScale*dt;
+                var next=Move(e.Pos,direction*speed,monster:e);
                 if(V2.Distance(next,e.Pos)<speed*.2f)
                 {
                     V2 left=new V2(-direction.Y,direction.X),right=new V2(direction.Y,-direction.X);

@@ -28,6 +28,53 @@ namespace Ember
 
         GUIStyle overheadName,overheadGlow;
 
+        void DrawInteractPrompt(Player p)
+        {
+            V2 targetPos;
+            string caption;
+            if(State.Phase==Phase.Extraction&&p.Pos.Length<3)
+            {
+                targetPos=new V2(0,1.2f);
+                caption=L("Rút lui","Extract");
+            }
+            else
+            {
+                var chest=State.Structures.Where(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2)
+                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+                if(chest!=null)
+                {
+                    targetPos=chest.Pos+new V2(0,.65f);
+                    caption=L("Rương chung","Shared chest");
+                }
+                else
+                {
+                    var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
+                        .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+                    if(node==null)return;
+                    string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
+                    string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
+                    targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
+                    caption=verb+" · "+resName+" ×"+node.Amount;
+                }
+            }
+
+            Vector2 screen=ScreenPos(targetPos);
+            string full="[E] "+caption;
+            float w=Mathf.Clamp(small.CalcSize(new GUIContent(full)).x+26,104,240);
+            float h=26;
+            var box=new Rect(Mathf.Round(screen.x-w/2),Mathf.Round(screen.y-h-8),w,h);
+            PixelPanel(box,new Color(.12f,.09f,.20f,.94f));
+            var keyBox=new Rect(box.x+4,box.y+3,22,h-6);
+            Panel(keyBox,Gold);
+            var oldColor=GUI.contentColor;
+            GUI.contentColor=Color.black;
+            GUI.Label(new Rect(keyBox.x+6,keyBox.y-1,16,20),"E",small);
+            GUI.contentColor=new Color(1f,.96f,.82f);
+            GUI.Label(new Rect(keyBox.xMax+6,box.y+3,box.width-34,20),caption,small);
+            GUI.contentColor=oldColor;
+            if(GUI.Button(box,GUIContent.none,GUIStyle.none))intent.Interact=true;
+        }
+
         void DrawOverheadStatus(Player player)
         {
             if(!renderers.TryGetValue("player"+player.Id,out var body)||!body.enabled||body.sprite==null)return;

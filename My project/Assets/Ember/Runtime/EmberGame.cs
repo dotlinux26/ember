@@ -323,11 +323,21 @@ namespace Ember
             if(State.Phase==Phase.Extraction)Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,-20);
             foreach(var n in State.Nodes)
             {
-                if(V2.Distance(n.Pos,center)>23)continue;Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Gold:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
-                string art=n.Resource==Resource.Wood||n.Resource==Resource.Dust?"tree":"diamond";
-                bool tree=n.Resource==Resource.Wood||n.Resource==Resource.Dust;
-                Put("node"+n.Id,tree?Primitive(art):MaterialSprite(ResourceIcons[(int)n.Resource]),n.Pos,
-                    tree?(n.Resource==Resource.Dust?new Color(.6f,1,.8f):color):Color.white,tree?1.5f:.62f);
+                if(V2.Distance(n.Pos,center)>23)continue;
+                bool tree=!n.Dropped&&(n.Resource==Resource.Wood||n.Resource==Resource.Dust);
+                Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Gold:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
+                Sprite sprite=tree?Primitive("tree"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+                float scale=tree?1.5f:n.Dropped?.70f:.62f;
+                V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
+                int order=1000-Mathf.RoundToInt(n.Pos.Y*10);
+                bool showGoldGlow=n.Dropped||!tree||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,local.Pos)<2.4f);
+                if(showGoldGlow)
+                {
+                    float pulse=.82f+.18f*Mathf.Sin(clock*6f+n.Id);
+                    Color glowGold=new Color(1f,.84f,.24f,pulse);
+                    Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowGold,scale,order-1),sprite);
+                }
+                Put("node"+n.Id,sprite,drawPos,tree?(n.Resource==Resource.Dust?new Color(.6f,1,.8f):color):Color.white,scale,order);
             }
             foreach(var s in State.Structures)if(V2.Distance(s.Pos,center)<23)Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:1);
             foreach(var e in State.Enemies)
@@ -531,6 +541,7 @@ namespace Ember
                 if(q.Extracted||q.Ghost||(!p.Ghost&&p.Mad&&q.Id!=p.Id))continue;
                 DrawOverheadStatus(q);
             }
+            if(!p.Ghost&&!inventoryOpen&&!craftOpen)DrawInteractPrompt(p);
             if(!p.Ghost&&inventoryOpen){DrawInventory(p);return;}
             DrawFieldHud(p);
             float objectiveY=ObjectiveCardY;

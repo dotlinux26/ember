@@ -15,7 +15,7 @@ namespace Ember
         static Weapon WeaponForSlot(Player p,int slot)=>slot==7?p.SideWeapon:slot==8?Weapon.Pickaxe:p.Weapon;
         static float WeaponRangeFor(Weapon w)=>(w==Weapon.Crossbow||w==Weapon.LumenGun||w==Weapon.MirrorShield)?7:w==Weapon.CrystalAxe?2.6f:w==Weapon.Pickaxe?2.4f:2;
         readonly Dictionary<int,(Vector2 dir,float weight)> weaponAimState=new Dictionary<int,(Vector2,float)>();
-        readonly Dictionary<int,float> offHandJoinState=new Dictionary<int,float>();
+        readonly Dictionary<int,(float join,float holdUntil,V2 offset)> offHandJoinState=new Dictionary<int,(float,float,V2)>();
 
         void LoadQuickSlots()
         {
@@ -182,12 +182,23 @@ namespace Ember
                 }
             }
 
-            if(!offHandJoinState.TryGetValue(player.Id,out float prevJoin))prevJoin=0;
-            float offJoin=Mathf.Lerp(prevJoin,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*16f));
-            offHandJoinState[player.Id]=offJoin;
+            if(!offHandJoinState.TryGetValue(player.Id,out var prevOff))prevOff=(0,0,offJoinOffset);
+            bool activeAction=harvesting||player.AttackCD>0||(player.Reloading&&rangedWeapon);
+            float holdUntil=activeAction?clock+.18f:prevOff.holdUntil;
+            if(!activeAction&&desiredOffJoin<=0&&clock<holdUntil)
+            {
+                desiredOffJoin=.92f;
+                offJoinOffset=prevOff.offset;
+            }
+            float joinSpeed=desiredOffJoin>prevOff.join?(activeAction?45f:24f):22f;
+            float offJoin=activeAction&&prevOff.join<.65f?Mathf.Max(.72f,Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed))):Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed));
+            V2 smoothOffset=new V2(
+                Mathf.Lerp(prevOff.offset.X,offJoinOffset.X,Mathf.Clamp01(Time.deltaTime*28f)),
+                Mathf.Lerp(prevOff.offset.Y,offJoinOffset.Y,Mathf.Clamp01(Time.deltaTime*28f)));
+            offHandJoinState[player.Id]=(offJoin,holdUntil,smoothOffset);
 
             V2 activeHandPos=holdingHand+weaponHandOffset;
-            V2 joinedOffHand=activeHandPos+offJoinOffset;
+            V2 joinedOffHand=activeHandPos+smoothOffset;
             V2 finalOffHand=new V2(
                 Mathf.Lerp(offHand.X,joinedOffHand.X,offJoin),
                 Mathf.Lerp(offHand.Y,joinedOffHand.Y,offJoin));
