@@ -467,7 +467,7 @@ namespace Ember
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -587,7 +587,7 @@ namespace Ember
                 if(Mathf.Abs(n.Pos.X-center.X)>viewHalfW||Mathf.Abs(n.Pos.Y-center.Y)>viewHalfH)continue;
                 bool tree=!n.Dropped&&(n.Resource==Resource.Wood||n.Resource==Resource.Dust);
                 Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Gold:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
-                Sprite sprite=tree?Primitive("tree"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+                Sprite sprite=tree?Primitive("tree"):n.Dropped&&n.Resource==Resource.Wood?Primitive("wood"):n.Dropped&&n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
                 float scale=tree?1.5f:n.Dropped?.70f:.62f;
                 V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
                 int order=1000-Mathf.RoundToInt(n.Pos.Y*10);
@@ -605,7 +605,7 @@ namespace Ember
             {
                 var s=structsArr[si];
                 if(Mathf.Abs(s.Pos.X-center.X)>viewHalfW||Mathf.Abs(s.Pos.Y-center.Y)>viewHalfH)continue;
-                Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:1);
+                Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:s.Kind==4?1.35f:1);
             }
             var enemiesArr=State.Enemies;
             for(int ei=0;ei<enemiesArr.Length;ei++)
@@ -795,7 +795,7 @@ namespace Ember
                 else
                 {
                     int m=hash%16;
-                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_apple":(m<=6)?"tree_autumn":(m==7)?"tree_pine":(m==8)?"tree_stump":(m==9)?"log_fallen":(m==10)?"bush_round":(m<=12)?"bush_wide":"rock_large";
+                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_apple":(m<=6)?"tree_autumn":(m==7)?"tree_pine":(m==8)?"tree_stump":(m==9)?"log_fallen":(m==10)?"bush_round":(m==11)?"rock_small":(m<=13)?"bush_wide":"rock_large";
                 }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
@@ -806,7 +806,7 @@ namespace Ember
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
-                float scale=treeArt=="rock_large"?1.15f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.05f:1.35f;
+                float scale=treeArt=="rock_large"?1.2f:treeArt=="rock_small"?1.0f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.1f:1.35f;
                 tree.transform.localScale=Vector3.one*scale;
                 tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
                 tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
