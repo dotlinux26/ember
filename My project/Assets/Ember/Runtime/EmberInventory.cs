@@ -45,7 +45,7 @@ namespace Ember
         Sprite SlotIconSprite(Player p,int slot)
         {
             if(IsHoldingWeaponSlot(slot))return Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]);
-            if(slot>=2&&slot<=5)return HeldItemSprite(slot-2);
+            if(slot>=2&&slot<=5)return p.Items[slot-2]>0?HeldItemSprite(slot-2):null;
             return null;
         }
 
@@ -63,7 +63,7 @@ namespace Ember
                 }
                 return slot==8?L("Đào","Dig"):"∞";
             }
-            if(slot>=2&&slot<=5)return p.Items[slot-2].ToString();
+            if(slot>=2&&slot<=5)return p.Items[slot-2]>0?p.Items[slot-2].ToString():"—";
             return "—";
         }
 
@@ -306,34 +306,39 @@ namespace Ember
             for(int i=0;i<InventoryGridSlots.Length;i++)
             {
                 int slot=InventoryGridSlots[i];
+                bool emptyConsumable=slot>=2&&slot<=5&&p.Items[slot-2]<=0;
                 var tile=new Rect(box.center.x-gridWidth/2+(i%4)*(size+6),box.y+50+(i/4)*(size+6),size,size);
-                bool active=heldSlot==slot;
-                bool assigning=pendingQuickAssign==slot;
-                Color bg=assigning?new Color(.68f,.44f,.18f):active?Plum:new Color(.22f,.16f,.34f);
+                bool active=heldSlot==slot&&!emptyConsumable;
+                bool assigning=pendingQuickAssign==slot&&!emptyConsumable;
+                Color bg=assigning?new Color(.68f,.44f,.18f):active?Plum:emptyConsumable?new Color(.12f,.09f,.20f):new Color(.22f,.16f,.34f);
                 PixelPanel(tile,bg);
                 DrawSpritePreview(new Rect(tile.center.x-21,tile.y+7,42,42),SlotIconSprite(p,slot));
                 int qIdx=System.Array.IndexOf(quickSlots,slot);
-                if(qIdx>=0)
+                if(qIdx>=0&&!emptyConsumable)
                 {
                     var badge=new Rect(tile.xMax-20,tile.y+3,17,17);
                     Panel(badge,new Color(.10f,.08f,.18f,.90f));
                     UiLabel(new Rect(badge.x+4,badge.y-1,14,18),(qIdx+1).ToString(),small);
                 }
-                string name=InventorySlotName(p,slot);
-                string line=slot==1?L("Cận chiến","Melee"):
+                string name=emptyConsumable?L("Trống","Empty"):InventorySlotName(p,slot);
+                string line=emptyConsumable?L("Trống","Empty"):
+                    slot==1?L("Cận chiến","Melee"):
                     slot==7?L("Súng","Gun"):
                     slot==8?L("Cuốc","Pickaxe"):
                     slot>=2&&slot<=5?name.Split(' ')[0]+" · "+p.Items[slot-2]:name;
                 UiLabel(new Rect(tile.x+4,tile.yMax-22,size-7,21),line,small);
-                if(ev.type==EventType.MouseDown&&ev.button==1&&tile.Contains(ev.mousePosition))
+                if(!emptyConsumable)
                 {
-                    pendingQuickAssign=pendingQuickAssign==slot?0:slot;
-                    ev.Use();
-                }
-                else if(GUI.Button(tile,new GUIContent("",name),GUIStyle.none))
-                {
-                    pendingQuickAssign=0;
-                    EquipSlot(slot);
+                    if(ev.type==EventType.MouseDown&&ev.button==1&&tile.Contains(ev.mousePosition))
+                    {
+                        pendingQuickAssign=pendingQuickAssign==slot?0:slot;
+                        ev.Use();
+                    }
+                    else if(GUI.Button(tile,new GUIContent("",name),GUIStyle.none))
+                    {
+                        pendingQuickAssign=0;
+                        EquipSlot(slot);
+                    }
                 }
             }
 

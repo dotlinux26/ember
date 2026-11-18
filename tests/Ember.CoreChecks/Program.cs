@@ -259,6 +259,12 @@ for(int s=0;s<8;s++){gunWorld.Submit(1,new Command{Attack=true});for(int k=0;k<1
 Check(gunner.Reloading&&gunner.CurrentAmmo==0,"ranged gun triggers reload automatically after emptying its 8-shot magazine");
 for(int k=0;k<60;k++)gunWorld.Tick();
 Check(!gunner.Reloading&&gunner.CurrentAmmo==8,"ranged gun refills magazine after reload completes");
+var torchWorld=new EmberWorld(42);
+var torchUser=torchWorld.AddPlayer(1,"TorchUser",Vessel.Wanderer);
+torchWorld.StartRun();
+torchWorld.Submit(1,new Command{Equip=2,Use=0});
+torchWorld.Tick();
+Check(torchUser.Items[0]==0&&torchUser.HeldSlot==6&&torchWorld.S.Structures.Any(s=>s.Kind==0&&s.MaxLife==45&&s.Life>0),"placing the last torch consumes it, clears the hand slot, and spawns a timed torch with max fuel");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

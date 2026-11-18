@@ -28,6 +28,23 @@ namespace Ember
 
         GUIStyle overheadName,overheadGlow;
 
+        void DrawStructureBars()
+        {
+            if(Event.current.type!=EventType.Repaint||State?.Structures==null)return;
+            V2 focus=CameraTarget()?.Pos??new V2();
+            foreach(var s in State.Structures)
+            {
+                if(s.Kind>1||s.Life<=0||V2.Distance(s.Pos,focus)>23)continue;
+                float maxLife=s.MaxLife>0?s.MaxLife:(s.Kind==0?45f:12f);
+                float ratio=Mathf.Clamp01(s.Life/maxLife);
+                Vector2 anchor=ScreenPos(s.Pos+new V2(0,.62f));
+                float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
+                Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
+                Color fill=ratio<.25f?Coral:s.Kind==1?new Color(1f,.56f,.36f):Gold;
+                Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+            }
+        }
+
         void DrawInteractPrompt(Player p)
         {
             V2 targetPos;

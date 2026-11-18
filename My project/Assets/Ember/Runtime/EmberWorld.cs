@@ -72,7 +72,7 @@ namespace Ember
     }
     [Serializable] public sealed class Structure
     {
-        public int Id,Kind; public V2 Pos; public float Life,HP=100; // 0 torch 1 flare 2 wall 3 trap 4 chest
+        public int Id,Kind; public V2 Pos; public float Life,MaxLife,HP=100; // 0 torch 1 flare 2 wall 3 trap 4 chest
     }
     [Serializable] public sealed class Effect
     {
@@ -569,8 +569,9 @@ namespace Ember
                 dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=p.Pos;dead.Invulnerable=3;
             }
             else if(item==2)p.Dread=Math.Max(0,p.Dread-40);
-            else structures.Add(new Structure{Id=nextId++,Kind=item,Pos=p.Pos,Life=item==0?45:12});
+            else {float life=item==0?45f:12f;structures.Add(new Structure{Id=nextId++,Kind=item,Pos=p.Pos,Life=life,MaxLife=life});}
             p.Items[item]--;
+            if(p.Items[item]<=0&&p.HeldSlot==item+2)p.HeldSlot=6;
         }
         public Enemy Target(Player p,float range)
         {

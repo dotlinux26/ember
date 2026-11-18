@@ -125,6 +125,7 @@ namespace Ember
             clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
             if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet}));joinClock=1;}}
             SampleFrameRate();
+            if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
             ReadInput();
             ReadCameraZoom();
             if(netSmoke&&!host){intent.X=State?.Phase==Phase.Explore&&State.Time<6?1:0;intent.Y=0;if(lan.LocalId>0&&!readyWanted){readyWanted=true;lan.SetReady(true);}}
@@ -538,6 +539,7 @@ namespace Ember
                 if(e.Kind==7){DrawHarvestChips(e);continue;}
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
+            DrawStructureBars();
             foreach(var q in State.Players)
             {
                 if(q.Extracted||q.Ghost||(!p.Ghost&&p.Mad&&q.Id!=p.Id))continue;
