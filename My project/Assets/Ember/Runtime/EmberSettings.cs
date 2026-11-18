@@ -108,9 +108,9 @@ namespace Ember
 
         void DrawPauseMenu()
         {
-            float width=Mathf.Min(438,Screen.width-30);
+            float width=pauseSettings?Mathf.Min(640,Screen.width-40):Mathf.Min(438,Screen.width-30);
             bool canSaveRun=CanSaveCurrentSoloRun();
-            float height=pauseSettings?Mathf.Min(520,Screen.height-56):(canSaveRun?344:300);
+            float height=pauseSettings?Mathf.Min(600,Screen.height-48):(canSaveRun?344:300);
             var box=new Rect((Screen.width-width)/2,(Screen.height-height)/2,width,height);
             Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.035f,.025f,.075f,.70f));
             PixelPanel(box,FieldPaper);
@@ -121,9 +121,15 @@ namespace Ember
 
             if(pauseSettings)
             {
-                pauseScroll=GUILayout.BeginScrollView(pauseScroll);
+                pauseScroll=GUILayout.BeginScrollView(pauseScroll,false,false,GUIStyle.none,GUI.skin.verticalScrollbar);
+                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
                 DrawSettings();
+                GUILayout.EndVertical();
+                GUILayout.Space(10);
+                GUILayout.EndHorizontal();
                 GUILayout.EndScrollView();
+                GUILayout.Space(6);
                 if(UiButton(L("Quay lại","Back"),GUILayout.Height(36)))pauseSettings=false;
             }
             else if(pauseConfirm)
