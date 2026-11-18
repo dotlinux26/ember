@@ -72,7 +72,7 @@ namespace Ember
                     bool needsPick=!node.Dropped&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
                     string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
                     targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
-                    caption=needsPick?L("Cần Cuốc Sắt để đào","Requires Iron Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
+                    caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
                 }
             }
 
@@ -514,8 +514,8 @@ namespace Ember
                 }
                 if(activeW==Weapon.Pickaxe)
                 {
-                    int mineYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+1;
-                    info+=" · "+L("Đào +"+mineYield+" tài nguyên/nhát · Tốn 8 thể lực","Mines +"+mineYield+" yield/hit · 8 stamina");
+                    int mineYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+p.PickaxeTier;
+                    info+=" · "+p.PickaxeName+" ["+L("Độ bền ","Durability ")+p.PickaxeDurability+"/"+p.PickaxeMaxDurability+"] · "+L("Khai thác +"+mineYield+" tài nguyên · Tốn 8 thể lực","Mines +"+mineYield+" yield · 8 stamina");
                 }
                 else if(activeW==Weapon.CrystalAxe)
                     info+=" · "+L("Đánh lan 1.6 ô & đẩy lùi mạnh · Tốn 8 thể lực","1.6-tile cleave & strong knockback · 8 stamina");

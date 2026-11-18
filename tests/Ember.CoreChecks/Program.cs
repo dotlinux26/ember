@@ -459,6 +459,40 @@ rangedShade.SkillCD=0f;
 shotWorld.Tick();
 var eliteShots=shotWorld.S.Projectiles.Where(p=>p.FromEnemy&&p.Owner==rangedShade.Id&&p.ColorKind==1).ToArray();
 Check(eliteShots.Length==3&&eliteShots.All(p=>p.Velocity.Length<=5.5f)&&rangedShade.SkillCD>=3.5f,"elite sentinel fires a slow 3-orb fan with bounded range and cooldown");
+
+// Item drop check
+var dropWorld=new EmberWorld(42);
+var dropPlayer=dropWorld.AddPlayer(1,"DropTester",Vessel.Wanderer);
+dropWorld.StartRun();
+dropPlayer.Bag[(int)Resource.Wood]=10;
+dropWorld.DropItem(dropPlayer, 3, (int)Resource.Wood, 4);
+Check(dropPlayer.Bag[(int)Resource.Wood]==6&&dropWorld.S.Nodes.Any(n=>n.Dropped&&n.Resource==Resource.Wood&&n.Amount==4), "dropping resource reduces bag count and spawns dropped node");
+
+// Pickaxe durability and chopping tree check
+var harvestWorld=new EmberWorld(100);
+var harvestPlayer=harvestWorld.AddPlayer(1,"MinerTester",Vessel.Wanderer);
+harvestWorld.StartRun();
+harvestPlayer.PickaxeTier=1;
+harvestPlayer.PickaxeDurability=50;
+harvestPlayer.Pos=new V2(25, 25);
+int hSize=harvestWorld.S.Size;
+int hTx=(int)(25+hSize/2f), hTy=(int)(25+hSize/2f);
+harvestWorld.Tiles[hTy*hSize+hTx]=3; // tree obstacle
+harvestWorld.Submit(1, new Command{Interact=true});
+harvestWorld.Tick();
+Check(harvestWorld.Tiles[hTy*hSize+hTx]==0&&harvestPlayer.PickaxeDurability==49&&harvestPlayer.Bag[(int)Resource.Wood]>0, "chopping tree tile clears collision, spends pickaxe durability, and yields wood");
+
+// Pickaxe break check
+harvestPlayer.PickaxeTier=0;
+harvestPlayer.PickaxeDurability=1;
+harvestPlayer.Pos=new V2(28, 28);
+int bTx=(int)(28+hSize/2f), bTy=(int)(28+hSize/2f);
+harvestWorld.Tiles[bTy*hSize+bTx]=3;
+harvestPlayer.HarvestCD=0;
+harvestWorld.Submit(1, new Command{Interact=true});
+harvestWorld.Tick();
+Check(!harvestPlayer.HasPickaxe&&harvestPlayer.PickaxeDurability==0, "depleted tier 0 pickaxe breaks completely");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

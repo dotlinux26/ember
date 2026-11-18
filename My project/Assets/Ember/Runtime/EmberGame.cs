@@ -527,7 +527,11 @@ namespace Ember
             }
             return frames[Mathf.Abs(frame)%frames.Length];
         }
-        Sprite Glove(bool grip) => Primitive("hand");
+        Sprite Glove(bool grip)
+        {
+            string key=grip?"white_glove_grip":"white_glove_relaxed";if(primitives.TryGetValue(key,out var cached))return cached;
+            var texture=Resources.Load<Texture2D>("Ember/Active/white_gloves_cupped");if(texture==null)return Primitive("hand");texture.filterMode=FilterMode.Point;cached=Sprite.Create(texture,new Rect(0,grip?0:16,16,16),new Vector2(.5f,.5f),32);primitives[key]=cached;return cached;
+        }
         SpriteRenderer Put(string key,Sprite sprite,V2 pos,Color color,float scale=1,int? order=null,bool flip=false)
         {
             touched.Add(key);if(!renderers.TryGetValue(key,out var r)){r=new GameObject(key).AddComponent<SpriteRenderer>();r.transform.SetParent(entityRoot.transform);if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;renderers[key]=r;}
@@ -721,37 +725,30 @@ namespace Ember
                         else col=new Color32(96,86,74,255);
                     }
                     else if(tile==4)col=new Color32(4,3,7,255);
-                    else if(tile==3)col=(h%5==0)?new Color32(34,24,40,255):new Color32(22,16,28,255);
-                    else if(tile==0)
+                    else if(tile==0||(tile==3&&dist2<(size*.22f)*(size*.22f)))
                     {
-                        // Biome 0: Lush Meadow Grass
+                        // Biome 0: Authentic Sprout Lands Lush Meadow Grass
                         int m=h%100;
-                        if(m<3)col=new Color32(255,240,140,255);
-                        else if(m<6)col=new Color32(230,105,105,255);
-                        else if(m<10)col=new Color32(245,250,255,255);
-                        else if(m<25)col=new Color32(118,184,110,255);
-                        else if(m<55)col=new Color32(88,152,92,255);
-                        else if(m<80)col=new Color32(68,120,74,255);
-                        else col=new Color32(48,84,54,255);
+                        if(m<40)col=new Color32(192,212,112,255);       // #c0d470 primary grass
+                        else if(m<75)col=new Color32(164,194,99,255);   // #a4c263 soft shade
+                        else col=new Color32(139,179,83,255);           // #8bb353 lush tuft accent
                     }
-                    else if(tile==1)
+                    else if(tile==1||(tile==3&&dist2<(size*.37f)*(size*.37f)))
                     {
                         // Biome 1: Mist Swamp & Water Glints
                         int m=h%100;
-                        if(m<8)col=new Color32(55,160,190,255);
-                        else if(m<20)col=new Color32(32,95,120,255);
-                        else if(m<45)col=new Color32(42,88,72,255);
-                        else if(m<75)col=new Color32(28,58,50,255);
-                        else col=new Color32(18,36,32,255);
+                        if(m<12)col=new Color32(55,160,190,255);
+                        else if(m<30)col=new Color32(32,95,120,255);
+                        else if(m<60)col=new Color32(42,88,72,255);
+                        else col=new Color32(28,58,50,255);
                     }
                     else
                     {
                         // Biome 2: Violet Eldritch Void
                         int m=h%100;
-                        if(m<4)col=new Color32(215,180,255,255);
-                        else if(m<15)col=new Color32(145,80,230,255);
+                        if(m<8)col=new Color32(145,80,230,255);
                         else if(m<35)col=new Color32(95,50,155,255);
-                        else if(m<65)col=new Color32(46,28,70,255);
+                        else if(m<70)col=new Color32(46,28,70,255);
                         else col=new Color32(18,12,28,255);
                     }
                     colors[gy*px+gx]=col;
@@ -780,18 +777,18 @@ namespace Ember
                 string treeArt;
                 if(r>=size*.37f)
                 {
-                    int m=hash%8;
-                    treeArt=(m<=2)?"tree_void":(m<=4)?"tree_dead":(m==5)?"tree_snow":"rock_large";
+                    int m=hash%6;
+                    treeArt=(m<=2)?"tree_void":(m<=4)?"tree_dead":"tree_snow";
                 }
                 else if(r>=size*.22f)
                 {
-                    int m=hash%8;
-                    treeArt=(m<=2)?"tree_pine":(m==3)?"log_fallen":(m==4)?"bush_wide":(m==5)?"tree_palm":"tree_dead";
+                    int m=hash%6;
+                    treeArt=(m<=2)?"tree_pine":(m<=4)?"tree_dead":"tree_palm";
                 }
                 else
                 {
-                    int m=hash%16;
-                    treeArt=(m<=2)?"tree_oak":(m<=4)?"tree_apple":(m<=6)?"tree_autumn":(m==7)?"tree_pine":(m==8)?"tree_stump":(m==9)?"log_fallen":(m==10)?"bush_round":(m==11)?"rock_small":(m<=13)?"bush_wide":"rock_large";
+                    int m=hash%10;
+                    treeArt=(m<=2)?"tree_oak":(m<=5)?"tree_apple":(m<=7)?"tree_autumn":"tree_pine";
                 }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}

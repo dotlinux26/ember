@@ -45,6 +45,12 @@ namespace Ember
         public float HP=100,MaxHP=100,Stamina=100,Dread,AttackCD,SkillCD,DashCD,DashTime,CastTime,Invulnerable,ShieldTime,Shield,HarvestCD;
         public float PushCD,ReloadTimer;
         public V2 DashDir; public Weapon Weapon; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6; public bool HasPickaxe=true; public Lantern Lantern;
+        public int PickaxeTier=1; public int PickaxeDurability=80;
+        public int PickaxeMaxDurability => PickaxeTier==0?40:PickaxeTier==1?80:PickaxeTier==2?150:250;
+        public string PickaxeName => PickaxeTier==0?(EmberLanguage.English?"Stone Pickaxe":"Cuốc Đá Thô"):
+            PickaxeTier==1?(EmberLanguage.English?"Iron Pickaxe":"Cuốc Sắt"):
+            PickaxeTier==2?(EmberLanguage.English?"Crystal Pickaxe":"Cuốc Pha Lê"):
+            (EmberLanguage.English?"Shadow Pickaxe":"Cuốc Hắc Ám");
         public V2 MiragePos;public float MirageLife,MirageCD=12;
         public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
         public int[] Perks=Array.Empty<int>(); public int Hat=-1,Pet=-1;
@@ -104,6 +110,7 @@ namespace Ember
         public Weapon Weapon,SideWeapon=Weapon.LumenGun,AmmoWeapon=Weapon.LumenGun;
         public int Ammo=-1,HeldSlot=1;
         public bool HasPickaxe=true,LampOn=true;
+        public int PickaxeTier=1,PickaxeDurability=80;
         public Lantern Lantern;
         public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
         public int[] Perks=Array.Empty<int>(),PerkRanks=Array.Empty<int>(),Recipes;
@@ -543,6 +550,8 @@ namespace Ember
                         Ammo=removed.Ammo,
                         HeldSlot=removed.HeldSlot,
                         HasPickaxe=removed.HasPickaxe,
+                        PickaxeTier=removed.PickaxeTier,
+                        PickaxeDurability=removed.PickaxeDurability,
                         LampOn=removed.LampOn,
                         Lantern=removed.Lantern,
                         Bag=keptBag,
@@ -598,6 +607,8 @@ namespace Ember
                 Ammo=seat.Ammo,
                 HeldSlot=seat.HeldSlot,
                 HasPickaxe=seat.HasPickaxe,
+                PickaxeTier=seat.PickaxeTier,
+                PickaxeDurability=seat.PickaxeDurability,
                 LampOn=seat.LampOn,
                 Lantern=seat.Lantern,
                 Bag=(int[])seat.Bag.Clone(),
@@ -896,24 +907,134 @@ namespace Ember
                 if(V2.Distance(carrier.Pos,p.Pos)>=8)continue;p.HP=Math.Min(p.MaxHP,p.HP+dt*3);p.Dread=Math.Max(0,p.Dread-dt*3);p.Shield=Math.Min(20,p.Shield+dt*2);p.ShieldTime=Math.Max(p.ShieldTime,.2f);
             }
         }
+        public void DropItem(Player p,int kind,int id,int amount)
+        {
+            if(p==null||p.Ghost||amount<=0)return;
+            V2 dropPos=p.Pos+new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+            if(kind==3)
+            {
+                int r=Math.Max(0,Math.Min((int)Resource.Count-1,id));
+                int actual=Math.Min(amount,p.Bag[r]);
+                if(actual<=0)return;
+                p.Bag[r]-=actual;
+                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=(Resource)r,Amount=actual,Dropped=true});
+                string resName=EmberLanguage.English?new[]{"Lumen Dust","Core","Umbra Shard","Wood","Ore"}[r]:Catalog.ResourceNames[r];
+                Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+actual+" "+resName);
+            }
+            else if(kind==2)
+            {
+                int c=Math.Max(0,Math.Min(3,id));
+                int actual=Math.Min(amount,p.Items[c]);
+                if(actual<=0)return;
+                p.Items[c]-=actual;
+                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=c==0?Resource.Wood:Resource.Ore,Amount=actual,Dropped=true});
+                string itemName=EmberLanguage.English?new[]{"Torch","Flare","Sedative","Revival Stone"}[c]:new[]{"Đuốc","Pháo sáng","Thuốc an thần","Đá hồi sinh"}[c];
+                Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+actual+" "+itemName);
+            }
+            else if(kind==1&&id==8)
+            {
+                if(p.HasPickaxe)
+                {
+                    p.HasPickaxe=false;
+                    if(p.HeldSlot==8)p.HeldSlot=6;
+                    nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=2,Dropped=true});
+                    Announce(EmberLanguage.English?"Dropped Pickaxe":"Đã vứt Cuốc đào");
+                }
+            }
+            Publish();
+        }
         bool Harvest(Player p,float range,bool dustOnly=false)
         {
             if(!dustOnly&&p.HarvestCD>0)return false;
             var node=nodes.Where(n=>(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+            if(node==null&&!dustOnly)
+            {
+                // Chopping obstacle tree tiles directly on the map
+                int size=S.Size;
+                int px=(int)Math.Floor(p.Pos.X+size/2f);
+                int py=(int)Math.Floor(p.Pos.Y+size/2f);
+                int bestTx=-1,bestTy=-1;float bestDist=float.MaxValue;
+                for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                {
+                    int tx=px+dx,ty=py+dy;
+                    if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                    if(Tiles[ty*size+tx]==3)
+                    {
+                        V2 treePos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                        float d=V2.Distance(p.Pos,treePos);
+                        if(d<range+.4f&&d<bestDist){bestDist=d;bestTx=tx;bestTy=ty;}
+                    }
+                }
+                if(bestTx>=0)
+                {
+                    if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
+                    p.HeldSlot=8;
+                    V2 treePos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
+                    if(Math.Abs(treePos.X-p.Pos.X)>.05f)p.Right=treePos.X>p.Pos.X;
+                    float tierSpeedBonus=p.PickaxeTier*0.12f;
+                    p.HarvestCD=(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus);
+                    FX(p.Pos,treePos,7);
+                    int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8?p.PickaxeTier:0);
+                    p.Bag[(int)Resource.Wood]+=yield;p.Gathered+=yield;
+                    EmitPopup(treePos,3,yield,(int)Resource.Wood,.95f);
+                    if(p.HasPickaxe)
+                    {
+                        p.PickaxeDurability=Math.Max(0,p.PickaxeDurability-1);
+                        if(p.PickaxeDurability<=0)
+                        {
+                            if(p.PickaxeTier>0)
+                            {
+                                p.PickaxeTier--;p.PickaxeDurability=p.PickaxeMaxDurability/2;
+                                Announce((EmberLanguage.English?"Pickaxe degraded to: ":"Cuốc đào bị mòn xuống: ")+p.PickaxeName);
+                            }
+                            else
+                            {
+                                p.HasPickaxe=false;if(p.HeldSlot==8)p.HeldSlot=6;
+                                Announce(EmberLanguage.English?"Pickaxe broke! Craft a new one.":"Cuốc đào đã gãy! Hãy chế tạo cuốc mới.");
+                            }
+                        }
+                    }
+                    Tiles[bestTy*size+bestTx]=0;
+                    nodes.Add(new Node{Id=nextId++,Pos=treePos,Resource=Resource.Wood,Amount=2,Dropped=true});
+                    Publish();
+                    return true;
+                }
+            }
             if(node==null)return false;
             if(!dustOnly&&!node.Dropped)
             {
                 if(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe)return false;
                 p.HeldSlot=8;
             }
-            int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?1:0);
-            int n=Math.Min(node.Amount,yield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
+            int nodeYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?p.PickaxeTier:0);
+            int n=Math.Min(node.Amount,nodeYield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
             if(n>0)EmitPopup(node.Pos,3,n,(int)node.Resource,.95f);
             if(!dustOnly)
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
-                p.HarvestCD=p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f);
-                if(!node.Dropped)FX(p.Pos,node.Pos,7);
+                float tierSpeedBonus=p.PickaxeTier*0.12f;
+                p.HarvestCD=(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus);
+                if(!node.Dropped)
+                {
+                    FX(p.Pos,node.Pos,7);
+                    if(p.HasPickaxe)
+                    {
+                        p.PickaxeDurability=Math.Max(0,p.PickaxeDurability-1);
+                        if(p.PickaxeDurability<=0)
+                        {
+                            if(p.PickaxeTier>0)
+                            {
+                                p.PickaxeTier--;p.PickaxeDurability=p.PickaxeMaxDurability/2;
+                                Announce((EmberLanguage.English?"Pickaxe degraded to: ":"Cuốc đào bị mòn xuống: ")+p.PickaxeName);
+                            }
+                            else
+                            {
+                                p.HasPickaxe=false;if(p.HeldSlot==8)p.HeldSlot=6;
+                                Announce(EmberLanguage.English?"Pickaxe broke! Craft a new one.":"Cuốc đào đã gãy! Hãy chế tạo cuốc mới.");
+                            }
+                        }
+                    }
+                }
             }
             return true;
         }

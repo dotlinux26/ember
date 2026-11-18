@@ -61,7 +61,7 @@ namespace Ember
                     int cur=p.Ammo<0||p.AmmoWeapon!=w?mag:Mathf.Clamp(p.Ammo,0,mag);
                     return cur+"/"+mag;
                 }
-                return slot==8?L("Đào","Dig"):"∞";
+                return slot==8?(p.PickaxeDurability+"/"+p.PickaxeMaxDurability):"∞";
             }
             if(slot>=2&&slot<=5)return p.Items[slot-2]>0?p.Items[slot-2].ToString():"—";
             return "—";
@@ -79,7 +79,7 @@ namespace Ember
 
         void EquipSlot(int slot)
         {
-            if(heldSlot==slot)return;
+            if(heldSlot==slot)slot=6; // Toggle: pressing/clicking active held slot unequips to empty hands
             heldSlot=slot;
             if(slot>=2&&slot<=5)selectedItem=slot-2;
             intent.Equip=slot;
@@ -285,7 +285,7 @@ namespace Ember
         {
             if(slot==1)return (EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.Weapon];
             if(slot==7)return (EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.SideWeapon];
-            if(slot==8)return (EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)Weapon.Pickaxe];
+            if(slot==8)return p.PickaxeName;
             if(slot==6)return L("Tay không","Empty hands");
             return (EmberLanguage.English?ItemNamesEn:ItemNamesVi)[slot-2];
         }
@@ -303,6 +303,40 @@ namespace Ember
         int dragFromCell=-1,inspectedCell=-1;
         Vector2 dragStartMouse;
         bool draggingItem;
+        bool contextMenuOpen;
+        int contextMenuCell=-1;
+        Vector2 contextMenuPos;
+
+        void DropBackpackItem(Player p,int cellIdx,int amount)
+        {
+            if(cellIdx<0||cellIdx>=BackpackCapacity||backpackCells[cellIdx].Empty||amount<=0)return;
+            var cell=backpackCells[cellIdx];
+            if(host&&World!=null)
+            {
+                World.DropItem(p,cell.Kind,cell.Id,amount);
+            }
+            else
+            {
+                if(cell.Kind==3)
+                {
+                    int r=Mathf.Clamp(cell.Id,0,p.Bag.Length-1);
+                    int actual=Mathf.Min(amount,p.Bag[r]);
+                    p.Bag[r]-=actual;
+                }
+                else if(cell.Kind==2)
+                {
+                    int c=Mathf.Clamp(cell.Id,0,3);
+                    int actual=Mathf.Min(amount,p.Items[c]);
+                    p.Items[c]-=actual;
+                }
+                else if(cell.Kind==1&&cell.Id==8)
+                {
+                    p.HasPickaxe=false;
+                    if(heldSlot==8)heldSlot=6;
+                }
+            }
+            SyncBackpack(p);
+        }
 
         static int StackLimitFor(int kind,int id)
         {
@@ -428,6 +462,12 @@ namespace Ember
         string CellDetailInfo(Player p,BackpackCell cell)
         {
             if(cell.Empty)return BuildHoldingInfo(p);
+            if(cell.Kind==1&&cell.Id==8)
+            {
+                string info=p.PickaxeName+" ["+L("Cấp ","Tier ")+(p.PickaxeTier+1)+"] · "+L("Độ bền: ","Durability: ")+p.PickaxeDurability+"/"+p.PickaxeMaxDurability;
+                info+=" · "+L("Sản lượng: +","Yield: +")+p.PickaxeTier+" · "+L("Tốc độ đào: +","Speed: +")+(p.PickaxeTier*12)+"%";
+                return info;
+            }
             int eqSlot=EquipSlotForCell(cell);
             if(eqSlot>0)
             {
@@ -490,13 +530,12 @@ namespace Ember
             UiLabel(new Rect(countChip.x+8,countChip.y+3,countChip.width-12,20),
                 L("Ô đồ: ","Slots: ")+usedSlots+"/"+BackpackCapacity+"  ·  "+p.Load+"/"+Mathf.FloorToInt(p.Capacity),small);
 
-            if(UiButton(new Rect(box.xMax-208,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
-            if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Tay 0","Empty"))){EquipSlot(6);inspectedCell=-1;}
-            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}
+            if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
+            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;contextMenuOpen=false;}
 
             UiLabel(new Rect(box.x+14,box.y+42,width-28,20),
-                L("Kéo thả để sắp xếp hoặc kéo vào ô 1–4 · Nhấn để cầm · Chuột phải để gán nhanh",
-                  "Drag to reorder or drop into slots 1–4 · Click to equip · Right-click to bind"),small);
+                L("Kéo vào ô 1–4 để gán · Nhấn để cầm/cất · Chuột phải mở menu vứt đồ & gán ô",
+                  "Drag onto slots 1–4 to bind · Click to equip/unequip · Right-click for drop & bind menu"),small);
 
             float gridTop=box.y+64;
             var scrollFrame=new Rect(box.x+12,gridTop,width-24,viewHeight);
@@ -561,14 +600,17 @@ namespace Ember
 
                 if(hovered&&ev.type==EventType.MouseDown)
                 {
-                    if(ev.button==1&&eqSlot>0)
+                    if(ev.button==1&&!cell.Empty)
                     {
-                        pendingQuickAssign=pendingQuickAssign==eqSlot?0:eqSlot;
+                        contextMenuOpen=true;
+                        contextMenuCell=i;
+                        contextMenuPos=globalMouse;
                         inspectedCell=i;
                         ev.Use();
                     }
                     else if(ev.button==0&&!cell.Empty)
                     {
+                        contextMenuOpen=false;
                         dragFromCell=i;
                         dragStartMouse=globalMouse;
                         draggingItem=false;
@@ -595,7 +637,7 @@ namespace Ember
             float quickLabelY=detail.yMax+6;
             string quickHint=pendingQuickAssign>0
                 ?L("Bấm ô 1–4 (hoặc phím 1–4) để gán: ","Click slot 1–4 (or press 1–4) to bind: ")+InventorySlotName(p,pendingQuickAssign)
-                :draggingItem?L("Thả vào ô trong kho để di chuyển / đổi chỗ, hoặc thả xuống ô 1–4 bên dưới","Drop onto a slot to move/swap, or drop onto quick slots 1–4 below")
+                :draggingItem?L("Thả vào ô trong kho để di chuyển, hoặc thả xuống ô 1–4 bên dưới để gán","Drop onto a slot to move, or drop onto quick slots 1–4 below to bind")
                 :L("Ô phím tắt nhanh 1–4 · Kéo vũ khí/đồ dùng thả vào đây để gán","Quick slots 1–4 · Drag any weapon/consumable here to bind");
             var oldContent=GUI.contentColor;
             if(pendingQuickAssign>0||draggingItem)GUI.contentColor=Gold;
@@ -613,16 +655,18 @@ namespace Ember
                 bool qHover=qTile.Contains(globalMouse);
                 if(qHover)hoveredQuick=q;
                 bool dragAcceptable=draggingItem&&dragFromCell>=0&&EquipSlotForCell(backpackCells[dragFromCell])>0;
-                Color qBg=(dragAcceptable&&qHover)?new Color(.34f,.58f,.66f):
+                Color qBg=(dragAcceptable&&qHover)?new Color(.38f,.65f,.80f):
+                    (qHover&&!draggingItem)?new Color(.28f,.22f,.42f):
                     pendingQuickAssign>0?new Color(.42f,.28f,.60f):
                     heldSlot==boundSlot?Plum:new Color(.18f,.13f,.28f);
                 PixelPanel(qTile,qBg);
                 DrawSpritePreview(new Rect(qTile.center.x-16,qTile.y+5,32,32),SlotIconSprite(p,boundSlot));
                 UiLabel(new Rect(qTile.x+4,qTile.yMax-21,qSize-8,20),(q+1)+" · "+SlotShortValue(p,boundSlot),small);
-                if(!draggingItem&&GUI.Button(qTile,new GUIContent("",InventorySlotName(p,boundSlot)),GUIStyle.none))
+                if(!draggingItem&&qHover&&ev.type==EventType.MouseDown&&ev.button==0)
                 {
                     if(pendingQuickAssign>0)BindQuickSlot(q,pendingQuickAssign);
                     else EquipSlot(boundSlot);
+                    ev.Use();
                 }
             }
 
@@ -639,7 +683,11 @@ namespace Ember
                     else if(hoveredQuick>=0)
                     {
                         int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
-                        if(eqSlot>0)BindQuickSlot(hoveredQuick,eqSlot);
+                        if(eqSlot>0)
+                        {
+                            BindQuickSlot(hoveredQuick,eqSlot);
+                            Announce((EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hoveredQuick+1)+": "+InventorySlotName(p,eqSlot));
+                        }
                     }
                 }
                 else
@@ -660,6 +708,94 @@ namespace Ember
                 PixelPanel(ghost,new Color(.38f,.28f,.58f,.92f));
                 DrawSpritePreview(new Rect(ghost.x+7,ghost.y+7,38,38),CellSprite(p,backpackCells[dragFromCell]));
                 GUI.color=Color.white;
+            }
+
+            DrawContextMenu(p,box);
+        }
+
+        void DrawContextMenu(Player p,Rect parentBox)
+        {
+            if(!contextMenuOpen||contextMenuCell<0||contextMenuCell>=BackpackCapacity)return;
+            var cell=backpackCells[contextMenuCell];
+            if(cell.Empty){contextMenuOpen=false;return;}
+            int eqSlot=EquipSlotForCell(cell);
+            float mw=210,mh=eqSlot>0?170:136;
+            float mx=Mathf.Clamp(contextMenuPos.x,parentBox.x+10,parentBox.xMax-mw-10);
+            float my=Mathf.Clamp(contextMenuPos.y,parentBox.y+10,parentBox.yMax-mh-10);
+            var menuRect=new Rect(mx,my,mw,mh);
+            PixelPanel(menuRect,new Color(.11f,.08f,.19f,.98f));
+            DrawSpritePreview(new Rect(menuRect.x+8,menuRect.y+7,26,26),CellSprite(p,cell));
+            string titleName=cell.Kind==1&&cell.Id==8?p.PickaxeName:CellTitle(p,cell);
+            UiLabel(new Rect(menuRect.x+38,menuRect.y+7,mw-46,24),titleName,small);
+
+            float curY=menuRect.y+36;
+            if(eqSlot>0)
+            {
+                UiLabel(new Rect(menuRect.x+8,curY,mw-16,18),L("Gán ô phím tắt:","Assign Quick Slot:"),small);
+                curY+=20;
+                float bw=(mw-28)/4f;
+                for(int k=0;k<4;k++)
+                {
+                    int qSlot=k;
+                    if(GUI.Button(new Rect(menuRect.x+8+k*(bw+4),curY,bw,24),""+(k+1)))
+                    {
+                        BindQuickSlot(qSlot,eqSlot);
+                        contextMenuOpen=false;
+                    }
+                }
+                curY+=28;
+                string equipText=heldSlot==eqSlot?L("Cất đồ (Tay không)","Unequip (Hands)"):L("Cầm lên tay","Equip");
+                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),equipText))
+                {
+                    EquipSlot(eqSlot);
+                    contextMenuOpen=false;
+                }
+                curY+=28;
+            }
+            if(cell.Kind==3||cell.Kind==2)
+            {
+                if(cell.Count>1)
+                {
+                    float halfW=(mw-20)/2f;
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,halfW,24),L("Vứt 1","Drop 1")))
+                    {
+                        DropBackpackItem(p,contextMenuCell,1);
+                        contextMenuOpen=false;
+                    }
+                    if(GUI.Button(new Rect(menuRect.x+12+halfW,curY,halfW,24),L("Vứt hết ("+cell.Count+")","Drop all ("+cell.Count+")")))
+                    {
+                        DropBackpackItem(p,contextMenuCell,cell.Count);
+                        contextMenuOpen=false;
+                    }
+                    curY+=28;
+                }
+                else
+                {
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),L("Vứt ra đất","Drop to ground")))
+                    {
+                        DropBackpackItem(p,contextMenuCell,1);
+                        contextMenuOpen=false;
+                    }
+                    curY+=28;
+                }
+            }
+            else if(cell.Kind==1&&cell.Id==8)
+            {
+                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,24),L("Vứt cuốc đào","Drop pickaxe")))
+                {
+                    DropBackpackItem(p,contextMenuCell,1);
+                    contextMenuOpen=false;
+                }
+                curY+=28;
+            }
+            if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,22),L("Đóng","Close")))
+            {
+                contextMenuOpen=false;
+            }
+            var ev=Event.current;
+            if(ev.type==EventType.MouseDown&&!menuRect.Contains(ev.mousePosition))
+            {
+                contextMenuOpen=false;
             }
         }
     }
