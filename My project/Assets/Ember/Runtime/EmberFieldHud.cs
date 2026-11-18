@@ -365,9 +365,32 @@ namespace Ember
             }
         }
 
+        void DrawCornerPauseButton()
+        {
+            var rect=new Rect(Screen.width-48,Screen.height-48,36,36);
+            bool hover=rect.Contains(Event.current.mousePosition);
+            PixelPanel(rect,hover?Plum:new Color(.20f,.14f,.32f,.94f));
+            if(Event.current.type==EventType.Repaint)
+            {
+                Color barColor=hover?Color.white:new Color(.93f,.88f,1f,.95f);
+                Panel(new Rect(rect.x+11,rect.y+10,4,16),barColor);
+                Panel(new Rect(rect.x+21,rect.y+10,4,16),barColor);
+            }
+            if(GUI.Button(rect,new GUIContent("",L("Tạm dừng [Esc]","Pause [Esc]")),GUIStyle.none))
+            {
+                inventoryOpen=false;craftOpen=false;pendingQuickAssign=0;
+                dragFromCell=-1;dragFromQuick=-1;draggingItem=false;
+                pauseConfirm=false;pauseSettings=false;
+                path.Clear();
+                menu=true;
+                SaveActiveRun(false);
+            }
+        }
+
         void DrawSpectateHud()
         {
             if(network)DrawPartyBubbles();
+            DrawCornerPauseButton();
             float width=Mathf.Min(Screen.width-28,460);
             var panel=new Rect((Screen.width-width)/2,Screen.height-96,width,78);
             PixelPanel(panel,FieldPaper);
@@ -573,6 +596,7 @@ namespace Ember
         void DrawFieldHud(Player p)
         {
             if(p.Ghost){DrawSpectateHud();return;}
+            DrawCornerPauseButton();
             float toolWidth=Mathf.Clamp((Screen.width-120)/2f,72,130);
             float toolX=Screen.width-116-toolWidth;
             if(UiButton(new Rect(toolX,12,toolWidth,29),"Chế tạo [Tab]"))craftOpen=!craftOpen;
