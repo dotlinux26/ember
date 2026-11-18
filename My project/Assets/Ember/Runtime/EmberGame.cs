@@ -602,8 +602,10 @@ namespace Ember
                 if(Mathf.Abs(sPos.X-center.X)>viewHalfW+1f||Mathf.Abs(sPos.Y-center.Y)>viewHalfH+1f)continue;
                 if(shot.FromEnemy)
                 {
-                    Color orbColor=shot.ColorKind==2?new Color(1f,.48f,.16f):shot.ColorKind==3?new Color(1f,.26f,.62f):new Color(1f,.22f,.32f);
-                    var r=Put("projectile"+shot.Id,Primitive("circle"),sPos+new V2(0,.3f),orbColor,.42f,1500);
+                    Color orbColor=EnemyOrbColor(shot.ColorKind);
+                    float baseScale=shot.ColorKind>=4?.33f:.42f;
+                    float pulse=baseScale*(1f+.09f*Mathf.Sin(clock*9f+shot.Id));
+                    var r=Put("projectile"+shot.Id,Primitive("circle"),sPos+new V2(0,.3f),orbColor,pulse,1500);
                     r.transform.rotation=Quaternion.identity;
                     if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
                     continue;

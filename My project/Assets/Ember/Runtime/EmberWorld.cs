@@ -201,8 +201,25 @@ namespace Ember
         public SkillLightProfile(LightAnchor anchor,LightColorKind colorKind,float casterRadius,float targetRadius,float duration,float intensity,bool grantsSafety)
         {Anchor=anchor;ColorKind=colorKind;CasterRadius=casterRadius;TargetRadius=targetRadius;Duration=duration;Intensity=intensity;GrantsSafety=grantsSafety;}
     }
+    public readonly struct EnemyShotSpec
+    {
+        public readonly bool Enabled;
+        public readonly float MinRange,MaxRange,Speed,Cooldown,Damage,SpreadDeg;
+        public readonly int Count,ColorKind;
+        public EnemyShotSpec(bool enabled,float minRange,float maxRange,float speed,float cooldown,float damage,int count,float spreadDeg,int colorKind)
+        {Enabled=enabled;MinRange=minRange;MaxRange=maxRange;Speed=speed;Cooldown=cooldown;Damage=damage;Count=count;SpreadDeg=spreadDeg;ColorKind=colorKind;}
+    }
     public static class Catalog
     {
+        public static EnemyShotSpec EnemyShotFor(EnemyKind kind,bool elite)
+        {
+            if(kind==EnemyKind.Nest)return default;
+            if(kind==EnemyKind.Boss)return new EnemyShotSpec(true,3.5f,15f,5.4f,4.2f,14f,3,18f,3);
+            if(elite||kind==EnemyKind.Sentinel)return new EnemyShotSpec(true,3.6f,14f,5.0f,4.6f,12f,3,16f,1);
+            if(kind==EnemyKind.VoidStalker)return new EnemyShotSpec(true,4.0f,13f,5.1f,5.2f,11f,1,0f,4);
+            if(kind==EnemyKind.SwampLeech)return new EnemyShotSpec(true,3.8f,11.5f,4.6f,5.8f,9f,1,0f,5);
+            return new EnemyShotSpec(true,4.2f,10.5f,4.2f,6.8f,7f,1,0f,4);
+        }
         public static readonly SkillLightProfile[] SkillLights={
             new SkillLightProfile(LightAnchor.None,LightColorKind.Ember,0,0,0,0,false),                       // Wanderer
             new SkillLightProfile(LightAnchor.Target,LightColorKind.Moonlight,0,6f,2.5f,1.25f,true),          // MoonMender
@@ -746,8 +763,8 @@ namespace Ember
                 case "eclipse":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=90;S.Phase=Phase.Eclipse;break;
                 case "portal":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=0;S.Phase=Phase.Extraction;break;
                 case "blackout":DebugInfiniteFuel=false;S.Fuel=0;S.LastLight=0;S.BeaconHP=0;lastLightSpent=true;break;
-                case "enemy":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Shade,Pos=p.Pos+new V2(3,0),HP=42,MaxHP=42});break;
-                case "boss":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=p.Pos+new V2(5,0),HP=600,MaxHP=600});break;
+                case "enemy":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Shade,Pos=p.Pos+new V2(3,0),HP=42,MaxHP=42,SkillCD=1.6f});break;
+                case "boss":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=p.Pos+new V2(5,0),HP=600,MaxHP=600,SkillCD=2.5f});break;
                 case "boss_event":return TriggerWorldBossEvent(null,playerId);
                 case "boss_void":return TriggerWorldBossEvent((int)BossType.VoidSovereign,playerId);
                 case "boss_cinder":return TriggerWorldBossEvent((int)BossType.CinderBehemoth,playerId);
@@ -786,7 +803,7 @@ namespace Ember
             spawnClock-=dt;if((!DebugEnabled||!DebugNoEnemies)&&spawnClock<=0&&enemies.Count(e=>e.Kind!=EnemyKind.Nest)<MaxActiveEnemies){SpawnEnemy();spawnClock=S.Phase==Phase.Eclipse?EclipseSpawnInterval:ExploreSpawnInterval;}
             if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Eclipse&&S.Wave<60&&!bossSpawned)
             {
-                bossSpawned=true;var pos=new V2(0,18);float hp=450+players.Count*180;enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=pos,HP=hp,MaxHP=hp});Announce("Một thực thể lớn đang tiến về hải đăng.");
+                bossSpawned=true;var pos=new V2(0,18);float hp=450+players.Count*180;enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=pos,HP=hp,MaxHP=hp,SkillCD=3.2f});Announce("Một thực thể lớn đang tiến về hải đăng.");
             }
             petClock+=dt;if(petClock>=2){petClock=0;foreach(var p in players.Where(p=>!p.Ghost&&p.Pet==(int)Pet.Firefly))Harvest(p,4,true);}
             if(S.Phase==Phase.Eclipse){S.Wave=Math.Max(0,S.Wave-dt);if(S.Wave<=0){S.Phase=Phase.Extraction;Announce("Cổng đã mở! Về hải đăng và nhấn E.");}}
@@ -1256,7 +1273,8 @@ namespace Ember
             if(!found)return;
             bool elite=S.Time>75f&&rng.NextDouble()<.08;float hp=(elite?160:42)*DifficultyEnemyScale;
             var kind=elite?EnemyKind.Sentinel:pos.Length>S.Size*.35f?EnemyKind.VoidStalker:pos.Length>S.Size*.22f?EnemyKind.SwampLeech:EnemyKind.Shade;
-            enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp});
+            float initialSkillCD=2.5f+(float)rng.NextDouble()*3.0f;
+            enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp,SkillCD=initialSkillCD});
         }
         V2 FindArenaSpot(V2 center,float minR,float maxR,int seedOffset=0)
         {
@@ -1533,10 +1551,11 @@ namespace Ember
             if(e.IsWorldBoss){UpdateWorldBoss(e,target,dt);return;}
             if(e.Kind==EnemyKind.Nest)
             {
-                if(S.Time>20f&&e.AttackCD<=0&&distToPlayer<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
+                if(S.Time>20f&&e.AttackCD<=0&&distToPlayer<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale,SkillCD=2.8f+(float)rng.NextDouble()*2f});e.AttackCD=16;}return;
             }
             if(!defendingBeacon&&distToPlayer>18f)
             {
+                if(e.SkillCD>1.2f)e.SkillCD=Math.Max(1.2f,e.SkillCD-dt);
                 // Gentle patrol within simulation distance while staying away from home.
                 if(e.Blind<=0)
                 {
@@ -1546,6 +1565,7 @@ namespace Ember
                 }
                 return;
             }
+            if(e.SkillCD>0)e.SkillCD=Math.Max(0,e.SkillCD-dt);
             V2 goal=defendingBeacon?new V2():target.Pos;
             if(e.Blind<=0)
             {
@@ -1560,12 +1580,53 @@ namespace Ember
                 }
                 e.Pos=next;
             }
+            float curDist=V2.Distance(target.Pos,e.Pos);
             if(e.AttackCD<=0)
             {
-                if(V2.Distance(target.Pos,e.Pos)<1.1f){Hurt(target,(e.Elite?18:9)*DifficultyEnemyScale);e.AttackCD=1;}
+                if(curDist<1.1f){Hurt(target,(e.Elite?18:9)*DifficultyEnemyScale);e.AttackCD=1;}
                 else if(goal.Length<.01f&&e.Pos.Length<2){S.BeaconHP=Math.Max(0,S.BeaconHP-(e.Elite?15:6));e.AttackCD=1;}
                 else {var wall=structures.Find(s=>s.Kind==2&&V2.Distance(s.Pos,e.Pos)<1.5f);if(wall!=null){wall.HP-=10;e.AttackCD=1;}}
             }
+            if(e.SkillCD<=0&&e.Blind<=0&&!S.BossArenaActive)TryFireEnemyShot(e,target,curDist);
+        }
+        bool HasClearShot(V2 from,V2 to)
+        {
+            float dist=V2.Distance(from,to);
+            if(dist<=.75f)return true;
+            int steps=Math.Max(2,(int)Math.Ceiling(dist/.6f));
+            for(int i=1;i<steps;i++)
+            {
+                float t=i/(float)steps;
+                if(!Walkable(new V2(from.X+(to.X-from.X)*t,from.Y+(to.Y-from.Y)*t)))return false;
+            }
+            return true;
+        }
+        void TryFireEnemyShot(Enemy e,Player target,float distToPlayer)
+        {
+            var spec=Catalog.EnemyShotFor(e.Kind,e.Elite);
+            if(!spec.Enabled||distToPlayer<spec.MinRange||distToPlayer>spec.MaxRange)return;
+            int activeEnemyShots=0;
+            for(int i=0;i<projectiles.Count;i++)if(projectiles[i].FromEnemy)activeEnemyShots++;
+            if(activeEnemyShots>=32)return;
+            if(!HasClearShot(e.Pos,target.Pos))return;
+            V2 aim=(target.Pos-e.Pos).Normal;
+            if(aim.Length<.001f)return;
+            float baseAngle=(float)Math.Atan2(aim.Y,aim.X);
+            float spreadRad=spec.SpreadDeg*(float)(Math.PI/180.0);
+            float life=(spec.MaxRange+1.5f)/spec.Speed;
+            float dmg=spec.Damage*DifficultyEnemyScale;
+            int count=Math.Max(1,spec.Count);
+            for(int i=0;i<count;i++)
+            {
+                float offset=count==1?0f:(i-(count-1)*.5f)*spreadRad;
+                float a=baseAngle+offset;
+                V2 dir=new V2((float)Math.Cos(a),(float)Math.Sin(a));
+                projectiles.Add(new Projectile{Id=nextId++,Owner=e.Id,Pos=e.Pos+dir*.45f,Velocity=dir*spec.Speed,Damage=dmg,Life=life,FromEnemy=true,ColorKind=spec.ColorKind});
+            }
+            FX(e.Pos,e.Pos,6);
+            float diffRate=S.Difficulty==Difficulty.Hard?1.12f:S.Difficulty==Difficulty.Easy?.86f:1f;
+            float jitter=.92f+(float)rng.NextDouble()*.18f;
+            e.SkillCD=(spec.Cooldown/diffRate)*jitter;
         }
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});

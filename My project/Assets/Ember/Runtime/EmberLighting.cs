@@ -22,6 +22,17 @@ namespace Ember
             activeLights.Add(light);
             if(!light.enabled)light.enabled=true;light.transform.position=new Vector3(pos.X,pos.Y+.35f,0);light.pointLightOuterRadius=radius;light.pointLightInnerRadius=radius*.4f;light.falloffIntensity=.65f;light.color=color;light.intensity=intensity;
         }
+        static Color EnemyOrbColor(int colorKind)
+        {
+            switch(colorKind)
+            {
+                case 2:return new Color(1f,.48f,.16f);
+                case 3:return new Color(1f,.26f,.62f);
+                case 4:return new Color(.68f,.46f,1f);
+                case 5:return new Color(.38f,.95f,.54f);
+                default:return new Color(1f,.22f,.32f);
+            }
+        }
         static Color TransientLightColor(LightColorKind kind)
         {
             switch(kind)
@@ -65,6 +76,19 @@ namespace Ember
                 float envelope=fadeIn*fadeOut;
                 float radius=l.Radius*(.75f+.25f*envelope);
                 Illuminate("fxlight"+l.Id,l.Pos,radius,TransientLightColor(l.ColorKind),l.Intensity*envelope);
+            }
+            if(State.Projectiles!=null&&State.Projectiles.Length>0)
+            {
+                V2 focusPos=focus!=null?VisualPlayerPos(focus):new V2();
+                int slot=0;
+                foreach(var shot in State.Projectiles.Where(s=>s.FromEnemy).OrderBy(s=>V2.Distance(s.Pos,focusPos)).Take(8))
+                {
+                    V2 sPos=VisualProjectilePos(shot);
+                    if(V2.Distance(sPos,focusPos)>20f)break;
+                    float radius=shot.ColorKind>=4?1.85f:2.15f;
+                    Illuminate("eshot"+slot,sPos,radius,EnemyOrbColor(shot.ColorKind),.55f);
+                    slot++;
+                }
             }
             foreach(var light in lights.Values)
                 if(light.enabled&&!activeLights.Contains(light))light.enabled=false;
