@@ -551,12 +551,12 @@ namespace Ember
             {
                 bool beaconLit=State.BeaconHP>0;
                 string lakeArt=beaconLit?"beacon_lit":"beacon_dark";
-                var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,-50);
+                var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,10);
                 if(beaconLit&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
 
                 // Central Floating Monolith Crystal (Cách không lơ lửng trên mặt hồ)
                 Color shadowCol=beaconLit?new Color(.12f,.65f,.88f,.45f):new Color(0,0,0,.32f);
-                var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,beaconLit?.85f:.65f,-45);
+                var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,beaconLit?.85f:.65f,12);
                 if(beaconLit&&emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
 
                 float floatY=Mathf.Sin(clock*2.0f)*.14f;
