@@ -661,7 +661,8 @@ namespace Ember
                 if(nearBridge)continue;
                 float radius=pos.Length;Resource resource=new[]{Resource.Dust,Resource.Core,Resource.Wood,Resource.Ore}[rng.Next(4)];
                 if(radius<15)resource=i%3==0?Resource.Core:Resource.Dust;
-                nodes.Add(new Node{Id=nextId++,Pos=pos,Resource=resource,Amount=resource==Resource.Core?(radius>S.Size*.35f?5:2):4});
+                int amt=resource==Resource.Core?(radius>S.Size*.35f?5:2):4;
+                nodes.Add(new Node{Id=nextId++,Pos=pos,Resource=resource,Amount=amt,MaxAmount=amt});
             }
             // Guaranteed accessible starter resources, regardless of seed.
             for(int i=0;i<12;i++)
@@ -669,7 +670,7 @@ namespace Ember
                 var sp=new V2(6+i%4*3,4+i/4*3);
                 int stx=(int)Math.Floor(sp.X+S.Size/2f),sty=(int)Math.Floor(sp.Y+S.Size/2f);
                 if(stx>=0&&sty>=0&&stx<S.Size&&sty<S.Size&&(Tiles[sty*S.Size+stx]==5||Tiles[sty*S.Size+stx]==6))continue;
-                nodes.Add(new Node{Id=nextId++,Pos=sp,Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5});
+                nodes.Add(new Node{Id=nextId++,Pos=sp,Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5,MaxAmount=5});
             }
             for(int i=0;i<10;i++)
             {
@@ -1219,7 +1220,11 @@ namespace Ember
             if(c.Attack&&p.HoldingWeapon&&p.AttackCD<=0&&p.CastTime<=0)
             {
                 bool isHarvestTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
-                if(isHarvestTool&&Harvest(p,2.6f))p.AttackCD=p.HarvestCD;
+                if(isHarvestTool)
+                {
+                    if(Harvest(p,2.8f))p.AttackCD=p.HarvestCD;
+                    else if(!IsNearHarvestTarget(p,2.8f))Attack(p);
+                }
                 else Attack(p);
             }
             if(c.Skill&&p.SkillCD<=0&&p.CastTime<=0)Skill(p);
@@ -1518,6 +1523,26 @@ namespace Ember
             Shoot(p,target,damage);
         }
 
+        bool IsNearHarvestTarget(Player p,float range)
+        {
+            if(nodes.Any(n=>V2.Distance(n.Pos,p.Pos)<range))return true;
+            int size=S.Size;
+            int px=(int)Math.Floor(p.Pos.X+size/2f);
+            int py=(int)Math.Floor(p.Pos.Y+size/2f);
+            for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+            {
+                int tx=px+dx,ty=py+dy;
+                if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                byte t=Tiles[ty*size+tx];
+                if(t==3||t==2||t==7)
+                {
+                    V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                    if(V2.Distance(p.Pos,blockPos)<range+.4f)return true;
+                }
+            }
+            return false;
+        }
+
         void Attack(Player p)
         {
             var weapon=p.ActiveWeapon;
@@ -1541,7 +1566,8 @@ namespace Ember
             if(target==null)
             {
                 if(p.Ranged){ConsumeAmmoAndShoot(p,p.Pos+new V2(p.Right?p.Range:-p.Range,0),damage);return;}
-                FX(p.Pos,p.Pos+new V2(p.Right?1.5f:-1.5f,0),0);return;
+                bool isHarvest=p.HeldSlot==8||weapon==Weapon.Pickaxe||weapon==Weapon.CrystalAxe;
+                FX(p.Pos,p.Pos+new V2(p.Right?1.2f:-1.2f,0),isHarvest?7:0);return;
             }
             if(p.Ranged){ConsumeAmmoAndShoot(p,target.Pos,damage);return;}
             if(weapon==Weapon.CrystalAxe||weapon==Weapon.MirrorShield)

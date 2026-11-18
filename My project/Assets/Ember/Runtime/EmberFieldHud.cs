@@ -73,11 +73,12 @@ namespace Ember
                     int maxAmt=n.MaxAmount>0?n.MaxAmount:5;
                     if(n.Amount>=maxAmt)continue;
                     float ratio=Mathf.Clamp01(n.Amount/(float)maxAmt);
-                    Vector2 anchor=ScreenPos(n.Pos+new V2(0,.78f));
+                    Vector2 anchor=ScreenPos(n.Pos+new V2(0,.85f));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
                     Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
-                    Color fill=ratio<.3f?Coral:n.Resource==Resource.Dust?new Color(.3f,1f,.85f):n.Resource==Resource.Wood?new Color(.35f,.85f,.4f):new Color(.4f,.85f,.95f);
+                    Color fill=ratio<.3f?Coral:n.Resource==Resource.Dust?new Color(.35f,1f,.90f):n.Resource==Resource.Wood?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
                     Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                    Panel(new Rect(x-19,y-6,38*ratio,1),new Color(1f,1f,1f,.25f));
                 }
             }
             if(State?.HarvestTargets!=null)
@@ -90,12 +91,13 @@ namespace Ember
                     if(V2.Distance(tPos,focus)>22f)continue;
                     float ratio=Mathf.Clamp01(ht.HP/ht.MaxHP);
                     if(ratio>=1f)continue;
-                    float yOff=ht.Tile==3?1.35f:.72f;
+                    float yOff=ht.Tile==3?1.85f:.85f;
                     Vector2 anchor=ScreenPos(tPos+new V2(0,yOff));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
                     Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
-                    Color fill=ratio<.3f?Coral:ht.Tile==3?new Color(.35f,.85f,.4f):new Color(.4f,.85f,.95f);
+                    Color fill=ratio<.3f?Coral:ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
                     Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                    Panel(new Rect(x-19,y-6,38*ratio,1),new Color(1f,1f,1f,.25f));
                 }
             }
         }

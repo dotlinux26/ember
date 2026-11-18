@@ -78,7 +78,7 @@ namespace Ember
             if(p==null||!HasHarvestTool(p))return false;
             if(State==null||(State.Phase==Phase.Extraction&&p.Pos.Length<3))return false;
             if(State.Structures!=null&&State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
-            var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
+            var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.8f)
                 .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
             if(node!=null&&!node.Dropped)return true;
             if(currentTiles!=null)
@@ -93,7 +93,7 @@ namespace Ember
                     if(t==3||t==2)
                     {
                         V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
-                        if(V2.Distance(p.Pos,blockPos)<2.6f)return true;
+                        if(V2.Distance(p.Pos,blockPos)<2.8f)return true;
                     }
                 }
             }
