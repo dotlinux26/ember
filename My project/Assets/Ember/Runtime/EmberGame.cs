@@ -672,6 +672,20 @@ namespace Ember
                 }
                 var pr=Put("projectile"+shot.Id,Primitive("diamond"),sPos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);pr.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
             }
+            if(local!=null&&local.Dread>=30&&!local.Safe)
+            {
+                float cycle=Mathf.Sin(clock*.75f);
+                if(cycle>0.3f)
+                {
+                    float fade=Mathf.Clamp01((cycle-0.3f)/0.7f);
+                    float sign=Mathf.Sin(clock*.25f)>0?1:-1;
+                    var pos=localVisual+new V2(sign*(cam.orthographicSize*cam.aspect-0.8f),Mathf.Sin(clock*1.1f)*1.6f);
+                    int frame=(int)(clock*4)%4;
+                    var shadowSprite=EnemyFrame("enemy_void",frame);
+                    Color shadowCol=new Color(0.10f,0.06f,0.18f,fade*0.50f);
+                    Put("falseShadow",shadowSprite,pos,shadowCol,1.2f,2000,flip:sign>0);
+                }
+            }
             foreach(var pair in renderers)if(!touched.Contains(pair.Key)&&pair.Value.enabled)pair.Value.enabled=false;
             // Reclaim transient node/enemy renderers instead of retaining an entire run.
             if(renderers.Count>1400)foreach(var key in renderers.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(renderers[key].gameObject);renderers.Remove(key);}
