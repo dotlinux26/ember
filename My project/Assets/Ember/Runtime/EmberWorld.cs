@@ -32,6 +32,7 @@ namespace Ember
         public static V2 operator /(V2 a,float b)=>new V2(a.X/b,a.Y/b);
         public static float Distance(V2 a,V2 b)=>(a-b).Length;
     }
+    [Serializable] public struct TreeRespawn { public int Tx, Ty; public float RespawnAt; }
     [Serializable] public sealed class Command
     {
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
@@ -317,7 +318,7 @@ namespace Ember
         public Snapshot S=new Snapshot();
         public byte[] Tiles; public readonly int[] Chest=new int[5];
         readonly List<Player> players=new List<Player>(); readonly List<Enemy> enemies=new List<Enemy>();
-        readonly List<Node> nodes=new List<Node>(); readonly List<Structure> structures=new List<Structure>(); readonly List<Effect> effects=new List<Effect>();
+        readonly List<Node> nodes=new List<Node>(); readonly List<Structure> structures=new List<Structure>(); readonly List<Effect> effects=new List<Effect>(); readonly List<TreeRespawn> treeRespawns=new List<TreeRespawn>();
         readonly List<Projectile> projectiles=new List<Projectile>();
         readonly List<BossTelegraph> bossTelegraphs=new List<BossTelegraph>();
         readonly List<TransientLight> transientLights=new List<TransientLight>();
@@ -434,24 +435,110 @@ namespace Ember
         }
         public static byte[] MakeTiles(int seed,int size)
         {
-            var random=new Random(seed);var tiles=new byte[size*size];
+            var tiles=new byte[size*size];
+            int half=size/2;
+
+            float Noise(float x,float y,float scale,int s)
+            {
+                float gx=x/scale,gy=y/scale;
+                int x0=(int)Math.Floor(gx),y0=(int)Math.Floor(gy);
+                int x1=x0+1,y1=y0+1;
+                float fx=gx-x0,fy=gy-y0;
+                fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);
+                float H(int hx,int hy)
+                {
+                    int n=(hx*374761393+hy*668265263+s*1274126177)^0x5bf03635;
+                    n=((n^(n>>13))*1274126177);
+                    return ((n^(n>>16))&0x7FFFFFFF)/(float)0x7FFFFFFF;
+                }
+                float v00=H(x0,y0),v10=H(x1,y0),v01=H(x0,y1),v11=H(x1,y1);
+                float v0=v00*(1-fx)+v10*fx,v1=v01*(1-fx)+v11*fx;
+                return v0*(1-fy)+v1*fy;
+            }
+
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
-                float dx=x-size/2,dy=y-size/2,r=(float)Math.Sqrt(dx*dx+dy*dy);
+                if(x<3||y<3||x>=size-3||y>=size-3){tiles[y*size+x]=4;continue;}
+                int dx=x-half,dy=y-half;
+                float r=(float)Math.Sqrt(dx*dx+dy*dy);
+                if(r>=size*0.48f){tiles[y*size+x]=4;continue;}
+
+                float n1=Noise(x,y,36f,seed);
+                float n2=Noise(x,y,18f,seed+101)*0.45f;
+                float noise=n1+n2;
+
+                bool isSanctuary=r<=7.5f;
                 bool starter=dx>=4&&dx<=17&&dy>=2&&dy<=12;
-                tiles[y*size+x]=(byte)(x<3||y<3||x>=size-3||y>=size-3?4:r<7||starter?0:random.NextDouble()<.12?3:r<size*.22?0:r<size*.37?1:2);
-            }
-            // Two cellular smoothing passes produce forest clusters; central lanes remain open.
-            for(int pass=0;pass<2;pass++)
-            {
-                var copy=(byte[])tiles.Clone();
-                for(int y=4;y<size-4;y++)for(int x=4;x<size-4;x++)
+
+                // Main cardinal bridges across the moat (radius 18 to 39)
+                bool isBridge=false;
+                if(r>=18&&r<=39)
                 {
-                    if(Math.Abs(x-size/2)<3||Math.Abs(y-size/2)<3||(x-size/2>=4&&x-size/2<=17&&y-size/2>=2&&y-size/2<=12))continue;
-                    int count=0;for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++)if(copy[(y+j)*size+x+i]==3)count++;
-                    if(count>=4)tiles[y*size+x]=3;
+                    if(Math.Abs(dx)<=1&&dy!=0)isBridge=true;
+                    else if(Math.Abs(dy)<=1&&dx!=0)isBridge=true;
+                }
+
+                if(isBridge)
+                {
+                    tiles[y*size+x]=5; // Wooden Bridge (Walkable over water)
+                }
+                else if(r<=22f+(noise-0.72f)*8f||isSanctuary||starter)
+                {
+                    tiles[y*size+x]=0; // Central Sanctuary Island (Lush Meadow Grass)
+                }
+                else if(r<=37f+(noise-0.72f)*10f)
+                {
+                    tiles[y*size+x]=1; // Surrounding Moat / Lake Water
+                }
+                else if(r<=size*0.38f)
+                {
+                    // Outer Archipelago Islands
+                    tiles[y*size+x]=(byte)(noise>0.62f?0:1);
+                }
+                else
+                {
+                    // Highland / Cliff perimeter
+                    tiles[y*size+x]=(byte)(noise>0.58f?2:1);
                 }
             }
+
+            // Central sanctuary paths connecting to bridges
+            for(int y=4;y<size-4;y++)for(int x=4;x<size-4;x++)
+            {
+                int dx=x-half,dy=y-half;
+                float r=(float)Math.Sqrt(dx*dx+dy*dy);
+                if(r<=20&&(Math.Abs(dx)<=1||Math.Abs(dy)<=1)&&tiles[y*size+x]==0)
+                {
+                    tiles[y*size+x]=6; // Dirt path on central island
+                }
+            }
+
+            // Place Trees ONLY on land (Grass 0 or Highland 2), NEVER on water (1) or bridges (5)
+            var rng=new Random(seed);
+            for(int y=4;y<size-4;y++)for(int x=4;x<size-4;x++)
+            {
+                byte t=tiles[y*size+x];
+                if(t!=0&&t!=2)continue;
+                int dx=x-half,dy=y-half;
+                float r=(float)Math.Sqrt(dx*dx+dy*dy);
+                if(r<=7.5f)continue; // sanctuary plaza
+                if(dx>=3&&dx<=18&&dy>=1&&dy<=13)continue; // starter path
+                if(Math.Abs(dx)<=2&&r<=22)continue; // central lanes
+                if(Math.Abs(dy)<=2&&r<=22)continue;
+
+                // Check 3x3 neighbors: no water or bridge near trees
+                bool nearWaterOrBridge=false;
+                for(int ny=-1;ny<=1;ny++)for(int nx=-1;nx<=1;nx++)
+                {
+                    byte nb=tiles[(y+ny)*size+(x+nx)];
+                    if(nb==1||nb==5||nb==4){nearWaterOrBridge=true;break;}
+                }
+                if(nearWaterOrBridge)continue;
+
+                // Tree density roll
+                if(rng.NextDouble()<0.14)tiles[y*size+x]=3;
+            }
+
             return tiles;
         }
         void GenerateNodes()
@@ -649,7 +736,8 @@ namespace Ember
         {
             int x=(int)Math.Floor(p.X+S.Size/2f),y=(int)Math.Floor(p.Y+S.Size/2f);
             if(x<3||y<3||x>=S.Size-3||y>=S.Size-3)return false;
-            if(Tiles[y*S.Size+x]==3||Tiles[y*S.Size+x]==4)return false;
+            byte tile=Tiles[y*S.Size+x];
+            if(tile==1||tile==3||tile==4)return false;
             return !structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f);
         }
         V2 Move(V2 from,V2 delta,Player body=null,Enemy monster=null,bool ignoreEnemies=false)
@@ -817,6 +905,23 @@ namespace Ember
                 bossSpawned=true;var pos=new V2(0,18);float hp=450+players.Count*180;enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=pos,HP=hp,MaxHP=hp,SkillCD=3.2f});Announce("Một thực thể lớn đang tiến về hải đăng.");
             }
             petClock+=dt;if(petClock>=2){petClock=0;foreach(var p in players.Where(p=>!p.Ghost&&p.Pet==(int)Pet.Firefly))Harvest(p,4,true);}
+            for(int tri=treeRespawns.Count-1;tri>=0;tri--)
+            {
+                var tr=treeRespawns[tri];
+                if(S.Time>=tr.RespawnAt)
+                {
+                    V2 treePos=new V2(tr.Tx-S.Size/2f+.5f,tr.Ty-S.Size/2f+.5f);
+                    bool occupied=players.Any(p=>!p.Ghost&&!p.Extracted&&V2.Distance(p.Pos,treePos)<1.1f)||enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,treePos)<1.1f);
+                    if(occupied){tr.RespawnAt=S.Time+5f;treeRespawns[tri]=tr;}
+                    else
+                    {
+                        Tiles[tr.Ty*S.Size+tr.Tx]=3;
+                        treeRespawns.RemoveAt(tri);
+                        FX(treePos,treePos,7);
+                        Publish();
+                    }
+                }
+            }
             if(S.Phase==Phase.Eclipse){S.Wave=Math.Max(0,S.Wave-dt);if(S.Wave<=0){S.Phase=Phase.Extraction;Announce("Cổng đã mở! Về hải đăng và nhấn E.");}}
             if(S.Fuel<=0&&S.LastLight<=0&&S.BeaconHP<=0){S.Blackout+=dt;if(S.Blackout>=10){S.Phase=Phase.Lost;Announce("Bóng tối nuốt chửng cả nhóm.");}}else S.Blackout=0;
             if(players.Count>0&&players.All(p=>p.Ghost||p.Extracted))S.Phase=S.TeamExtracted>0?Phase.Won:Phase.Lost;
@@ -996,6 +1101,7 @@ namespace Ember
                     }
                     Tiles[bestTy*size+bestTx]=0;
                     nodes.Add(new Node{Id=nextId++,Pos=treePos,Resource=Resource.Wood,Amount=2,Dropped=true});
+                    treeRespawns.Add(new TreeRespawn{Tx=bestTx,Ty=bestTy,RespawnAt=S.Time+45f});
                     Publish();
                     return true;
                 }
@@ -1710,6 +1816,14 @@ namespace Ember
             }
             if(e.SkillCD<=0&&e.Blind<=0&&!S.BossArenaActive)TryFireEnemyShot(e,target,curDist);
         }
+        bool ShotBlocked(V2 p)
+        {
+            int x=(int)Math.Floor(p.X+S.Size/2f),y=(int)Math.Floor(p.Y+S.Size/2f);
+            if(x<3||y<3||x>=S.Size-3||y>=S.Size-3)return true;
+            byte tile=Tiles[y*S.Size+x];
+            if(tile==3||tile==4)return true;
+            return structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f);
+        }
         bool HasClearShot(V2 from,V2 to)
         {
             float dist=V2.Distance(from,to);
@@ -1718,7 +1832,7 @@ namespace Ember
             for(int i=1;i<steps;i++)
             {
                 float t=i/(float)steps;
-                if(!Walkable(new V2(from.X+(to.X-from.X)*t,from.Y+(to.Y-from.Y)*t)))return false;
+                if(ShotBlocked(new V2(from.X+(to.X-from.X)*t,from.Y+(to.Y-from.Y)*t)))return false;
             }
             return true;
         }

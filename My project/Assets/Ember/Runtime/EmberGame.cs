@@ -175,6 +175,7 @@ namespace Ember
             if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
             ReadInput();
             ReadCameraZoom();
+            UpdateMapEditor();
             if(netSmoke&&!host){intent.X=State?.Phase==Phase.Explore&&State.Time<6?1:0;intent.Y=0;if(lan.LocalId>0&&!readyWanted){readyWanted=true;lan.SetReady(true);}}
             if(netSmoke&&host&&State.Players.Length==netExpected&&State.Players.All(p=>p.Ready))BeginRoomRun();
             if((!menu||network)&&host)
@@ -536,7 +537,7 @@ namespace Ember
         SpriteRenderer Put(string key,Sprite sprite,V2 pos,Color color,float scale=1,int? order=null,bool flip=false)
         {
             touched.Add(key);if(!renderers.TryGetValue(key,out var r)){r=new GameObject(key).AddComponent<SpriteRenderer>();r.transform.SetParent(entityRoot.transform);if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;renderers[key]=r;}
-            r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(1000-Mathf.RoundToInt(pos.Y*10));return r;
+            r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(5000-Mathf.RoundToInt(pos.Y*10));return r;
         }
         void Render()
         {
@@ -573,13 +574,13 @@ namespace Ember
                     float depthY=Mathf.Sin(angle)*.35f;
                     float ry=crystalY+depthY+floatYOrb;
                     var cr=Put("beacon_crystal_"+ci,Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(rx,ry),crystalColor,.75f);
-                    cr.sortingOrder=depthY<0?1006:1004;
+                    cr.sortingOrder=depthY<0?5006:5004;
                     if(beaconLit&&emissionMaterial!=null)cr.sharedMaterial=emissionMaterial;
                 }
             }
             if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
             if(State.Phase==Phase.Extraction&&Mathf.Abs(center.X)<=viewHalfW+4f&&Mathf.Abs(center.Y)<=viewHalfH+4f)
-                Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,-20);
+                Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,5);
             var nodesArr=State.Nodes;
             V2 localVisual=local!=null?VisualPlayerPos(local):center;
             for(int ni=0;ni<nodesArr.Length;ni++)
@@ -591,7 +592,7 @@ namespace Ember
                 Sprite sprite=tree?Primitive("tree"):n.Dropped&&n.Resource==Resource.Wood?Primitive("wood"):n.Dropped&&n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
                 float scale=tree?1.5f:n.Dropped?.70f:.62f;
                 V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
-                int order=1000-Mathf.RoundToInt(n.Pos.Y*10);
+                int order=5000-Mathf.RoundToInt(n.Pos.Y*10);
                 bool showGoldGlow=n.Dropped||!tree||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
                 if(showGoldGlow)
                 {
@@ -630,7 +631,7 @@ namespace Ember
                 var artSprite=EnemyFrame(art,animFrame);
                 float bob=e.Kind==EnemyKind.Nest?0f:moving?Mathf.Sin(clock*13f+e.Id)*.035f:Mathf.Sin(clock*3.2f+e.Id)*.018f;
                 V2 renderPos=ePos+new V2(0,bob);
-                Outline(Put("enemyGlow"+e.Id,artSprite,renderPos,glowColor,scale,1000-Mathf.RoundToInt(ePos.Y*10)-1,flip),artSprite);
+                Outline(Put("enemyGlow"+e.Id,artSprite,renderPos,glowColor,scale,5000-Mathf.RoundToInt(ePos.Y*10)-1,flip),artSprite);
                 Put("enemy"+e.Id,artSprite,renderPos,bodyTint,scale,flip:flip);
             }
             var playersArr=State.Players;
@@ -645,12 +646,12 @@ namespace Ember
                 int frames=p.Vessel==Vessel.LittleMoone||Art[(int)p.Vessel]=="lyra_moonscout"?8:4;
                 int raw=(int)((clock-anim.began)*(p.Vessel==Vessel.LittleMoone?6:clip=="run"?10:clip=="cast"?(frames==8?12:9):clip=="hurt"?(frames==8?10:8):6));int f=clip=="cast"||clip=="hurt"?Mathf.Min(frames-1,raw):raw%frames;
                 var sprite=hallucination?Primitive("enemy_void"):Frame(p.Vessel,clip,f);Color tint=Color.white;
-                Put("shadow"+p.Id,Primitive("circle"),pPos,new Color(0,0,0,.35f),.8f,-10);
-                Outline(Put("outline"+p.Id,sprite,pPos,glow,1,1000-Mathf.RoundToInt(pPos.Y*10)-1,!p.Right),sprite);
+                Put("shadow"+p.Id,Primitive("circle"),pPos,new Color(0,0,0,.35f),.8f,5);
+                Outline(Put("outline"+p.Id,sprite,pPos,glow,1,5000-Mathf.RoundToInt(pPos.Y*10)-1,!p.Right),sprite);
                 var body=Put("player"+p.Id,sprite,pPos,tint,1,flip:!p.Right);
-                if(!hallucination){var eyes=Frame(p.Vessel,clip,f,true);if(eyes!=null){var glowEyes=Put("eyes"+p.Id,eyes,pPos,tint,1,1001-Mathf.RoundToInt(pPos.Y*10),!p.Right);if(emissionMaterial!=null)glowEyes.sharedMaterial=emissionMaterial;}}
+                if(!hallucination){var eyes=Frame(p.Vessel,clip,f,true);if(eyes!=null){var glowEyes=Put("eyes"+p.Id,eyes,pPos,tint,1,5001-Mathf.RoundToInt(pPos.Y*10),!p.Right);if(emissionMaterial!=null)glowEyes.sharedMaterial=emissionMaterial;}}
                 if(!hallucination&&p.CastTime<=0)DrawHands(p,body,pPos);
-                if(p.Hat>=0&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),pPos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,1010-Mathf.RoundToInt(pPos.Y*10));
+                if(p.Hat>=0&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),pPos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,5010-Mathf.RoundToInt(pPos.Y*10));
                 if(p.Pet>=0&&!hallucination)Put("pet"+p.Id,Primitive(new[]{"pet_firefly","pet_bat","pet_cat","pet_ghost"}[p.Pet]),pPos+new V2(-1,.1f+Mathf.Sin(clock*4)*.15f),Color.white,.65f);
                 if(p.ShieldTime>0)Put("shield"+p.Id,Primitive("ring"),pPos+new V2(0,.5f),Cyan,2,-1);
             }
@@ -722,12 +723,93 @@ namespace Ember
                 }
             }
         }
+        Texture2D mapTexture;
+        Color32[] mapColors;
+        Color32[] gPix, pPix, wPix, bPix, hPix;
+        int gW, pW, wW, bW, hW;
+
+        public void UpdateMapTileVisual(int tx,int ty,byte tile)
+        {
+            if(mapColors==null||currentTiles==null)return;
+            int size=State.Size;
+            int px=size*16;
+            if(tx<0||tx>=size||ty<0||ty>=size)return;
+            int dx=tx-size/2,dy=ty-size/2;
+            int dist2=dx*dx+dy*dy;
+            bool isSanctuary=dist2<=38;
+            int h=((tx*374761393)^(ty*668265263))&0x7FFFFFFF;
+
+            if(tile==4||tx<3||ty<3||tx>=size-3||ty>=size-3)
+            {
+                Color32 c=new Color32(4,3,7,255);
+                for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)mapColors[(ty*16+ly)*px+(tx*16+lx)]=c;
+            }
+            else if(isSanctuary)
+            {
+                Color32 borderC=new Color32(34,28,46,255);
+                Color32 stoneC=new Color32(52,44,68,255);
+                for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)
+                {
+                    bool isEdge=(lx==0||ly==0||lx==15||ly==15);
+                    mapColors[(ty*16+ly)*px+(tx*16+lx)]=isEdge?borderC:stoneC;
+                }
+            }
+            else if(tile==1) // Water
+            {
+                if(wPix!=null)Blit16(mapColors,px,tx,ty,wPix,wW,h%4,0);
+                else
+                {
+                    Color32 c=new Color32(45,120,155,255);
+                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)mapColors[(ty*16+ly)*px+(tx*16+lx)]=c;
+                }
+            }
+            else if(tile==2) // Highland / Cliff
+            {
+                if(hPix!=null)Blit16(mapColors,px,tx,ty,hPix,hW,1,2);
+                else
+                {
+                    Color32 c=new Color32(110,80,130,255);
+                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)mapColors[(ty*16+ly)*px+(tx*16+lx)]=c;
+                }
+            }
+            else if(tile==5) // Wooden Bridge
+            {
+                if(wPix!=null)Blit16(mapColors,px,tx,ty,wPix,wW,h%4,0); // water base
+                if(bPix!=null)
+                {
+                    bool vert=Math.Abs(dy)>=Math.Abs(dx);
+                    if(vert)Blit16(mapColors,px,tx,ty,bPix,bW,3,0,blend:true);
+                    else Blit16(mapColors,px,tx,ty,bPix,bW,(h%2==0?0:1),1,blend:true);
+                }
+            }
+            else if(tile==6) // Dirt Path
+            {
+                if(gPix!=null)Blit16(mapColors,px,tx,ty,gPix,gW,1,1); // grass base
+                if(pPix!=null)Blit16(mapColors,px,tx,ty,pPix,pW,(h%2==0?0:2),1,blend:true);
+            }
+            else // Grass (tile 0 or tree obstacle 3)
+            {
+                if(gPix!=null)
+                {
+                    int m=h%100;
+                    if(m<14)Blit16(mapColors,px,tx,ty,gPix,gW,h%6,5);
+                    else if(m<26)Blit16(mapColors,px,tx,ty,gPix,gW,h%6,6);
+                    else Blit16(mapColors,px,tx,ty,gPix,gW,1,1);
+                }
+                else
+                {
+                    Color32 c=new Color32(192,212,112,255);
+                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)mapColors[(ty*16+ly)*px+(tx*16+lx)]=c;
+                }
+            }
+        }
+
         void BuildMap()
         {
             renderedSeed=State.Seed;foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
             visibleTrees.Clear();treePool.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
             float edgeWorld=State.Size/2f-3;
-            var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=30000;
+            var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=10000;
             var fogMaterial=Resources.Load<Material>("Ember/EmberAbyss");if(fogMaterial!=null){fog.material=new Material(fogMaterial);fog.material.SetFloat("_Boundary",edgeWorld);}
             foreach(var side in new[]{new Vector3(-edgeWorld-2,0),new Vector3(edgeWorld+2,0),new Vector3(0,-edgeWorld-2),new Vector3(0,edgeWorld+2)})
             {
@@ -735,7 +817,10 @@ namespace Ember
                 var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
             }
             byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
-            int px=size*16;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];
+            int px=size*16;
+            mapTexture=new Texture2D(px,px,TextureFormat.RGBA32,false);
+            mapTexture.filterMode=FilterMode.Point;
+            mapColors=new Color32[px*px];
 
             // Load authentic 16x16 Sprout Lands tilesets
             var grassTex=Resources.Load<Texture2D>("Ember/Tilesets/grass_tileset");
@@ -744,8 +829,8 @@ namespace Ember
             var bridgeTex=Resources.Load<Texture2D>("Ember/Tilesets/bridge_tileset");
             var hillsTex=Resources.Load<Texture2D>("Ember/Tilesets/hills_tileset");
 
-            Color32[] gPix=null, pPix=null, wPix=null, bPix=null, hPix=null;
-            int gW=0, pW=0, wW=0, bW=0, hW=0;
+            gPix=null;pPix=null;wPix=null;bPix=null;hPix=null;
+            gW=0;pW=0;wW=0;bW=0;hW=0;
             try{if(grassTex!=null){gPix=grassTex.GetPixels32();gW=grassTex.width;}}catch{}
             try{if(pathTex!=null){pPix=pathTex.GetPixels32();pW=pathTex.width;}}catch{}
             try{if(waterTex!=null){wPix=waterTex.GetPixels32();wW=waterTex.width;}}catch{}
@@ -755,94 +840,15 @@ namespace Ember
             for(int ty=0;ty<size;ty++)for(int tx=0;tx<size;tx++)
             {
                 byte tile=tiles[ty*size+tx];
-                int dx=tx-size/2,dy=ty-size/2;
-                int dist2=dx*dx+dy*dy;
-                float r=Mathf.Sqrt(dist2);
-                bool isSanctuary=dist2<=38;
-                bool isPath=!isSanctuary&&(Math.Abs(dx)<=1||Math.Abs(dy)<=1||(dx>=4&&dx<=17&&dy>=2&&dy<=12));
-                int h=((tx*374761393)^(ty*668265263))&0x7FFFFFFF;
-
-                // 1. Base Biome Layer
-                if(tile==4||tx<3||ty<3||tx>=size-3||ty>=size-3)
-                {
-                    // Boundary Abyss
-                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=new Color32(4,3,7,255);
-                }
-                else if(r<size*.22f||isSanctuary||(dx>=4&&dx<=17&&dy>=2&&dy<=12)||(tile==3&&r<size*.22f))
-                {
-                    // Biome 0: Meadow Grass
-                    if(gPix!=null)
-                    {
-                        int m=h%100;
-                        if(m<22)Blit16(colors,px,tx,ty,gPix,gW,h%6,5);      // grass tufts
-                        else if(m<38)Blit16(colors,px,tx,ty,gPix,gW,h%6,6); // wildflower variants
-                        else Blit16(colors,px,tx,ty,gPix,gW,1,1);          // clean flat grass
-                    }
-                    else
-                    {
-                        Color32 c=new Color32(192,212,112,255);
-                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
-                    }
-                }
-                else if(r<size*.37f||(tile==3&&r<size*.37f))
-                {
-                    // Biome 1: Lake & Swamp
-                    if(tile==1&&wPix!=null)
-                    {
-                        Blit16(colors,px,tx,ty,wPix,wW,h%4,0); // animated water tile
-                    }
-                    else if(gPix!=null)
-                    {
-                        Blit16(colors,px,tx,ty,gPix,gW,1,1); // grass shore
-                    }
-                    else
-                    {
-                        Color32 c=tile==1?new Color32(156,213,194,255):new Color32(164,194,99,255);
-                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
-                    }
-                }
-                else
-                {
-                    // Biome 2: Eldritch Highlands / Cliffs
-                    if(hPix!=null)
-                    {
-                        Blit16(colors,px,tx,ty,hPix,hW,1,2); // stone cliff wall
-                    }
-                    else
-                    {
-                        Color32 c=new Color32(46,28,70,255);
-                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
-                    }
-                }
-
-                // 2. Overlay Layer: Sanctuary Plaza, Paths, Bridges
-                if(isSanctuary)
-                {
-                    Color32 borderC=new Color32(34,28,46,255);
-                    Color32 stoneC=new Color32(52,44,68,255);
-                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)
-                    {
-                        bool isEdge=(lx==0||ly==0||lx==15||ly==15);
-                        colors[(ty*16+ly)*px+(tx*16+lx)]=isEdge?borderC:stoneC;
-                    }
-                }
-                else if(isPath&&tile!=3&&tile!=4)
-                {
-                    if(tile==1&&bPix!=null)
-                    {
-                        // Wooden Bridge crossing water!
-                        bool vert=Math.Abs(dy)>=Math.Abs(dx);
-                        if(vert)Blit16(colors,px,tx,ty,bPix,bW,3,0,blend:true);
-                        else Blit16(colors,px,tx,ty,bPix,bW,(h%2==0?0:1),1,blend:true);
-                    }
-                    else if(pPix!=null)
-                    {
-                        // Authentic dirt path
-                        Blit16(colors,px,tx,ty,pPix,pW,(h%2==0?0:2),1,blend:true);
-                    }
-                }
+                UpdateMapTileVisual(tx,ty,tile);
             }
-            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),16);floor.sortingOrder=-100;
+            mapTexture.SetPixels32(mapColors);
+            mapTexture.Apply();
+            var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();
+            floor.transform.SetParent(mapRoot.transform);
+            if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;
+            floor.sprite=Sprite.Create(mapTexture,new Rect(0,0,px,px),new Vector2(.5f,.5f),16);
+            floor.sortingOrder=0;
         }
         readonly HashSet<int> keepTrees=new HashSet<int>();
         readonly List<int> dropTrees=new List<int>();
@@ -890,7 +896,7 @@ namespace Ember
                 float scale=treeArt=="rock_large"?1.2f:treeArt=="rock_small"?1.0f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.1f:1.35f;
                 tree.transform.localScale=Vector3.one*scale;
                 tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
-                tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
+                tree.sortingOrder=5000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
             }
             foreach(var kv in visibleTrees)if(!keepTrees.Contains(kv.Key))dropTrees.Add(kv.Key);
