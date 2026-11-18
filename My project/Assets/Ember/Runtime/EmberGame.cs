@@ -329,8 +329,9 @@ namespace Ember
         {
             int x=Mathf.FloorToInt(pos.X+size/2f),y=Mathf.FloorToInt(pos.Y+size/2f);
             if(x<3||y<3||x>=size-3||y>=size-3)return false;
-            if(tiles[y*size+x]>=3)return false;
-            if(V2.Distance(pos,new V2(0,.35f))<1.55f)return false;
+            byte t=tiles[y*size+x];
+            if(t==1||t==3||t==4)return false;
+            if(V2.Distance(pos,new V2(0,.35f))<1.1f)return false;
             if(State!=null&&State.BossArenaActive&&V2.Distance(pos,State.BossArenaCenter)>State.BossArenaRadius-.45f)return false;
             if(host&&World!=null&&!World.Walkable(pos))return false;
             return true;
@@ -342,7 +343,7 @@ namespace Ember
             int size=State.Size;
             float dist=V2.Distance(from,to);
             if(dist<.25f)return IsNavWalkable(tiles,size,to);
-            if(dist>22f)return false;
+            if(dist>35f)return false;
             int steps=Mathf.CeilToInt(dist/.42f);
             for(int i=1;i<=steps;i++)
             {
@@ -421,7 +422,8 @@ namespace Ember
                     if(nx<3||ny<3||nx>=size-3||ny>=size-3)continue;
                     if(dir.dx!=0&&dir.dy!=0)
                     {
-                        if(tiles[y*size+nx]>=3||tiles[ny*size+x]>=3)continue;
+                        byte t1=tiles[y*size+nx],t2=tiles[ny*size+x];
+                        if(t1==1||t1==3||t1==4||t2==1||t2==3||t2==4)continue;
                     }
                     V2 cellPos=new V2(nx-size/2f+.5f,ny-size/2f+.5f);
                     if(!IsNavWalkable(tiles,size,cellPos))continue;
@@ -743,16 +745,6 @@ namespace Ember
             {
                 Color32 c=new Color32(4,3,7,255);
                 for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)mapColors[(ty*16+ly)*px+(tx*16+lx)]=c;
-            }
-            else if(isSanctuary)
-            {
-                Color32 borderC=new Color32(34,28,46,255);
-                Color32 stoneC=new Color32(52,44,68,255);
-                for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)
-                {
-                    bool isEdge=(lx==0||ly==0||lx==15||ly==15);
-                    mapColors[(ty*16+ly)*px+(tx*16+lx)]=isEdge?borderC:stoneC;
-                }
             }
             else if(tile==1) // Water
             {
