@@ -686,7 +686,7 @@ namespace Ember
                         if(eqSlot>0)
                         {
                             BindQuickSlot(hoveredQuick,eqSlot);
-                            Announce((EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hoveredQuick+1)+": "+InventorySlotName(p,eqSlot));
+                            notice=(EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hoveredQuick+1)+": "+InventorySlotName(p,eqSlot);
                         }
                     }
                 }

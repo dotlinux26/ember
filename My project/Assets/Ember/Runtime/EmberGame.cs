@@ -179,6 +179,7 @@ namespace Ember
             if(netSmoke&&host&&State.Players.Length==netExpected&&State.Players.All(p=>p.Ready))BeginRoomRun();
             if((!menu||network)&&host)
             {
+                if(World==null)return;
                 accumulator+=Mathf.Min(Time.deltaTime,.1f);
                 while(accumulator>=EmberWorld.Step){CapturePrevPositions();World.Submit(localId,intent);World.Tick();accumulator-=EmberWorld.Step;ClearActions();}
                 State=World.S;
@@ -671,14 +672,41 @@ namespace Ember
                 }
                 var pr=Put("projectile"+shot.Id,Primitive("diamond"),sPos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);pr.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
             }
-            if(local!=null&&local.Dread>=30&&!local.Safe&&Mathf.Sin(clock*.8f)>0.6f)
-            {
-                float sign=Mathf.Sin(clock*.3f)>0?1:-1;var pos=localVisual+new V2(sign*(cam.orthographicSize*cam.aspect-.6f),Mathf.Sin(clock*1.2f)*3);
-                Put("falseShadow",Primitive("enemy_void"),pos,new Color(.08f,.06f,.16f,.65f),1.3f,2000);
-            }
             foreach(var pair in renderers)if(!touched.Contains(pair.Key)&&pair.Value.enabled)pair.Value.enabled=false;
             // Reclaim transient node/enemy renderers instead of retaining an entire run.
             if(renderers.Count>1400)foreach(var key in renderers.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(renderers[key].gameObject);renderers.Remove(key);}
+        }
+        static void Blit16(Color32[] dest,int px,int tx,int ty,Color32[] src,int srcW,int sc,int sr,bool blend=false)
+        {
+            if(src==null||srcW<=0)return;
+            int srcH=src.Length/srcW;
+            int sy0=srcH-(sr+1)*16;
+            int sx0=sc*16;
+            for(int ly=0;ly<16;ly++)
+            {
+                int dy=ty*16+ly;
+                int sy=sy0+ly;
+                if(sy<0||sy>=srcH||dy<0||dy>=px)continue;
+                for(int lx=0;lx<16;lx++)
+                {
+                    int dx=tx*16+lx;
+                    int sx=sx0+lx;
+                    if(sx<0||sx>=srcW||dx<0||dx>=px)continue;
+                    Color32 s=src[sy*srcW+sx];
+                    if(blend)
+                    {
+                        if(s.a==0)continue;
+                        if(s.a==255)dest[dy*px+dx]=s;
+                        else
+                        {
+                            Color32 d=dest[dy*px+dx];
+                            float a=s.a/255f;
+                            dest[dy*px+dx]=new Color32((byte)(s.r*a+d.r*(1f-a)),(byte)(s.g*a+d.g*(1f-a)),(byte)(s.b*a+d.b*(1f-a)),255);
+                        }
+                    }
+                    else dest[dy*px+dx]=s;
+                }
+            }
         }
         void BuildMap()
         {
@@ -693,68 +721,114 @@ namespace Ember
                 var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
             }
             byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
-            int px=size*8;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];
+            int px=size*16;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];
+
+            // Load authentic 16x16 Sprout Lands tilesets
+            var grassTex=Resources.Load<Texture2D>("Ember/Tilesets/grass_tileset");
+            var pathTex=Resources.Load<Texture2D>("Ember/Tilesets/paths_tileset");
+            var waterTex=Resources.Load<Texture2D>("Ember/Tilesets/water_tileset");
+            var bridgeTex=Resources.Load<Texture2D>("Ember/Tilesets/bridge_tileset");
+            var hillsTex=Resources.Load<Texture2D>("Ember/Tilesets/hills_tileset");
+
+            Color32[] gPix=null, pPix=null, wPix=null, bPix=null, hPix=null;
+            int gW=0, pW=0, wW=0, bW=0, hW=0;
+            try{if(grassTex!=null){gPix=grassTex.GetPixels32();gW=grassTex.width;}}catch{}
+            try{if(pathTex!=null){pPix=pathTex.GetPixels32();pW=pathTex.width;}}catch{}
+            try{if(waterTex!=null){wPix=waterTex.GetPixels32();wW=waterTex.width;}}catch{}
+            try{if(bridgeTex!=null){bPix=bridgeTex.GetPixels32();bW=bridgeTex.width;}}catch{}
+            try{if(hillsTex!=null){hPix=hillsTex.GetPixels32();hW=hillsTex.width;}}catch{}
+
             for(int ty=0;ty<size;ty++)for(int tx=0;tx<size;tx++)
             {
                 byte tile=tiles[ty*size+tx];
                 int dx=tx-size/2,dy=ty-size/2;
                 int dist2=dx*dx+dy*dy;
+                float r=Mathf.Sqrt(dist2);
                 bool isSanctuary=dist2<=38;
                 bool isPath=!isSanctuary&&(Math.Abs(dx)<=1||Math.Abs(dy)<=1||(dx>=4&&dx<=17&&dy>=2&&dy<=12));
-                for(int ly=0;ly<8;ly++)for(int lx=0;lx<8;lx++)
+                int h=((tx*374761393)^(ty*668265263))&0x7FFFFFFF;
+
+                // 1. Base Biome Layer
+                if(tile==4||tx<3||ty<3||tx>=size-3||ty>=size-3)
                 {
-                    int gx=tx*8+lx,gy=ty*8+ly;
-                    int n=(gx*374761393+gy*668265263)^0x5bf03635;
-                    n=((n^(n>>13))*1274126177);
-                    int h=(n^(n>>16))&0x7FFFFFFF;
-                    Color32 col;
-                    if(isSanctuary)
+                    // Boundary Abyss
+                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=new Color32(4,3,7,255);
+                }
+                else if(r<size*.22f||isSanctuary||(dx>=4&&dx<=17&&dy>=2&&dy<=12)||(tile==3&&r<size*.22f))
+                {
+                    // Biome 0: Meadow Grass
+                    if(gPix!=null)
                     {
-                        if(lx==0||ly==0)col=new Color32(22,19,30,255);
-                        else if(lx==1||ly==1)col=new Color32(58,52,74,255);
-                        else if(dist2>8&&(h%31==0))col=new Color32(45,215,245,255);
-                        else col=new Color32(40,36,52,255);
-                    }
-                    else if(isPath&&tile!=3&&tile!=4)
-                    {
-                        // Cobblestone / Dirt Path
-                        bool mortar=(lx%4==0)||(ly%4==0);
-                        if(mortar)col=new Color32(52,44,38,255);
-                        else if(h%17==0)col=new Color32(165,150,130,255);
-                        else if(h%5==0)col=new Color32(125,112,96,255);
-                        else col=new Color32(96,86,74,255);
-                    }
-                    else if(tile==4)col=new Color32(4,3,7,255);
-                    else if(tile==0||(tile==3&&dist2<(size*.22f)*(size*.22f)))
-                    {
-                        // Biome 0: Authentic Sprout Lands Lush Meadow Grass
                         int m=h%100;
-                        if(m<40)col=new Color32(192,212,112,255);       // #c0d470 primary grass
-                        else if(m<75)col=new Color32(164,194,99,255);   // #a4c263 soft shade
-                        else col=new Color32(139,179,83,255);           // #8bb353 lush tuft accent
-                    }
-                    else if(tile==1||(tile==3&&dist2<(size*.37f)*(size*.37f)))
-                    {
-                        // Biome 1: Mist Swamp & Water Glints
-                        int m=h%100;
-                        if(m<12)col=new Color32(55,160,190,255);
-                        else if(m<30)col=new Color32(32,95,120,255);
-                        else if(m<60)col=new Color32(42,88,72,255);
-                        else col=new Color32(28,58,50,255);
+                        if(m<22)Blit16(colors,px,tx,ty,gPix,gW,h%6,5);      // grass tufts
+                        else if(m<38)Blit16(colors,px,tx,ty,gPix,gW,h%6,6); // wildflower variants
+                        else Blit16(colors,px,tx,ty,gPix,gW,1,1);          // clean flat grass
                     }
                     else
                     {
-                        // Biome 2: Violet Eldritch Void
-                        int m=h%100;
-                        if(m<8)col=new Color32(145,80,230,255);
-                        else if(m<35)col=new Color32(95,50,155,255);
-                        else if(m<70)col=new Color32(46,28,70,255);
-                        else col=new Color32(18,12,28,255);
+                        Color32 c=new Color32(192,212,112,255);
+                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
                     }
-                    colors[gy*px+gx]=col;
+                }
+                else if(r<size*.37f||(tile==3&&r<size*.37f))
+                {
+                    // Biome 1: Lake & Swamp
+                    if(tile==1&&wPix!=null)
+                    {
+                        Blit16(colors,px,tx,ty,wPix,wW,h%4,0); // animated water tile
+                    }
+                    else if(gPix!=null)
+                    {
+                        Blit16(colors,px,tx,ty,gPix,gW,1,1); // grass shore
+                    }
+                    else
+                    {
+                        Color32 c=tile==1?new Color32(156,213,194,255):new Color32(164,194,99,255);
+                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
+                    }
+                }
+                else
+                {
+                    // Biome 2: Eldritch Highlands / Cliffs
+                    if(hPix!=null)
+                    {
+                        Blit16(colors,px,tx,ty,hPix,hW,1,2); // stone cliff wall
+                    }
+                    else
+                    {
+                        Color32 c=new Color32(46,28,70,255);
+                        for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)colors[(ty*16+ly)*px+(tx*16+lx)]=c;
+                    }
+                }
+
+                // 2. Overlay Layer: Sanctuary Plaza, Paths, Bridges
+                if(isSanctuary)
+                {
+                    Color32 borderC=new Color32(34,28,46,255);
+                    Color32 stoneC=new Color32(52,44,68,255);
+                    for(int ly=0;ly<16;ly++)for(int lx=0;lx<16;lx++)
+                    {
+                        bool isEdge=(lx==0||ly==0||lx==15||ly==15);
+                        colors[(ty*16+ly)*px+(tx*16+lx)]=isEdge?borderC:stoneC;
+                    }
+                }
+                else if(isPath&&tile!=3&&tile!=4)
+                {
+                    if(tile==1&&bPix!=null)
+                    {
+                        // Wooden Bridge crossing water!
+                        bool vert=Math.Abs(dy)>=Math.Abs(dx);
+                        if(vert)Blit16(colors,px,tx,ty,bPix,bW,3,0,blend:true);
+                        else Blit16(colors,px,tx,ty,bPix,bW,(h%2==0?0:1),1,blend:true);
+                    }
+                    else if(pPix!=null)
+                    {
+                        // Authentic dirt path
+                        Blit16(colors,px,tx,ty,pPix,pW,(h%2==0?0:2),1,blend:true);
+                    }
                 }
             }
-            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),8);floor.sortingOrder=-100;
+            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),16);floor.sortingOrder=-100;
         }
         readonly HashSet<int> keepTrees=new HashSet<int>();
         readonly List<int> dropTrees=new List<int>();
