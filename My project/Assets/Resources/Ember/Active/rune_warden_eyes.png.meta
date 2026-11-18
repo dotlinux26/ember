@@ -1,0 +1,912 @@
+fileFormatVersion: 2
+guid: abc69e06e4b84ec449b63c9ad48bb322
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -665638129861263032
+    second: rune_warden_eyes_0
+  - first:
+      213: 5703141155750353031
+    second: rune_warden_eyes_1
+  - first:
+      213: 3855647997575350262
+    second: rune_warden_eyes_2
+  - first:
+      213: 8737745500441097790
+    second: rune_warden_eyes_3
+  - first:
+      213: 1060271624932184408
+    second: rune_warden_eyes_4
+  - first:
+      213: -6877690866462596025
+    second: rune_warden_eyes_5
+  - first:
+      213: 5387394866484316486
+    second: rune_warden_eyes_6
+  - first:
+      213: 3332420560264283434
+    second: rune_warden_eyes_7
+  - first:
+      213: -1595679820258211904
+    second: rune_warden_eyes_8
+  - first:
+      213: 3262002658315219521
+    second: rune_warden_eyes_9
+  - first:
+      213: -7510780953331497526
+    second: rune_warden_eyes_10
+  - first:
+      213: 3038873581226758029
+    second: rune_warden_eyes_11
+  - first:
+      213: 1633907793272139529
+    second: rune_warden_eyes_12
+  - first:
+      213: 6464761776409041343
+    second: rune_warden_eyes_13
+  - first:
+      213: -7175449294793907204
+    second: rune_warden_eyes_14
+  - first:
+      213: 1399003656347002938
+    second: rune_warden_eyes_15
+  - first:
+      213: -4319608866748714710
+    second: rune_warden_eyes_16
+  - first:
+      213: 4503105427662901511
+    second: rune_warden_eyes_17
+  - first:
+      213: 5651722261501820944
+    second: rune_warden_eyes_18
+  - first:
+      213: -1684753971245942211
+    second: rune_warden_eyes_19
+  - first:
+      213: 2509388858440646936
+    second: rune_warden_eyes_20
+  - first:
+      213: 2785837577727075041
+    second: rune_warden_eyes_21
+  - first:
+      213: 1410930351918590303
+    second: rune_warden_eyes_22
+  - first:
+      213: 283763290653445643
+    second: rune_warden_eyes_23
+  - first:
+      213: -8892667738500776269
+    second: rune_warden_eyes_24
+  - first:
+      213: 8047056473876200273
+    second: rune_warden_eyes_25
+  - first:
+      213: -5505832744708936339
+    second: rune_warden_eyes_26
+  - first:
+      213: 7037871056876221905
+    second: rune_warden_eyes_27
+  - first:
+      213: 5247741664860684984
+    second: rune_warden_eyes_28
+  - first:
+      213: 1493980905794559110
+    second: rune_warden_eyes_29
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rune_warden_eyes_0
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8410aa8c5ad23c6f0800000000000000
+      internalID: -665638129861263032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_1
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78819642aa0a52f40800000000000000
+      internalID: 5703141155750353031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_2
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 236
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f7cc6afc63028530800000000000000
+      internalID: 3855647997575350262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_3
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 203
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e363f83fc35b24970800000000000000
+      internalID: 8737745500441097790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_4
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8515281ec67d6be00800000000000000
+      internalID: 1060271624932184408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_5
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 204
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7446c85b8988d80a0800000000000000
+      internalID: -6877690866462596025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_6
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6498f81661fd3ca40800000000000000
+      internalID: 5387394866484316486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_7
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a25c2c8f7d22f3e20800000000000000
+      internalID: 3332420560264283434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_8
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 170
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c7004268a10bd9e0800000000000000
+      internalID: -1595679820258211904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_9
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 172
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14232498226f44d20800000000000000
+      internalID: 3262002658315219521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_10
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac508ea448854c790800000000000000
+      internalID: -7510780953331497526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_11
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8f0756eb6f3c2a20800000000000000
+      internalID: 3038873581226758029
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_12
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90f6abd2b7ecca610800000000000000
+      internalID: 1633907793272139529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_13
+      rect:
+        serializedVersion: 2
+        x: 77
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb95268759277b950800000000000000
+      internalID: 6464761776409041343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_14
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf36bff22eeab6c90800000000000000
+      internalID: -7175449294793907204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_15
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a382908c9624a6310800000000000000
+      internalID: 1399003656347002938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_16
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a21b0d83f9aad04c0800000000000000
+      internalID: -4319608866748714710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_17
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 108
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7011bf9278e3e7e30800000000000000
+      internalID: 4503105427662901511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_18
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 75
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 010cbf5e373fe6e40800000000000000
+      internalID: 5651722261501820944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_19
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3af4f9703d8e98e0800000000000000
+      internalID: -1684753971245942211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_20
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 76
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8118da61fd323d220800000000000000
+      internalID: 2509388858440646936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_21
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e26b56548849a620800000000000000
+      internalID: 2785837577727075041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_22
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f59acecfda1a49310800000000000000
+      internalID: 1410930351918590303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_23
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 42
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0ec1bb953120f300800000000000000
+      internalID: 283763290653445643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_24
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 44
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3beb515aec5e69480800000000000000
+      internalID: -8892667738500776269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_25
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15bf5e45a33ecaf60800000000000000
+      internalID: 8047056473876200273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_26
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6de8e23a4a5793b0800000000000000
+      internalID: -5505832744708936339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_27
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d53c10207a8ba160800000000000000
+      internalID: 7037871056876221905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_28
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b2c90f8d39b3d840800000000000000
+      internalID: 5247741664860684984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_eyes_29
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68cd917e7bfabb410800000000000000
+      internalID: 1493980905794559110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rune_warden_eyes_0: -665638129861263032
+      rune_warden_eyes_1: 5703141155750353031
+      rune_warden_eyes_10: -7510780953331497526
+      rune_warden_eyes_11: 3038873581226758029
+      rune_warden_eyes_12: 1633907793272139529
+      rune_warden_eyes_13: 6464761776409041343
+      rune_warden_eyes_14: -7175449294793907204
+      rune_warden_eyes_15: 1399003656347002938
+      rune_warden_eyes_16: -4319608866748714710
+      rune_warden_eyes_17: 4503105427662901511
+      rune_warden_eyes_18: 5651722261501820944
+      rune_warden_eyes_19: -1684753971245942211
+      rune_warden_eyes_2: 3855647997575350262
+      rune_warden_eyes_20: 2509388858440646936
+      rune_warden_eyes_21: 2785837577727075041
+      rune_warden_eyes_22: 1410930351918590303
+      rune_warden_eyes_23: 283763290653445643
+      rune_warden_eyes_24: -8892667738500776269
+      rune_warden_eyes_25: 8047056473876200273
+      rune_warden_eyes_26: -5505832744708936339
+      rune_warden_eyes_27: 7037871056876221905
+      rune_warden_eyes_28: 5247741664860684984
+      rune_warden_eyes_29: 1493980905794559110
+      rune_warden_eyes_3: 8737745500441097790
+      rune_warden_eyes_4: 1060271624932184408
+      rune_warden_eyes_5: -6877690866462596025
+      rune_warden_eyes_6: 5387394866484316486
+      rune_warden_eyes_7: 3332420560264283434
+      rune_warden_eyes_8: -1595679820258211904
+      rune_warden_eyes_9: 3262002658315219521
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,37 @@
+{
+  "referenceSHA256": "ec87d5efde18fbc62bf434b268cab4c88f422e1972d09c086a26308b08c69d6a",
+  "originalUnchanged": true,
+  "variants": [
+    {
+      "slug": "bell_wanderer",
+      "strict": true,
+      "roundTrip": true,
+      "frames": 32,
+      "basePixelsUnchanged": true
+    },
+    {
+      "slug": "moon_mender",
+      "strict": true,
+      "roundTrip": true,
+      "frames": 32
+    },
+    {
+      "slug": "bomb_trapper",
+      "strict": true,
+      "roundTrip": true,
+      "frames": 32
+    },
+    {
+      "slug": "rune_warden",
+      "strict": true,
+      "roundTrip": true,
+      "frames": 32
+    },
+    {
+      "slug": "space_wraith",
+      "strict": true,
+      "roundTrip": true,
+      "frames": 32
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "bell_wanderer",
+    "frames": 32,
+    "strictValidation": true,
+    "roundTripPixels": true,
+    "mirroring": true,
+    "warnings": []
+  },
+  {
+    "slug": "moon_mender",
+    "frames": 32,
+    "strictValidation": true,
+    "roundTripPixels": true,
+    "mirroring": true,
+    "warnings": []
+  },
+  {
+    "slug": "rune_warden",
+    "frames": 32,
+    "strictValidation": true,
+    "roundTripPixels": true,
+    "mirroring": true,
+    "warnings": []
+  }
+]

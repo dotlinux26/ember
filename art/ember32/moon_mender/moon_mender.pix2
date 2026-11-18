@@ -1,0 +1,3380 @@
+@pix2 1.1
+@meta
+  title: "Ember - Y SU ANH TRANG"
+  author: "Ember art study"
+  version: "1.1"
+  color_mode: "RGBA"
+  coordinate_origin: "top-left"
+@grid
+  columns: 4
+  rows: 8
+  default_cell: 32x32
+  background: none
+@palette
+  1: #111222
+  2: #26253e
+  3: #454664
+  4: #757e9b
+  5: #bacbd5
+  6: #e3e6dc
+  7: #fff2d2
+  8: #a36b42
+  9: #e0a354
+  10: #ffe09a
+  11: #963f61
+  12: #dc506c
+  13: #ff858e
+  14: #ffd1b2
+  15: #1d7586
+  16: #36cbd2
+  17: #9af3e4
+  18: #f5fff0
+  19: #174b59
+  20: #267e83
+  21: #5eb7a6
+  22: #c1a7e2
+  23: #8766b1
+  24: #4b396f
+@cell cell_0_0
+  name: "idle_right_0"
+  direction: right
+  frame: 0
+  grid_pos: 0,0
+@layer cell_0_0_scarf_tail_layer
+  cell: cell_0_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_scarf_tail
+  cell: cell_0_0
+  parent: cell_0_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,17 1 p 8,17 1
+  p 6,18 1 p 7,18 20 p 8,18 21 p 9,18 1
+  p 5,19 1 p 6,19 20 p 7,19 21 p 8,19 1
+  p 4,20 1 p 5,20 20 p 6,20 21 p 7,20 1
+  p 4,21 1 p 5,21 1 p 6,21 1
+@layer cell_0_0_rear_boot_layer
+  cell: cell_0_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_rear_boot
+  cell: cell_0_0
+  parent: cell_0_0_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_0_0_front_boot_layer
+  cell: cell_0_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_front_boot
+  cell: cell_0_0
+  parent: cell_0_0_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_0_0_coat_layer
+  cell: cell_0_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_coat
+  cell: cell_0_0
+  parent: cell_0_0_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_0_0_head_layer
+  cell: cell_0_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_head
+  cell: cell_0_0
+  parent: cell_0_0_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_0_0_collar_layer
+  cell: cell_0_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_0_collar
+  cell: cell_0_0
+  parent: cell_0_0_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_0_1
+  name: "idle_right_1"
+  direction: right
+  frame: 1
+  grid_pos: 1,0
+@layer cell_0_1_scarf_tail_layer
+  cell: cell_0_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_scarf_tail
+  cell: cell_0_1
+  parent: cell_0_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_0_1_rear_boot_layer
+  cell: cell_0_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_rear_boot
+  cell: cell_0_1
+  parent: cell_0_1_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_0_1_front_boot_layer
+  cell: cell_0_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_front_boot
+  cell: cell_0_1
+  parent: cell_0_1_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_0_1_coat_layer
+  cell: cell_0_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_coat
+  cell: cell_0_1
+  parent: cell_0_1_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_0_1_head_layer
+  cell: cell_0_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_head
+  cell: cell_0_1
+  parent: cell_0_1_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_0_1_collar_layer
+  cell: cell_0_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_1_collar
+  cell: cell_0_1
+  parent: cell_0_1_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_0_2
+  name: "idle_right_2"
+  direction: right
+  frame: 2
+  grid_pos: 2,0
+@layer cell_0_2_scarf_tail_layer
+  cell: cell_0_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_scarf_tail
+  cell: cell_0_2
+  parent: cell_0_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,19 1 p 8,19 1
+  p 6,20 1 p 7,20 20 p 8,20 21 p 9,20 1
+  p 5,21 1 p 6,21 20 p 7,21 21 p 8,21 1
+  p 4,22 1 p 5,22 20 p 6,22 21 p 7,22 1
+  p 4,23 1 p 5,23 1 p 6,23 1
+@layer cell_0_2_rear_boot_layer
+  cell: cell_0_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_rear_boot
+  cell: cell_0_2
+  parent: cell_0_2_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_0_2_front_boot_layer
+  cell: cell_0_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_front_boot
+  cell: cell_0_2
+  parent: cell_0_2_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_0_2_coat_layer
+  cell: cell_0_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_coat
+  cell: cell_0_2
+  parent: cell_0_2_coat_layer
+  tags: [coat]
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1
+  p 11,19 1 p 12,19 6 p 13,19 6 p 14,19 6 p 15,19 6 p 16,19 6 p 17,19 2 p 18,19 2 p 19,19 1
+  p 10,20 1 p 11,20 6 p 12,20 6 p 13,20 6 p 14,20 20 p 15,20 20 p 16,20 6 p 17,20 6 p 18,20 2 p 19,20 2 p 20,20 1
+  p 10,21 1 p 11,21 2 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 6 p 16,21 6 p 17,21 2 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 1 p 12,22 6 p 13,22 6 p 14,22 6 p 15,22 1 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 1 p 20,22 1
+  p 11,23 1 p 12,23 1 p 13,23 1 p 14,23 6 p 16,23 1 p 17,23 1 p 18,23 1
+@layer cell_0_2_head_layer
+  cell: cell_0_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_head
+  cell: cell_0_2
+  parent: cell_0_2_head_layer
+  tags: [head]
+  p 17,3 1 p 18,3 1
+  p 16,4 1 p 17,4 21 p 18,4 21 p 19,4 1
+  p 14,5 1 p 15,5 1 p 16,5 21 p 17,5 21 p 18,5 21 p 19,5 21 p 20,5 1
+  p 13,6 1 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 20 p 19,6 20 p 20,6 21 p 21,6 1
+  p 12,7 1 p 13,7 21 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 20 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 11,8 1 p 12,8 21 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 20 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 20 p 21,8 5 p 22,8 1
+  p 10,9 1 p 11,9 21 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 20 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 5 p 20,9 5 p 21,9 5 p 22,9 1
+  p 9,10 1 p 10,10 21 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 5 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 20 p 11,11 20 p 12,11 20 p 13,11 20 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 9 p 18,11 9 p 19,11 9 p 20,11 9 p 21,11 9 p 22,11 1 p 23,11 1
+  p 9,12 1 p 10,12 1 p 11,12 6 p 12,12 6 p 13,12 6 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 14 p 19,12 14 p 20,12 14 p 21,12 1 p 22,12 1 p 23,12 1
+  p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 14 p 14,13 2 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 2 p 20,13 14 p 21,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 11,15 1 p 12,15 6 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 11 p 17,15 14 p 18,15 14 p 19,15 14 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_0_2_collar_layer
+  cell: cell_0_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_2_collar
+  cell: cell_0_2
+  parent: cell_0_2_collar_layer
+  tags: [collar]
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1
+  p 11,17 1 p 12,17 20 p 13,17 17 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 20 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 20 p 15,18 20 p 16,18 20 p 17,18 1
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1
+@cell cell_0_3
+  name: "idle_right_3"
+  direction: right
+  frame: 3
+  grid_pos: 3,0
+@layer cell_0_3_scarf_tail_layer
+  cell: cell_0_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_scarf_tail
+  cell: cell_0_3
+  parent: cell_0_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_0_3_rear_boot_layer
+  cell: cell_0_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_rear_boot
+  cell: cell_0_3
+  parent: cell_0_3_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_0_3_front_boot_layer
+  cell: cell_0_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_front_boot
+  cell: cell_0_3
+  parent: cell_0_3_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_0_3_coat_layer
+  cell: cell_0_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_coat
+  cell: cell_0_3
+  parent: cell_0_3_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_0_3_head_layer
+  cell: cell_0_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_head
+  cell: cell_0_3
+  parent: cell_0_3_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_0_3_collar_layer
+  cell: cell_0_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_0_3_collar
+  cell: cell_0_3
+  parent: cell_0_3_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_1_0
+  name: "run_right_0"
+  direction: right
+  frame: 0
+  grid_pos: 0,1
+@layer cell_1_0_scarf_tail_layer
+  cell: cell_1_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_scarf_tail
+  cell: cell_1_0
+  parent: cell_1_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,17 1 p 8,17 1
+  p 6,18 1 p 7,18 20 p 8,18 21 p 9,18 1
+  p 5,19 1 p 6,19 20 p 7,19 21 p 8,19 1
+  p 4,20 1 p 5,20 20 p 6,20 21 p 7,20 1
+  p 4,21 1 p 5,21 1 p 6,21 1
+@layer cell_1_0_rear_boot_layer
+  cell: cell_1_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_rear_boot
+  cell: cell_1_0
+  parent: cell_1_0_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_1_0_front_boot_layer
+  cell: cell_1_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_front_boot
+  cell: cell_1_0
+  parent: cell_1_0_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_1_0_coat_layer
+  cell: cell_1_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_coat
+  cell: cell_1_0
+  parent: cell_1_0_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_1_0_head_layer
+  cell: cell_1_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_head
+  cell: cell_1_0
+  parent: cell_1_0_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_1_0_collar_layer
+  cell: cell_1_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_0_collar
+  cell: cell_1_0
+  parent: cell_1_0_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_1_1
+  name: "run_right_1"
+  direction: right
+  frame: 1
+  grid_pos: 1,1
+@layer cell_1_1_scarf_tail_layer
+  cell: cell_1_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_scarf_tail
+  cell: cell_1_1
+  parent: cell_1_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_1_1_rear_boot_layer
+  cell: cell_1_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_rear_boot
+  cell: cell_1_1
+  parent: cell_1_1_rear_boot_layer
+  tags: [rear_boot]
+  p 11,23 1 p 12,23 1 p 13,23 1 p 14,23 1
+  p 11,24 1 p 12,24 3 p 13,24 3 p 14,24 1
+  p 11,25 1 p 12,25 1 p 13,25 1 p 14,25 1
+@layer cell_1_1_front_boot_layer
+  cell: cell_1_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_front_boot
+  cell: cell_1_1
+  parent: cell_1_1_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_1_1_coat_layer
+  cell: cell_1_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_coat
+  cell: cell_1_1
+  parent: cell_1_1_coat_layer
+  tags: [coat]
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1
+  p 11,19 1 p 12,19 6 p 13,19 6 p 14,19 6 p 15,19 6 p 16,19 6 p 17,19 2 p 18,19 2 p 19,19 1
+  p 10,20 1 p 11,20 6 p 12,20 6 p 13,20 6 p 14,20 20 p 15,20 20 p 16,20 6 p 17,20 6 p 18,20 2 p 19,20 2 p 20,20 1
+  p 10,21 1 p 11,21 2 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 6 p 16,21 6 p 17,21 2 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 1 p 12,22 6 p 13,22 6 p 14,22 6 p 15,22 1 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 1 p 20,22 1
+  p 11,23 1 p 12,23 1 p 13,23 1 p 14,23 6 p 16,23 1 p 17,23 1 p 18,23 1
+@layer cell_1_1_head_layer
+  cell: cell_1_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_head
+  cell: cell_1_1
+  parent: cell_1_1_head_layer
+  tags: [head]
+  p 17,3 1 p 18,3 1
+  p 16,4 1 p 17,4 21 p 18,4 21 p 19,4 1
+  p 14,5 1 p 15,5 1 p 16,5 21 p 17,5 21 p 18,5 21 p 19,5 21 p 20,5 1
+  p 13,6 1 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 20 p 19,6 20 p 20,6 21 p 21,6 1
+  p 12,7 1 p 13,7 21 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 20 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 11,8 1 p 12,8 21 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 20 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 20 p 21,8 5 p 22,8 1
+  p 10,9 1 p 11,9 21 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 20 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 5 p 20,9 5 p 21,9 5 p 22,9 1
+  p 9,10 1 p 10,10 21 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 5 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 20 p 11,11 20 p 12,11 20 p 13,11 20 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 9 p 18,11 9 p 19,11 9 p 20,11 9 p 21,11 9 p 22,11 1 p 23,11 1
+  p 9,12 1 p 10,12 1 p 11,12 6 p 12,12 6 p 13,12 6 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 14 p 19,12 14 p 20,12 14 p 21,12 1 p 22,12 1 p 23,12 1
+  p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 14 p 14,13 2 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 2 p 20,13 14 p 21,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 11,15 1 p 12,15 6 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 11 p 17,15 14 p 18,15 14 p 19,15 14 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_1_1_collar_layer
+  cell: cell_1_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_1_collar
+  cell: cell_1_1
+  parent: cell_1_1_collar_layer
+  tags: [collar]
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1
+  p 11,17 1 p 12,17 20 p 13,17 17 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 20 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 20 p 15,18 20 p 16,18 20 p 17,18 1
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1
+@cell cell_1_2
+  name: "run_right_2"
+  direction: right
+  frame: 2
+  grid_pos: 2,1
+@layer cell_1_2_scarf_tail_layer
+  cell: cell_1_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_scarf_tail
+  cell: cell_1_2
+  parent: cell_1_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,19 1 p 8,19 1
+  p 6,20 1 p 7,20 20 p 8,20 21 p 9,20 1
+  p 5,21 1 p 6,21 20 p 7,21 21 p 8,21 1
+  p 4,22 1 p 5,22 20 p 6,22 21 p 7,22 1
+  p 4,23 1 p 5,23 1 p 6,23 1
+@layer cell_1_2_rear_boot_layer
+  cell: cell_1_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_rear_boot
+  cell: cell_1_2
+  parent: cell_1_2_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_1_2_front_boot_layer
+  cell: cell_1_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_front_boot
+  cell: cell_1_2
+  parent: cell_1_2_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_1_2_coat_layer
+  cell: cell_1_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_coat
+  cell: cell_1_2
+  parent: cell_1_2_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_1_2_head_layer
+  cell: cell_1_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_head
+  cell: cell_1_2
+  parent: cell_1_2_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_1_2_collar_layer
+  cell: cell_1_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_2_collar
+  cell: cell_1_2
+  parent: cell_1_2_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_1_3
+  name: "run_right_3"
+  direction: right
+  frame: 3
+  grid_pos: 3,1
+@layer cell_1_3_scarf_tail_layer
+  cell: cell_1_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_scarf_tail
+  cell: cell_1_3
+  parent: cell_1_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_1_3_rear_boot_layer
+  cell: cell_1_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_rear_boot
+  cell: cell_1_3
+  parent: cell_1_3_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_1_3_front_boot_layer
+  cell: cell_1_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_front_boot
+  cell: cell_1_3
+  parent: cell_1_3_front_boot_layer
+  tags: [front_boot]
+  p 18,23 1 p 19,23 1 p 20,23 1 p 21,23 1
+  p 18,24 1 p 19,24 3 p 20,24 3 p 21,24 1
+  p 18,25 1 p 19,25 1 p 20,25 1 p 21,25 1
+@layer cell_1_3_coat_layer
+  cell: cell_1_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_coat
+  cell: cell_1_3
+  parent: cell_1_3_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_1_3_head_layer
+  cell: cell_1_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_head
+  cell: cell_1_3
+  parent: cell_1_3_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_1_3_collar_layer
+  cell: cell_1_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_1_3_collar
+  cell: cell_1_3
+  parent: cell_1_3_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_2_0
+  name: "cast_right_0"
+  direction: right
+  frame: 0
+  grid_pos: 0,2
+@layer cell_2_0_scarf_tail_layer
+  cell: cell_2_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_scarf_tail
+  cell: cell_2_0
+  parent: cell_2_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,17 1 p 8,17 1
+  p 6,18 1 p 7,18 20 p 8,18 21 p 9,18 1
+  p 5,19 1 p 6,19 20 p 7,19 21 p 8,19 1
+  p 4,20 1 p 5,20 20 p 6,20 21 p 7,20 1
+  p 4,21 1 p 5,21 1 p 6,21 1
+@layer cell_2_0_rear_boot_layer
+  cell: cell_2_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_rear_boot
+  cell: cell_2_0
+  parent: cell_2_0_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_2_0_front_boot_layer
+  cell: cell_2_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_front_boot
+  cell: cell_2_0
+  parent: cell_2_0_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_2_0_coat_layer
+  cell: cell_2_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_coat
+  cell: cell_2_0
+  parent: cell_2_0_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_2_0_head_layer
+  cell: cell_2_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_head
+  cell: cell_2_0
+  parent: cell_2_0_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_2_0_collar_layer
+  cell: cell_2_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_0_collar
+  cell: cell_2_0
+  parent: cell_2_0_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_2_1
+  name: "cast_right_1"
+  direction: right
+  frame: 1
+  grid_pos: 1,2
+@layer cell_2_1_scarf_tail_layer
+  cell: cell_2_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_scarf_tail
+  cell: cell_2_1
+  parent: cell_2_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_2_1_rear_boot_layer
+  cell: cell_2_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_rear_boot
+  cell: cell_2_1
+  parent: cell_2_1_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_2_1_front_boot_layer
+  cell: cell_2_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_front_boot
+  cell: cell_2_1
+  parent: cell_2_1_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_2_1_coat_layer
+  cell: cell_2_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_coat
+  cell: cell_2_1
+  parent: cell_2_1_coat_layer
+  tags: [coat]
+  p 12,20 1 p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+  p 11,21 1 p 12,21 6 p 13,21 6 p 14,21 6 p 15,21 6 p 16,21 6 p 17,21 2 p 18,21 2 p 19,21 1
+  p 10,22 1 p 11,22 6 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 20 p 16,22 6 p 17,22 6 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 2 p 12,23 6 p 13,23 6 p 14,23 20 p 15,23 6 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 2 p 20,23 1
+  p 10,24 1 p 11,24 1 p 12,24 6 p 13,24 6 p 14,24 6 p 15,24 1 p 16,24 6 p 17,24 2 p 18,24 2 p 19,24 1 p 20,24 1
+  p 11,25 1 p 12,25 1 p 13,25 1 p 14,25 6 p 16,25 1 p 17,25 1 p 18,25 1
+@layer cell_2_1_head_layer
+  cell: cell_2_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_head
+  cell: cell_2_1
+  parent: cell_2_1_head_layer
+  tags: [head]
+  p 17,5 1 p 18,5 1
+  p 16,6 1 p 17,6 21 p 18,6 21 p 19,6 1
+  p 14,7 1 p 15,7 1 p 16,7 21 p 17,7 21 p 18,7 21 p 19,7 21 p 20,7 1
+  p 13,8 1 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 12,9 1 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 21 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 21 p 21,9 1
+  p 11,10 1 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 21 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 20 p 20,10 20 p 21,10 5 p 22,10 1
+  p 10,11 1 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 21 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 20 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 9,12 1 p 10,12 21 p 11,12 21 p 12,12 21 p 13,12 21 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 5 p 19,12 5 p 20,12 5 p 21,12 5 p 22,12 1
+  p 8,13 1 p 9,13 1 p 10,13 20 p 11,13 20 p 12,13 20 p 13,13 20 p 14,13 20 p 15,13 20 p 16,13 20 p 17,13 9 p 18,13 9 p 19,13 9 p 20,13 9 p 21,13 9 p 22,13 1 p 23,13 1
+  p 9,14 1 p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 6 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 14 p 20,14 14 p 21,14 1 p 22,14 1 p 23,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 10,16 1 p 11,16 6 p 12,16 6 p 13,16 14 p 14,16 2 p 15,16 14 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 2 p 20,16 14 p 21,16 1
+  p 11,17 1 p 12,17 6 p 13,17 14 p 14,17 14 p 15,17 14 p 16,17 11 p 17,17 14 p 18,17 14 p 19,17 14 p 20,17 1
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+@layer cell_2_1_collar_layer
+  cell: cell_2_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_collar
+  cell: cell_2_1
+  parent: cell_2_1_collar_layer
+  tags: [collar]
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1
+  p 11,19 1 p 12,19 20 p 13,19 17 p 14,19 17 p 15,19 17 p 16,19 17 p 17,19 17 p 18,19 20 p 19,19 1
+  p 12,20 1 p 13,20 20 p 14,20 20 p 15,20 20 p 16,20 20 p 17,20 1
+  p 13,21 1 p 14,21 1 p 15,21 1 p 16,21 1
+@layer cell_2_1_cast_sigil_layer
+  cell: cell_2_1
+  name: "cast_sigil"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_1_cast_sigil
+  cell: cell_2_1
+  parent: cell_2_1_cast_sigil_layer
+  tags: [cast_sigil]
+  p 26,17 17
+  p 25,18 17 p 26,18 18 p 27,18 17
+  p 24,19 17 p 25,19 18 p 26,19 17 p 27,19 18 p 28,19 17
+  p 25,20 17 p 26,20 18 p 27,20 17
+  p 26,21 17
+@cell cell_2_2
+  name: "cast_right_2"
+  direction: right
+  frame: 2
+  grid_pos: 2,2
+@layer cell_2_2_scarf_tail_layer
+  cell: cell_2_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_scarf_tail
+  cell: cell_2_2
+  parent: cell_2_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,19 1 p 8,19 1
+  p 6,20 1 p 7,20 20 p 8,20 21 p 9,20 1
+  p 5,21 1 p 6,21 20 p 7,21 21 p 8,21 1
+  p 4,22 1 p 5,22 20 p 6,22 21 p 7,22 1
+  p 4,23 1 p 5,23 1 p 6,23 1
+@layer cell_2_2_rear_boot_layer
+  cell: cell_2_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_rear_boot
+  cell: cell_2_2
+  parent: cell_2_2_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_2_2_front_boot_layer
+  cell: cell_2_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_front_boot
+  cell: cell_2_2
+  parent: cell_2_2_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_2_2_coat_layer
+  cell: cell_2_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_coat
+  cell: cell_2_2
+  parent: cell_2_2_coat_layer
+  tags: [coat]
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1
+  p 11,19 1 p 12,19 6 p 13,19 6 p 14,19 6 p 15,19 6 p 16,19 6 p 17,19 2 p 18,19 2 p 19,19 1
+  p 10,20 1 p 11,20 6 p 12,20 6 p 13,20 6 p 14,20 20 p 15,20 20 p 16,20 6 p 17,20 6 p 18,20 2 p 19,20 2 p 20,20 1
+  p 10,21 1 p 11,21 2 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 6 p 16,21 6 p 17,21 2 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 1 p 12,22 6 p 13,22 6 p 14,22 6 p 15,22 1 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 1 p 20,22 1
+  p 11,23 1 p 12,23 1 p 13,23 1 p 14,23 6 p 16,23 1 p 17,23 1 p 18,23 1
+@layer cell_2_2_head_layer
+  cell: cell_2_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_head
+  cell: cell_2_2
+  parent: cell_2_2_head_layer
+  tags: [head]
+  p 17,3 1 p 18,3 1
+  p 16,4 1 p 17,4 21 p 18,4 21 p 19,4 1
+  p 14,5 1 p 15,5 1 p 16,5 21 p 17,5 21 p 18,5 21 p 19,5 21 p 20,5 1
+  p 13,6 1 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 20 p 19,6 20 p 20,6 21 p 21,6 1
+  p 12,7 1 p 13,7 21 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 20 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 11,8 1 p 12,8 21 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 20 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 20 p 21,8 5 p 22,8 1
+  p 10,9 1 p 11,9 21 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 20 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 5 p 20,9 5 p 21,9 5 p 22,9 1
+  p 9,10 1 p 10,10 21 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 5 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 20 p 11,11 20 p 12,11 20 p 13,11 20 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 9 p 18,11 9 p 19,11 9 p 20,11 9 p 21,11 9 p 22,11 1 p 23,11 1
+  p 9,12 1 p 10,12 1 p 11,12 6 p 12,12 6 p 13,12 6 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 14 p 19,12 14 p 20,12 14 p 21,12 1 p 22,12 1 p 23,12 1
+  p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 14 p 14,13 2 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 2 p 20,13 14 p 21,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 11,15 1 p 12,15 6 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 11 p 17,15 14 p 18,15 14 p 19,15 14 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_2_2_collar_layer
+  cell: cell_2_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_collar
+  cell: cell_2_2
+  parent: cell_2_2_collar_layer
+  tags: [collar]
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1
+  p 11,17 1 p 12,17 20 p 13,17 17 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 20 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 20 p 15,18 20 p 16,18 20 p 17,18 1
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1
+@layer cell_2_2_cast_sigil_layer
+  cell: cell_2_2
+  name: "cast_sigil"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_2_cast_sigil
+  cell: cell_2_2
+  parent: cell_2_2_cast_sigil_layer
+  tags: [cast_sigil]
+  p 26,16 17
+  p 25,17 17 p 26,17 18 p 27,17 17
+  p 24,18 17 p 25,18 18 p 26,18 17 p 27,18 18 p 28,18 17
+  p 25,19 17 p 26,19 18 p 27,19 17
+  p 26,20 17
+@cell cell_2_3
+  name: "cast_right_3"
+  direction: right
+  frame: 3
+  grid_pos: 3,2
+@layer cell_2_3_scarf_tail_layer
+  cell: cell_2_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_scarf_tail
+  cell: cell_2_3
+  parent: cell_2_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_2_3_rear_boot_layer
+  cell: cell_2_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_rear_boot
+  cell: cell_2_3
+  parent: cell_2_3_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_2_3_front_boot_layer
+  cell: cell_2_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_front_boot
+  cell: cell_2_3
+  parent: cell_2_3_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_2_3_coat_layer
+  cell: cell_2_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_coat
+  cell: cell_2_3
+  parent: cell_2_3_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_2_3_head_layer
+  cell: cell_2_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_head
+  cell: cell_2_3
+  parent: cell_2_3_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_2_3_collar_layer
+  cell: cell_2_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_2_3_collar
+  cell: cell_2_3
+  parent: cell_2_3_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_3_0
+  name: "hurt_right_0"
+  direction: right
+  frame: 0
+  grid_pos: 0,3
+@layer cell_3_0_scarf_tail_layer
+  cell: cell_3_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_scarf_tail
+  cell: cell_3_0
+  parent: cell_3_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,17 1 p 8,17 1
+  p 6,18 1 p 7,18 20 p 8,18 21 p 9,18 1
+  p 5,19 1 p 6,19 20 p 7,19 21 p 8,19 1
+  p 4,20 1 p 5,20 20 p 6,20 21 p 7,20 1
+  p 4,21 1 p 5,21 1 p 6,21 1
+@layer cell_3_0_rear_boot_layer
+  cell: cell_3_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_rear_boot
+  cell: cell_3_0
+  parent: cell_3_0_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_3_0_front_boot_layer
+  cell: cell_3_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_front_boot
+  cell: cell_3_0
+  parent: cell_3_0_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_3_0_coat_layer
+  cell: cell_3_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_coat
+  cell: cell_3_0
+  parent: cell_3_0_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_3_0_head_layer
+  cell: cell_3_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_head
+  cell: cell_3_0
+  parent: cell_3_0_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_3_0_collar_layer
+  cell: cell_3_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_0_collar
+  cell: cell_3_0
+  parent: cell_3_0_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_3_1
+  name: "hurt_right_1"
+  direction: right
+  frame: 1
+  grid_pos: 1,3
+@layer cell_3_1_scarf_tail_layer
+  cell: cell_3_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_scarf_tail
+  cell: cell_3_1
+  parent: cell_3_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_3_1_rear_boot_layer
+  cell: cell_3_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_rear_boot
+  cell: cell_3_1
+  parent: cell_3_1_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_3_1_front_boot_layer
+  cell: cell_3_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_front_boot
+  cell: cell_3_1
+  parent: cell_3_1_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_3_1_coat_layer
+  cell: cell_3_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_coat
+  cell: cell_3_1
+  parent: cell_3_1_coat_layer
+  tags: [coat]
+  p 12,20 1 p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+  p 11,21 1 p 12,21 6 p 13,21 6 p 14,21 6 p 15,21 6 p 16,21 6 p 17,21 2 p 18,21 2 p 19,21 1
+  p 10,22 1 p 11,22 6 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 20 p 16,22 6 p 17,22 6 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 2 p 12,23 6 p 13,23 6 p 14,23 20 p 15,23 6 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 2 p 20,23 1
+  p 10,24 1 p 11,24 1 p 12,24 6 p 13,24 6 p 14,24 6 p 15,24 1 p 16,24 6 p 17,24 2 p 18,24 2 p 19,24 1 p 20,24 1
+  p 11,25 1 p 12,25 1 p 13,25 1 p 14,25 6 p 16,25 1 p 17,25 1 p 18,25 1
+@layer cell_3_1_head_layer
+  cell: cell_3_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_head
+  cell: cell_3_1
+  parent: cell_3_1_head_layer
+  tags: [head]
+  p 17,5 1 p 18,5 1
+  p 16,6 1 p 17,6 21 p 18,6 21 p 19,6 1
+  p 14,7 1 p 15,7 1 p 16,7 21 p 17,7 21 p 18,7 21 p 19,7 21 p 20,7 1
+  p 13,8 1 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 12,9 1 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 21 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 21 p 21,9 1
+  p 11,10 1 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 21 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 20 p 20,10 20 p 21,10 5 p 22,10 1
+  p 10,11 1 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 21 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 20 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 9,12 1 p 10,12 21 p 11,12 21 p 12,12 21 p 13,12 21 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 5 p 19,12 5 p 20,12 5 p 21,12 5 p 22,12 1
+  p 8,13 1 p 9,13 1 p 10,13 20 p 11,13 20 p 12,13 20 p 13,13 20 p 14,13 20 p 15,13 20 p 16,13 20 p 17,13 9 p 18,13 9 p 19,13 9 p 20,13 9 p 21,13 9 p 22,13 1 p 23,13 1
+  p 9,14 1 p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 6 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 14 p 20,14 14 p 21,14 1 p 22,14 1 p 23,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 10,16 1 p 11,16 6 p 12,16 6 p 13,16 14 p 14,16 2 p 15,16 14 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 2 p 20,16 14 p 21,16 1
+  p 11,17 1 p 12,17 6 p 13,17 14 p 14,17 14 p 15,17 14 p 16,17 11 p 17,17 14 p 18,17 14 p 19,17 14 p 20,17 1
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+@layer cell_3_1_collar_layer
+  cell: cell_3_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_collar
+  cell: cell_3_1
+  parent: cell_3_1_collar_layer
+  tags: [collar]
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1
+  p 11,19 1 p 12,19 20 p 13,19 17 p 14,19 17 p 15,19 17 p 16,19 17 p 17,19 17 p 18,19 20 p 19,19 1
+  p 12,20 1 p 13,20 20 p 14,20 20 p 15,20 20 p 16,20 20 p 17,20 1
+  p 13,21 1 p 14,21 1 p 15,21 1 p 16,21 1
+@layer cell_3_1_impact_layer
+  cell: cell_3_1
+  name: "impact"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_1_impact
+  cell: cell_3_1
+  parent: cell_3_1_impact_layer
+  tags: [impact]
+  p 25,12 13
+  p 26,13 13
+  p 27,14 13
+@cell cell_3_2
+  name: "hurt_right_2"
+  direction: right
+  frame: 2
+  grid_pos: 2,3
+@layer cell_3_2_scarf_tail_layer
+  cell: cell_3_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_scarf_tail
+  cell: cell_3_2
+  parent: cell_3_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,19 1 p 8,19 1
+  p 6,20 1 p 7,20 20 p 8,20 21 p 9,20 1
+  p 5,21 1 p 6,21 20 p 7,21 21 p 8,21 1
+  p 4,22 1 p 5,22 20 p 6,22 21 p 7,22 1
+  p 4,23 1 p 5,23 1 p 6,23 1
+@layer cell_3_2_rear_boot_layer
+  cell: cell_3_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_rear_boot
+  cell: cell_3_2
+  parent: cell_3_2_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_3_2_front_boot_layer
+  cell: cell_3_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_front_boot
+  cell: cell_3_2
+  parent: cell_3_2_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_3_2_coat_layer
+  cell: cell_3_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_coat
+  cell: cell_3_2
+  parent: cell_3_2_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_3_2_head_layer
+  cell: cell_3_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_head
+  cell: cell_3_2
+  parent: cell_3_2_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_3_2_collar_layer
+  cell: cell_3_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_2_collar
+  cell: cell_3_2
+  parent: cell_3_2_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_3_3
+  name: "hurt_right_3"
+  direction: right
+  frame: 3
+  grid_pos: 3,3
+@layer cell_3_3_scarf_tail_layer
+  cell: cell_3_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_scarf_tail
+  cell: cell_3_3
+  parent: cell_3_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 7,18 1 p 8,18 1
+  p 6,19 1 p 7,19 20 p 8,19 21 p 9,19 1
+  p 5,20 1 p 6,20 20 p 7,20 21 p 8,20 1
+  p 4,21 1 p 5,21 20 p 6,21 21 p 7,21 1
+  p 4,22 1 p 5,22 1 p 6,22 1
+@layer cell_3_3_rear_boot_layer
+  cell: cell_3_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_rear_boot
+  cell: cell_3_3
+  parent: cell_3_3_rear_boot_layer
+  tags: [rear_boot]
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 1
+  p 11,25 1 p 12,25 3 p 13,25 3 p 14,25 1
+  p 11,26 1 p 12,26 1 p 13,26 1 p 14,26 1
+@layer cell_3_3_front_boot_layer
+  cell: cell_3_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_front_boot
+  cell: cell_3_3
+  parent: cell_3_3_front_boot_layer
+  tags: [front_boot]
+  p 18,24 1 p 19,24 1 p 20,24 1 p 21,24 1
+  p 18,25 1 p 19,25 3 p 20,25 3 p 21,25 1
+  p 18,26 1 p 19,26 1 p 20,26 1 p 21,26 1
+@layer cell_3_3_coat_layer
+  cell: cell_3_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_coat
+  cell: cell_3_3
+  parent: cell_3_3_coat_layer
+  tags: [coat]
+  p 12,19 1 p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+  p 11,20 1 p 12,20 6 p 13,20 6 p 14,20 6 p 15,20 6 p 16,20 6 p 17,20 2 p 18,20 2 p 19,20 1
+  p 10,21 1 p 11,21 6 p 12,21 6 p 13,21 6 p 14,21 20 p 15,21 20 p 16,21 6 p 17,21 6 p 18,21 2 p 19,21 2 p 20,21 1
+  p 10,22 1 p 11,22 2 p 12,22 6 p 13,22 6 p 14,22 20 p 15,22 6 p 16,22 6 p 17,22 2 p 18,22 2 p 19,22 2 p 20,22 1
+  p 10,23 1 p 11,23 1 p 12,23 6 p 13,23 6 p 14,23 6 p 15,23 1 p 16,23 6 p 17,23 2 p 18,23 2 p 19,23 1 p 20,23 1
+  p 11,24 1 p 12,24 1 p 13,24 1 p 14,24 6 p 16,24 1 p 17,24 1 p 18,24 1
+@layer cell_3_3_head_layer
+  cell: cell_3_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_head
+  cell: cell_3_3
+  parent: cell_3_3_head_layer
+  tags: [head]
+  p 17,4 1 p 18,4 1
+  p 16,5 1 p 17,5 21 p 18,5 21 p 19,5 1
+  p 14,6 1 p 15,6 1 p 16,6 21 p 17,6 21 p 18,6 21 p 19,6 21 p 20,6 1
+  p 13,7 1 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 20 p 19,7 20 p 20,7 21 p 21,7 1
+  p 12,8 1 p 13,8 21 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 20 p 18,8 20 p 19,8 20 p 20,8 21 p 21,8 1
+  p 11,9 1 p 12,9 21 p 13,9 21 p 14,9 21 p 15,9 21 p 16,9 20 p 17,9 20 p 18,9 20 p 19,9 20 p 20,9 20 p 21,9 5 p 22,9 1
+  p 10,10 1 p 11,10 21 p 12,10 21 p 13,10 21 p 14,10 21 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 20 p 19,10 5 p 20,10 5 p 21,10 5 p 22,10 1
+  p 9,11 1 p 10,11 21 p 11,11 21 p 12,11 21 p 13,11 21 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 5 p 19,11 5 p 20,11 5 p 21,11 5 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 20 p 11,12 20 p 12,12 20 p 13,12 20 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 9 p 18,12 9 p 19,12 9 p 20,12 9 p 21,12 9 p 22,12 1 p 23,12 1
+  p 9,13 1 p 10,13 1 p 11,13 6 p 12,13 6 p 13,13 6 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 14 p 19,13 14 p 20,13 14 p 21,13 1 p 22,13 1 p 23,13 1
+  p 10,14 1 p 11,14 6 p 12,14 6 p 13,14 14 p 14,14 2 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 14 p 19,14 2 p 20,14 14 p 21,14 1
+  p 10,15 1 p 11,15 6 p 12,15 6 p 13,15 14 p 14,15 2 p 15,15 14 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 2 p 20,15 14 p 21,15 1
+  p 11,16 1 p 12,16 6 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 11 p 17,16 14 p 18,16 14 p 19,16 14 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_3_3_collar_layer
+  cell: cell_3_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_3_3_collar
+  cell: cell_3_3
+  parent: cell_3_3_collar_layer
+  tags: [collar]
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1
+  p 11,18 1 p 12,18 20 p 13,18 17 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 20 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 20 p 15,19 20 p 16,19 20 p 17,19 1
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1
+@cell cell_4_0
+  name: "idle_left_0"
+  direction: left
+  frame: 0
+  grid_pos: 0,4
+@layer cell_4_0_scarf_tail_layer
+  cell: cell_4_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_scarf_tail
+  cell: cell_4_0
+  parent: cell_4_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,17 1 p 24,17 1
+  p 22,18 1 p 23,18 21 p 24,18 20 p 25,18 1
+  p 23,19 1 p 24,19 21 p 25,19 20 p 26,19 1
+  p 24,20 1 p 25,20 21 p 26,20 20 p 27,20 1
+  p 25,21 1 p 26,21 1 p 27,21 1
+@layer cell_4_0_rear_boot_layer
+  cell: cell_4_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_rear_boot
+  cell: cell_4_0
+  parent: cell_4_0_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_4_0_front_boot_layer
+  cell: cell_4_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_front_boot
+  cell: cell_4_0
+  parent: cell_4_0_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_4_0_coat_layer
+  cell: cell_4_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_coat
+  cell: cell_4_0
+  parent: cell_4_0_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_4_0_head_layer
+  cell: cell_4_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_head
+  cell: cell_4_0
+  parent: cell_4_0_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_4_0_collar_layer
+  cell: cell_4_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_0_collar
+  cell: cell_4_0
+  parent: cell_4_0_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_4_1
+  name: "idle_left_1"
+  direction: left
+  frame: 1
+  grid_pos: 1,4
+@layer cell_4_1_scarf_tail_layer
+  cell: cell_4_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_scarf_tail
+  cell: cell_4_1
+  parent: cell_4_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_4_1_rear_boot_layer
+  cell: cell_4_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_rear_boot
+  cell: cell_4_1
+  parent: cell_4_1_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_4_1_front_boot_layer
+  cell: cell_4_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_front_boot
+  cell: cell_4_1
+  parent: cell_4_1_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_4_1_coat_layer
+  cell: cell_4_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_coat
+  cell: cell_4_1
+  parent: cell_4_1_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_4_1_head_layer
+  cell: cell_4_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_head
+  cell: cell_4_1
+  parent: cell_4_1_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_4_1_collar_layer
+  cell: cell_4_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_1_collar
+  cell: cell_4_1
+  parent: cell_4_1_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_4_2
+  name: "idle_left_2"
+  direction: left
+  frame: 2
+  grid_pos: 2,4
+@layer cell_4_2_scarf_tail_layer
+  cell: cell_4_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_scarf_tail
+  cell: cell_4_2
+  parent: cell_4_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,19 1 p 24,19 1
+  p 22,20 1 p 23,20 21 p 24,20 20 p 25,20 1
+  p 23,21 1 p 24,21 21 p 25,21 20 p 26,21 1
+  p 24,22 1 p 25,22 21 p 26,22 20 p 27,22 1
+  p 25,23 1 p 26,23 1 p 27,23 1
+@layer cell_4_2_rear_boot_layer
+  cell: cell_4_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_rear_boot
+  cell: cell_4_2
+  parent: cell_4_2_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_4_2_front_boot_layer
+  cell: cell_4_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_front_boot
+  cell: cell_4_2
+  parent: cell_4_2_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_4_2_coat_layer
+  cell: cell_4_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_coat
+  cell: cell_4_2
+  parent: cell_4_2_coat_layer
+  tags: [coat]
+  p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+  p 12,19 1 p 13,19 2 p 14,19 2 p 15,19 6 p 16,19 6 p 17,19 6 p 18,19 6 p 19,19 6 p 20,19 1
+  p 11,20 1 p 12,20 2 p 13,20 2 p 14,20 6 p 15,20 6 p 16,20 20 p 17,20 20 p 18,20 6 p 19,20 6 p 20,20 6 p 21,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 2 p 15,21 6 p 16,21 6 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 2 p 21,21 1
+  p 11,22 1 p 12,22 1 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 1 p 17,22 6 p 18,22 6 p 19,22 6 p 20,22 1 p 21,22 1
+  p 13,23 1 p 14,23 1 p 15,23 1 p 17,23 6 p 18,23 1 p 19,23 1 p 20,23 1
+@layer cell_4_2_head_layer
+  cell: cell_4_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_head
+  cell: cell_4_2
+  parent: cell_4_2_head_layer
+  tags: [head]
+  p 13,3 1 p 14,3 1
+  p 12,4 1 p 13,4 21 p 14,4 21 p 15,4 1
+  p 11,5 1 p 12,5 21 p 13,5 21 p 14,5 21 p 15,5 21 p 16,5 1 p 17,5 1
+  p 10,6 1 p 11,6 21 p 12,6 20 p 13,6 20 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 20 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 21 p 19,7 1
+  p 9,8 1 p 10,8 5 p 11,8 20 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 20 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 21 p 20,8 1
+  p 9,9 1 p 10,9 5 p 11,9 5 p 12,9 5 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 20 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 21 p 21,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 5 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 21 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 9 p 11,11 9 p 12,11 9 p 13,11 9 p 14,11 9 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 20 p 19,11 20 p 20,11 20 p 21,11 20 p 22,11 1 p 23,11 1
+  p 8,12 1 p 9,12 1 p 10,12 1 p 11,12 14 p 12,12 14 p 13,12 14 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 6 p 19,12 6 p 20,12 6 p 21,12 1 p 22,12 1
+  p 10,13 1 p 11,13 14 p 12,13 2 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 2 p 18,13 14 p 19,13 6 p 20,13 6 p 21,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 11,15 1 p 12,15 14 p 13,15 14 p 14,15 14 p 15,15 11 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 6 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_4_2_collar_layer
+  cell: cell_4_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_2_collar
+  cell: cell_4_2
+  parent: cell_4_2_collar_layer
+  tags: [collar]
+  p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+  p 12,17 1 p 13,17 20 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 17 p 19,17 20 p 20,17 1
+  p 14,18 1 p 15,18 20 p 16,18 20 p 17,18 20 p 18,18 20 p 19,18 1
+  p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+@cell cell_4_3
+  name: "idle_left_3"
+  direction: left
+  frame: 3
+  grid_pos: 3,4
+@layer cell_4_3_scarf_tail_layer
+  cell: cell_4_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_scarf_tail
+  cell: cell_4_3
+  parent: cell_4_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_4_3_rear_boot_layer
+  cell: cell_4_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_rear_boot
+  cell: cell_4_3
+  parent: cell_4_3_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_4_3_front_boot_layer
+  cell: cell_4_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_front_boot
+  cell: cell_4_3
+  parent: cell_4_3_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_4_3_coat_layer
+  cell: cell_4_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_coat
+  cell: cell_4_3
+  parent: cell_4_3_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_4_3_head_layer
+  cell: cell_4_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_head
+  cell: cell_4_3
+  parent: cell_4_3_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_4_3_collar_layer
+  cell: cell_4_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_4_3_collar
+  cell: cell_4_3
+  parent: cell_4_3_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_5_0
+  name: "run_left_0"
+  direction: left
+  frame: 0
+  grid_pos: 0,5
+@layer cell_5_0_scarf_tail_layer
+  cell: cell_5_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_scarf_tail
+  cell: cell_5_0
+  parent: cell_5_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,17 1 p 24,17 1
+  p 22,18 1 p 23,18 21 p 24,18 20 p 25,18 1
+  p 23,19 1 p 24,19 21 p 25,19 20 p 26,19 1
+  p 24,20 1 p 25,20 21 p 26,20 20 p 27,20 1
+  p 25,21 1 p 26,21 1 p 27,21 1
+@layer cell_5_0_rear_boot_layer
+  cell: cell_5_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_rear_boot
+  cell: cell_5_0
+  parent: cell_5_0_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_5_0_front_boot_layer
+  cell: cell_5_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_front_boot
+  cell: cell_5_0
+  parent: cell_5_0_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_5_0_coat_layer
+  cell: cell_5_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_coat
+  cell: cell_5_0
+  parent: cell_5_0_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_5_0_head_layer
+  cell: cell_5_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_head
+  cell: cell_5_0
+  parent: cell_5_0_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_5_0_collar_layer
+  cell: cell_5_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_0_collar
+  cell: cell_5_0
+  parent: cell_5_0_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_5_1
+  name: "run_left_1"
+  direction: left
+  frame: 1
+  grid_pos: 1,5
+@layer cell_5_1_scarf_tail_layer
+  cell: cell_5_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_scarf_tail
+  cell: cell_5_1
+  parent: cell_5_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_5_1_rear_boot_layer
+  cell: cell_5_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_rear_boot
+  cell: cell_5_1
+  parent: cell_5_1_rear_boot_layer
+  tags: [rear_boot]
+  p 17,23 1 p 18,23 1 p 19,23 1 p 20,23 1
+  p 17,24 1 p 18,24 3 p 19,24 3 p 20,24 1
+  p 17,25 1 p 18,25 1 p 19,25 1 p 20,25 1
+@layer cell_5_1_front_boot_layer
+  cell: cell_5_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_front_boot
+  cell: cell_5_1
+  parent: cell_5_1_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_5_1_coat_layer
+  cell: cell_5_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_coat
+  cell: cell_5_1
+  parent: cell_5_1_coat_layer
+  tags: [coat]
+  p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+  p 12,19 1 p 13,19 2 p 14,19 2 p 15,19 6 p 16,19 6 p 17,19 6 p 18,19 6 p 19,19 6 p 20,19 1
+  p 11,20 1 p 12,20 2 p 13,20 2 p 14,20 6 p 15,20 6 p 16,20 20 p 17,20 20 p 18,20 6 p 19,20 6 p 20,20 6 p 21,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 2 p 15,21 6 p 16,21 6 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 2 p 21,21 1
+  p 11,22 1 p 12,22 1 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 1 p 17,22 6 p 18,22 6 p 19,22 6 p 20,22 1 p 21,22 1
+  p 13,23 1 p 14,23 1 p 15,23 1 p 17,23 6 p 18,23 1 p 19,23 1 p 20,23 1
+@layer cell_5_1_head_layer
+  cell: cell_5_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_head
+  cell: cell_5_1
+  parent: cell_5_1_head_layer
+  tags: [head]
+  p 13,3 1 p 14,3 1
+  p 12,4 1 p 13,4 21 p 14,4 21 p 15,4 1
+  p 11,5 1 p 12,5 21 p 13,5 21 p 14,5 21 p 15,5 21 p 16,5 1 p 17,5 1
+  p 10,6 1 p 11,6 21 p 12,6 20 p 13,6 20 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 20 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 21 p 19,7 1
+  p 9,8 1 p 10,8 5 p 11,8 20 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 20 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 21 p 20,8 1
+  p 9,9 1 p 10,9 5 p 11,9 5 p 12,9 5 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 20 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 21 p 21,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 5 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 21 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 9 p 11,11 9 p 12,11 9 p 13,11 9 p 14,11 9 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 20 p 19,11 20 p 20,11 20 p 21,11 20 p 22,11 1 p 23,11 1
+  p 8,12 1 p 9,12 1 p 10,12 1 p 11,12 14 p 12,12 14 p 13,12 14 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 6 p 19,12 6 p 20,12 6 p 21,12 1 p 22,12 1
+  p 10,13 1 p 11,13 14 p 12,13 2 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 2 p 18,13 14 p 19,13 6 p 20,13 6 p 21,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 11,15 1 p 12,15 14 p 13,15 14 p 14,15 14 p 15,15 11 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 6 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_5_1_collar_layer
+  cell: cell_5_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_1_collar
+  cell: cell_5_1
+  parent: cell_5_1_collar_layer
+  tags: [collar]
+  p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+  p 12,17 1 p 13,17 20 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 17 p 19,17 20 p 20,17 1
+  p 14,18 1 p 15,18 20 p 16,18 20 p 17,18 20 p 18,18 20 p 19,18 1
+  p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+@cell cell_5_2
+  name: "run_left_2"
+  direction: left
+  frame: 2
+  grid_pos: 2,5
+@layer cell_5_2_scarf_tail_layer
+  cell: cell_5_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_scarf_tail
+  cell: cell_5_2
+  parent: cell_5_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,19 1 p 24,19 1
+  p 22,20 1 p 23,20 21 p 24,20 20 p 25,20 1
+  p 23,21 1 p 24,21 21 p 25,21 20 p 26,21 1
+  p 24,22 1 p 25,22 21 p 26,22 20 p 27,22 1
+  p 25,23 1 p 26,23 1 p 27,23 1
+@layer cell_5_2_rear_boot_layer
+  cell: cell_5_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_rear_boot
+  cell: cell_5_2
+  parent: cell_5_2_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_5_2_front_boot_layer
+  cell: cell_5_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_front_boot
+  cell: cell_5_2
+  parent: cell_5_2_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_5_2_coat_layer
+  cell: cell_5_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_coat
+  cell: cell_5_2
+  parent: cell_5_2_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_5_2_head_layer
+  cell: cell_5_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_head
+  cell: cell_5_2
+  parent: cell_5_2_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_5_2_collar_layer
+  cell: cell_5_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_2_collar
+  cell: cell_5_2
+  parent: cell_5_2_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_5_3
+  name: "run_left_3"
+  direction: left
+  frame: 3
+  grid_pos: 3,5
+@layer cell_5_3_scarf_tail_layer
+  cell: cell_5_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_scarf_tail
+  cell: cell_5_3
+  parent: cell_5_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_5_3_rear_boot_layer
+  cell: cell_5_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_rear_boot
+  cell: cell_5_3
+  parent: cell_5_3_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_5_3_front_boot_layer
+  cell: cell_5_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_front_boot
+  cell: cell_5_3
+  parent: cell_5_3_front_boot_layer
+  tags: [front_boot]
+  p 10,23 1 p 11,23 1 p 12,23 1 p 13,23 1
+  p 10,24 1 p 11,24 3 p 12,24 3 p 13,24 1
+  p 10,25 1 p 11,25 1 p 12,25 1 p 13,25 1
+@layer cell_5_3_coat_layer
+  cell: cell_5_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_coat
+  cell: cell_5_3
+  parent: cell_5_3_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_5_3_head_layer
+  cell: cell_5_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_head
+  cell: cell_5_3
+  parent: cell_5_3_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_5_3_collar_layer
+  cell: cell_5_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_5_3_collar
+  cell: cell_5_3
+  parent: cell_5_3_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_6_0
+  name: "cast_left_0"
+  direction: left
+  frame: 0
+  grid_pos: 0,6
+@layer cell_6_0_scarf_tail_layer
+  cell: cell_6_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_scarf_tail
+  cell: cell_6_0
+  parent: cell_6_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,17 1 p 24,17 1
+  p 22,18 1 p 23,18 21 p 24,18 20 p 25,18 1
+  p 23,19 1 p 24,19 21 p 25,19 20 p 26,19 1
+  p 24,20 1 p 25,20 21 p 26,20 20 p 27,20 1
+  p 25,21 1 p 26,21 1 p 27,21 1
+@layer cell_6_0_rear_boot_layer
+  cell: cell_6_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_rear_boot
+  cell: cell_6_0
+  parent: cell_6_0_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_6_0_front_boot_layer
+  cell: cell_6_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_front_boot
+  cell: cell_6_0
+  parent: cell_6_0_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_6_0_coat_layer
+  cell: cell_6_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_coat
+  cell: cell_6_0
+  parent: cell_6_0_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_6_0_head_layer
+  cell: cell_6_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_head
+  cell: cell_6_0
+  parent: cell_6_0_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_6_0_collar_layer
+  cell: cell_6_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_0_collar
+  cell: cell_6_0
+  parent: cell_6_0_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_6_1
+  name: "cast_left_1"
+  direction: left
+  frame: 1
+  grid_pos: 1,6
+@layer cell_6_1_scarf_tail_layer
+  cell: cell_6_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_scarf_tail
+  cell: cell_6_1
+  parent: cell_6_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_6_1_rear_boot_layer
+  cell: cell_6_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_rear_boot
+  cell: cell_6_1
+  parent: cell_6_1_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_6_1_front_boot_layer
+  cell: cell_6_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_front_boot
+  cell: cell_6_1
+  parent: cell_6_1_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_6_1_coat_layer
+  cell: cell_6_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_coat
+  cell: cell_6_1
+  parent: cell_6_1_coat_layer
+  tags: [coat]
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1 p 19,20 1
+  p 12,21 1 p 13,21 2 p 14,21 2 p 15,21 6 p 16,21 6 p 17,21 6 p 18,21 6 p 19,21 6 p 20,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 6 p 15,22 6 p 16,22 20 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 6 p 21,22 1
+  p 11,23 1 p 12,23 2 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 6 p 17,23 20 p 18,23 6 p 19,23 6 p 20,23 2 p 21,23 1
+  p 11,24 1 p 12,24 1 p 13,24 2 p 14,24 2 p 15,24 6 p 16,24 1 p 17,24 6 p 18,24 6 p 19,24 6 p 20,24 1 p 21,24 1
+  p 13,25 1 p 14,25 1 p 15,25 1 p 17,25 6 p 18,25 1 p 19,25 1 p 20,25 1
+@layer cell_6_1_head_layer
+  cell: cell_6_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_head
+  cell: cell_6_1
+  parent: cell_6_1_head_layer
+  tags: [head]
+  p 13,5 1 p 14,5 1
+  p 12,6 1 p 13,6 21 p 14,6 21 p 15,6 1
+  p 11,7 1 p 12,7 21 p 13,7 21 p 14,7 21 p 15,7 21 p 16,7 1 p 17,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 1
+  p 10,9 1 p 11,9 21 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 21 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 1
+  p 9,10 1 p 10,10 5 p 11,10 20 p 12,10 20 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 21 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 20 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 21 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 1
+  p 9,12 1 p 10,12 5 p 11,12 5 p 12,12 5 p 13,12 5 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 21 p 19,12 21 p 20,12 21 p 21,12 21 p 22,12 1
+  p 8,13 1 p 9,13 1 p 10,13 9 p 11,13 9 p 12,13 9 p 13,13 9 p 14,13 9 p 15,13 20 p 16,13 20 p 17,13 20 p 18,13 20 p 19,13 20 p 20,13 20 p 21,13 20 p 22,13 1 p 23,13 1
+  p 8,14 1 p 9,14 1 p 10,14 1 p 11,14 14 p 12,14 14 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 6 p 19,14 6 p 20,14 6 p 21,14 1 p 22,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 10,16 1 p 11,16 14 p 12,16 2 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 14 p 17,16 2 p 18,16 14 p 19,16 6 p 20,16 6 p 21,16 1
+  p 11,17 1 p 12,17 14 p 13,17 14 p 14,17 14 p 15,17 11 p 16,17 14 p 17,17 14 p 18,17 14 p 19,17 6 p 20,17 1
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+@layer cell_6_1_collar_layer
+  cell: cell_6_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_collar
+  cell: cell_6_1
+  parent: cell_6_1_collar_layer
+  tags: [collar]
+  p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 17 p 15,19 17 p 16,19 17 p 17,19 17 p 18,19 17 p 19,19 20 p 20,19 1
+  p 14,20 1 p 15,20 20 p 16,20 20 p 17,20 20 p 18,20 20 p 19,20 1
+  p 15,21 1 p 16,21 1 p 17,21 1 p 18,21 1
+@layer cell_6_1_cast_sigil_layer
+  cell: cell_6_1
+  name: "cast_sigil"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_1_cast_sigil
+  cell: cell_6_1
+  parent: cell_6_1_cast_sigil_layer
+  tags: [cast_sigil]
+  p 5,17 17
+  p 4,18 17 p 5,18 18 p 6,18 17
+  p 3,19 17 p 4,19 18 p 5,19 17 p 6,19 18 p 7,19 17
+  p 4,20 17 p 5,20 18 p 6,20 17
+  p 5,21 17
+@cell cell_6_2
+  name: "cast_left_2"
+  direction: left
+  frame: 2
+  grid_pos: 2,6
+@layer cell_6_2_scarf_tail_layer
+  cell: cell_6_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_scarf_tail
+  cell: cell_6_2
+  parent: cell_6_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,19 1 p 24,19 1
+  p 22,20 1 p 23,20 21 p 24,20 20 p 25,20 1
+  p 23,21 1 p 24,21 21 p 25,21 20 p 26,21 1
+  p 24,22 1 p 25,22 21 p 26,22 20 p 27,22 1
+  p 25,23 1 p 26,23 1 p 27,23 1
+@layer cell_6_2_rear_boot_layer
+  cell: cell_6_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_rear_boot
+  cell: cell_6_2
+  parent: cell_6_2_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_6_2_front_boot_layer
+  cell: cell_6_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_front_boot
+  cell: cell_6_2
+  parent: cell_6_2_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_6_2_coat_layer
+  cell: cell_6_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_coat
+  cell: cell_6_2
+  parent: cell_6_2_coat_layer
+  tags: [coat]
+  p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+  p 12,19 1 p 13,19 2 p 14,19 2 p 15,19 6 p 16,19 6 p 17,19 6 p 18,19 6 p 19,19 6 p 20,19 1
+  p 11,20 1 p 12,20 2 p 13,20 2 p 14,20 6 p 15,20 6 p 16,20 20 p 17,20 20 p 18,20 6 p 19,20 6 p 20,20 6 p 21,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 2 p 15,21 6 p 16,21 6 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 2 p 21,21 1
+  p 11,22 1 p 12,22 1 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 1 p 17,22 6 p 18,22 6 p 19,22 6 p 20,22 1 p 21,22 1
+  p 13,23 1 p 14,23 1 p 15,23 1 p 17,23 6 p 18,23 1 p 19,23 1 p 20,23 1
+@layer cell_6_2_head_layer
+  cell: cell_6_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_head
+  cell: cell_6_2
+  parent: cell_6_2_head_layer
+  tags: [head]
+  p 13,3 1 p 14,3 1
+  p 12,4 1 p 13,4 21 p 14,4 21 p 15,4 1
+  p 11,5 1 p 12,5 21 p 13,5 21 p 14,5 21 p 15,5 21 p 16,5 1 p 17,5 1
+  p 10,6 1 p 11,6 21 p 12,6 20 p 13,6 20 p 14,6 21 p 15,6 21 p 16,6 21 p 17,6 21 p 18,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 20 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 21 p 19,7 1
+  p 9,8 1 p 10,8 5 p 11,8 20 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 20 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 21 p 20,8 1
+  p 9,9 1 p 10,9 5 p 11,9 5 p 12,9 5 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 20 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 21 p 21,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 5 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 20 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 21 p 22,10 1
+  p 8,11 1 p 9,11 1 p 10,11 9 p 11,11 9 p 12,11 9 p 13,11 9 p 14,11 9 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 20 p 19,11 20 p 20,11 20 p 21,11 20 p 22,11 1 p 23,11 1
+  p 8,12 1 p 9,12 1 p 10,12 1 p 11,12 14 p 12,12 14 p 13,12 14 p 14,12 14 p 15,12 14 p 16,12 14 p 17,12 14 p 18,12 6 p 19,12 6 p 20,12 6 p 21,12 1 p 22,12 1
+  p 10,13 1 p 11,13 14 p 12,13 2 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 2 p 18,13 14 p 19,13 6 p 20,13 6 p 21,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 11,15 1 p 12,15 14 p 13,15 14 p 14,15 14 p 15,15 11 p 16,15 14 p 17,15 14 p 18,15 14 p 19,15 6 p 20,15 1
+  p 12,16 1 p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+@layer cell_6_2_collar_layer
+  cell: cell_6_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_collar
+  cell: cell_6_2
+  parent: cell_6_2_collar_layer
+  tags: [collar]
+  p 13,16 1 p 14,16 1 p 15,16 1 p 16,16 1 p 17,16 1 p 18,16 1 p 19,16 1
+  p 12,17 1 p 13,17 20 p 14,17 17 p 15,17 17 p 16,17 17 p 17,17 17 p 18,17 17 p 19,17 20 p 20,17 1
+  p 14,18 1 p 15,18 20 p 16,18 20 p 17,18 20 p 18,18 20 p 19,18 1
+  p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1
+@layer cell_6_2_cast_sigil_layer
+  cell: cell_6_2
+  name: "cast_sigil"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_2_cast_sigil
+  cell: cell_6_2
+  parent: cell_6_2_cast_sigil_layer
+  tags: [cast_sigil]
+  p 5,16 17
+  p 4,17 17 p 5,17 18 p 6,17 17
+  p 3,18 17 p 4,18 18 p 5,18 17 p 6,18 18 p 7,18 17
+  p 4,19 17 p 5,19 18 p 6,19 17
+  p 5,20 17
+@cell cell_6_3
+  name: "cast_left_3"
+  direction: left
+  frame: 3
+  grid_pos: 3,6
+@layer cell_6_3_scarf_tail_layer
+  cell: cell_6_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_scarf_tail
+  cell: cell_6_3
+  parent: cell_6_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_6_3_rear_boot_layer
+  cell: cell_6_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_rear_boot
+  cell: cell_6_3
+  parent: cell_6_3_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_6_3_front_boot_layer
+  cell: cell_6_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_front_boot
+  cell: cell_6_3
+  parent: cell_6_3_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_6_3_coat_layer
+  cell: cell_6_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_coat
+  cell: cell_6_3
+  parent: cell_6_3_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_6_3_head_layer
+  cell: cell_6_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_head
+  cell: cell_6_3
+  parent: cell_6_3_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_6_3_collar_layer
+  cell: cell_6_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_6_3_collar
+  cell: cell_6_3
+  parent: cell_6_3_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_7_0
+  name: "hurt_left_0"
+  direction: left
+  frame: 0
+  grid_pos: 0,7
+@layer cell_7_0_scarf_tail_layer
+  cell: cell_7_0
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_scarf_tail
+  cell: cell_7_0
+  parent: cell_7_0_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,17 1 p 24,17 1
+  p 22,18 1 p 23,18 21 p 24,18 20 p 25,18 1
+  p 23,19 1 p 24,19 21 p 25,19 20 p 26,19 1
+  p 24,20 1 p 25,20 21 p 26,20 20 p 27,20 1
+  p 25,21 1 p 26,21 1 p 27,21 1
+@layer cell_7_0_rear_boot_layer
+  cell: cell_7_0
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_rear_boot
+  cell: cell_7_0
+  parent: cell_7_0_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_7_0_front_boot_layer
+  cell: cell_7_0
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_front_boot
+  cell: cell_7_0
+  parent: cell_7_0_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_7_0_coat_layer
+  cell: cell_7_0
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_coat
+  cell: cell_7_0
+  parent: cell_7_0_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_7_0_head_layer
+  cell: cell_7_0
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_head
+  cell: cell_7_0
+  parent: cell_7_0_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_7_0_collar_layer
+  cell: cell_7_0
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_0_collar
+  cell: cell_7_0
+  parent: cell_7_0_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_7_1
+  name: "hurt_left_1"
+  direction: left
+  frame: 1
+  grid_pos: 1,7
+@layer cell_7_1_scarf_tail_layer
+  cell: cell_7_1
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_scarf_tail
+  cell: cell_7_1
+  parent: cell_7_1_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_7_1_rear_boot_layer
+  cell: cell_7_1
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_rear_boot
+  cell: cell_7_1
+  parent: cell_7_1_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_7_1_front_boot_layer
+  cell: cell_7_1
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_front_boot
+  cell: cell_7_1
+  parent: cell_7_1_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_7_1_coat_layer
+  cell: cell_7_1
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_coat
+  cell: cell_7_1
+  parent: cell_7_1_coat_layer
+  tags: [coat]
+  p 13,20 1 p 14,20 1 p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1 p 19,20 1
+  p 12,21 1 p 13,21 2 p 14,21 2 p 15,21 6 p 16,21 6 p 17,21 6 p 18,21 6 p 19,21 6 p 20,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 6 p 15,22 6 p 16,22 20 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 6 p 21,22 1
+  p 11,23 1 p 12,23 2 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 6 p 17,23 20 p 18,23 6 p 19,23 6 p 20,23 2 p 21,23 1
+  p 11,24 1 p 12,24 1 p 13,24 2 p 14,24 2 p 15,24 6 p 16,24 1 p 17,24 6 p 18,24 6 p 19,24 6 p 20,24 1 p 21,24 1
+  p 13,25 1 p 14,25 1 p 15,25 1 p 17,25 6 p 18,25 1 p 19,25 1 p 20,25 1
+@layer cell_7_1_head_layer
+  cell: cell_7_1
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_head
+  cell: cell_7_1
+  parent: cell_7_1_head_layer
+  tags: [head]
+  p 13,5 1 p 14,5 1
+  p 12,6 1 p 13,6 21 p 14,6 21 p 15,6 1
+  p 11,7 1 p 12,7 21 p 13,7 21 p 14,7 21 p 15,7 21 p 16,7 1 p 17,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 21 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 1
+  p 10,9 1 p 11,9 21 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 21 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 1
+  p 9,10 1 p 10,10 5 p 11,10 20 p 12,10 20 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 21 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 20 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 21 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 1
+  p 9,12 1 p 10,12 5 p 11,12 5 p 12,12 5 p 13,12 5 p 14,12 20 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 21 p 19,12 21 p 20,12 21 p 21,12 21 p 22,12 1
+  p 8,13 1 p 9,13 1 p 10,13 9 p 11,13 9 p 12,13 9 p 13,13 9 p 14,13 9 p 15,13 20 p 16,13 20 p 17,13 20 p 18,13 20 p 19,13 20 p 20,13 20 p 21,13 20 p 22,13 1 p 23,13 1
+  p 8,14 1 p 9,14 1 p 10,14 1 p 11,14 14 p 12,14 14 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 14 p 18,14 6 p 19,14 6 p 20,14 6 p 21,14 1 p 22,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 10,16 1 p 11,16 14 p 12,16 2 p 13,16 14 p 14,16 14 p 15,16 14 p 16,16 14 p 17,16 2 p 18,16 14 p 19,16 6 p 20,16 6 p 21,16 1
+  p 11,17 1 p 12,17 14 p 13,17 14 p 14,17 14 p 15,17 11 p 16,17 14 p 17,17 14 p 18,17 14 p 19,17 6 p 20,17 1
+  p 12,18 1 p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+@layer cell_7_1_collar_layer
+  cell: cell_7_1
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_collar
+  cell: cell_7_1
+  parent: cell_7_1_collar_layer
+  tags: [collar]
+  p 13,18 1 p 14,18 1 p 15,18 1 p 16,18 1 p 17,18 1 p 18,18 1 p 19,18 1
+  p 12,19 1 p 13,19 20 p 14,19 17 p 15,19 17 p 16,19 17 p 17,19 17 p 18,19 17 p 19,19 20 p 20,19 1
+  p 14,20 1 p 15,20 20 p 16,20 20 p 17,20 20 p 18,20 20 p 19,20 1
+  p 15,21 1 p 16,21 1 p 17,21 1 p 18,21 1
+@layer cell_7_1_impact_layer
+  cell: cell_7_1
+  name: "impact"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_1_impact
+  cell: cell_7_1
+  parent: cell_7_1_impact_layer
+  tags: [impact]
+  p 6,12 13
+  p 5,13 13
+  p 4,14 13
+@cell cell_7_2
+  name: "hurt_left_2"
+  direction: left
+  frame: 2
+  grid_pos: 2,7
+@layer cell_7_2_scarf_tail_layer
+  cell: cell_7_2
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_scarf_tail
+  cell: cell_7_2
+  parent: cell_7_2_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,19 1 p 24,19 1
+  p 22,20 1 p 23,20 21 p 24,20 20 p 25,20 1
+  p 23,21 1 p 24,21 21 p 25,21 20 p 26,21 1
+  p 24,22 1 p 25,22 21 p 26,22 20 p 27,22 1
+  p 25,23 1 p 26,23 1 p 27,23 1
+@layer cell_7_2_rear_boot_layer
+  cell: cell_7_2
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_rear_boot
+  cell: cell_7_2
+  parent: cell_7_2_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_7_2_front_boot_layer
+  cell: cell_7_2
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_front_boot
+  cell: cell_7_2
+  parent: cell_7_2_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_7_2_coat_layer
+  cell: cell_7_2
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_coat
+  cell: cell_7_2
+  parent: cell_7_2_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_7_2_head_layer
+  cell: cell_7_2
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_head
+  cell: cell_7_2
+  parent: cell_7_2_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_7_2_collar_layer
+  cell: cell_7_2
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_2_collar
+  cell: cell_7_2
+  parent: cell_7_2_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@cell cell_7_3
+  name: "hurt_left_3"
+  direction: left
+  frame: 3
+  grid_pos: 3,7
+@layer cell_7_3_scarf_tail_layer
+  cell: cell_7_3
+  name: "scarf_tail"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_scarf_tail
+  cell: cell_7_3
+  parent: cell_7_3_scarf_tail_layer
+  tags: [scarf_tail]
+  p 23,18 1 p 24,18 1
+  p 22,19 1 p 23,19 21 p 24,19 20 p 25,19 1
+  p 23,20 1 p 24,20 21 p 25,20 20 p 26,20 1
+  p 24,21 1 p 25,21 21 p 26,21 20 p 27,21 1
+  p 25,22 1 p 26,22 1 p 27,22 1
+@layer cell_7_3_rear_boot_layer
+  cell: cell_7_3
+  name: "rear_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_rear_boot
+  cell: cell_7_3
+  parent: cell_7_3_rear_boot_layer
+  tags: [rear_boot]
+  p 17,24 1 p 18,24 1 p 19,24 1 p 20,24 1
+  p 17,25 1 p 18,25 3 p 19,25 3 p 20,25 1
+  p 17,26 1 p 18,26 1 p 19,26 1 p 20,26 1
+@layer cell_7_3_front_boot_layer
+  cell: cell_7_3
+  name: "front_boot"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_front_boot
+  cell: cell_7_3
+  parent: cell_7_3_front_boot_layer
+  tags: [front_boot]
+  p 10,24 1 p 11,24 1 p 12,24 1 p 13,24 1
+  p 10,25 1 p 11,25 3 p 12,25 3 p 13,25 1
+  p 10,26 1 p 11,26 1 p 12,26 1 p 13,26 1
+@layer cell_7_3_coat_layer
+  cell: cell_7_3
+  name: "coat"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_coat
+  cell: cell_7_3
+  parent: cell_7_3_coat_layer
+  tags: [coat]
+  p 13,19 1 p 14,19 1 p 15,19 1 p 16,19 1 p 17,19 1 p 18,19 1 p 19,19 1
+  p 12,20 1 p 13,20 2 p 14,20 2 p 15,20 6 p 16,20 6 p 17,20 6 p 18,20 6 p 19,20 6 p 20,20 1
+  p 11,21 1 p 12,21 2 p 13,21 2 p 14,21 6 p 15,21 6 p 16,21 20 p 17,21 20 p 18,21 6 p 19,21 6 p 20,21 6 p 21,21 1
+  p 11,22 1 p 12,22 2 p 13,22 2 p 14,22 2 p 15,22 6 p 16,22 6 p 17,22 20 p 18,22 6 p 19,22 6 p 20,22 2 p 21,22 1
+  p 11,23 1 p 12,23 1 p 13,23 2 p 14,23 2 p 15,23 6 p 16,23 1 p 17,23 6 p 18,23 6 p 19,23 6 p 20,23 1 p 21,23 1
+  p 13,24 1 p 14,24 1 p 15,24 1 p 17,24 6 p 18,24 1 p 19,24 1 p 20,24 1
+@layer cell_7_3_head_layer
+  cell: cell_7_3
+  name: "head"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_head
+  cell: cell_7_3
+  parent: cell_7_3_head_layer
+  tags: [head]
+  p 13,4 1 p 14,4 1
+  p 12,5 1 p 13,5 21 p 14,5 21 p 15,5 1
+  p 11,6 1 p 12,6 21 p 13,6 21 p 14,6 21 p 15,6 21 p 16,6 1 p 17,6 1
+  p 10,7 1 p 11,7 21 p 12,7 20 p 13,7 20 p 14,7 21 p 15,7 21 p 16,7 21 p 17,7 21 p 18,7 1
+  p 10,8 1 p 11,8 21 p 12,8 20 p 13,8 20 p 14,8 20 p 15,8 21 p 16,8 21 p 17,8 21 p 18,8 21 p 19,8 1
+  p 9,9 1 p 10,9 5 p 11,9 20 p 12,9 20 p 13,9 20 p 14,9 20 p 15,9 20 p 16,9 21 p 17,9 21 p 18,9 21 p 19,9 21 p 20,9 1
+  p 9,10 1 p 10,10 5 p 11,10 5 p 12,10 5 p 13,10 20 p 14,10 20 p 15,10 20 p 16,10 20 p 17,10 21 p 18,10 21 p 19,10 21 p 20,10 21 p 21,10 1
+  p 9,11 1 p 10,11 5 p 11,11 5 p 12,11 5 p 13,11 5 p 14,11 20 p 15,11 20 p 16,11 20 p 17,11 20 p 18,11 21 p 19,11 21 p 20,11 21 p 21,11 21 p 22,11 1
+  p 8,12 1 p 9,12 1 p 10,12 9 p 11,12 9 p 12,12 9 p 13,12 9 p 14,12 9 p 15,12 20 p 16,12 20 p 17,12 20 p 18,12 20 p 19,12 20 p 20,12 20 p 21,12 20 p 22,12 1 p 23,12 1
+  p 8,13 1 p 9,13 1 p 10,13 1 p 11,13 14 p 12,13 14 p 13,13 14 p 14,13 14 p 15,13 14 p 16,13 14 p 17,13 14 p 18,13 6 p 19,13 6 p 20,13 6 p 21,13 1 p 22,13 1
+  p 10,14 1 p 11,14 14 p 12,14 2 p 13,14 14 p 14,14 14 p 15,14 14 p 16,14 14 p 17,14 2 p 18,14 14 p 19,14 6 p 20,14 6 p 21,14 1
+  p 10,15 1 p 11,15 14 p 12,15 2 p 13,15 14 p 14,15 14 p 15,15 14 p 16,15 14 p 17,15 2 p 18,15 14 p 19,15 6 p 20,15 6 p 21,15 1
+  p 11,16 1 p 12,16 14 p 13,16 14 p 14,16 14 p 15,16 11 p 16,16 14 p 17,16 14 p 18,16 14 p 19,16 6 p 20,16 1
+  p 12,17 1 p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+@layer cell_7_3_collar_layer
+  cell: cell_7_3
+  name: "collar"
+  visible: true
+  opacity: 1
+  blend: normal
+@region cell_7_3_collar
+  cell: cell_7_3
+  parent: cell_7_3_collar_layer
+  tags: [collar]
+  p 13,17 1 p 14,17 1 p 15,17 1 p 16,17 1 p 17,17 1 p 18,17 1 p 19,17 1
+  p 12,18 1 p 13,18 20 p 14,18 17 p 15,18 17 p 16,18 17 p 17,18 17 p 18,18 17 p 19,18 20 p 20,18 1
+  p 14,19 1 p 15,19 20 p 16,19 20 p 17,19 20 p 18,19 20 p 19,19 1
+  p 15,20 1 p 16,20 1 p 17,20 1 p 18,20 1
+@animation idle_right
+  name: "idle_right"
+  direction: right
+  frames: [cell_0_0, cell_0_1, cell_0_2, cell_0_3]
+  fps: 6
+  loop: true
+  mode: loop
+@animation run_right
+  name: "run_right"
+  direction: right
+  frames: [cell_1_0, cell_1_1, cell_1_2, cell_1_3]
+  fps: 10
+  loop: true
+  mode: loop
+@animation cast_right
+  name: "cast_right"
+  direction: right
+  frames: [cell_2_0, cell_2_1, cell_2_2, cell_2_3]
+  fps: 9
+  loop: false
+  mode: once
+@animation hurt_right
+  name: "hurt_right"
+  direction: right
+  frames: [cell_3_0, cell_3_1, cell_3_2, cell_3_3]
+  fps: 8
+  loop: false
+  mode: once
+@animation idle_left
+  name: "idle_left"
+  direction: left
+  frames: [cell_4_0, cell_4_1, cell_4_2, cell_4_3]
+  fps: 6
+  loop: true
+  mode: loop
+@animation run_left
+  name: "run_left"
+  direction: left
+  frames: [cell_5_0, cell_5_1, cell_5_2, cell_5_3]
+  fps: 10
+  loop: true
+  mode: loop
+@animation cast_left
+  name: "cast_left"
+  direction: left
+  frames: [cell_6_0, cell_6_1, cell_6_2, cell_6_3]
+  fps: 9
+  loop: false
+  mode: once
+@animation hurt_left
+  name: "hurt_left"
+  direction: left
+  frames: [cell_7_0, cell_7_1, cell_7_2, cell_7_3]
+  fps: 8
+  loop: false
+  mode: once
+@end

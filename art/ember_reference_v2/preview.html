@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Ember · Reference-derived Vessels</title>
+<style>body{margin:40px;background:#151823;color:#eadcce;font:16px system-ui}h1{font-size:26px}select,button,input{margin:8px;padding:8px;background:#30344c;color:#fff;border:1px solid #706792}canvas{display:block;image-rendering:pixelated;margin:28px 0;background:repeating-conic-gradient(#24283a 0% 25%,#202436 0% 50%) 0/32px 32px;border:1px solid #514975}p{color:#a89bb3}a{color:#85edee}</style>
+<h1>Ember · 32×32 Bell Vessels</h1>
+<select id="role"><option value="bell_wanderer">Lữ Hành Chuông</option><option value="moon_mender">Y Sư Ánh Trăng</option><option value="bomb_trapper">Kẻ Đặt Bẫy Hỏa Ngục</option><option value="rune_warden">Hộ Vệ Cổ Ngữ</option><option value="space_wraith">Bóng Ma Không Gian</option></select>
+<select id="state"><option>idle</option><option>run</option><option>cast</option><option>hurt</option></select>
+<select id="side"><option value="0">3/4 phải</option><option value="1">3/4 trái</option></select>
+<select id="zoom"><option value="4">4×</option><option value="8" selected>8×</option><option value="12">12×</option><option value="1">1×</option></select>
+<button id="play">Tạm dừng</button><button id="restart">Phát lại</button>
+<canvas id="view" width="256" height="256"></canvas><p id="info"></p><a id="download">Mở file PIX2</a>
+<script>
+const role=document.getElementById('role'),state=document.getElementById('state'),side=document.getElementById('side'),zoom=document.getElementById('zoom'),view=document.getElementById('view'),info=document.getElementById('info'),download=document.getElementById('download');
+let image=new Image(),frame=0,paused=false,last=0;const names=['idle','run','cast','hurt'],fps=[6,10,9,8];
+function load(){image.src=role.value+'/'+role.value+'.png';download.href=role.value+'/'+role.value+'.pix2';frame=0;last=performance.now()}
+function draw(){let z=+zoom.value;view.width=view.height=32*z;let c=view.getContext('2d');c.imageSmoothingEnabled=false;let s=names.indexOf(state.value),row=+side.value*4+s;if(image.complete&&image.naturalWidth)c.drawImage(image,frame*32,row*32,32,32,0,0,32*z,32*z);info.textContent=`32×32 · ${fps[s]} FPS · frame ${frame+1}/4 · ${s<2?'lặp':'một lượt'}`}
+role.onchange=load;for(let el of [state,side])el.onchange=()=>{frame=0;last=performance.now()};document.getElementById('play').onclick=e=>{paused=!paused;e.target.textContent=paused?'Tiếp tục':'Tạm dừng'};document.getElementById('restart').onclick=()=>{frame=0;last=performance.now();paused=false;document.getElementById('play').textContent='Tạm dừng'};
+function tick(t){let s=names.indexOf(state.value);if(!paused&&t-last>=1000/fps[s]){frame=s<2?(frame+1)%4:Math.min(3,frame+1);last=t}draw();requestAnimationFrame(tick)}load();requestAnimationFrame(tick);
+</script>

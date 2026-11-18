@@ -1,0 +1,1640 @@
+fileFormatVersion: 2
+guid: c85c61dab224df24ca9ed72ee3b5887b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5761887477118595366
+    second: moon_mender_0
+  - first:
+      213: 3088125764136009628
+    second: moon_mender_1
+  - first:
+      213: 1967810804444612928
+    second: moon_mender_2
+  - first:
+      213: 8785513334205825784
+    second: moon_mender_3
+  - first:
+      213: 6105069002127659163
+    second: moon_mender_4
+  - first:
+      213: -4805783175728395972
+    second: moon_mender_5
+  - first:
+      213: 5935287878973805200
+    second: moon_mender_6
+  - first:
+      213: -4854701720458324009
+    second: moon_mender_7
+  - first:
+      213: -6894577903024657496
+    second: moon_mender_8
+  - first:
+      213: -6156225122106074743
+    second: moon_mender_9
+  - first:
+      213: -8007264784927086576
+    second: moon_mender_10
+  - first:
+      213: 2778777273767008589
+    second: moon_mender_11
+  - first:
+      213: 5729464825287217961
+    second: moon_mender_12
+  - first:
+      213: 1185435680873918648
+    second: moon_mender_13
+  - first:
+      213: -5185409000281420478
+    second: moon_mender_14
+  - first:
+      213: 8014425899042688622
+    second: moon_mender_15
+  - first:
+      213: 3193882675208910021
+    second: moon_mender_16
+  - first:
+      213: -7125384129500366982
+    second: moon_mender_17
+  - first:
+      213: -3159683555156531627
+    second: moon_mender_18
+  - first:
+      213: 7964500310380019398
+    second: moon_mender_19
+  - first:
+      213: 1913745955850004245
+    second: moon_mender_20
+  - first:
+      213: 8912216442543288550
+    second: moon_mender_21
+  - first:
+      213: 3380195734693859926
+    second: moon_mender_22
+  - first:
+      213: -7913918329282985909
+    second: moon_mender_23
+  - first:
+      213: 7398608633731089012
+    second: moon_mender_24
+  - first:
+      213: 8561696621278919652
+    second: moon_mender_25
+  - first:
+      213: 1202864266397176707
+    second: moon_mender_26
+  - first:
+      213: 7527214296499226096
+    second: moon_mender_27
+  - first:
+      213: -2421534347914106117
+    second: moon_mender_28
+  - first:
+      213: 6709240970445099220
+    second: moon_mender_29
+  - first:
+      213: -6312089534284836397
+    second: moon_mender_30
+  - first:
+      213: -4787136740446688381
+    second: moon_mender_31
+  - first:
+      213: -4325305555223537106
+    second: moon_mender_32
+  - first:
+      213: 2626936805733075531
+    second: moon_mender_33
+  - first:
+      213: -532820529653810621
+    second: moon_mender_34
+  - first:
+      213: -7108730208170315405
+    second: moon_mender_35
+  - first:
+      213: 6076065954204976293
+    second: moon_mender_36
+  - first:
+      213: 8825351303212850752
+    second: moon_mender_37
+  - first:
+      213: -7999181867665086737
+    second: moon_mender_38
+  - first:
+      213: -9213972974169035506
+    second: moon_mender_39
+  - first:
+      213: -7864623898490080065
+    second: moon_mender_40
+  - first:
+      213: -896111506620312595
+    second: moon_mender_41
+  - first:
+      213: -1983451055039096219
+    second: moon_mender_42
+  - first:
+      213: 3596364870645575352
+    second: moon_mender_43
+  - first:
+      213: 340483439126833704
+    second: moon_mender_44
+  - first:
+      213: 2384201067589982598
+    second: moon_mender_45
+  - first:
+      213: -3060246068232986614
+    second: moon_mender_46
+  - first:
+      213: -7008170789425701161
+    second: moon_mender_47
+  - first:
+      213: 4576716384829682308
+    second: moon_mender_48
+  - first:
+      213: 2888704737108734788
+    second: moon_mender_49
+  - first:
+      213: 9055860035555449991
+    second: moon_mender_50
+  - first:
+      213: -3399509865272525911
+    second: moon_mender_51
+  - first:
+      213: -9104882607686331514
+    second: moon_mender_52
+  - first:
+      213: 4938721325890076677
+    second: moon_mender_53
+  - first:
+      213: 565432229900927405
+    second: moon_mender_54
+  - first:
+      213: -314997324789927753
+    second: moon_mender_55
+  - first:
+      213: 5220765532980367475
+    second: moon_mender_56
+  - first:
+      213: 3890184873256420510
+    second: moon_mender_57
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: moon_mender_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 233
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ade039a0ed9a900b0800000000000000
+      internalID: -5761887477118595366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_1
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 228
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9ffe09550a3bda20800000000000000
+      internalID: 3088125764136009628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_2
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 232
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 049c81030811f4b10800000000000000
+      internalID: 1967810804444612928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_3
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 228
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f2cbce64d96ce970800000000000000
+      internalID: 8785513334205825784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_4
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 228
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b90511159ef89b450800000000000000
+      internalID: 6105069002127659163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_5
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 232
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c39092fe9ad6e4db0800000000000000
+      internalID: -4805783175728395972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_6
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 228
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0925ae121e06e5250800000000000000
+      internalID: 5935287878973805200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_7
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 201
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d79a9da182a0acb0800000000000000
+      internalID: -4854701720458324009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_8
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 196
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ab25fd1de98150a0800000000000000
+      internalID: -6894577903024657496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_9
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 196
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98918875ed1b09aa0800000000000000
+      internalID: -6156225122106074743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_10
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 196
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0182de73a1b70e090800000000000000
+      internalID: -8007264784927086576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_11
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 200
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d499fc83533309620800000000000000
+      internalID: 2778777273767008589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_12
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 196
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 923175017e5238f40800000000000000
+      internalID: 5729464825287217961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_13
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 169
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b030969873837010800000000000000
+      internalID: 1185435680873918648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_14
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 164
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24dcc1bdcf9b908b0800000000000000
+      internalID: -5185409000281420478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_15
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 168
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6e412794e5f83f60800000000000000
+      internalID: 8014425899042688622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_16
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 164
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c4f9160f53f25c20800000000000000
+      internalID: 3193882675208910021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_17
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 169
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a77bce8d2ec8d1d90800000000000000
+      internalID: -7125384129500366982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_18
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 164
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 556604c1c8c8624d0800000000000000
+      internalID: -3159683555156531627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_19
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 170
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ce70b5a5d6978e60800000000000000
+      internalID: 7964500310380019398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_20
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 168
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 517a7c0becdfe8a10800000000000000
+      internalID: 1913745955850004245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_21
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 164
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e03033b2ad8eab70800000000000000
+      internalID: 8912216442543288550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_22
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 137
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 652d7b59c1ed8ee20800000000000000
+      internalID: 3380195734693859926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_23
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 132
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4082a1953d1c2290800000000000000
+      internalID: -7913918329282985909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_24
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 136
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4720ea55a532da660800000000000000
+      internalID: 7398608633731089012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_25
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 132
+        width: 22
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ebfdf917b141d670800000000000000
+      internalID: 8561696621278919652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_26
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 132
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3835d9f5dae61b010800000000000000
+      internalID: 1202864266397176707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_27
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 136
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f504139589067860800000000000000
+      internalID: 7527214296499226096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_28
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 132
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfa2c25275bf46ed0800000000000000
+      internalID: -2421534347914106117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_29
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 100
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d090e39d130c1d50800000000000000
+      internalID: 6709240970445099220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_30
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 105
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d1dd7ee204f668a0800000000000000
+      internalID: -6312089534284836397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_31
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 100
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38b24767f7ca09db0800000000000000
+      internalID: -4787136740446688381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_32
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 104
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2a90e3938d69f3c0800000000000000
+      internalID: -4325305555223537106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_33
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 100
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4a8e115b11c47420800000000000000
+      internalID: 2626936805733075531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_34
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 100
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34af2f02d8a0b98f0800000000000000
+      internalID: -532820529653810621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_35
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 104
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3717be11a87b85d90800000000000000
+      internalID: -7108730208170315405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_36
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 68
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a48b300bc5825450800000000000000
+      internalID: 6076065954204976293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_37
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 73
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04e58066042f97a70800000000000000
+      internalID: 8825351303212850752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_38
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 68
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe6a31c09723df090800000000000000
+      internalID: -7999181867665086737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_39
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 68
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0dea90d564612080800000000000000
+      internalID: -9213972974169035506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_40
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 68
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb4737e9b3e3bd290800000000000000
+      internalID: -7864623898490080065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_41
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 72
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de391c0255f5093f0800000000000000
+      internalID: -896111506620312595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_42
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 36
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56a550336cd5974e0800000000000000
+      internalID: -1983451055039096219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_43
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 41
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bee585abcad8e130800000000000000
+      internalID: 3596364870645575352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_44
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 41
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82aee0942e3a9b400800000000000000
+      internalID: 340483439126833704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_45
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 36
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 689deca2d32661120800000000000000
+      internalID: 2384201067589982598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_46
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 40
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a00efa13a62d785d0800000000000000
+      internalID: -3060246068232986614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_47
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 42
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7de13034cc9fdbe90800000000000000
+      internalID: -7008170789425701161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_48
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 36
+        width: 22
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 482bb73bd43c38f30800000000000000
+      internalID: 4576716384829682308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_49
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 36
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 443ba5447adb61820800000000000000
+      internalID: 2888704737108734788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_50
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 40
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78c50fae8b0ecad70800000000000000
+      internalID: 9055860035555449991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_51
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 4
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9abbef5f9c382d0d0800000000000000
+      internalID: -3399509865272525911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_52
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 9
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 683593f0285f4a180800000000000000
+      internalID: -9104882607686331514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_53
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 4
+        width: 22
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 500035221ecd98440800000000000000
+      internalID: 4938721325890076677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_54
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 8
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da14dc70e91d8d700800000000000000
+      internalID: 565432229900927405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_55
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 4
+        width: 22
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b0b2be1a97e0abf0800000000000000
+      internalID: -314997324789927753
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_56
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 4
+        width: 18
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 370d5e86792e37840800000000000000
+      internalID: 5220765532980367475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: moon_mender_57
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 8
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e940c09f786bcf530800000000000000
+      internalID: 3890184873256420510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      moon_mender_0: -5761887477118595366
+      moon_mender_1: 3088125764136009628
+      moon_mender_10: -8007264784927086576
+      moon_mender_11: 2778777273767008589
+      moon_mender_12: 5729464825287217961
+      moon_mender_13: 1185435680873918648
+      moon_mender_14: -5185409000281420478
+      moon_mender_15: 8014425899042688622
+      moon_mender_16: 3193882675208910021
+      moon_mender_17: -7125384129500366982
+      moon_mender_18: -3159683555156531627
+      moon_mender_19: 7964500310380019398
+      moon_mender_2: 1967810804444612928
+      moon_mender_20: 1913745955850004245
+      moon_mender_21: 8912216442543288550
+      moon_mender_22: 3380195734693859926
+      moon_mender_23: -7913918329282985909
+      moon_mender_24: 7398608633731089012
+      moon_mender_25: 8561696621278919652
+      moon_mender_26: 1202864266397176707
+      moon_mender_27: 7527214296499226096
+      moon_mender_28: -2421534347914106117
+      moon_mender_29: 6709240970445099220
+      moon_mender_3: 8785513334205825784
+      moon_mender_30: -6312089534284836397
+      moon_mender_31: -4787136740446688381
+      moon_mender_32: -4325305555223537106
+      moon_mender_33: 2626936805733075531
+      moon_mender_34: -532820529653810621
+      moon_mender_35: -7108730208170315405
+      moon_mender_36: 6076065954204976293
+      moon_mender_37: 8825351303212850752
+      moon_mender_38: -7999181867665086737
+      moon_mender_39: -9213972974169035506
+      moon_mender_4: 6105069002127659163
+      moon_mender_40: -7864623898490080065
+      moon_mender_41: -896111506620312595
+      moon_mender_42: -1983451055039096219
+      moon_mender_43: 3596364870645575352
+      moon_mender_44: 340483439126833704
+      moon_mender_45: 2384201067589982598
+      moon_mender_46: -3060246068232986614
+      moon_mender_47: -7008170789425701161
+      moon_mender_48: 4576716384829682308
+      moon_mender_49: 2888704737108734788
+      moon_mender_5: -4805783175728395972
+      moon_mender_50: 9055860035555449991
+      moon_mender_51: -3399509865272525911
+      moon_mender_52: -9104882607686331514
+      moon_mender_53: 4938721325890076677
+      moon_mender_54: 565432229900927405
+      moon_mender_55: -314997324789927753
+      moon_mender_56: 5220765532980367475
+      moon_mender_57: 3890184873256420510
+      moon_mender_6: 5935287878973805200
+      moon_mender_7: -4854701720458324009
+      moon_mender_8: -6894577903024657496
+      moon_mender_9: -6156225122106074743
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

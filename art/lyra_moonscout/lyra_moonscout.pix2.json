@@ -1,0 +1,711 @@
+{
+  "meta": {
+    "image": "lyra_moonscout.png",
+    "cellWidth": 32,
+    "cellHeight": 32,
+    "size": {
+      "w": 256,
+      "h": 256
+    }
+  },
+  "frames": [
+    {
+      "name": "idle_right_0",
+      "x": 0,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_1",
+      "x": 32,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_2",
+      "x": 64,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_3",
+      "x": 96,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_4",
+      "x": 128,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_5",
+      "x": 160,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_6",
+      "x": 192,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_right_7",
+      "x": 224,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_0",
+      "x": 0,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_1",
+      "x": 32,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_2",
+      "x": 64,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_3",
+      "x": 96,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_4",
+      "x": 128,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_5",
+      "x": 160,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_6",
+      "x": 192,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_right_7",
+      "x": 224,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_0",
+      "x": 0,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_1",
+      "x": 32,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_2",
+      "x": 64,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_3",
+      "x": 96,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_4",
+      "x": 128,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_5",
+      "x": 160,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_6",
+      "x": 192,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_right_7",
+      "x": 224,
+      "y": 64,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_0",
+      "x": 0,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_1",
+      "x": 32,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_2",
+      "x": 64,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_3",
+      "x": 96,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_4",
+      "x": 128,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_5",
+      "x": 160,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_6",
+      "x": 192,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_right_7",
+      "x": 224,
+      "y": 96,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_0",
+      "x": 0,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_1",
+      "x": 32,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_2",
+      "x": 64,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_3",
+      "x": 96,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_4",
+      "x": 128,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_5",
+      "x": 160,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_6",
+      "x": 192,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "idle_left_7",
+      "x": 224,
+      "y": 128,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_0",
+      "x": 0,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_1",
+      "x": 32,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_2",
+      "x": 64,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_3",
+      "x": 96,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_4",
+      "x": 128,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_5",
+      "x": 160,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_6",
+      "x": 192,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "run_left_7",
+      "x": 224,
+      "y": 160,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_0",
+      "x": 0,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_1",
+      "x": 32,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_2",
+      "x": 64,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_3",
+      "x": 96,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_4",
+      "x": 128,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_5",
+      "x": 160,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_6",
+      "x": 192,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "cast_left_7",
+      "x": 224,
+      "y": 192,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_0",
+      "x": 0,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_1",
+      "x": 32,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_2",
+      "x": 64,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_3",
+      "x": 96,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_4",
+      "x": 128,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_5",
+      "x": 160,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_6",
+      "x": 192,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "hurt_left_7",
+      "x": 224,
+      "y": 224,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    }
+  ],
+  "animations": [
+    {
+      "clipName": "idle_right",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "idle_right_0",
+        "idle_right_1",
+        "idle_right_2",
+        "idle_right_3",
+        "idle_right_4",
+        "idle_right_5",
+        "idle_right_6",
+        "idle_right_7"
+      ]
+    },
+    {
+      "clipName": "run_right",
+      "fps": 10,
+      "loop": true,
+      "frameNames": [
+        "run_right_0",
+        "run_right_1",
+        "run_right_2",
+        "run_right_3",
+        "run_right_4",
+        "run_right_5",
+        "run_right_6",
+        "run_right_7"
+      ]
+    },
+    {
+      "clipName": "cast_right",
+      "fps": 12,
+      "loop": false,
+      "frameNames": [
+        "cast_right_0",
+        "cast_right_1",
+        "cast_right_2",
+        "cast_right_3",
+        "cast_right_4",
+        "cast_right_5",
+        "cast_right_6",
+        "cast_right_7"
+      ]
+    },
+    {
+      "clipName": "hurt_right",
+      "fps": 10,
+      "loop": false,
+      "frameNames": [
+        "hurt_right_0",
+        "hurt_right_1",
+        "hurt_right_2",
+        "hurt_right_3",
+        "hurt_right_4",
+        "hurt_right_5",
+        "hurt_right_6",
+        "hurt_right_7"
+      ]
+    },
+    {
+      "clipName": "idle_left",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "idle_left_0",
+        "idle_left_1",
+        "idle_left_2",
+        "idle_left_3",
+        "idle_left_4",
+        "idle_left_5",
+        "idle_left_6",
+        "idle_left_7"
+      ]
+    },
+    {
+      "clipName": "run_left",
+      "fps": 10,
+      "loop": true,
+      "frameNames": [
+        "run_left_0",
+        "run_left_1",
+        "run_left_2",
+        "run_left_3",
+        "run_left_4",
+        "run_left_5",
+        "run_left_6",
+        "run_left_7"
+      ]
+    },
+    {
+      "clipName": "cast_left",
+      "fps": 12,
+      "loop": false,
+      "frameNames": [
+        "cast_left_0",
+        "cast_left_1",
+        "cast_left_2",
+        "cast_left_3",
+        "cast_left_4",
+        "cast_left_5",
+        "cast_left_6",
+        "cast_left_7"
+      ]
+    },
+    {
+      "clipName": "hurt_left",
+      "fps": 10,
+      "loop": false,
+      "frameNames": [
+        "hurt_left_0",
+        "hurt_left_1",
+        "hurt_left_2",
+        "hurt_left_3",
+        "hurt_left_4",
+        "hurt_left_5",
+        "hurt_left_6",
+        "hurt_left_7"
+      ]
+    }
+  ]
+}

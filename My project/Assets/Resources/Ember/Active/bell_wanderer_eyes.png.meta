@@ -1,0 +1,912 @@
+fileFormatVersion: 2
+guid: 9b1e78d3be9ea424eb04841110d28ad2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4534773051335985170
+    second: bell_wanderer_eyes_0
+  - first:
+      213: 1530414884323796886
+    second: bell_wanderer_eyes_1
+  - first:
+      213: -8746723677004041891
+    second: bell_wanderer_eyes_2
+  - first:
+      213: -1770829951817676489
+    second: bell_wanderer_eyes_3
+  - first:
+      213: 2759269265526862093
+    second: bell_wanderer_eyes_4
+  - first:
+      213: 104038134474854807
+    second: bell_wanderer_eyes_5
+  - first:
+      213: -1819323973352793821
+    second: bell_wanderer_eyes_6
+  - first:
+      213: -5281709172426288865
+    second: bell_wanderer_eyes_7
+  - first:
+      213: -7082985228779599033
+    second: bell_wanderer_eyes_8
+  - first:
+      213: 2668991024860327986
+    second: bell_wanderer_eyes_9
+  - first:
+      213: 8749003548258169664
+    second: bell_wanderer_eyes_10
+  - first:
+      213: -6601001797131547209
+    second: bell_wanderer_eyes_11
+  - first:
+      213: -6913823022418896074
+    second: bell_wanderer_eyes_12
+  - first:
+      213: 2806140400404315707
+    second: bell_wanderer_eyes_13
+  - first:
+      213: -610250763917316532
+    second: bell_wanderer_eyes_14
+  - first:
+      213: 1904288928308491642
+    second: bell_wanderer_eyes_15
+  - first:
+      213: -6340768436085067620
+    second: bell_wanderer_eyes_16
+  - first:
+      213: 8062322050352426070
+    second: bell_wanderer_eyes_17
+  - first:
+      213: -8398084633739807147
+    second: bell_wanderer_eyes_18
+  - first:
+      213: 3166084524759168585
+    second: bell_wanderer_eyes_19
+  - first:
+      213: 2038226587453990022
+    second: bell_wanderer_eyes_20
+  - first:
+      213: 2283713101781697928
+    second: bell_wanderer_eyes_21
+  - first:
+      213: -3722774668031027094
+    second: bell_wanderer_eyes_22
+  - first:
+      213: 6655550359771983438
+    second: bell_wanderer_eyes_23
+  - first:
+      213: -5695203804970059248
+    second: bell_wanderer_eyes_24
+  - first:
+      213: 4641064783174660501
+    second: bell_wanderer_eyes_25
+  - first:
+      213: 5102069552904895147
+    second: bell_wanderer_eyes_26
+  - first:
+      213: -8674223099477273121
+    second: bell_wanderer_eyes_27
+  - first:
+      213: 597290927509828320
+    second: bell_wanderer_eyes_28
+  - first:
+      213: 5154772432669062278
+    second: bell_wanderer_eyes_29
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_0
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee7ba12afef3111c0800000000000000
+      internalID: -4534773051335985170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_1
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69727139a302d3510800000000000000
+      internalID: 1530414884323796886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_2
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 236
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d51fcab68256d9680800000000000000
+      internalID: -8746723677004041891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_3
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 203
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73909448a8fbc67e0800000000000000
+      internalID: -1770829951817676489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_4
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d01b16b17c4ea4620800000000000000
+      internalID: 2759269265526862093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_5
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 204
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 791d770d12e917100800000000000000
+      internalID: 104038134474854807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_6
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32954f44c7670c6e0800000000000000
+      internalID: -1819323973352793821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_7
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f11db9acd7993b6b0800000000000000
+      internalID: -5281709172426288865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_8
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 170
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74bc041367e24bd90800000000000000
+      internalID: -7082985228779599033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_9
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 172
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 230718932392a0520800000000000000
+      internalID: 2668991024860327986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_10
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0437f887f54ba6970800000000000000
+      internalID: 8749003548258169664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_11
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bd4240d6d78464a0800000000000000
+      internalID: -6601001797131547209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_12
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63bddc4979a2d00a0800000000000000
+      internalID: -6913823022418896074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_13
+      rect:
+        serializedVersion: 2
+        x: 77
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3eb8fb93d961f620800000000000000
+      internalID: 2806140400404315707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_14
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4e2cc8d924f787f0800000000000000
+      internalID: -610250763917316532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_15
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a757981e0b46d6a10800000000000000
+      internalID: 1904288928308491642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_16
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c90f324c3b01108a0800000000000000
+      internalID: -6340768436085067620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_17
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 108
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65c2e04503f13ef60800000000000000
+      internalID: 8062322050352426070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_18
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 75
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 556b5444582047b80800000000000000
+      internalID: -8398084633739807147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_19
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 946b123c91130fb20800000000000000
+      internalID: 3166084524759168585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_20
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 76
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 684a3f4484c394c10800000000000000
+      internalID: 2038226587453990022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_21
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8858a9867f061bf10800000000000000
+      internalID: 2283713101781697928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_22
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a68103dd92c065cc0800000000000000
+      internalID: -3722774668031027094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_23
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 42
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4eaee22ac34d5c50800000000000000
+      internalID: 6655550359771983438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_24
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 44
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01a7e49505296f0b0800000000000000
+      internalID: -5695203804970059248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_25
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59173b4b4df586040800000000000000
+      internalID: 4641064783174660501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_26
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: baa7b38f9313ec640800000000000000
+      internalID: 5102069552904895147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_27
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd55b2d8c08fe9780800000000000000
+      internalID: -8674223099477273121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_28
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e279c91fe00a4800800000000000000
+      internalID: 597290927509828320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bell_wanderer_eyes_29
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6843733673e698740800000000000000
+      internalID: 5154772432669062278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      bell_wanderer_eyes_0: -4534773051335985170
+      bell_wanderer_eyes_1: 1530414884323796886
+      bell_wanderer_eyes_10: 8749003548258169664
+      bell_wanderer_eyes_11: -6601001797131547209
+      bell_wanderer_eyes_12: -6913823022418896074
+      bell_wanderer_eyes_13: 2806140400404315707
+      bell_wanderer_eyes_14: -610250763917316532
+      bell_wanderer_eyes_15: 1904288928308491642
+      bell_wanderer_eyes_16: -6340768436085067620
+      bell_wanderer_eyes_17: 8062322050352426070
+      bell_wanderer_eyes_18: -8398084633739807147
+      bell_wanderer_eyes_19: 3166084524759168585
+      bell_wanderer_eyes_2: -8746723677004041891
+      bell_wanderer_eyes_20: 2038226587453990022
+      bell_wanderer_eyes_21: 2283713101781697928
+      bell_wanderer_eyes_22: -3722774668031027094
+      bell_wanderer_eyes_23: 6655550359771983438
+      bell_wanderer_eyes_24: -5695203804970059248
+      bell_wanderer_eyes_25: 4641064783174660501
+      bell_wanderer_eyes_26: 5102069552904895147
+      bell_wanderer_eyes_27: -8674223099477273121
+      bell_wanderer_eyes_28: 597290927509828320
+      bell_wanderer_eyes_29: 5154772432669062278
+      bell_wanderer_eyes_3: -1770829951817676489
+      bell_wanderer_eyes_4: 2759269265526862093
+      bell_wanderer_eyes_5: 104038134474854807
+      bell_wanderer_eyes_6: -1819323973352793821
+      bell_wanderer_eyes_7: -5281709172426288865
+      bell_wanderer_eyes_8: -7082985228779599033
+      bell_wanderer_eyes_9: 2668991024860327986
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,1796 @@
+fileFormatVersion: 2
+guid: 5de4125bfb4023549a3be049133c7d74
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6460876876844643711
+    second: lyra_moonscout_0
+  - first:
+      213: 8499967276818370139
+    second: lyra_moonscout_1
+  - first:
+      213: -5548108444152814612
+    second: lyra_moonscout_2
+  - first:
+      213: -6580679673705218371
+    second: lyra_moonscout_3
+  - first:
+      213: -8407475173908917589
+    second: lyra_moonscout_4
+  - first:
+      213: -3488103868174600842
+    second: lyra_moonscout_5
+  - first:
+      213: 21122073080197651
+    second: lyra_moonscout_6
+  - first:
+      213: -4806606285146082755
+    second: lyra_moonscout_7
+  - first:
+      213: 7917807142533522934
+    second: lyra_moonscout_8
+  - first:
+      213: 1423612911280504350
+    second: lyra_moonscout_9
+  - first:
+      213: 7440875379688271920
+    second: lyra_moonscout_10
+  - first:
+      213: -5801381883293395643
+    second: lyra_moonscout_11
+  - first:
+      213: -5661078304007067533
+    second: lyra_moonscout_12
+  - first:
+      213: 6841642017060455615
+    second: lyra_moonscout_13
+  - first:
+      213: -7374447340761987306
+    second: lyra_moonscout_14
+  - first:
+      213: 1375411028030645203
+    second: lyra_moonscout_15
+  - first:
+      213: 5626059360708333155
+    second: lyra_moonscout_16
+  - first:
+      213: -3701039542088918044
+    second: lyra_moonscout_17
+  - first:
+      213: -420770263705793503
+    second: lyra_moonscout_18
+  - first:
+      213: -945138722085315968
+    second: lyra_moonscout_19
+  - first:
+      213: -3757399539034726028
+    second: lyra_moonscout_20
+  - first:
+      213: -7514385570168333986
+    second: lyra_moonscout_21
+  - first:
+      213: 2159523180573525906
+    second: lyra_moonscout_22
+  - first:
+      213: -5486202222522680088
+    second: lyra_moonscout_23
+  - first:
+      213: 157760841618173838
+    second: lyra_moonscout_24
+  - first:
+      213: 2026225330589652752
+    second: lyra_moonscout_25
+  - first:
+      213: -6142715705514760368
+    second: lyra_moonscout_26
+  - first:
+      213: -2159963948650404533
+    second: lyra_moonscout_27
+  - first:
+      213: 8706758036744849928
+    second: lyra_moonscout_28
+  - first:
+      213: -393962602002110465
+    second: lyra_moonscout_29
+  - first:
+      213: 3012964930609013541
+    second: lyra_moonscout_30
+  - first:
+      213: -3245575962589833206
+    second: lyra_moonscout_31
+  - first:
+      213: 1690284540728671782
+    second: lyra_moonscout_32
+  - first:
+      213: 3948580106867306257
+    second: lyra_moonscout_33
+  - first:
+      213: 8472105752684838618
+    second: lyra_moonscout_34
+  - first:
+      213: 8206248632529539910
+    second: lyra_moonscout_35
+  - first:
+      213: 2132292750247823711
+    second: lyra_moonscout_36
+  - first:
+      213: -9069140412544148358
+    second: lyra_moonscout_37
+  - first:
+      213: 577337600818446981
+    second: lyra_moonscout_38
+  - first:
+      213: -9147315256738365514
+    second: lyra_moonscout_39
+  - first:
+      213: -6099858523078605954
+    second: lyra_moonscout_40
+  - first:
+      213: -1844709697689658797
+    second: lyra_moonscout_41
+  - first:
+      213: -4133943288261129520
+    second: lyra_moonscout_42
+  - first:
+      213: 1940072961368780919
+    second: lyra_moonscout_43
+  - first:
+      213: 8303848763207246368
+    second: lyra_moonscout_44
+  - first:
+      213: 9139019661706283006
+    second: lyra_moonscout_45
+  - first:
+      213: 7121622800731719843
+    second: lyra_moonscout_46
+  - first:
+      213: 1350567868293027979
+    second: lyra_moonscout_47
+  - first:
+      213: -2250602601792293748
+    second: lyra_moonscout_48
+  - first:
+      213: -4067897624940402916
+    second: lyra_moonscout_49
+  - first:
+      213: 4948460052436166849
+    second: lyra_moonscout_50
+  - first:
+      213: -847633186800337520
+    second: lyra_moonscout_51
+  - first:
+      213: -4513774624597011377
+    second: lyra_moonscout_52
+  - first:
+      213: 6345756175635388240
+    second: lyra_moonscout_53
+  - first:
+      213: 1040237071963227851
+    second: lyra_moonscout_54
+  - first:
+      213: -970897076877210275
+    second: lyra_moonscout_55
+  - first:
+      213: -9063724705468175223
+    second: lyra_moonscout_56
+  - first:
+      213: -5509297966076356344
+    second: lyra_moonscout_57
+  - first:
+      213: -4338076474671863764
+    second: lyra_moonscout_58
+  - first:
+      213: -6375269390336022258
+    second: lyra_moonscout_59
+  - first:
+      213: 2181175236429131679
+    second: lyra_moonscout_60
+  - first:
+      213: -3506489610656797923
+    second: lyra_moonscout_61
+  - first:
+      213: 3461905627486281779
+    second: lyra_moonscout_62
+  - first:
+      213: 5509879549191826428
+    second: lyra_moonscout_63
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: lyra_moonscout_0
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f753cddc945a9a950800000000000000
+      internalID: 6460876876844643711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_1
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5e04391433f5f570800000000000000
+      internalID: 8499967276818370139
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_2
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce32de2e3c82103b0800000000000000
+      internalID: -5548108444152814612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_3
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 225
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dbeba24e3babca4a0800000000000000
+      internalID: -6580679673705218371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_4
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 225
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba25e31cfd5a25b80800000000000000
+      internalID: -8407475173908917589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_5
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67579cd3304c79fc0800000000000000
+      internalID: -3488103868174600842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_6
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3127dded96a0b4000800000000000000
+      internalID: 21122073080197651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_7
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 225
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3235b6dc018b4db0800000000000000
+      internalID: -4806606285146082755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_8
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 193
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f5e2c255a3b1ed60800000000000000
+      internalID: 7917807142533522934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_9
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 193
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1eb8827660b1c310800000000000000
+      internalID: 1423612911280504350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_10
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 193
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 030f4400cbc434760800000000000000
+      internalID: 7440875379688271920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_11
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 194
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54519e70ae95d7fa0800000000000000
+      internalID: -5801381883293395643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_12
+      rect:
+        serializedVersion: 2
+        x: 133
+        y: 193
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 378ecf3b64fcf61b0800000000000000
+      internalID: -5661078304007067533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_13
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 193
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb4864b7a2562fe50800000000000000
+      internalID: 6841642017060455615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_14
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 193
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 617ce0f0733b8a990800000000000000
+      internalID: -7374447340761987306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_15
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 194
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d3ebe1fa01761310800000000000000
+      internalID: 1375411028030645203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_16
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 161
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36e08403e27c31e40800000000000000
+      internalID: 5626059360708333155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_17
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 161
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4eb9d1a352443acc0800000000000000
+      internalID: -3701039542088918044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_18
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 161
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12cc4cbacaf192af0800000000000000
+      internalID: -420770263705793503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_19
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 161
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08a53aef65132e2f0800000000000000
+      internalID: -945138722085315968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_20
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 161
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4716e9cd6090bdbc0800000000000000
+      internalID: -3757399539034726028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_21
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 161
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e599bc8032a87b790800000000000000
+      internalID: -7514385570168333986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_22
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 161
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2978e4e14ea28fd10800000000000000
+      internalID: 2159523180573525906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_23
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 161
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ecb39055281dd3b0800000000000000
+      internalID: -5486202222522680088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_24
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8f2e1c46aa703200800000000000000
+      internalID: 157760841618173838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_25
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 129
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 017d1b8e3399e1c10800000000000000
+      internalID: 2026225330589652752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_26
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 129
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05764908c90b0caa0800000000000000
+      internalID: -6142715705514760368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_27
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b45ea019b344602e0800000000000000
+      internalID: -2159963948650404533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_28
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80a4475dd4e94d870800000000000000
+      internalID: 8706758036744849928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_29
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff720ecc91d588af0800000000000000
+      internalID: -393962602002110465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_30
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 523e8a914a330d920800000000000000
+      internalID: 3012964930609013541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_31
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 129
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a08594a9bd565f2d0800000000000000
+      internalID: -3245575962589833206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_32
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62e777395d8157710800000000000000
+      internalID: 1690284540728671782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_33
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11feffccfac2cc630800000000000000
+      internalID: 3948580106867306257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_34
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: adeb2508b47f29570800000000000000
+      internalID: 8472105752684838618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_35
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 97
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 643557817a372e170800000000000000
+      internalID: 8206248632529539910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_36
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 97
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5989af75fc679d10800000000000000
+      internalID: 2132292750247823711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_37
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7c9a2c58d0f32280800000000000000
+      internalID: -9069140412544148358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_38
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58282443d7d130800800000000000000
+      internalID: 577337600818446981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_39
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 97
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bf39911d353e0180800000000000000
+      internalID: -9147315256738365514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_40
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 65
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e73c2cfddf2f85ba0800000000000000
+      internalID: -6099858523078605954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_41
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 65
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35a5d7bbd464666e0800000000000000
+      internalID: -1844709697689658797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_42
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 65
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dac59d5b7841a6c0800000000000000
+      internalID: -4133943288261129520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_43
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 66
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 770f9b454168cea10800000000000000
+      internalID: 1940072961368780919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_44
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 65
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 022e88754723d3370800000000000000
+      internalID: 8303848763207246368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_45
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 65
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef7405336f154de70800000000000000
+      internalID: 9139019661706283006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_46
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 65
+        width: 24
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a8cfed843615d260800000000000000
+      internalID: 7121622800731719843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_47
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 66
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8899a2125e2eb210800000000000000
+      internalID: 1350567868293027979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_48
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 33
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c84b99d9bd044c0e0800000000000000
+      internalID: -2250602601792293748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_49
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 33
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c17a5caa9aceb87c0800000000000000
+      internalID: -4067897624940402916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_50
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 33
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c82baa13367ca440800000000000000
+      internalID: 4948460052436166849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_51
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 33
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09dfee88b1a9c34f0800000000000000
+      internalID: -847633186800337520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_52
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 33
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4419b8d4e9db51c0800000000000000
+      internalID: -4513774624597011377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_53
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 33
+        width: 28
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0571df7de97a01850800000000000000
+      internalID: 6345756175635388240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_54
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 33
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc68f840b1aaf6e00800000000000000
+      internalID: 1040237071963227851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_55
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 33
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5dc44ba04ea682f0800000000000000
+      internalID: -970897076877210275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_56
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98c23ace66e273280800000000000000
+      internalID: -9063724705468175223
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_57
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 1
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8099c3a70ba0b83b0800000000000000
+      internalID: -5509297966076356344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_58
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 1
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2864be2e6e0cc3c0800000000000000
+      internalID: -4338076474671863764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_59
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e09a991644e7687a0800000000000000
+      internalID: -6375269390336022258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_60
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9fac383257154e10800000000000000
+      internalID: 2181175236429131679
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_61
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1b243cf642765fc0800000000000000
+      internalID: -3506489610656797923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_62
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 330ee3483d82b0030800000000000000
+      internalID: 3461905627486281779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: lyra_moonscout_63
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 1
+        width: 24
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfba4c4e146077c40800000000000000
+      internalID: 5509879549191826428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      lyra_moonscout_0: 6460876876844643711
+      lyra_moonscout_1: 8499967276818370139
+      lyra_moonscout_10: 7440875379688271920
+      lyra_moonscout_11: -5801381883293395643
+      lyra_moonscout_12: -5661078304007067533
+      lyra_moonscout_13: 6841642017060455615
+      lyra_moonscout_14: -7374447340761987306
+      lyra_moonscout_15: 1375411028030645203
+      lyra_moonscout_16: 5626059360708333155
+      lyra_moonscout_17: -3701039542088918044
+      lyra_moonscout_18: -420770263705793503
+      lyra_moonscout_19: -945138722085315968
+      lyra_moonscout_2: -5548108444152814612
+      lyra_moonscout_20: -3757399539034726028
+      lyra_moonscout_21: -7514385570168333986
+      lyra_moonscout_22: 2159523180573525906
+      lyra_moonscout_23: -5486202222522680088
+      lyra_moonscout_24: 157760841618173838
+      lyra_moonscout_25: 2026225330589652752
+      lyra_moonscout_26: -6142715705514760368
+      lyra_moonscout_27: -2159963948650404533
+      lyra_moonscout_28: 8706758036744849928
+      lyra_moonscout_29: -393962602002110465
+      lyra_moonscout_3: -6580679673705218371
+      lyra_moonscout_30: 3012964930609013541
+      lyra_moonscout_31: -3245575962589833206
+      lyra_moonscout_32: 1690284540728671782
+      lyra_moonscout_33: 3948580106867306257
+      lyra_moonscout_34: 8472105752684838618
+      lyra_moonscout_35: 8206248632529539910
+      lyra_moonscout_36: 2132292750247823711
+      lyra_moonscout_37: -9069140412544148358
+      lyra_moonscout_38: 577337600818446981
+      lyra_moonscout_39: -9147315256738365514
+      lyra_moonscout_4: -8407475173908917589
+      lyra_moonscout_40: -6099858523078605954
+      lyra_moonscout_41: -1844709697689658797
+      lyra_moonscout_42: -4133943288261129520
+      lyra_moonscout_43: 1940072961368780919
+      lyra_moonscout_44: 8303848763207246368
+      lyra_moonscout_45: 9139019661706283006
+      lyra_moonscout_46: 7121622800731719843
+      lyra_moonscout_47: 1350567868293027979
+      lyra_moonscout_48: -2250602601792293748
+      lyra_moonscout_49: -4067897624940402916
+      lyra_moonscout_5: -3488103868174600842
+      lyra_moonscout_50: 4948460052436166849
+      lyra_moonscout_51: -847633186800337520
+      lyra_moonscout_52: -4513774624597011377
+      lyra_moonscout_53: 6345756175635388240
+      lyra_moonscout_54: 1040237071963227851
+      lyra_moonscout_55: -970897076877210275
+      lyra_moonscout_56: -9063724705468175223
+      lyra_moonscout_57: -5509297966076356344
+      lyra_moonscout_58: -4338076474671863764
+      lyra_moonscout_59: -6375269390336022258
+      lyra_moonscout_6: 21122073080197651
+      lyra_moonscout_60: 2181175236429131679
+      lyra_moonscout_61: -3506489610656797923
+      lyra_moonscout_62: 3461905627486281779
+      lyra_moonscout_63: 5509879549191826428
+      lyra_moonscout_7: -4806606285146082755
+      lyra_moonscout_8: 7917807142533522934
+      lyra_moonscout_9: 1423612911280504350
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

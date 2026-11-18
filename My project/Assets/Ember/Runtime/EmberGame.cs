@@ -1,0 +1,653 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace Ember
+{
+    // Scene entry point. Presentation is a client of the host simulation.
+    public sealed partial class EmberGame:MonoBehaviour
+    {
+        [NonSerialized]public EmberWorld World;public Snapshot State;public Profile Profile;
+        EmberLan lan;bool network,host=true,craftOpen,ranges=true,menu=true,rewarded,moba,saveBlocked;int localId=1;
+        Camera cam;GameObject mapRoot,entityRoot;float accumulator,sendClock,joinClock;int renderedSeed=int.MinValue;byte[] currentTiles;
+        readonly Dictionary<int,SpriteRenderer> visibleTrees=new Dictionary<int,SpriteRenderer>();Vector2Int visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+        readonly Dictionary<string,SpriteRenderer> renderers=new Dictionary<string,SpriteRenderer>();
+        readonly Dictionary<string,Sprite[]> atlases=new Dictionary<string,Sprite[]>();
+        readonly Dictionary<string,Sprite> primitives=new Dictionary<string,Sprite>();
+        readonly Queue<V2> path=new Queue<V2>();
+        V2 clickMarker;float clickMarkerUntil;
+        readonly HashSet<string> touched=new HashSet<string>();
+        string installationId;
+        const string InstallationIdPref="Ember.PlayerId";
+        const string DisplayNamePref="Ember.DisplayName";
+
+        void InitializeIdentity()
+        {
+            nameText=PlayerPrefs.GetString(DisplayNamePref,L("Lữ khách","Traveler"));
+            installationId=PlayerPrefs.GetString(InstallationIdPref,"");
+            if(!Guid.TryParseExact(installationId,"N",out var id)||id==Guid.Empty)
+            {
+                installationId=Guid.NewGuid().ToString("N");
+                PlayerPrefs.SetString(InstallationIdPref,installationId);
+            }
+            if(debugSession)installationId=Guid.NewGuid().ToString("N");
+        }
+
+        Command intent=new Command();string nameText="Lữ khách",address="127.0.0.1",password="ember",savePassword="",notice="",saveFile="";
+        int selected,roomCapacity=4,snapshotSequence,netExpected=2;float clock;Vector2 scroll;GUIStyle title,label,small;Texture2D white;Material spriteMaterial;AudioSource audioSource;AudioClip tone,footstep;float phantomClock;bool netSmoke,netSmokeValidated;
+        string roomName="Đội giữ lửa",brokerAddress="140.245.39.19",joinRoomCode="";bool readyWanted,usePublicBroker,fixedRoomCode;
+        readonly Dictionary<int,(string clip,float began)> animationState=new Dictionary<int,(string,float)>();
+        static readonly string[] Art={"lyra_moonscout","moon_mender","bomb_trapper","rune_warden","space_wraith","little_moone"};
+        static readonly Color Cyan=new Color(.35f,.95f,.9f),Coral=new Color(1,.34f,.4f),Gold=new Color(1,.8f,.4f);
+
+        void Awake()
+        {
+            InitializeDiagnostics();
+            EmberLanguage.English=PlayerPrefs.GetInt("Ember.Language",0)==1;Application.targetFrameRate=60;Application.runInBackground=true;QualitySettings.vSyncCount=0;
+            cam=Camera.main;if(cam==null)cam=new GameObject("Ember camera").AddComponent<Camera>();
+            cam.orthographic=true;cam.orthographicSize=10;cam.backgroundColor=new Color(.04f,.05f,.09f);cam.clearFlags=CameraClearFlags.SolidColor;
+            entityRoot=new GameObject("Ember entities");mapRoot=new GameObject("Ember map");
+            spriteMaterial=Resources.Load<Material>("Ember/EmberSprites");
+            SetupLighting();
+            audioSource=gameObject.AddComponent<AudioSource>();tone=MakeTone(440,.12f);footstep=MakeTone(90,.08f);
+            InitializeSettings();
+            LoadHandPivots();
+            InitializeIdentity();
+            if(FindAnyObjectByType<AudioListener>()==null)cam.gameObject.AddComponent<AudioListener>();
+            white=new Texture2D(1,1);white.SetPixel(0,0,Color.white);white.Apply();
+            LoadProfile();selected=Profile.SelectedVessel;
+            if(!Profile.CanPlay(selected))selected=0;
+            NewWorld(Environment.TickCount);
+            foreach(var arg in Environment.GetCommandLineArgs())
+            {
+                if(arg.StartsWith("--ember-broker=")){brokerAddress=arg.Substring(15);usePublicBroker=true;}
+                if(arg.StartsWith("--ember-room=")){joinRoomCode=arg.Substring(13).ToUpperInvariant();fixedRoomCode=true;}
+                if(arg.StartsWith("--ember-address="))address=arg.Substring(16);
+            }
+            foreach(var arg in Environment.GetCommandLineArgs())if(arg.StartsWith("--ember-players="))int.TryParse(arg.Substring(16),out netExpected);
+            if(Environment.GetCommandLineArgs().Contains("--ember-lang=en"))EmberLanguage.English=true;if(Environment.GetCommandLineArgs().Contains("--ember-lang=vi"))EmberLanguage.English=false;
+            netExpected=Mathf.Clamp(netExpected,1,4);
+            if(Environment.GetCommandLineArgs().Contains("--ember-smoke")){StartSolo();Invoke(nameof(SmokeCheck),3);}
+            if(Environment.GetCommandLineArgs().Contains("--ember-net-host")){netSmoke=true;roomCapacity=netExpected;password="ember-loopback-test";HostGame();Invoke(nameof(NetSmokeCheck),35);}
+            if(Environment.GetCommandLineArgs().Contains("--ember-net-client")){netSmoke=true;password="ember-loopback-test";JoinGame();Invoke(nameof(NetSmokeCheck),35);}
+            ConfigureDiagnosticScenario();
+        }
+        void NetSmokeCheck()
+        {
+            if(netSmokeValidated)return;netSmokeValidated=true;CancelInvoke(nameof(NetSmokeCheck));
+            bool ok=State!=null&&State.Phase==Phase.Explore&&State.Players.Length==netExpected&&State.Players.All(p=>p.Id==1||p.Pos.X>(p.Id-1)*1.5f+1);
+            Debug.Log("EMBER_NET_SMOKE "+(ok?"PASS":"FAIL")+" host="+host+" expected="+netExpected+" players="+(State?.Players?.Length??0)+" phase="+State?.Phase);Invoke(nameof(SmokeQuit),5);
+        }
+        void SmokeCheck()
+        {
+            bool ok=World!=null&&State.Tick>30&&State.Players.Length==1&&renderers.Count>0&&atlases.Count>0;
+            Debug.Log("EMBER_SMOKE "+(ok?"PASS":"FAIL")+" tick="+State.Tick+" sprites="+renderers.Count);
+            ScreenCapture.CaptureScreenshot(Path.Combine(Application.persistentDataPath,"ember-smoke.png"));
+            Invoke(nameof(SmokeQuit),1);
+        }
+        void SmokeQuit(){Application.Quit();}
+        void NewWorld(int seed)
+        {
+            World=new EmberWorld(seed){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId);
+            heldSlot=6;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
+            State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();ClearActions();
+        }
+        void StartSolo(){lan?.Leave();network=false;host=true;localId=1;NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();menu=false;}
+        void HostGame()
+        {
+            try{lan?.Leave();lan=new EmberLan{Capacity=roomCapacity,Mode=routeMode,Trace=Trace};
+                if(usePublicBroker){const string chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";var bytes=EmberCrypto.Random(6);if(!fixedRoomCode)joinRoomCode=new string(bytes.Select(b=>chars[b%chars.Length]).ToArray());lan.OpenPublic(true,brokerAddress,joinRoomCode,password);}else lan.Open(true,"",password);
+                network=true;host=true;localId=1;NewWorld(Environment.TickCount);
+                lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId);};
+                lan.Left=id=>World.RemovePlayer(id);lan.Input=(id,json)=>World.Submit(id,JsonUtility.FromJson<Command>(json));
+                lan.ReadyChanged=(id,ready)=>World.SetReady(id,ready);
+                menu=false;notice="Phòng đã mở. Có thể bắt đầu với 1 người hoặc chờ bạn bè.";
+            }catch(Exception ex){notice=ex.Message;}
+        }
+        void JoinGame()
+        {
+            try{lan?.Leave();lan=new EmberLan{Mode=routeMode,Trace=Trace};
+                if(usePublicBroker){joinRoomCode=joinRoomCode.Trim().ToUpperInvariant();if(joinRoomCode.Length!=6)throw new ArgumentException("Mã phòng gồm 6 ký tự.");lan.OpenPublic(false,brokerAddress,joinRoomCode,password);}else lan.Open(false,address,password);
+                network=true;host=false;localId=0;menu=false;State=null;readyWanted=false;
+                lan.State=json=>{var snapshot=JsonUtility.FromJson<Snapshot>(json);if(snapshot?.Players!=null){if(snapshot.Sandbox&&!debugSession){debugSession=true;Profile=SandboxProfile();Trace("debug.remote_sandbox","host test room: local profile writes disabled");}State=snapshot;localId=lan.LocalId;}};
+                joinClock=0;notice="Đang kết nối LAN/VPN...";
+            }catch(Exception ex){notice=ex.Message;}
+        }
+        [Serializable] sealed class JoinInfo{public string Name,PlayerId;public bool Sandbox;public int Vessel,Hat=-1,Pet=-1;public int[] Perks,Ranks,Recipes;}
+        void Update()
+        {
+            clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
+            if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet}));joinClock=1;}}
+            SampleFrameRate();
+            ReadInput();
+            ReadCameraZoom();
+            if(netSmoke&&!host){intent.X=State?.Phase==Phase.Explore&&State.Time<6?1:0;intent.Y=0;if(lan.LocalId>0&&!readyWanted){readyWanted=true;lan.SetReady(true);}}
+            if(netSmoke&&host&&State.Players.Length==netExpected&&State.Players.All(p=>p.Ready))BeginRoomRun();
+            if((!menu||network)&&host)
+            {
+                accumulator+=Mathf.Min(Time.deltaTime,.1f);
+                while(accumulator>=EmberWorld.Step){World.Submit(localId,intent);World.Tick();accumulator-=EmberWorld.Step;ClearActions();}
+                State=World.S;
+                sendClock-=Time.deltaTime;if(network&&sendClock<=0){lan.Broadcast(JsonUtility.ToJson(State),++snapshotSequence);sendClock=.1f;}
+            }
+            else if(network&&!host)
+            {
+                sendClock-=Time.deltaTime;if(sendClock<=0){if(intent.HasActions&&State?.Phase!=Phase.Sanctuary)lan.SendAction(JsonUtility.ToJson(intent));lan.SendInput(JsonUtility.ToJson(new Command{X=intent.X,Y=intent.Y}));sendClock=1f/30;ClearActions();}
+            }
+            if(State==null)return;
+            if(renderedSeed!=State.Seed)BuildMap();
+            Render();
+            RenderLighting();
+            UpdateAmbientAudio();
+            StreamTrees();
+            if(netSmoke&&!netSmokeValidated&&State.Tick>120&&State.Players.Length==netExpected&&State.Players.All(p=>p.Id==1||p.Pos.X>(p.Id-1)*1.5f+1))NetSmokeCheck();
+            if(Local!=null&&Local.Dread>=30&&!Local.Safe){phantomClock-=Time.deltaTime;if(phantomClock<=0){audioSource.panStereo=Mathf.Sin(clock*2)*.8f;audioSource.PlayOneShot(footstep,.12f);phantomClock=3.5f;}}
+            if((Local?.Extracted==true||(Local?.Ghost==true&&State.TeamExtracted>0)||State.Phase==Phase.Won||State.Phase==Phase.Lost)&&!rewarded)
+            {
+                var p=Local;if(p!=null)RecordRunReward(p);
+            }
+        }
+        Player Local=>State?.Players?.FirstOrDefault(p=>p.Id==localId);
+        void BeginRoomRun(){if(World.StartRun(true)){lan.AcceptingJoins=false;ClearActions();}}
+        void LeaveRoom(){try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
+        static AudioClip MakeTone(float hz,float seconds)
+        {
+            int count=(int)(22050*seconds);var samples=new float[count];for(int i=0;i<count;i++)samples[i]=Mathf.Sin(i*hz*Mathf.PI*2/22050)*(1-(float)i/count)*.2f;
+            var clip=AudioClip.Create("Ember tone",count,1,22050,false);clip.SetData(samples,0);return clip;
+        }
+        bool Press(Key key)=>Keyboard.current!=null&&Keyboard.current[key].wasPressedThisFrame;
+        bool Held(Key key)=>Keyboard.current!=null&&Keyboard.current[key].isPressed;
+        void ReadInput()
+        {
+            if(Press(Key.Escape))
+            {
+                if(inventoryOpen)inventoryOpen=false;
+                else if(craftOpen)craftOpen=false;
+                else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
+                else {menu=!menu;pauseConfirm=false;pauseSettings=false;}
+                path.Clear();
+            }
+            if(menu||debugOpen||State==null||State.Phase==Phase.Sanctuary||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))){intent.X=intent.Y=0;return;}
+            if(Press(Key.I)){inventoryOpen=!inventoryOpen;craftOpen=false;path.Clear();}
+            if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;}
+            if(Press(Key.Digit0)||Press(Key.Numpad0))EquipSlot(1);
+            if(Press(Key.Digit1)||Press(Key.Numpad1))EquipSlot(2);
+            if(Press(Key.Digit2)||Press(Key.Numpad2))EquipSlot(3);
+            if(Press(Key.Digit3)||Press(Key.Numpad3))EquipSlot(4);
+            if(Press(Key.Digit4)||Press(Key.Numpad4))EquipSlot(5);
+            if(inventoryOpen){intent.X=intent.Y=0;return;}
+            if(Press(Key.R))ranges=!ranges;
+            if(Press(Key.M)){moba=!moba;notice=moba?"Chuột phải: đi đến điểm. WASD hủy đường đi.":"Điều khiển bàn phím.";}
+            Vector2 move=new Vector2((Held(Key.D)||Held(Key.RightArrow)?1:0)-(Held(Key.A)||Held(Key.LeftArrow)?1:0),(Held(Key.W)||Held(Key.UpArrow)?1:0)-(Held(Key.S)||Held(Key.DownArrow)?1:0));
+            if(move.sqrMagnitude>0)path.Clear();
+            bool overUI=Mouse.current!=null&&(Mouse.current.position.ReadValue().y>Screen.height-92||Mouse.current.position.ReadValue().y<168||(craftOpen&&Mouse.current.position.ReadValue().x>Screen.width-390));
+            if(moba&&Mouse.current!=null&&Mouse.current.rightButton.wasPressedThisFrame&&!overUI&&Local!=null)
+            {
+                Vector3 p=cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());MakePath(Local.Pos,new V2(p.x,p.y));
+            }
+            if(move.sqrMagnitude==0&&path.Count>0&&Local!=null)
+            {
+                V2 delta=path.Peek()-Local.Pos;if(delta.Length<.2f)path.Dequeue();else move=new Vector2(delta.X,delta.Y).normalized;
+            }
+            intent.X=move.x;intent.Y=move.y;
+            bool attack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&heldSlot==1&&Local.AttackCD<=0;intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
+            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=Press(Key.E);intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
+            intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);
+            if(Press(Key.U)&&CanUseSelectedItem(Local))intent.Use=selectedItem;
+            ApplyTouchInput();
+        }
+        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
+        void MakePath(V2 from,V2 to)
+        {
+            path.Clear();int size=State.Size;byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,size);
+            int sx=Mathf.FloorToInt(from.X+size/2),sy=Mathf.FloorToInt(from.Y+size/2),tx=Mathf.FloorToInt(to.X+size/2),ty=Mathf.FloorToInt(to.Y+size/2);
+            if(tx<3||ty<3||tx>=size-3||ty>=size-3)return;
+            clickMarker=to;clickMarkerUntil=clock+.8f;
+            int start=sy*size+sx,target=ty*size+tx;var frontier=new List<int>{start};var cost=new Dictionary<int,int>{{start,0}};var parent=new Dictionary<int,int>();
+            int limit=5000;
+            while(frontier.Count>0&&limit-->0)
+            {
+                int current=frontier.OrderBy(n=>cost[n]+Math.Abs(n%size-tx)+Math.Abs(n/size-ty)).First();frontier.Remove(current);if(current==target)break;
+                int x=current%size,y=current/size;
+                foreach(var delta in new[]{new Vector2Int(1,0),new Vector2Int(-1,0),new Vector2Int(0,1),new Vector2Int(0,-1)})
+                {
+                    int nx=x+delta.x,ny=y+delta.y;if(nx<3||ny<3||nx>=size-3||ny>=size-3)continue;int next=ny*size+nx;if(tiles[next]>=3)continue;
+                    if(host&&!World.Walkable(new V2(nx-size/2+.5f,ny-size/2+.5f)))continue;
+                    int nextCost=cost[current]+1;if(cost.TryGetValue(next,out var old)&&old<=nextCost)continue;cost[next]=nextCost;parent[next]=current;if(!frontier.Contains(next))frontier.Add(next);
+                }
+            }
+            if(!parent.ContainsKey(target))return;var route=new List<V2>();int at=target;
+            while(at!=start){route.Add(new V2(at%size-size/2+.5f,at/size-size/2+.5f));at=parent[at];}route.Reverse();foreach(var p in route)path.Enqueue(p);
+        }
+        Sprite Primitive(string name)
+        {
+            if(primitives.TryGetValue(name,out var cached))return cached;
+            var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name=="beacon";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+            {
+                float r=Vector2.Distance(new Vector2(x,y),new Vector2(7.5f,7.5f));bool draw=false;Color color=Color.white;
+                switch(name)
+                {
+                    case "circle":draw=r<7.5f;break;
+                    case "ring":draw=r<7.5f&&r>5.8f;break;
+                    case "diamond":draw=Math.Abs(x-8)+Math.Abs(y-8)<7;color=x<8?new Color(.7f,1,1):new Color(.35f,.7f,.8f);break;
+                    case "tree":draw=y<5?(x>6&&x<10):Math.Abs(x-8)<(16-y)*.65f;color=y<5?new Color(.2f,.15f,.2f):x<8?new Color(.16f,.32f,.29f):new Color(.1f,.22f,.23f);break;
+                    case "enemy":draw=(x>2&&x<13&&y>2&&y<12)||(y>=12&&y<15&&(x==3||x==11));color=y==8&&(x==5||x==10)?Coral:new Color(.25f,.2f,.35f);break;
+                    case "hand":draw=x>=4&&x<=11&&y>=5&&y<=11;color=x==4||x==11||y==5||y==11?new Color(.12f,.13f,.2f):Color.white;break;
+                    case "stick":draw=x>=7&&x<=9&&y>=2&&y<=14;color=x==7?new Color(.35f,.19f,.12f):new Color(.75f,.48f,.24f);break;
+                    case "beacon":draw=y<3?x>2&&x<14:y<10?x>5&&x<11:r<5;color=y<3?new Color(.25f,.29f,.39f):y<10?new Color(.5f,.54f,.6f):Cyan;break;
+                    default:draw=x>=2&&x<14&&y>=2&&y<14;break;
+                }
+                if(draw)c[y*size+x]=color;
+            }
+            t.SetPixels32(c);t.Apply();cached=Sprite.Create(t,new Rect(0,0,size,size),new Vector2(.5f,.5f),16);primitives[name]=cached;return cached;
+        }
+        Sprite Frame(Vessel vessel,string clip,int frame,bool eyes=false)
+        {
+            if(vessel==Vessel.LittleMoone)return eyes?null:MooneFrame(clip,frame);
+            string slug=Art[(int)vessel]+(eyes?"_eyes":"");if(!atlases.TryGetValue(slug,out var sprites))
+            {
+                Texture2D tex=Resources.Load<Texture2D>("Ember/Active/"+slug);if(tex==null)return eyes?null:Primitive("enemy");tex.filterMode=FilterMode.Point;int columns=tex.width/32;sprites=new Sprite[columns*4];
+                for(int row=0;row<4;row++)for(int f=0;f<columns;f++)sprites[row*columns+f]=Sprite.Create(tex,new Rect(f*32,tex.height-(row+1)*32,32,32),new Vector2(.5f,1/32f),32);
+                atlases[slug]=sprites;
+            }
+            int s=clip=="run"?1:clip=="cast"?2:clip=="hurt"?3:0,count=sprites.Length/4;return sprites[s*count+frame%count];
+        }
+        static readonly string[][] MooneFrames={new[]{"idle right 0 [cell_0_0]","idle right 1 [cell_0_1]","idle right 2 [cell_0_2]","idle right 3 [cell_0_3]","idle right 4 [cell_0_4]","idle right 5 [cell_0_5]","idle right 6 [cell_0_6]","idle right 7 [cell_0_7]"},new[]{"walk_right - Frame 0 [cell_1_0]","walk_right - Frame 1 [cell_1_1]","walk_right - Frame 2 [cell_1_2]","walk_right - Frame 3 [cell_1_3]","walk_right - Frame 4 [cell_1_4]","walk_right - Frame 5 [cell_1_5]","walk_right - Frame 6 [cell_1_6]","walk_right - Frame 7 [cell_1_7]"},new[]{"cast_right - Frame 0 [cast_right_0]","cast_right - Frame 1 [cast_right_1]","cast_right - Frame 2 [cast_right_2]","cast_right - Frame 3 [cast_right_3]","cast_right - Frame 4 [cast_right_4]","cast_right - Frame 5 [cast_right_5]","cast_right - Frame 6 [cast_right_6]","cast_right - Frame 7 [cast_right_7]"},new[]{"hurt_right - Frame 0 [hurt_right_0]","hurt_right - Frame 1 [hurt_right_1]","hurt_right - Frame 2 [hurt_right_2]","hurt_right - Frame 3 [hurt_right_3]","hurt_right - Frame 4 [hurt_right_4]","hurt_right - Frame 5 [hurt_right_5]","hurt_right - Frame 6 [hurt_right_6]","hurt_right - Frame 7 [hurt_right_7]"}};
+        Dictionary<string,Sprite> mooneSprites;
+        Sprite MooneFrame(string clip,int frame)
+        {
+            if(mooneSprites==null)mooneSprites=Resources.LoadAll<Sprite>("Characters/Little Moone/silver_wanderer___approved_concept_reconstruction")
+                .ToDictionary(sprite=>sprite.name);
+            int row=clip=="run"?1:clip=="cast"?2:clip=="hurt"?3:0;
+            return mooneSprites.TryGetValue(MooneFrames[row][frame%8],out var sprite)?sprite:Primitive("enemy");
+        }
+        Sprite Glove(bool grip)
+        {
+            string key=grip?"white_glove_grip":"white_glove_relaxed";if(primitives.TryGetValue(key,out var cached))return cached;
+            var texture=Resources.Load<Texture2D>("Ember/Active/white_gloves_cupped");if(texture==null)return Primitive("hand");texture.filterMode=FilterMode.Point;cached=Sprite.Create(texture,new Rect(0,grip?0:16,16,16),new Vector2(.5f,.5f),32);primitives[key]=cached;return cached;
+        }
+        SpriteRenderer Put(string key,Sprite sprite,V2 pos,Color color,float scale=1,int? order=null,bool flip=false)
+        {
+            touched.Add(key);if(!renderers.TryGetValue(key,out var r)){r=new GameObject(key).AddComponent<SpriteRenderer>();r.transform.SetParent(entityRoot.transform);if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;renderers[key]=r;}
+            r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(1000-Mathf.RoundToInt(pos.Y*10));return r;
+        }
+        void Render()
+        {
+            touched.Clear();var local=Local;V2 center=local?.Pos??new V2();
+            int pixels=CameraZoomPixels[zoomLevel];
+            cam.orthographicSize=Screen.height/(2f*pixels);
+            cam.transform.position=new Vector3(Mathf.Round(center.X*pixels)/pixels,Mathf.Round(center.Y*pixels)/pixels,-10);
+            Put("beacon",Primitive("beacon"),new V2(),State.BeaconHP>0&&State.Charge>=100?Color.white:Color.gray,3);
+            if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
+            if(State.Phase==Phase.Extraction)Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,-20);
+            foreach(var n in State.Nodes)
+            {
+                if(V2.Distance(n.Pos,center)>23)continue;Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Gold:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
+                string art=n.Resource==Resource.Wood||n.Resource==Resource.Dust?"tree":"diamond";
+                bool tree=n.Resource==Resource.Wood||n.Resource==Resource.Dust;
+                Put("node"+n.Id,tree?Primitive(art):MaterialSprite(ResourceIcons[(int)n.Resource]),n.Pos,
+                    tree?(n.Resource==Resource.Dust?new Color(.6f,1,.8f):color):Color.white,tree?1.5f:.62f);
+            }
+            foreach(var s in State.Structures)if(V2.Distance(s.Pos,center)<23)Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:1);
+            foreach(var e in State.Enemies)
+            {
+                if(V2.Distance(e.Pos,center)>24)continue;
+                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite?"enemy_sentinel":"enemy_shade";float scale=e.Kind==EnemyKind.Boss?1.5f:e.Elite?1.4f:1;
+                Outline(Put("enemyGlow"+e.Id,Primitive(art),e.Pos,Coral,scale,1000-Mathf.RoundToInt(e.Pos.Y*10)-1),Primitive(art));
+                Put("enemy"+e.Id,Primitive(art),e.Pos,e.Blind>0?new Color(.6f,.7f,.8f):Color.white,scale);
+            }
+            foreach(var p in State.Players)
+            {
+                if(p.Extracted)continue;bool hallucination=local!=null&&p.Id!=local.Id&&local.Mad&&!p.Ghost;Color glow=hallucination?Coral:Cyan;
+                string clip=p.Ghost?"idle":p.CastTime>0?"cast":p.Invulnerable>0&&p.DashTime<=0?"hurt":p.Move.Length>.1f?"run":"idle";
+                if(!animationState.TryGetValue(p.Id,out var anim)||anim.clip!=clip){anim=(clip,clock);animationState[p.Id]=anim;}
+                int frames=p.Vessel==Vessel.LittleMoone||Art[(int)p.Vessel]=="lyra_moonscout"?8:4;
+                int raw=(int)((clock-anim.began)*(p.Vessel==Vessel.LittleMoone?6:clip=="run"?10:clip=="cast"?(frames==8?12:9):clip=="hurt"?(frames==8?10:8):6));int f=clip=="cast"||clip=="hurt"?Mathf.Min(frames-1,raw):raw%frames;
+                var sprite=p.Ghost?Primitive("diamond"):hallucination?Primitive("enemy_void"):Frame(p.Vessel,clip,f);Color tint=p.Ghost?new Color(.5f,1,1,.55f):Color.white;
+                Put("shadow"+p.Id,Primitive("circle"),p.Pos,new Color(0,0,0,.35f),.8f,-10);
+                float bodyScale=p.Ghost?.45f:1;
+                Outline(Put("outline"+p.Id,sprite,p.Pos,glow,bodyScale,1000-Mathf.RoundToInt(p.Pos.Y*10)-1,!p.Right),sprite);
+                var body=Put("player"+p.Id,sprite,p.Pos,tint,bodyScale,flip:!p.Right);
+                if(!p.Ghost&&!hallucination){var eyes=Frame(p.Vessel,clip,f,true);if(eyes!=null){var glowEyes=Put("eyes"+p.Id,eyes,p.Pos,tint,1,1001-Mathf.RoundToInt(p.Pos.Y*10),!p.Right);if(emissionMaterial!=null)glowEyes.sharedMaterial=emissionMaterial;}}
+                if(!p.Ghost&&!hallucination&&p.CastTime<=0)DrawHands(p,body);
+                if(p.Hat>=0&&!p.Ghost&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),p.Pos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,1010-Mathf.RoundToInt(p.Pos.Y*10));
+                if(p.Pet>=0&&!hallucination)Put("pet"+p.Id,Primitive(new[]{"pet_firefly","pet_bat","pet_cat","pet_ghost"}[p.Pet]),p.Pos+new V2(-1,.1f+Mathf.Sin(clock*4)*.15f),Color.white,.65f);
+                if(p.ShieldTime>0)Put("shield"+p.Id,Primitive("ring"),p.Pos+new V2(0,.5f),Cyan,2,-1);
+            }
+            foreach(var shot in State.Projectiles??Array.Empty<Projectile>())
+            {
+                var r=Put("projectile"+shot.Id,Primitive("diamond"),shot.Pos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):Cyan,.23f);r.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
+            }
+            if(local!=null&&local.Dread>=30&&!local.Safe&&Mathf.Sin(clock*.8f)>0.6f)
+            {
+                float sign=Mathf.Sin(clock*.3f)>0?1:-1;var pos=local.Pos+new V2(sign*(cam.orthographicSize*cam.aspect-.6f),Mathf.Sin(clock*1.2f)*3);
+                Put("falseShadow",Primitive("enemy_void"),pos,new Color(.08f,.06f,.16f,.65f),1.3f,2000);
+            }
+            foreach(var pair in renderers)if(!touched.Contains(pair.Key))pair.Value.enabled=false;
+            // Reclaim transient node/enemy renderers instead of retaining an entire run.
+            if(renderers.Count>1400)foreach(var key in renderers.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(renderers[key].gameObject);renderers.Remove(key);}
+        }
+        void BuildMap()
+        {
+            renderedSeed=State.Seed;foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
+            visibleTrees.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+            float edgeWorld=State.Size/2f-3;
+            var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=30000;
+            var fogMaterial=Resources.Load<Material>("Ember/EmberAbyss");if(fogMaterial!=null){fog.material=new Material(fogMaterial);fog.material.SetFloat("_Boundary",edgeWorld);}
+            foreach(var side in new[]{new Vector3(-edgeWorld-2,0),new Vector3(edgeWorld+2,0),new Vector3(0,-edgeWorld-2),new Vector3(0,edgeWorld+2)})
+            {
+                var border=new GameObject("Abyss / physical boundary");border.transform.SetParent(mapRoot.transform);border.transform.position=side;
+                var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
+            }
+            byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
+            // One texture for all floor tiles; point sampling preserves 8px terrain.
+            int px=size*4;Texture2D texture=new Texture2D(px,px,TextureFormat.RGBA32,false);texture.filterMode=FilterMode.Point;var colors=new Color32[px*px];var random=new System.Random(State.Seed);
+            Color[] bases={new Color(.3f,.42f,.36f),new Color(.26f,.36f,.4f),new Color(.34f,.25f,.42f),new Color(.12f,.19f,.19f),Color.black};
+            for(int y=0;y<px;y++)for(int x=0;x<px;x++)
+            {
+                byte tile=tiles[(y/4)*size+x/4];Color c=bases[tile];float noise=tile==4?0:(float)random.NextDouble()*.045f;bool edge=x%4==0||y%4==0;colors[y*px+x]=c*(edge?.83f:1)+new Color(noise,noise,noise,0);
+            }
+            texture.SetPixels32(colors);texture.Apply();var floor=new GameObject("Three biomes").AddComponent<SpriteRenderer>();floor.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)floor.sharedMaterial=spriteMaterial;floor.sprite=Sprite.Create(texture,new Rect(0,0,px,px),new Vector2(.5f,.5f),4);floor.sortingOrder=-100;
+        }
+        void StreamTrees()
+        {
+            if(currentTiles==null||State==null)return;var pos=Local?.Pos??new V2();int size=State.Size;
+            var chunk=new Vector2Int(Mathf.FloorToInt(pos.X/8),Mathf.FloorToInt(pos.Y/8));if(chunk==visibleChunk)return;visibleChunk=chunk;
+            int cx=chunk.x*8+size/2,cy=chunk.y*8+size/2;var keep=new HashSet<int>();
+            for(int y=Mathf.Max(3,cy-24);y<Mathf.Min(size-3,cy+32);y++)for(int x=Mathf.Max(3,cx-24);x<Mathf.Min(size-3,cx+32);x++)if(currentTiles[y*size+x]==3)
+            {
+                int key=y*size+x;keep.Add(key);if(visibleTrees.ContainsKey(key))continue;
+                var tree=new GameObject("Ancient tree").AddComponent<SpriteRenderer>();tree.transform.SetParent(mapRoot.transform);if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;tree.sprite=Primitive("tree");tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.75f);tree.transform.localScale=new Vector3(1.5f,2,1);tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.5f)*10);
+                visibleTrees[key]=tree;
+            }
+            foreach(int key in visibleTrees.Keys.Where(k=>!keep.Contains(k)).ToArray()){Destroy(visibleTrees[key].gameObject);visibleTrees.Remove(key);}
+        }
+        void InitStyles()
+        {
+            if(title!=null)return;title=new GUIStyle(GUI.skin.label){fontSize=27,fontStyle=FontStyle.Bold,normal={textColor=new Color(1,.92f,.78f)}};
+            label=new GUIStyle(GUI.skin.label){fontSize=15,wordWrap=true,normal={textColor=new Color(.88f,.91f,.94f)}};
+            small=new GUIStyle(label){fontSize=12};GUI.skin.button.fontSize=14;GUI.skin.button.padding=new RectOffset(12,12,8,8);
+        }
+        void Panel(Rect rect,Color color){GUI.color=color;GUI.DrawTexture(rect,white);GUI.color=Color.white;}
+        Vector2 ScreenPos(V2 p){Vector3 v=cam.WorldToScreenPoint(new Vector3(p.X,p.Y));return new Vector2(v.x,Screen.height-v.y);}
+        static readonly Vector2[] RingPoints=CreateRingPoints();
+
+        static Vector2[] CreateRingPoints()
+        {
+            var points=new Vector2[64];
+            for(int i=0;i<points.Length;i++)
+            {
+                float angle=i*Mathf.PI*2/points.Length;
+                points[i]=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
+            }
+            return points;
+        }
+
+        void Ring(V2 pos,float radius,Color color)
+        {
+            if(Event.current.type!=EventType.Repaint||radius<=0)return;
+            Vector2 center=ScreenPos(pos);
+            float scale=radius*Screen.height/(cam.orthographicSize*2);
+            GUI.color=color;
+            Vector2 previous=center+RingPoints[RingPoints.Length-1]*scale;
+            foreach(var point in RingPoints)
+            {
+                Vector2 next=center+point*scale;
+                Line(previous,next,1);
+                previous=next;
+            }
+            GUI.color=Color.white;
+        }
+
+        void Line(Vector2 a,Vector2 b,float width)
+        {
+            if(Event.current.type!=EventType.Repaint)return;
+            if(Mathf.Max(a.x,b.x)<-width||Mathf.Min(a.x,b.x)>Screen.width+width||
+               Mathf.Max(a.y,b.y)<-width||Mathf.Min(a.y,b.y)>Screen.height+width)return;
+            var matrix=GUI.matrix;
+            Vector2 delta=b-a;
+            GUIUtility.RotateAroundPivot(Mathf.Atan2(delta.y,delta.x)*Mathf.Rad2Deg,a);
+            GUI.DrawTexture(new Rect(a.x,a.y,delta.magnitude,width),white);
+            GUI.matrix=matrix;
+        }
+        void DrawInterface()
+        {
+            InitStyles();
+            if(network&&!host&&!string.IsNullOrEmpty(lan?.Error)){DrawConnectionIssue(lan.Error);return;}
+            if(network&&(State==null||State.Phase==Phase.Sanctuary)){DrawLobby();return;}
+            if(menu)
+            {
+                if(pendingRestore!=null)DrawRestoreDialog();
+                else if(State!=null&&Local!=null&&State.Phase!=Phase.Sanctuary)
+                {
+                    if(State.Phase==Phase.Won||State.Phase==Phase.Lost)DrawRunResult(Local,false);
+                    else DrawPauseMenu();
+                }
+                else DrawMenu();
+                return;
+            }
+            if(State==null){UiLabel(new Rect(30,30,700,80),"Đang chờ host... ESC để quay lại.\n"+notice,label);return;}
+            var p=Local;if(p==null)return;
+            bool awaitingTeam=p.Extracted&&State.Phase==Phase.Extraction;
+            if(awaitingTeam||State.Phase==Phase.Won||State.Phase==Phase.Lost)
+            {
+                DrawRunResult(p,awaitingTeam);
+                return;
+            }
+            if(p.Dread>=60&&!p.Safe&&Event.current.type==EventType.Repaint)
+                Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.8f,.2f,.4f,.2f));
+            if(clock<clickMarkerUntil)Ring(clickMarker,.3f,new Color(1,.8f,.4f,(clickMarkerUntil-clock)/.8f));
+            if(Event.current.type==EventType.Repaint&&ranges&&!p.Ghost)
+            {
+                bool basic=State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<p.Range)||p.Mad&&State.Players.Any(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&!q.Safe&&V2.Distance(q.Pos,p.Pos)<p.Range);
+                if(heldSlot==1)Ring(p.Pos,p.Range,basic?Coral:new Color(.5f,.8f,.8f,.22f));
+                if(p.Vessel!=Vessel.Wanderer)
+                    Ring(p.Pos,p.SkillRange,HasSkillFocus(p)?new Color(.4f,1,.9f,.35f+.2f*Mathf.Sin(clock*8)):new Color(.3f,.7f,.7f,.15f));
+            }
+            foreach(var e in State.Effects){
+                if(e.Kind==6){Ring(e.To,.35f+(.3f-e.Life)*2,new Color(.83f,.73f,1,e.Life/.3f));continue;}
+                if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
+                GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
+            foreach(var q in State.Players)
+            {
+                if(q.Extracted||(p.Mad&&q.Id!=p.Id))continue;
+                DrawOverheadStatus(q);
+            }
+            if(inventoryOpen){DrawInventory(p);return;}
+            DrawFieldHud(p);
+            float objectiveY=ObjectiveCardY;
+            DrawObjectiveCard(p,objectiveY);
+            DrawFieldNotices(p,objectiveY+80);
+            if(craftOpen)DrawCraft(p);
+
+        }
+        void DrawDarkness()
+        {
+            if(Local==null)return;
+            // Coarse screen-space light mask: alpha varies per cell; light sources
+            // are authoritative positions, independently of hallucinated sprite colors.
+            const int cell=32;for(int y=92;y<Screen.height;y+=cell)for(int x=0;x<Screen.width;x+=cell)
+            {
+                Vector3 point=cam.ScreenToWorldPoint(new Vector3(x+cell/2,Screen.height-y-cell/2));V2 world=new V2(point.x,point.y);float light=0;
+                if(State.BeaconHP>0)light=Mathf.Max(light,1-world.Length/7);
+                if(State.Fuel>0||State.LastLight>0)foreach(var p in State.Players.Where(q=>q.CarriesLantern&&q.LampOn&&!q.Ghost&&!q.Extracted))light=Mathf.Max(light,1-V2.Distance(world,p.Pos)/(p.Lantern==Lantern.Relic?9:6));
+                foreach(var p in State.Players.Where(q=>q.Hat==(int)Hat.Candle||q.Ghost))light=Mathf.Max(light,(1-V2.Distance(world,p.Pos)/2)*(p.Ghost?.3f:1));
+                foreach(var s in State.Structures.Where(q=>q.Kind<=1))light=Mathf.Max(light,1-V2.Distance(world,s.Pos)/(s.Kind==1?9:5));
+                float border=State.Size/2-3-Mathf.Max(Mathf.Abs(world.X),Mathf.Abs(world.Y));float alpha=Mathf.Lerp(.87f,.08f,Mathf.Clamp01(light*1.5f));if(border<5)alpha=Mathf.Max(alpha,1-Mathf.Clamp01(border/5));
+                Panel(new Rect(x,y,cell,cell),new Color(.01f,.015f,.04f,alpha));
+            }
+        }
+        void DrawCraft(Player p)
+        {
+            float width=Mathf.Min(360,Screen.width-28);
+            Rect panel=new Rect(Screen.width-width-14,100,width,Mathf.Max(108,Screen.height-224));
+            PixelPanel(panel,FieldPaper);
+            GUILayout.BeginArea(new Rect(panel.x+12,panel.y+10,panel.width-24,panel.height-20));
+            UiText(L("Chế tạo","Crafting"),title);
+            scroll=GUILayout.BeginScrollView(scroll);
+            for(int i=0;i<Catalog.Recipes.Length;i++)
+            {
+                var recipe=Catalog.Recipes[i];
+                bool unlocked=p.Recipes==null||p.Recipes.Contains(i);
+                bool nearBeacon=i<7||p.Pos.Length<=5;
+                bool supplied=true;
+                for(int j=0;j<recipe.Cost.Length;j++)supplied&=p.Bag[j]>=recipe.Cost[j];
+                bool can=unlocked&&nearBeacon&&supplied&&!p.Ghost&&!p.Extracted;
+                Rect card=GUILayoutUtility.GetRect(190,102,GUILayout.ExpandWidth(true));
+                PixelPanel(card,can?new Color(.23f,.17f,.36f):FieldPaper);
+                DrawSpritePreview(new Rect(card.x+8,card.y+7,38,38),i<4?HeldItemSprite(i):Primitive(CraftIcons[i]));
+                UiLabel(new Rect(card.x+51,card.y+8,card.width-58,31),recipe.Name,label);
+                float chipX=card.x+10, chipY=card.y+45;
+                for(int j=0;j<recipe.Cost.Length;j++)
+                {
+                    int cost=recipe.Cost[j];
+                    if(cost<=0)continue;
+                    PixelArt(new Rect(chipX,chipY,17,17),ResourceIcons[j]);
+                    var count=new Rect(chipX+19,chipY-2,44,22);
+                    var previous=GUI.contentColor;
+                    if(p.Bag[j]<cost)GUI.contentColor=new Color(1,.60f,.64f);
+                    UiLabel(count,p.Bag[j]+"/"+cost,small);
+                    GUI.contentColor=previous;
+                    chipX+=60;
+                }
+                string action=!unlocked?L("Mở công thức ở sảnh","Unlock recipe in Sanctuary"):
+                    !nearBeacon?L("Cần đến gần hải đăng","Move closer to the beacon"):
+                    !supplied?L("Thiếu nguyên liệu","Missing ingredients"):L("Chế tạo","Craft");
+                GUI.enabled=can;
+                if(UiButton(new Rect(card.x+8,card.y+69,card.width-16,26),action))intent.Craft=i;
+                GUI.enabled=true;
+                GUILayout.Space(7);
+            }
+            GUILayout.EndScrollView();
+            GUILayout.EndArea();
+        }
+        void DrawMenu()
+        {
+            WithSanctuaryTheme(DrawSanctuary);
+        }
+
+        void DrawSanctuary()
+        {
+            DrawSanctuaryBackdrop();
+            float width=Mathf.Min(Screen.width-48,1120);
+            float x=(Screen.width-width)/2;
+            if(sanctuaryBrandSubtitle==null)
+            {
+                sanctuaryBrandSubtitle=new GUIStyle(label){alignment=TextAnchor.MiddleCenter};
+            }
+            PixelArt(new Rect(0,14,Screen.width,52),EmberLanguage.English?"wordmark_en":"wordmark_vi");
+            UiLabel(new Rect(0,68,Screen.width,25),L("Sảnh giữ lửa","Sanctuary"),sanctuaryBrandSubtitle);
+            bool wide=width>=800;
+            float stage=wide?width*.40f:0;
+            if(wide)DrawSanctuaryStage(new Rect(x,112,stage,Screen.height-144));
+            float offset=wide?stage+16:0;
+            var content=new Rect(x+offset,112,width-offset,Screen.height-144);
+            PixelPanel(content,Paper);
+            GUILayout.BeginArea(new Rect(content.x+18,content.y+15,content.width-36,content.height-30));
+            ApplySanctuaryNavigation();
+            int page=DrawSanctuaryTabs();
+            if(page!=sanctuaryPage)pendingSanctuaryPage=page;
+            int currentPage=sanctuaryPage;
+            GUILayout.Space(8);
+            DrawSanctuarySubtabs(currentPage);
+            GUILayout.Space(8);
+            metaScroll=GUILayout.BeginScrollView(metaScroll);
+            if(currentPage==0)
+            {
+            DrawCharacterCheat();
+            UiText(L("Tên hiển thị","Display name"),label);
+            string nextName=GUILayout.TextField(nameText,20);
+            if(nextName!=nameText)
+            {
+                nameText=nextName;
+                if(!debugSession)PlayerPrefs.SetString(DisplayNamePref,nameText);
+            }
+            UiText(L("Bạn bè có thể đặt trùng tên. Trong trận, mỗi người có số P riêng.",
+                "Friends can share a name. Each player has a separate P number in the match."),small);
+            GUILayout.Space(8);
+            DrawVesselPicker();
+            if(selected==(int)Vessel.LittleMoone)
+            {
+                if(!Profile.Vessels.Contains(selected))UiText("Tỷ lệ triệu hồi: 1%",small);
+                else if(!Profile.LittleMooneAwake)
+                {
+                    UiText("Ngủ đông",small);
+                    UiText(EmberLanguage.Text("Đá Ký Ức Thức Tỉnh")+": "+Profile.AwakeningStones,small);
+                    GUI.enabled=Profile.AwakeningStones>0;
+                    if(UiButton("Thức tỉnh Little Moone")&&Profile.AwakenLittleMoone())SaveProfile();
+                    GUI.enabled=true;
+                }
+            }
+            GUILayout.Space(10);
+            GUI.enabled=Profile.CanPlay(selected);
+            if(UiButton("Chơi một mình",GUILayout.Height(PlayActionHeight)))StartSolo();
+            GUI.enabled=true;
+            GUILayout.Space(8);
+            if(UiButton(onlineExpanded?L("▾ Chơi cùng bạn","▾ Multiplayer"):L("▸ Chơi cùng bạn","▸ Multiplayer"),GUILayout.Height(PlayActionHeight)))onlineExpanded=!onlineExpanded;
+            if(onlineExpanded)DrawMultiplayerSetup();
+            if(State!=null&&State.Phase!=Phase.Sanctuary&&State.Phase!=Phase.Won&&State.Phase!=Phase.Lost)if(UiButton("Tiếp tục"))menu=false;
+            }
+            else if(currentPage==1)DrawSummoning();
+            else if(currentPage==2)
+            {
+                if(collectionPage==0)
+                {
+                    DrawOwnedPortraits();
+                    DrawEquipmentCards(1);
+                    DrawEquipmentCards(2);
+                }
+                else if(collectionPage==1)DrawPerkCards();
+                else DrawProgressionExtras();
+            }
+            else
+            {
+                if(settingsPage==0)DrawSettings();
+                else
+                {
+            GUILayout.Space(6);UiText("Sao lưu .ember — mật khẩu cá nhân",small);savePassword=GUILayout.PasswordField(savePassword,'•');
+            GUILayout.BeginHorizontal();if(UiButton("Xuất .ember"))Export();if(UiButton("Nhập .ember"))Import();if(UiButton("Thư mục"))Application.OpenURL("file:///"+Application.persistentDataPath.Replace('\\','/'));GUILayout.EndHorizontal();DrawBackupVault();
+                }
+            }
+            GUILayout.Space(8);
+            UiText(notice,small);
+            GUILayout.EndScrollView();
+            GUILayout.EndArea();
+        }
+        string LocalPassword=>"Ember-local-v1:"+SystemInfo.deviceUniqueIdentifier;
+        string ProfileDirectory=>debugSession?Path.Combine(Application.persistentDataPath,"Sandbox"):Application.persistentDataPath;
+        string SavePath=>Path.Combine(Application.persistentDataPath,"profile.ember");
+        void LoadProfile()
+        {
+            if(debugSession){Profile=SandboxProfile();return;}
+            Profile=new Profile();if(!File.Exists(SavePath))return;
+            try{var loaded=JsonUtility.FromJson<Profile>(EmberSave.Unprotect(File.ReadAllBytes(SavePath),LocalPassword));ValidateProfile(loaded);Profile=loaded;}
+            catch(Exception ex){saveBlocked=true;notice="Không đọc được save; giữ nguyên file gốc và khóa ghi tự động. "+ex.Message;}
+        }
+        static void ValidateProfile(Profile p)
+        {
+            if(p==null)throw new InvalidDataException("Profile không hợp lệ.");p.ValidateAndNormalize();
+            if(p==null||p.Version!=1||p.Ash<0||p.Memory<0||p.Tokens<0||p.PerkSlots<1||p.PerkSlots>3||p.Vessels==null||p.Perks==null||p.Hats==null||p.Pets==null||p.EquippedPerks==null||p.EquippedPerks.Length>p.PerkSlots||p.Vessels.Any(v=>v<0||v>=Catalog.VesselNames.Length)||p.EquippedPerks.Any(v=>!p.Perks.Contains(v)))throw new InvalidDataException("Profile không hợp lệ.");
+            if(!p.CanPlay(p.SelectedVessel)||p.Perks.Any(v=>v<0||v>=Catalog.PerkNames.Length)||p.Hats.Any(v=>v<0||v>3)||p.Pets.Any(v=>v<0||v>3)||(p.SelectedHat!=-1&&!p.Hats.Contains(p.SelectedHat))||(p.SelectedPet!=-1&&!p.Pets.Contains(p.SelectedPet)))throw new InvalidDataException("Profile chứa lựa chọn không hợp lệ.");
+        }
+        void SaveProfile(){if(saveBlocked||debugSession)return;try{Profile.SelectedVessel=Profile.CanPlay(selected)?selected:0;EmberSave.WriteAtomic(SavePath,EmberSave.Protect(JsonUtility.ToJson(Profile),LocalPassword));}catch(Exception ex){notice="Lưu thất bại: "+ex.Message;Trace("save.error",ex.Message);}}
+        void Export()
+        {
+            if(savePassword.Length<8){notice="Dùng mật khẩu sao lưu ít nhất 8 ký tự.";return;}
+            try{string destination=EmberFileDialog.Choose(true);string backup=EmberSave.Export(ProfileDirectory,destination,JsonUtility.ToJson(Profile),savePassword);saveFile=string.IsNullOrEmpty(destination)?backup:destination;notice=string.IsNullOrEmpty(destination)?"Đã giữ bản sao trong Backups.":"Đã xuất và giữ bản sao trong Backups.";}
+            catch(Exception ex){notice=ex.Message;}
+        }
+        void Import()
+        {
+            try{string file=EmberFileDialog.Choose(false);if(string.IsNullOrEmpty(file))return;PreviewRestore(File.ReadAllBytes(file),Path.GetFileName(file));}
+            catch(Exception ex){notice=ex.Message;}
+        }
+        void OnApplicationQuit(){if(!netSmoke)SaveProfile();try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
+        void OnDestroy(){lan?.Dispose();CloseDiagnostics();}
+    }
+}

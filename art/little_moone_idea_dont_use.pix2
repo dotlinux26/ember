@@ -1,0 +1,1483 @@
+@pix2 1.1
+
+@meta
+  title: "Silver Wanderer / approved concept reconstruction"
+  author: "User"
+  version: "1.1"
+  color_mode: "RGBA"
+  coordinate_origin: "top-left"
+
+@grid
+  columns: 8
+  rows: 4
+  default_cell: 48x48
+  background: none
+
+@palette
+  1: #09080e
+  2: #252330
+  3: #3a374b
+  4: #514c64
+  5: #aaa0b7
+  6: #d1c8da
+  7: #f8f3f6
+  8: #ffceb4
+  9: #ed9897
+  10: #ffd8bd
+  11: #d8546e
+  12: #a12543
+  13: #601630
+  14: #bb2634
+  15: #51617a
+  16: #303b50
+  17: #eae8ed
+  18: #64cde8
+  19: #9bd9e8
+
+@cell cell_0_0
+  name: "idle right 0"
+  direction: right
+  frame: 0
+  grid_pos: 0,0
+@layer view_right_hat_coat_layer
+  cell: cell_0_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat
+  cell: cell_0_0
+  parent: view_right_hat_coat_layer
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+  pixel 17,3 4 pixel 18,3 4 pixel 19,3 4 pixel 20,3 4 pixel 21,3 4
+  pixel 16,4 3 pixel 17,4 3 pixel 18,4 4 pixel 19,4 2 pixel 20,4 4 pixel 21,4 4 pixel 22,4 4 pixel 23,4 4 pixel 24,4 4
+  pixel 15,5 3 pixel 16,5 3 pixel 17,5 3 pixel 18,5 2 pixel 19,5 2 pixel 20,5 4 pixel 21,5 4 pixel 22,5 4 pixel 23,5 4 pixel 24,5 4 pixel 25,5 4 pixel 26,5 4
+  pixel 15,6 3 pixel 16,6 3 pixel 17,6 3 pixel 18,6 2 pixel 19,6 2 pixel 20,6 4 pixel 21,6 4 pixel 22,6 4 pixel 23,6 4 pixel 24,6 4 pixel 25,6 4 pixel 26,6 2 pixel 27,6 2 pixel 28,6 2 pixel 29,6 2
+  pixel 14,7 3 pixel 15,7 3 pixel 16,7 3 pixel 17,7 2 pixel 18,7 2 pixel 19,7 4 pixel 20,7 4 pixel 21,7 4 pixel 22,7 4 pixel 23,7 2 pixel 24,7 2 pixel 25,7 2 pixel 26,7 2 pixel 27,7 2 pixel 28,7 2 pixel 29,7 4 pixel 30,7 4 pixel 31,7 4
+  pixel 12,8 3 pixel 13,8 3 pixel 14,8 3 pixel 15,8 4 pixel 16,8 3 pixel 17,8 2 pixel 18,8 2 pixel 19,8 4 pixel 20,8 4 pixel 21,8 4 pixel 22,8 2 pixel 23,8 2 pixel 24,8 2 pixel 25,8 2 pixel 26,8 3 pixel 27,8 3 pixel 28,8 3 pixel 29,8 4 pixel 30,8 4 pixel 31,8 4 pixel 32,8 2 pixel 33,8 3 pixel 34,8 4 pixel 35,8 4 pixel 36,8 4 pixel 37,8 4 pixel 38,8 4 pixel 39,8 4 pixel 40,8 4 pixel 41,8 4
+  pixel 12,9 4 pixel 13,9 4 pixel 14,9 4 pixel 15,9 4 pixel 16,9 3 pixel 17,9 2 pixel 18,9 2 pixel 19,9 4 pixel 20,9 4 pixel 21,9 2 pixel 22,9 2 pixel 23,9 2 pixel 24,9 3 pixel 25,9 3 pixel 26,9 3 pixel 27,9 3 pixel 28,9 3 pixel 29,9 4 pixel 30,9 2 pixel 32,9 4 pixel 33,9 4 pixel 34,9 4 pixel 35,9 4 pixel 36,9 4 pixel 37,9 4 pixel 38,9 4 pixel 39,9 2
+  pixel 9,10 4 pixel 10,10 4 pixel 11,10 4 pixel 12,10 4 pixel 13,10 4 pixel 14,10 4 pixel 15,10 4 pixel 16,10 2 pixel 17,10 2 pixel 18,10 2 pixel 22,10 3 pixel 23,10 3 pixel 24,10 3 pixel 25,10 3 pixel 26,10 3 pixel 27,10 3 pixel 30,10 2 pixel 31,10 4 pixel 32,10 4 pixel 33,10 4 pixel 34,10 4 pixel 35,10 4 pixel 36,10 4 pixel 37,10 4
+  pixel 9,11 4 pixel 10,11 4 pixel 11,11 4 pixel 12,11 4 pixel 13,11 4 pixel 14,11 4 pixel 15,11 3 pixel 16,11 2 pixel 17,11 2 pixel 22,11 3 pixel 23,11 3 pixel 24,11 3 pixel 25,11 3 pixel 26,11 3 pixel 28,11 4 pixel 29,11 4 pixel 30,11 4 pixel 31,11 4 pixel 32,11 4 pixel 33,11 4 pixel 34,11 4 pixel 35,11 4
+  pixel 9,12 4 pixel 10,12 4 pixel 11,12 2 pixel 12,12 2 pixel 13,12 4 pixel 14,12 4 pixel 15,12 3 pixel 16,12 2 pixel 21,12 2 pixel 23,12 3 pixel 24,12 2 pixel 25,12 2 pixel 27,12 4 pixel 28,12 4 pixel 29,12 4 pixel 30,12 4 pixel 31,12 4 pixel 32,12 4 pixel 33,12 4
+  pixel 9,13 4 pixel 10,13 2 pixel 11,13 2 pixel 12,13 2 pixel 13,13 2 pixel 14,13 2 pixel 15,13 2 pixel 16,13 2 pixel 26,13 3 pixel 27,13 4 pixel 28,13 4 pixel 29,13 4 pixel 30,13 4 pixel 31,13 4
+  pixel 9,14 4 pixel 10,14 2 pixel 11,14 2 pixel 12,14 2 pixel 15,14 2 pixel 16,14 2 pixel 24,14 2 pixel 25,14 3 pixel 26,14 3 pixel 27,14 4 pixel 28,14 4 pixel 29,14 4 pixel 30,14 4 pixel 32,14 4 pixel 33,14 4
+  pixel 9,15 4 pixel 10,15 2 pixel 11,15 2 pixel 15,15 2 pixel 23,15 2 pixel 24,15 3 pixel 25,15 3 pixel 26,15 3 pixel 27,15 3 pixel 28,15 4
+  pixel 9,16 4 pixel 10,16 2 pixel 11,16 2 pixel 22,16 2 pixel 23,16 3 pixel 24,16 3 pixel 25,16 3 pixel 26,16 3 pixel 27,16 3
+  pixel 6,17 2 pixel 7,17 2 pixel 8,17 2 pixel 9,17 4 pixel 10,17 2 pixel 11,17 2 pixel 20,17 2 pixel 21,17 2 pixel 22,17 2 pixel 23,17 3 pixel 24,17 3 pixel 25,17 3 pixel 26,17 1
+  pixel 6,18 2 pixel 7,18 2 pixel 8,18 2 pixel 9,18 2 pixel 10,18 2 pixel 20,18 2 pixel 21,18 2 pixel 22,18 3 pixel 23,18 3 pixel 24,18 3 pixel 25,18 1
+  pixel 6,19 2 pixel 7,19 2 pixel 14,19 2 pixel 15,19 2 pixel 20,19 2 pixel 21,19 3 pixel 22,19 3 pixel 23,19 3
+  pixel 6,20 2 pixel 14,20 3 pixel 19,20 3 pixel 20,20 3 pixel 21,20 3
+  pixel 13,21 3 pixel 19,21 3
+  pixel 12,22 3 pixel 13,22 3 pixel 19,22 1
+  pixel 11,23 3 pixel 12,23 3 pixel 13,23 3
+  pixel 10,24 2 pixel 11,24 3 pixel 12,24 3
+  pixel 9,25 3 pixel 10,25 3
+  pixel 9,26 3
+  pixel 24,28 15 pixel 25,28 15 pixel 32,28 15
+  pixel 24,29 2 pixel 25,29 15 pixel 26,29 15 pixel 27,29 2 pixel 29,29 2 pixel 31,29 2 pixel 32,29 15
+  pixel 24,30 2 pixel 25,30 3 pixel 26,30 15 pixel 27,30 15 pixel 28,30 3 pixel 29,30 2 pixel 30,30 3 pixel 31,30 15 pixel 32,30 2
+  pixel 23,31 2 pixel 24,31 3 pixel 25,31 3 pixel 26,31 2 pixel 27,31 15 pixel 28,31 2 pixel 31,31 15 pixel 32,31 2
+  pixel 23,32 15 pixel 24,32 15 pixel 25,32 15 pixel 26,32 15 pixel 27,32 15 pixel 28,32 2 pixel 29,32 2 pixel 30,32 2 pixel 31,32 15 pixel 32,32 15 pixel 33,32 15
+  pixel 23,33 2 pixel 24,33 3 pixel 25,33 3 pixel 26,33 2 pixel 27,33 15 pixel 28,33 2 pixel 31,33 15 pixel 32,33 3 pixel 33,33 2
+  pixel 23,34 2 pixel 24,34 3 pixel 25,34 3 pixel 26,34 3 pixel 27,34 15 pixel 28,34 3 pixel 29,34 2 pixel 30,34 3 pixel 31,34 15 pixel 32,34 3 pixel 33,34 2
+  pixel 22,35 2 pixel 23,35 3 pixel 24,35 3 pixel 25,35 3 pixel 26,35 3 pixel 27,35 15 pixel 28,35 3 pixel 29,35 2 pixel 30,35 3 pixel 31,35 15 pixel 32,35 3 pixel 33,35 3
+  pixel 21,36 2 pixel 22,36 3 pixel 23,36 3 pixel 24,36 3 pixel 25,36 3 pixel 26,36 3 pixel 27,36 15 pixel 28,36 3 pixel 29,36 2 pixel 30,36 3 pixel 31,36 15 pixel 32,36 3 pixel 33,36 3 pixel 34,36 3
+  pixel 21,37 2 pixel 22,37 3 pixel 23,37 3 pixel 24,37 3 pixel 25,37 3 pixel 26,37 15 pixel 27,37 3 pixel 28,37 3 pixel 29,37 2 pixel 30,37 3 pixel 31,37 3 pixel 32,37 15 pixel 33,37 3 pixel 34,37 3
+  pixel 20,38 2 pixel 21,38 3 pixel 22,38 3 pixel 23,38 3 pixel 24,38 3 pixel 25,38 15 pixel 26,38 3 pixel 27,38 3 pixel 28,38 2 pixel 29,38 2 pixel 30,38 2 pixel 31,38 3 pixel 32,38 3 pixel 33,38 15 pixel 34,38 3 pixel 35,38 2
+  pixel 19,39 2 pixel 20,39 3 pixel 21,39 3 pixel 22,39 3 pixel 23,39 15 pixel 24,39 15 pixel 25,39 3 pixel 26,39 3 pixel 27,39 2 pixel 28,39 2 pixel 29,39 2 pixel 30,39 2 pixel 31,39 2 pixel 32,39 3 pixel 33,39 15 pixel 34,39 2 pixel 35,39 2 pixel 36,39 2
+  pixel 19,40 3 pixel 20,40 3 pixel 21,40 3 pixel 22,40 15 pixel 23,40 15 pixel 24,40 3 pixel 25,40 3 pixel 26,40 2 pixel 27,40 2 pixel 28,40 2 pixel 29,40 2 pixel 30,40 2 pixel 31,40 2 pixel 32,40 3 pixel 33,40 15 pixel 34,40 15 pixel 35,40 2 pixel 36,40 2
+  pixel 19,41 15 pixel 20,41 15 pixel 21,41 15 pixel 22,41 15 pixel 34,41 15 pixel 35,41 15 pixel 36,41 15
+  pixel 24,42 3 pixel 25,42 3 pixel 29,42 2 pixel 30,42 3 pixel 31,42 3
+  pixel 24,43 2 pixel 25,43 3 pixel 26,43 3 pixel 30,43 2 pixel 31,43 3
+  pixel 24,44 2 pixel 25,44 2 pixel 30,44 2 pixel 31,44 2
+@layer view_right_skin_layer
+  cell: cell_0_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin
+  cell: cell_0_0
+  parent: view_right_skin_layer
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+  pixel 26,18 9
+  pixel 26,19 8
+  pixel 26,20 10
+  pixel 26,21 9 pixel 27,21 9 pixel 33,21 9
+  pixel 25,22 10 pixel 26,22 10 pixel 27,22 10 pixel 32,22 10 pixel 33,22 10
+  pixel 24,24 10 pixel 27,24 10 pixel 28,24 10 pixel 29,24 10 pixel 30,24 10 pixel 31,24 10 pixel 34,24 10
+  pixel 23,25 10 pixel 24,25 10 pixel 27,25 10 pixel 28,25 10 pixel 29,25 10 pixel 30,25 10 pixel 31,25 10 pixel 34,25 10
+  pixel 23,26 10 pixel 24,26 10 pixel 25,26 10 pixel 26,26 10 pixel 27,26 10 pixel 28,26 10 pixel 29,26 10 pixel 30,26 10 pixel 31,26 10 pixel 32,26 10 pixel 33,26 10 pixel 34,26 10
+  pixel 24,27 10 pixel 25,27 10 pixel 26,27 10 pixel 27,27 10 pixel 28,27 10 pixel 30,27 10 pixel 31,27 10 pixel 32,27 10 pixel 33,27 10
+  pixel 25,28 10 pixel 26,28 10 pixel 27,28 10 pixel 28,28 10 pixel 29,28 10 pixel 30,28 10 pixel 31,28 10 pixel 32,28 10
+  pixel 24,41 8 pixel 25,41 10 pixel 26,41 10 pixel 29,41 8 pixel 30,41 10 pixel 31,41 10 pixel 32,41 8
+@layer view_right_outline_layer
+  cell: cell_0_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline
+  cell: cell_0_0
+  parent: view_right_outline_layer
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+  pixel 17,2 1 pixel 18,2 1 pixel 19,2 1 pixel 20,2 1 pixel 21,2 1 pixel 22,2 1
+  pixel 16,3 1 pixel 22,3 1 pixel 23,3 1 pixel 24,3 1
+  pixel 15,4 1 pixel 25,4 1 pixel 26,4 1 pixel 27,4 1
+  pixel 14,5 1 pixel 27,5 1 pixel 28,5 1 pixel 29,5 1 pixel 30,5 1
+  pixel 13,6 1 pixel 14,6 1 pixel 30,6 1 pixel 31,6 1 pixel 32,6 1
+  pixel 11,7 1 pixel 12,7 1 pixel 13,7 1 pixel 32,7 1 pixel 33,7 1 pixel 34,7 1 pixel 35,7 1 pixel 36,7 1 pixel 37,7 1 pixel 38,7 1 pixel 39,7 1 pixel 40,7 1 pixel 41,7 1
+  pixel 9,8 1 pixel 10,8 1 pixel 11,8 1 pixel 42,8 1
+  pixel 9,9 1 pixel 10,9 1 pixel 11,9 1 pixel 31,9 1 pixel 40,9 1 pixel 41,9 1 pixel 42,9 1
+  pixel 8,10 1 pixel 19,10 1 pixel 20,10 1 pixel 21,10 1 pixel 28,10 1 pixel 29,10 1 pixel 38,10 1 pixel 39,10 1 pixel 42,10 1
+  pixel 8,11 1 pixel 18,11 1 pixel 21,11 1 pixel 27,11 1 pixel 36,11 1 pixel 37,11 1 pixel 42,11 1
+  pixel 8,12 1 pixel 17,12 1 pixel 20,12 1 pixel 22,12 1 pixel 26,12 1 pixel 34,12 1 pixel 35,12 1 pixel 36,12 1 pixel 41,12 1
+  pixel 8,13 1 pixel 17,13 1 pixel 21,13 1 pixel 23,13 1 pixel 24,13 1 pixel 25,13 1 pixel 32,13 1 pixel 33,13 1 pixel 37,13 1 pixel 40,13 1
+  pixel 8,14 1 pixel 13,14 1 pixel 14,14 1 pixel 17,14 1 pixel 23,14 1 pixel 31,14 1 pixel 37,14 1 pixel 39,14 1
+  pixel 8,15 1 pixel 12,15 1 pixel 13,15 1 pixel 14,15 1 pixel 18,15 1 pixel 22,15 1 pixel 29,15 1 pixel 30,15 1 pixel 38,15 1
+  pixel 6,16 1 pixel 7,16 1 pixel 8,16 1 pixel 12,16 1 pixel 14,16 1 pixel 19,16 1 pixel 20,16 1 pixel 21,16 1 pixel 28,16 1 pixel 38,16 1
+  pixel 5,17 1 pixel 12,17 1 pixel 14,17 1 pixel 17,17 1 pixel 19,17 1 pixel 27,17 1 pixel 38,17 1 pixel 39,17 1
+  pixel 5,18 1 pixel 11,18 1 pixel 14,18 1 pixel 15,18 1 pixel 16,18 1 pixel 19,18 1 pixel 39,18 1
+  pixel 5,19 1 pixel 8,19 1 pixel 9,19 1 pixel 10,19 1 pixel 13,19 1 pixel 18,19 1 pixel 19,19 1 pixel 24,19 1 pixel 40,19 1
+  pixel 5,20 1 pixel 7,20 1 pixel 13,20 1 pixel 15,20 1 pixel 18,20 1 pixel 22,20 1 pixel 23,20 1 pixel 40,20 1
+  pixel 5,21 1 pixel 6,21 1 pixel 12,21 1 pixel 14,21 1 pixel 18,21 1 pixel 20,21 1 pixel 21,21 1 pixel 40,21 1
+  pixel 11,22 1 pixel 14,22 1 pixel 18,22 1 pixel 19,22 1 pixel 40,22 1
+  pixel 10,23 1 pixel 14,23 1 pixel 16,23 1 pixel 17,23 1 pixel 40,23 1
+  pixel 9,24 1 pixel 13,24 1 pixel 14,24 1 pixel 15,24 1 pixel 16,24 1 pixel 27,24 13 pixel 39,24 1
+  pixel 8,25 1 pixel 11,25 1 pixel 12,25 1 pixel 14,25 1 pixel 39,25 1
+  pixel 8,26 1 pixel 10,26 1 pixel 11,26 1 pixel 14,26 1 pixel 37,26 1 pixel 38,26 1
+  pixel 8,27 1 pixel 9,27 1 pixel 12,27 1 pixel 13,27 1 pixel 14,27 1 pixel 36,27 1
+  pixel 9,28 1 pixel 10,28 1 pixel 11,28 1 pixel 13,28 1 pixel 23,28 1 pixel 24,28 10 pixel 25,28 10 pixel 36,28 1
+  pixel 13,29 1 pixel 23,29 1 pixel 33,29 1 pixel 36,29 1
+  pixel 11,30 1 pixel 12,30 1 pixel 23,30 1 pixel 33,30 1 pixel 36,30 1
+  pixel 11,31 1 pixel 22,31 1 pixel 33,31 1 pixel 35,31 1
+  pixel 11,32 1 pixel 21,32 1 pixel 22,32 1 pixel 34,32 1
+  pixel 7,33 1 pixel 8,33 1 pixel 9,33 1 pixel 10,33 1 pixel 21,33 1 pixel 22,33 1 pixel 34,33 1
+  pixel 6,34 1 pixel 22,34 1 pixel 34,34 1
+  pixel 5,35 1 pixel 21,35 1 pixel 34,35 1 pixel 35,35 1
+  pixel 4,36 1 pixel 20,36 1 pixel 35,36 1
+  pixel 4,37 1 pixel 20,37 1 pixel 35,37 1 pixel 36,37 1
+  pixel 4,38 1 pixel 19,38 1 pixel 36,38 1
+  pixel 4,39 1 pixel 6,39 1 pixel 7,39 1 pixel 8,39 1 pixel 18,39 1 pixel 37,39 1
+  pixel 5,40 1 pixel 8,40 1 pixel 17,40 1 pixel 18,40 1 pixel 37,40 1
+  pixel 8,41 1 pixel 12,41 1 pixel 16,41 1 pixel 18,41 1 pixel 23,41 1 pixel 27,41 1 pixel 29,41 1 pixel 33,41 1 pixel 37,41 1
+  pixel 8,42 1 pixel 9,42 1 pixel 11,42 1 pixel 13,42 1 pixel 14,42 1 pixel 15,42 1 pixel 23,42 1 pixel 26,42 1 pixel 27,42 1 pixel 29,42 1 pixel 32,42 1 pixel 33,42 1
+  pixel 9,43 1 pixel 10,43 1 pixel 11,43 1 pixel 23,43 1 pixel 26,43 1 pixel 29,43 1 pixel 32,43 1
+  pixel 10,44 1 pixel 23,44 1 pixel 24,44 1 pixel 25,44 1 pixel 29,44 1 pixel 30,44 1 pixel 31,44 1
+@layer view_right_silver_hair_metal_layer
+  cell: cell_0_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal
+  cell: cell_0_0
+  parent: view_right_silver_hair_metal_layer
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+  pixel 19,11 6 pixel 20,11 7
+  pixel 18,12 5 pixel 19,12 7
+  pixel 18,13 5 pixel 19,13 7 pixel 20,13 17 pixel 22,13 6 pixel 34,13 5 pixel 35,13 5 pixel 36,13 5
+  pixel 18,14 5 pixel 19,14 6 pixel 20,14 7 pixel 21,14 7 pixel 22,14 6 pixel 34,14 5 pixel 35,14 6 pixel 36,14 6
+  pixel 19,15 5 pixel 20,15 6 pixel 21,15 6 pixel 31,15 17 pixel 32,15 17 pixel 33,15 5 pixel 34,15 6 pixel 35,15 6 pixel 36,15 6 pixel 37,15 7
+  pixel 29,16 6 pixel 30,16 6 pixel 31,16 6 pixel 32,16 17 pixel 33,16 6 pixel 34,16 6 pixel 35,16 7 pixel 36,16 7 pixel 37,16 7
+  pixel 28,17 6 pixel 29,17 6 pixel 30,17 6 pixel 31,17 6 pixel 32,17 7 pixel 33,17 7 pixel 34,17 7 pixel 35,17 7 pixel 36,17 7 pixel 37,17 7
+  pixel 27,18 17 pixel 28,18 6 pixel 29,18 6 pixel 30,18 17 pixel 31,18 7 pixel 32,18 7 pixel 33,18 7 pixel 34,18 6 pixel 35,18 7 pixel 36,18 7 pixel 37,18 7 pixel 38,18 7
+  pixel 25,19 5 pixel 27,19 17 pixel 28,19 6 pixel 29,19 6 pixel 30,19 17 pixel 31,19 7 pixel 32,19 7 pixel 33,19 5 pixel 34,19 5 pixel 35,19 7 pixel 36,19 7 pixel 37,19 6 pixel 38,19 7 pixel 39,19 5
+  pixel 24,20 5 pixel 25,20 17 pixel 27,20 17 pixel 28,20 6 pixel 29,20 6 pixel 30,20 7 pixel 31,20 7 pixel 32,20 7 pixel 33,20 5 pixel 34,20 5 pixel 35,20 7 pixel 36,20 7 pixel 37,20 6 pixel 38,20 7 pixel 39,20 7
+  pixel 22,21 17 pixel 23,21 17 pixel 24,21 17 pixel 25,21 17 pixel 28,21 6 pixel 29,21 6 pixel 30,21 7 pixel 31,21 7 pixel 32,21 6 pixel 34,21 5 pixel 35,21 6 pixel 36,21 6 pixel 37,21 6 pixel 38,21 6 pixel 39,21 7
+  pixel 20,22 5 pixel 21,22 17 pixel 22,22 17 pixel 23,22 17 pixel 24,22 17 pixel 28,22 17 pixel 29,22 7 pixel 30,22 17 pixel 31,22 5 pixel 34,22 5 pixel 35,22 6 pixel 36,22 6 pixel 37,22 6 pixel 38,22 5 pixel 39,22 7
+  pixel 18,23 5 pixel 19,23 5 pixel 20,23 17 pixel 21,23 17 pixel 22,23 17 pixel 23,23 17 pixel 28,23 6 pixel 29,23 5 pixel 30,23 5 pixel 35,23 6 pixel 36,23 6 pixel 37,23 6 pixel 38,23 5 pixel 39,23 7
+  pixel 17,24 5 pixel 18,24 5 pixel 19,24 5 pixel 20,24 17 pixel 21,24 17 pixel 22,24 17 pixel 23,24 17 pixel 25,24 7 pixel 33,24 7 pixel 35,24 6 pixel 36,24 6 pixel 37,24 5 pixel 38,24 5
+  pixel 15,25 5 pixel 16,25 6 pixel 17,25 5 pixel 18,25 5 pixel 19,25 5 pixel 20,25 17 pixel 21,25 17 pixel 22,25 17 pixel 25,25 7 pixel 33,25 7 pixel 35,25 5 pixel 36,25 6 pixel 37,25 5 pixel 38,25 5
+  pixel 15,26 5 pixel 16,26 6 pixel 17,26 5 pixel 18,26 5 pixel 19,26 5 pixel 20,26 5 pixel 21,26 5 pixel 22,26 17 pixel 34,26 5 pixel 35,26 5 pixel 36,26 6
+  pixel 15,27 5 pixel 16,27 6 pixel 17,27 5 pixel 18,27 5 pixel 19,27 6 pixel 20,27 5 pixel 21,27 5 pixel 22,27 5 pixel 23,27 17 pixel 34,27 5 pixel 35,27 6
+  pixel 14,28 5 pixel 15,28 6 pixel 16,28 6 pixel 17,28 5 pixel 18,28 5 pixel 19,28 17 pixel 20,28 5 pixel 21,28 6 pixel 22,28 17 pixel 23,28 6 pixel 24,28 6 pixel 33,28 5 pixel 34,28 6 pixel 35,28 6
+  pixel 14,29 5 pixel 15,29 6 pixel 16,29 5 pixel 17,29 5 pixel 18,29 5 pixel 19,29 17 pixel 20,29 5 pixel 21,29 17 pixel 22,29 17 pixel 23,29 6 pixel 34,29 7 pixel 35,29 7
+  pixel 13,30 6 pixel 14,30 6 pixel 15,30 5 pixel 16,30 5 pixel 17,30 5 pixel 18,30 17 pixel 19,30 5 pixel 20,30 5 pixel 21,30 17 pixel 22,30 17 pixel 34,30 6 pixel 35,30 6
+  pixel 12,31 5 pixel 13,31 6 pixel 14,31 5 pixel 15,31 5 pixel 16,31 5 pixel 17,31 17 pixel 18,31 17 pixel 19,31 5 pixel 20,31 17 pixel 21,31 17 pixel 28,31 7 pixel 29,31 6 pixel 30,31 7 pixel 34,31 5
+  pixel 12,32 5 pixel 13,32 5 pixel 14,32 5 pixel 15,32 7 pixel 16,32 7 pixel 17,32 17 pixel 18,32 17 pixel 19,32 5 pixel 20,32 17
+  pixel 11,33 7 pixel 12,33 7 pixel 13,33 7 pixel 14,33 7 pixel 15,33 7 pixel 16,33 7 pixel 17,33 7 pixel 18,33 5 pixel 19,33 5 pixel 20,33 5 pixel 28,33 7 pixel 29,33 6 pixel 30,33 7
+  pixel 7,34 7 pixel 8,34 7 pixel 9,34 7 pixel 10,34 7 pixel 11,34 7 pixel 12,34 7 pixel 13,34 7 pixel 14,34 7 pixel 15,34 7 pixel 16,34 5 pixel 17,34 5 pixel 18,34 5 pixel 19,34 5 pixel 20,34 5 pixel 21,34 5
+  pixel 6,35 7 pixel 7,35 7 pixel 8,35 6 pixel 9,35 6 pixel 10,35 6 pixel 11,35 6 pixel 12,35 7 pixel 13,35 7 pixel 14,35 5 pixel 15,35 5 pixel 16,35 5 pixel 17,35 6 pixel 18,35 6 pixel 19,35 5 pixel 20,35 5
+  pixel 5,36 7 pixel 6,36 7 pixel 7,36 5 pixel 8,36 5 pixel 9,36 5 pixel 10,36 6 pixel 11,36 6 pixel 12,36 5 pixel 13,36 5 pixel 14,36 6 pixel 15,36 6 pixel 16,36 6 pixel 17,36 6 pixel 18,36 5 pixel 19,36 5
+  pixel 5,37 7 pixel 6,37 7 pixel 7,37 5 pixel 8,37 5 pixel 9,37 5 pixel 10,37 5 pixel 11,37 6 pixel 12,37 6 pixel 13,37 6 pixel 14,37 6 pixel 15,37 6 pixel 16,37 5 pixel 17,37 5 pixel 18,37 5 pixel 19,37 6
+  pixel 5,38 7 pixel 6,38 5 pixel 7,38 5 pixel 8,38 5 pixel 9,38 6 pixel 10,38 6 pixel 11,38 6 pixel 12,38 6 pixel 13,38 6 pixel 14,38 6 pixel 15,38 5 pixel 16,38 5 pixel 17,38 6 pixel 18,38 6
+  pixel 5,39 17 pixel 9,39 6 pixel 10,39 6 pixel 11,39 6 pixel 12,39 6 pixel 13,39 6 pixel 14,39 5 pixel 15,39 5 pixel 16,39 5 pixel 17,39 6
+  pixel 9,40 6 pixel 10,40 6 pixel 11,40 6 pixel 12,40 5 pixel 13,40 5 pixel 14,40 5 pixel 15,40 5 pixel 16,40 5
+  pixel 9,41 6 pixel 10,41 6 pixel 11,41 5 pixel 13,41 5 pixel 14,41 5 pixel 15,41 5
+  pixel 9,42 6 pixel 10,42 5
+  pixel 10,43 5
+@layer view_right_wine_accents_layer
+  cell: cell_0_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents
+  cell: cell_0_0
+  parent: view_right_wine_accents_layer
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+  pixel 40,10 13 pixel 41,10 12
+  pixel 38,11 13 pixel 39,11 13 pixel 40,11 13 pixel 41,11 12
+  pixel 37,12 13 pixel 38,12 13 pixel 39,12 13 pixel 40,12 12
+  pixel 38,13 13 pixel 39,13 12
+  pixel 38,14 12
+  pixel 16,15 12 pixel 17,15 12
+  pixel 15,16 12 pixel 16,16 12 pixel 17,16 12 pixel 18,16 13
+  pixel 15,17 12 pixel 16,17 12 pixel 18,17 12
+  pixel 17,18 12 pixel 18,18 12
+  pixel 16,19 12 pixel 17,19 12
+  pixel 16,20 12 pixel 17,20 12
+  pixel 15,21 12 pixel 16,21 12 pixel 17,21 12
+  pixel 15,22 12 pixel 16,22 12 pixel 17,22 12
+  pixel 15,23 12 pixel 24,23 13 pixel 25,23 13 pixel 26,23 13 pixel 27,23 13 pixel 31,23 13 pixel 32,23 13 pixel 33,23 13 pixel 34,23 13
+  pixel 23,24 13 pixel 26,24 19 pixel 27,24 18 pixel 31,24 19 pixel 32,24 18 pixel 35,24 13
+  pixel 13,25 13 pixel 26,25 18 pixel 27,25 18 pixel 31,25 18 pixel 32,25 18
+  pixel 11,26 13 pixel 12,26 13 pixel 13,26 13
+  pixel 10,27 13 pixel 11,27 13 pixel 29,27 11
+  pixel 28,29 11 pixel 29,29 11 pixel 30,29 11
+  pixel 19,42 12 pixel 20,42 12 pixel 21,42 12 pixel 35,42 12 pixel 36,42 12
+  pixel 18,43 12 pixel 19,43 12 pixel 20,43 12 pixel 35,43 12
+  pixel 17,44 12 pixel 18,44 12 pixel 34,44 12
+
+@cell cell_0_1
+  name: "idle right 1"
+  frame: 1
+  grid_pos: 0,1
+@layer layer_legacy_cell_0_1
+  cell: cell_0_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1
+  cell: cell_0_1
+  parent: layer_legacy_cell_0_1
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_0_2
+  name: "idle right 2"
+  frame: 2
+  grid_pos: 0,2
+@layer layer_legacy_cell_0_2
+  cell: cell_0_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2
+  cell: cell_0_2
+  parent: layer_legacy_cell_0_2
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_0_3
+  name: "idle right 3"
+  frame: 3
+  grid_pos: 0,3
+@layer layer_legacy_cell_0_3
+  cell: cell_0_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3
+  cell: cell_0_3
+  parent: layer_legacy_cell_0_3
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cell_0_4
+  name: "idle right 4"
+  frame: 4
+  grid_pos: 0,4
+@layer layer_legacy_cell_0_4
+  cell: cell_0_4
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_4
+  cell: cell_0_4
+  parent: layer_legacy_cell_0_4
+  name: "idle right 4"
+  visible: true
+  locked: false
+
+@cell cell_0_5
+  name: "idle right 5"
+  frame: 5
+  grid_pos: 0,5
+@layer layer_legacy_cell_0_5
+  cell: cell_0_5
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_5
+  cell: cell_0_5
+  parent: layer_legacy_cell_0_5
+  name: "idle right 5"
+  visible: true
+  locked: false
+
+@cell cell_0_6
+  name: "idle right 6"
+  frame: 6
+  grid_pos: 0,6
+@layer layer_legacy_cell_0_6
+  cell: cell_0_6
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_6
+  cell: cell_0_6
+  parent: layer_legacy_cell_0_6
+  name: "idle right 6"
+  visible: true
+  locked: false
+
+@cell cell_0_7
+  name: "idle right 7"
+  frame: 7
+  grid_pos: 0,7
+@layer layer_legacy_cell_0_7
+  cell: cell_0_7
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_7
+  cell: cell_0_7
+  parent: layer_legacy_cell_0_7
+  name: "idle right 7"
+  visible: true
+  locked: false
+
+@cell cell_1_0
+  name: "walk_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 1,0
+@layer view_right_hat_coat_layer_copy
+  cell: cell_1_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy
+  cell: cell_1_0
+  parent: view_right_hat_coat_layer_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+  pixel 17,3 4 pixel 18,3 4 pixel 19,3 4 pixel 20,3 4 pixel 21,3 4
+  pixel 16,4 3 pixel 17,4 3 pixel 18,4 4 pixel 19,4 2 pixel 20,4 4 pixel 21,4 4 pixel 22,4 4 pixel 23,4 4 pixel 24,4 4
+  pixel 15,5 3 pixel 16,5 3 pixel 17,5 3 pixel 18,5 2 pixel 19,5 2 pixel 20,5 4 pixel 21,5 4 pixel 22,5 4 pixel 23,5 4 pixel 24,5 4 pixel 25,5 4 pixel 26,5 4
+  pixel 15,6 3 pixel 16,6 3 pixel 17,6 3 pixel 18,6 2 pixel 19,6 2 pixel 20,6 4 pixel 21,6 4 pixel 22,6 4 pixel 23,6 4 pixel 24,6 4 pixel 25,6 4 pixel 26,6 2 pixel 27,6 2 pixel 28,6 2 pixel 29,6 2
+  pixel 14,7 3 pixel 15,7 3 pixel 16,7 3 pixel 17,7 2 pixel 18,7 2 pixel 19,7 4 pixel 20,7 4 pixel 21,7 4 pixel 22,7 4 pixel 23,7 2 pixel 24,7 2 pixel 25,7 2 pixel 26,7 2 pixel 27,7 2 pixel 28,7 2 pixel 29,7 4 pixel 30,7 4 pixel 31,7 4
+  pixel 12,8 3 pixel 13,8 3 pixel 14,8 3 pixel 15,8 4 pixel 16,8 3 pixel 17,8 2 pixel 18,8 2 pixel 19,8 4 pixel 20,8 4 pixel 21,8 4 pixel 22,8 2 pixel 23,8 2 pixel 24,8 2 pixel 25,8 2 pixel 26,8 3 pixel 27,8 3 pixel 28,8 3 pixel 29,8 4 pixel 30,8 4 pixel 31,8 4 pixel 32,8 2 pixel 33,8 3 pixel 34,8 4 pixel 35,8 4 pixel 36,8 4 pixel 37,8 4 pixel 38,8 4 pixel 39,8 4 pixel 40,8 4 pixel 41,8 4
+  pixel 12,9 4 pixel 13,9 4 pixel 14,9 4 pixel 15,9 4 pixel 16,9 3 pixel 17,9 2 pixel 18,9 2 pixel 19,9 4 pixel 20,9 4 pixel 21,9 2 pixel 22,9 2 pixel 23,9 2 pixel 24,9 3 pixel 25,9 3 pixel 26,9 3 pixel 27,9 3 pixel 28,9 3 pixel 29,9 4 pixel 30,9 2 pixel 32,9 4 pixel 33,9 4 pixel 34,9 4 pixel 35,9 4 pixel 36,9 4 pixel 37,9 4 pixel 38,9 4 pixel 39,9 2
+  pixel 9,10 4 pixel 10,10 4 pixel 11,10 4 pixel 12,10 4 pixel 13,10 4 pixel 14,10 4 pixel 15,10 4 pixel 16,10 2 pixel 17,10 2 pixel 18,10 2 pixel 22,10 3 pixel 23,10 3 pixel 24,10 3 pixel 25,10 3 pixel 26,10 3 pixel 27,10 3 pixel 30,10 2 pixel 31,10 4 pixel 32,10 4 pixel 33,10 4 pixel 34,10 4 pixel 35,10 4 pixel 36,10 4 pixel 37,10 4
+  pixel 9,11 4 pixel 10,11 4 pixel 11,11 4 pixel 12,11 4 pixel 13,11 4 pixel 14,11 4 pixel 15,11 3 pixel 16,11 2 pixel 17,11 2 pixel 22,11 3 pixel 23,11 3 pixel 24,11 3 pixel 25,11 3 pixel 26,11 3 pixel 28,11 4 pixel 29,11 4 pixel 30,11 4 pixel 31,11 4 pixel 32,11 4 pixel 33,11 4 pixel 34,11 4 pixel 35,11 4
+  pixel 9,12 4 pixel 10,12 4 pixel 11,12 2 pixel 12,12 2 pixel 13,12 4 pixel 14,12 4 pixel 15,12 3 pixel 16,12 2 pixel 21,12 2 pixel 23,12 3 pixel 24,12 2 pixel 25,12 2 pixel 27,12 4 pixel 28,12 4 pixel 29,12 4 pixel 30,12 4 pixel 31,12 4 pixel 32,12 4 pixel 33,12 4
+  pixel 9,13 4 pixel 10,13 2 pixel 11,13 2 pixel 12,13 2 pixel 13,13 2 pixel 14,13 2 pixel 15,13 2 pixel 16,13 2 pixel 26,13 3 pixel 27,13 4 pixel 28,13 4 pixel 29,13 4 pixel 30,13 4 pixel 31,13 4
+  pixel 9,14 4 pixel 10,14 2 pixel 11,14 2 pixel 12,14 2 pixel 15,14 2 pixel 16,14 2 pixel 24,14 2 pixel 25,14 3 pixel 26,14 3 pixel 27,14 4 pixel 28,14 4 pixel 29,14 4 pixel 30,14 4 pixel 32,14 4 pixel 33,14 4
+  pixel 9,15 4 pixel 10,15 2 pixel 11,15 2 pixel 15,15 2 pixel 23,15 2 pixel 24,15 3 pixel 25,15 3 pixel 26,15 3 pixel 27,15 3 pixel 28,15 4
+  pixel 9,16 4 pixel 10,16 2 pixel 11,16 2 pixel 22,16 2 pixel 23,16 3 pixel 24,16 3 pixel 25,16 3 pixel 26,16 3 pixel 27,16 3
+  pixel 6,17 2 pixel 7,17 2 pixel 8,17 2 pixel 9,17 4 pixel 10,17 2 pixel 11,17 2 pixel 20,17 2 pixel 21,17 2 pixel 22,17 2 pixel 23,17 3 pixel 24,17 3 pixel 25,17 3 pixel 26,17 1
+  pixel 6,18 2 pixel 7,18 2 pixel 8,18 2 pixel 9,18 2 pixel 10,18 2 pixel 20,18 2 pixel 21,18 2 pixel 22,18 3 pixel 23,18 3 pixel 24,18 3 pixel 25,18 1
+  pixel 6,19 2 pixel 7,19 2 pixel 14,19 2 pixel 15,19 2 pixel 20,19 2 pixel 21,19 3 pixel 22,19 3 pixel 23,19 3
+  pixel 6,20 2 pixel 14,20 3 pixel 19,20 3 pixel 20,20 3 pixel 21,20 3
+  pixel 13,21 3 pixel 19,21 3
+  pixel 12,22 3 pixel 13,22 3 pixel 19,22 1
+  pixel 11,23 3 pixel 12,23 3 pixel 13,23 3
+  pixel 10,24 2 pixel 11,24 3 pixel 12,24 3
+  pixel 9,25 3 pixel 10,25 3
+  pixel 9,26 3
+  pixel 24,28 15 pixel 25,28 15 pixel 32,28 15
+  pixel 24,29 2 pixel 25,29 15 pixel 26,29 15 pixel 27,29 2 pixel 29,29 2 pixel 31,29 2 pixel 32,29 15
+  pixel 24,30 2 pixel 25,30 3 pixel 26,30 15 pixel 27,30 15 pixel 28,30 3 pixel 29,30 2 pixel 30,30 3 pixel 31,30 15 pixel 32,30 2
+  pixel 23,31 2 pixel 24,31 3 pixel 25,31 3 pixel 26,31 2 pixel 27,31 15 pixel 28,31 2 pixel 31,31 15 pixel 32,31 2
+  pixel 23,32 15 pixel 24,32 15 pixel 25,32 15 pixel 26,32 15 pixel 27,32 15 pixel 28,32 2 pixel 29,32 2 pixel 30,32 2 pixel 31,32 15 pixel 32,32 15 pixel 33,32 15
+  pixel 23,33 2 pixel 24,33 3 pixel 25,33 3 pixel 26,33 2 pixel 27,33 15 pixel 28,33 2 pixel 31,33 15 pixel 32,33 3 pixel 33,33 2
+  pixel 23,34 2 pixel 24,34 3 pixel 25,34 3 pixel 26,34 3 pixel 27,34 15 pixel 28,34 3 pixel 29,34 2 pixel 30,34 3 pixel 31,34 15 pixel 32,34 3 pixel 33,34 2
+  pixel 22,35 2 pixel 23,35 3 pixel 24,35 3 pixel 25,35 3 pixel 26,35 3 pixel 27,35 15 pixel 28,35 3 pixel 29,35 2 pixel 30,35 3 pixel 31,35 15 pixel 32,35 3 pixel 33,35 3
+  pixel 21,36 2 pixel 22,36 3 pixel 23,36 3 pixel 24,36 3 pixel 25,36 3 pixel 26,36 3 pixel 27,36 15 pixel 28,36 3 pixel 29,36 2 pixel 30,36 3 pixel 31,36 15 pixel 32,36 3 pixel 33,36 3 pixel 34,36 3
+  pixel 21,37 2 pixel 22,37 3 pixel 23,37 3 pixel 24,37 3 pixel 25,37 3 pixel 26,37 15 pixel 27,37 3 pixel 28,37 3 pixel 29,37 2 pixel 30,37 3 pixel 31,37 3 pixel 32,37 15 pixel 33,37 3 pixel 34,37 3
+  pixel 20,38 2 pixel 21,38 3 pixel 22,38 3 pixel 23,38 3 pixel 24,38 3 pixel 25,38 15 pixel 26,38 3 pixel 27,38 3 pixel 28,38 2 pixel 29,38 2 pixel 30,38 2 pixel 31,38 3 pixel 32,38 3 pixel 33,38 15 pixel 34,38 3 pixel 35,38 2
+  pixel 19,39 2 pixel 20,39 3 pixel 21,39 3 pixel 22,39 3 pixel 23,39 15 pixel 24,39 15 pixel 25,39 3 pixel 26,39 3 pixel 27,39 2 pixel 28,39 2 pixel 29,39 2 pixel 30,39 2 pixel 31,39 2 pixel 32,39 3 pixel 33,39 15 pixel 34,39 2 pixel 35,39 2 pixel 36,39 2
+  pixel 19,40 3 pixel 20,40 3 pixel 21,40 3 pixel 22,40 15 pixel 23,40 15 pixel 24,40 3 pixel 25,40 3 pixel 26,40 2 pixel 27,40 2 pixel 28,40 2 pixel 29,40 2 pixel 30,40 2 pixel 31,40 2 pixel 32,40 3 pixel 33,40 15 pixel 34,40 15 pixel 35,40 2 pixel 36,40 2
+  pixel 19,41 15 pixel 20,41 15 pixel 21,41 15 pixel 22,41 15 pixel 34,41 15 pixel 35,41 15 pixel 36,41 15
+  pixel 24,42 3 pixel 25,42 3 pixel 29,42 2 pixel 30,42 3 pixel 31,42 3
+  pixel 24,43 2 pixel 25,43 3 pixel 26,43 3 pixel 30,43 2 pixel 31,43 3
+  pixel 24,44 2 pixel 25,44 2 pixel 30,44 2 pixel 31,44 2
+@layer view_right_skin_layer_copy
+  cell: cell_1_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy
+  cell: cell_1_0
+  parent: view_right_skin_layer_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+  pixel 26,18 9
+  pixel 26,19 8
+  pixel 26,20 10
+  pixel 26,21 9 pixel 27,21 9 pixel 33,21 9
+  pixel 25,22 10 pixel 26,22 10 pixel 27,22 10 pixel 32,22 10 pixel 33,22 10
+  pixel 24,24 10 pixel 27,24 10 pixel 28,24 10 pixel 29,24 10 pixel 30,24 10 pixel 31,24 10 pixel 34,24 10
+  pixel 23,25 10 pixel 24,25 10 pixel 27,25 10 pixel 28,25 10 pixel 29,25 10 pixel 30,25 10 pixel 31,25 10 pixel 34,25 10
+  pixel 23,26 10 pixel 24,26 10 pixel 25,26 10 pixel 26,26 10 pixel 27,26 10 pixel 28,26 10 pixel 29,26 10 pixel 30,26 10 pixel 31,26 10 pixel 32,26 10 pixel 33,26 10 pixel 34,26 10
+  pixel 24,27 10 pixel 25,27 10 pixel 26,27 10 pixel 27,27 10 pixel 28,27 10 pixel 30,27 10 pixel 31,27 10 pixel 32,27 10 pixel 33,27 10
+  pixel 25,28 10 pixel 26,28 10 pixel 27,28 10 pixel 28,28 10 pixel 29,28 10 pixel 30,28 10 pixel 31,28 10 pixel 32,28 10
+  pixel 24,41 8 pixel 25,41 10 pixel 26,41 10 pixel 29,41 8 pixel 30,41 10 pixel 31,41 10 pixel 32,41 8
+@layer view_right_outline_layer_copy
+  cell: cell_1_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy
+  cell: cell_1_0
+  parent: view_right_outline_layer_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+  pixel 17,2 1 pixel 18,2 1 pixel 19,2 1 pixel 20,2 1 pixel 21,2 1 pixel 22,2 1
+  pixel 16,3 1 pixel 22,3 1 pixel 23,3 1 pixel 24,3 1
+  pixel 15,4 1 pixel 25,4 1 pixel 26,4 1 pixel 27,4 1
+  pixel 14,5 1 pixel 27,5 1 pixel 28,5 1 pixel 29,5 1 pixel 30,5 1
+  pixel 13,6 1 pixel 14,6 1 pixel 30,6 1 pixel 31,6 1 pixel 32,6 1
+  pixel 11,7 1 pixel 12,7 1 pixel 13,7 1 pixel 32,7 1 pixel 33,7 1 pixel 34,7 1 pixel 35,7 1 pixel 36,7 1 pixel 37,7 1 pixel 38,7 1 pixel 39,7 1 pixel 40,7 1 pixel 41,7 1
+  pixel 9,8 1 pixel 10,8 1 pixel 11,8 1 pixel 42,8 1
+  pixel 9,9 1 pixel 10,9 1 pixel 11,9 1 pixel 31,9 1 pixel 40,9 1 pixel 41,9 1 pixel 42,9 1
+  pixel 8,10 1 pixel 19,10 1 pixel 20,10 1 pixel 21,10 1 pixel 28,10 1 pixel 29,10 1 pixel 38,10 1 pixel 39,10 1 pixel 42,10 1
+  pixel 8,11 1 pixel 18,11 1 pixel 21,11 1 pixel 27,11 1 pixel 36,11 1 pixel 37,11 1 pixel 42,11 1
+  pixel 8,12 1 pixel 17,12 1 pixel 20,12 1 pixel 22,12 1 pixel 26,12 1 pixel 34,12 1 pixel 35,12 1 pixel 36,12 1 pixel 41,12 1
+  pixel 8,13 1 pixel 17,13 1 pixel 21,13 1 pixel 23,13 1 pixel 24,13 1 pixel 25,13 1 pixel 32,13 1 pixel 33,13 1 pixel 37,13 1 pixel 40,13 1
+  pixel 8,14 1 pixel 13,14 1 pixel 14,14 1 pixel 17,14 1 pixel 23,14 1 pixel 31,14 1 pixel 37,14 1 pixel 39,14 1
+  pixel 8,15 1 pixel 12,15 1 pixel 13,15 1 pixel 14,15 1 pixel 18,15 1 pixel 22,15 1 pixel 29,15 1 pixel 30,15 1 pixel 38,15 1
+  pixel 6,16 1 pixel 7,16 1 pixel 8,16 1 pixel 12,16 1 pixel 14,16 1 pixel 19,16 1 pixel 20,16 1 pixel 21,16 1 pixel 28,16 1 pixel 38,16 1
+  pixel 5,17 1 pixel 12,17 1 pixel 14,17 1 pixel 17,17 1 pixel 19,17 1 pixel 27,17 1 pixel 38,17 1 pixel 39,17 1
+  pixel 5,18 1 pixel 11,18 1 pixel 14,18 1 pixel 15,18 1 pixel 16,18 1 pixel 19,18 1 pixel 39,18 1
+  pixel 5,19 1 pixel 8,19 1 pixel 9,19 1 pixel 10,19 1 pixel 13,19 1 pixel 18,19 1 pixel 19,19 1 pixel 24,19 1 pixel 40,19 1
+  pixel 5,20 1 pixel 7,20 1 pixel 13,20 1 pixel 15,20 1 pixel 18,20 1 pixel 22,20 1 pixel 23,20 1 pixel 40,20 1
+  pixel 5,21 1 pixel 6,21 1 pixel 12,21 1 pixel 14,21 1 pixel 18,21 1 pixel 20,21 1 pixel 21,21 1 pixel 40,21 1
+  pixel 11,22 1 pixel 14,22 1 pixel 18,22 1 pixel 19,22 1 pixel 40,22 1
+  pixel 10,23 1 pixel 14,23 1 pixel 16,23 1 pixel 17,23 1 pixel 40,23 1
+  pixel 9,24 1 pixel 13,24 1 pixel 14,24 1 pixel 15,24 1 pixel 16,24 1 pixel 27,24 13 pixel 39,24 1
+  pixel 8,25 1 pixel 11,25 1 pixel 12,25 1 pixel 14,25 1 pixel 39,25 1
+  pixel 8,26 1 pixel 10,26 1 pixel 11,26 1 pixel 14,26 1 pixel 37,26 1 pixel 38,26 1
+  pixel 8,27 1 pixel 9,27 1 pixel 12,27 1 pixel 13,27 1 pixel 14,27 1 pixel 36,27 1
+  pixel 9,28 1 pixel 10,28 1 pixel 11,28 1 pixel 13,28 1 pixel 23,28 1 pixel 24,28 10 pixel 25,28 10 pixel 36,28 1
+  pixel 13,29 1 pixel 23,29 1 pixel 33,29 1 pixel 36,29 1
+  pixel 11,30 1 pixel 12,30 1 pixel 23,30 1 pixel 33,30 1 pixel 36,30 1
+  pixel 11,31 1 pixel 22,31 1 pixel 33,31 1 pixel 35,31 1
+  pixel 11,32 1 pixel 21,32 1 pixel 22,32 1 pixel 34,32 1
+  pixel 7,33 1 pixel 8,33 1 pixel 9,33 1 pixel 10,33 1 pixel 21,33 1 pixel 22,33 1 pixel 34,33 1
+  pixel 6,34 1 pixel 22,34 1 pixel 34,34 1
+  pixel 5,35 1 pixel 21,35 1 pixel 34,35 1 pixel 35,35 1
+  pixel 4,36 1 pixel 20,36 1 pixel 35,36 1
+  pixel 4,37 1 pixel 20,37 1 pixel 35,37 1 pixel 36,37 1
+  pixel 4,38 1 pixel 19,38 1 pixel 36,38 1
+  pixel 4,39 1 pixel 6,39 1 pixel 7,39 1 pixel 8,39 1 pixel 18,39 1 pixel 37,39 1
+  pixel 5,40 1 pixel 8,40 1 pixel 17,40 1 pixel 18,40 1 pixel 37,40 1
+  pixel 8,41 1 pixel 12,41 1 pixel 16,41 1 pixel 18,41 1 pixel 23,41 1 pixel 27,41 1 pixel 29,41 1 pixel 33,41 1 pixel 37,41 1
+  pixel 8,42 1 pixel 9,42 1 pixel 11,42 1 pixel 13,42 1 pixel 14,42 1 pixel 15,42 1 pixel 23,42 1 pixel 26,42 1 pixel 27,42 1 pixel 29,42 1 pixel 32,42 1 pixel 33,42 1
+  pixel 9,43 1 pixel 10,43 1 pixel 11,43 1 pixel 23,43 1 pixel 26,43 1 pixel 29,43 1 pixel 32,43 1
+  pixel 10,44 1 pixel 23,44 1 pixel 24,44 1 pixel 25,44 1 pixel 29,44 1 pixel 30,44 1 pixel 31,44 1
+@layer view_right_silver_hair_metal_layer_copy
+  cell: cell_1_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy
+  cell: cell_1_0
+  parent: view_right_silver_hair_metal_layer_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+  pixel 19,11 6 pixel 20,11 7
+  pixel 18,12 5 pixel 19,12 7
+  pixel 18,13 5 pixel 19,13 7 pixel 20,13 17 pixel 22,13 6 pixel 34,13 5 pixel 35,13 5 pixel 36,13 5
+  pixel 18,14 5 pixel 19,14 6 pixel 20,14 7 pixel 21,14 7 pixel 22,14 6 pixel 34,14 5 pixel 35,14 6 pixel 36,14 6
+  pixel 19,15 5 pixel 20,15 6 pixel 21,15 6 pixel 31,15 17 pixel 32,15 17 pixel 33,15 5 pixel 34,15 6 pixel 35,15 6 pixel 36,15 6 pixel 37,15 7
+  pixel 29,16 6 pixel 30,16 6 pixel 31,16 6 pixel 32,16 17 pixel 33,16 6 pixel 34,16 6 pixel 35,16 7 pixel 36,16 7 pixel 37,16 7
+  pixel 28,17 6 pixel 29,17 6 pixel 30,17 6 pixel 31,17 6 pixel 32,17 7 pixel 33,17 7 pixel 34,17 7 pixel 35,17 7 pixel 36,17 7 pixel 37,17 7
+  pixel 27,18 17 pixel 28,18 6 pixel 29,18 6 pixel 30,18 17 pixel 31,18 7 pixel 32,18 7 pixel 33,18 7 pixel 34,18 6 pixel 35,18 7 pixel 36,18 7 pixel 37,18 7 pixel 38,18 7
+  pixel 25,19 5 pixel 27,19 17 pixel 28,19 6 pixel 29,19 6 pixel 30,19 17 pixel 31,19 7 pixel 32,19 7 pixel 33,19 5 pixel 34,19 5 pixel 35,19 7 pixel 36,19 7 pixel 37,19 6 pixel 38,19 7 pixel 39,19 5
+  pixel 24,20 5 pixel 25,20 17 pixel 27,20 17 pixel 28,20 6 pixel 29,20 6 pixel 30,20 7 pixel 31,20 7 pixel 32,20 7 pixel 33,20 5 pixel 34,20 5 pixel 35,20 7 pixel 36,20 7 pixel 37,20 6 pixel 38,20 7 pixel 39,20 7
+  pixel 22,21 17 pixel 23,21 17 pixel 24,21 17 pixel 25,21 17 pixel 28,21 6 pixel 29,21 6 pixel 30,21 7 pixel 31,21 7 pixel 32,21 6 pixel 34,21 5 pixel 35,21 6 pixel 36,21 6 pixel 37,21 6 pixel 38,21 6 pixel 39,21 7
+  pixel 20,22 5 pixel 21,22 17 pixel 22,22 17 pixel 23,22 17 pixel 24,22 17 pixel 28,22 17 pixel 29,22 7 pixel 30,22 17 pixel 31,22 5 pixel 34,22 5 pixel 35,22 6 pixel 36,22 6 pixel 37,22 6 pixel 38,22 5 pixel 39,22 7
+  pixel 18,23 5 pixel 19,23 5 pixel 20,23 17 pixel 21,23 17 pixel 22,23 17 pixel 23,23 17 pixel 28,23 6 pixel 29,23 5 pixel 30,23 5 pixel 35,23 6 pixel 36,23 6 pixel 37,23 6 pixel 38,23 5 pixel 39,23 7
+  pixel 17,24 5 pixel 18,24 5 pixel 19,24 5 pixel 20,24 17 pixel 21,24 17 pixel 22,24 17 pixel 23,24 17 pixel 25,24 7 pixel 33,24 7 pixel 35,24 6 pixel 36,24 6 pixel 37,24 5 pixel 38,24 5
+  pixel 15,25 5 pixel 16,25 6 pixel 17,25 5 pixel 18,25 5 pixel 19,25 5 pixel 20,25 17 pixel 21,25 17 pixel 22,25 17 pixel 25,25 7 pixel 33,25 7 pixel 35,25 5 pixel 36,25 6 pixel 37,25 5 pixel 38,25 5
+  pixel 15,26 5 pixel 16,26 6 pixel 17,26 5 pixel 18,26 5 pixel 19,26 5 pixel 20,26 5 pixel 21,26 5 pixel 22,26 17 pixel 34,26 5 pixel 35,26 5 pixel 36,26 6
+  pixel 15,27 5 pixel 16,27 6 pixel 17,27 5 pixel 18,27 5 pixel 19,27 6 pixel 20,27 5 pixel 21,27 5 pixel 22,27 5 pixel 23,27 17 pixel 34,27 5 pixel 35,27 6
+  pixel 14,28 5 pixel 15,28 6 pixel 16,28 6 pixel 17,28 5 pixel 18,28 5 pixel 19,28 17 pixel 20,28 5 pixel 21,28 6 pixel 22,28 17 pixel 23,28 6 pixel 24,28 6 pixel 33,28 5 pixel 34,28 6 pixel 35,28 6
+  pixel 14,29 5 pixel 15,29 6 pixel 16,29 5 pixel 17,29 5 pixel 18,29 5 pixel 19,29 17 pixel 20,29 5 pixel 21,29 17 pixel 22,29 17 pixel 23,29 6 pixel 34,29 7 pixel 35,29 7
+  pixel 13,30 6 pixel 14,30 6 pixel 15,30 5 pixel 16,30 5 pixel 17,30 5 pixel 18,30 17 pixel 19,30 5 pixel 20,30 5 pixel 21,30 17 pixel 22,30 17 pixel 34,30 6 pixel 35,30 6
+  pixel 12,31 5 pixel 13,31 6 pixel 14,31 5 pixel 15,31 5 pixel 16,31 5 pixel 17,31 17 pixel 18,31 17 pixel 19,31 5 pixel 20,31 17 pixel 21,31 17 pixel 28,31 7 pixel 29,31 6 pixel 30,31 7 pixel 34,31 5
+  pixel 12,32 5 pixel 13,32 5 pixel 14,32 5 pixel 15,32 7 pixel 16,32 7 pixel 17,32 17 pixel 18,32 17 pixel 19,32 5 pixel 20,32 17
+  pixel 11,33 7 pixel 12,33 7 pixel 13,33 7 pixel 14,33 7 pixel 15,33 7 pixel 16,33 7 pixel 17,33 7 pixel 18,33 5 pixel 19,33 5 pixel 20,33 5 pixel 28,33 7 pixel 29,33 6 pixel 30,33 7
+  pixel 7,34 7 pixel 8,34 7 pixel 9,34 7 pixel 10,34 7 pixel 11,34 7 pixel 12,34 7 pixel 13,34 7 pixel 14,34 7 pixel 15,34 7 pixel 16,34 5 pixel 17,34 5 pixel 18,34 5 pixel 19,34 5 pixel 20,34 5 pixel 21,34 5
+  pixel 6,35 7 pixel 7,35 7 pixel 8,35 6 pixel 9,35 6 pixel 10,35 6 pixel 11,35 6 pixel 12,35 7 pixel 13,35 7 pixel 14,35 5 pixel 15,35 5 pixel 16,35 5 pixel 17,35 6 pixel 18,35 6 pixel 19,35 5 pixel 20,35 5
+  pixel 5,36 7 pixel 6,36 7 pixel 7,36 5 pixel 8,36 5 pixel 9,36 5 pixel 10,36 6 pixel 11,36 6 pixel 12,36 5 pixel 13,36 5 pixel 14,36 6 pixel 15,36 6 pixel 16,36 6 pixel 17,36 6 pixel 18,36 5 pixel 19,36 5
+  pixel 5,37 7 pixel 6,37 7 pixel 7,37 5 pixel 8,37 5 pixel 9,37 5 pixel 10,37 5 pixel 11,37 6 pixel 12,37 6 pixel 13,37 6 pixel 14,37 6 pixel 15,37 6 pixel 16,37 5 pixel 17,37 5 pixel 18,37 5 pixel 19,37 6
+  pixel 5,38 7 pixel 6,38 5 pixel 7,38 5 pixel 8,38 5 pixel 9,38 6 pixel 10,38 6 pixel 11,38 6 pixel 12,38 6 pixel 13,38 6 pixel 14,38 6 pixel 15,38 5 pixel 16,38 5 pixel 17,38 6 pixel 18,38 6
+  pixel 5,39 17 pixel 9,39 6 pixel 10,39 6 pixel 11,39 6 pixel 12,39 6 pixel 13,39 6 pixel 14,39 5 pixel 15,39 5 pixel 16,39 5 pixel 17,39 6
+  pixel 9,40 6 pixel 10,40 6 pixel 11,40 6 pixel 12,40 5 pixel 13,40 5 pixel 14,40 5 pixel 15,40 5 pixel 16,40 5
+  pixel 9,41 6 pixel 10,41 6 pixel 11,41 5 pixel 13,41 5 pixel 14,41 5 pixel 15,41 5
+  pixel 9,42 6 pixel 10,42 5
+  pixel 10,43 5
+@layer view_right_wine_accents_layer_copy
+  cell: cell_1_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy
+  cell: cell_1_0
+  parent: view_right_wine_accents_layer_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+  pixel 40,10 13 pixel 41,10 12
+  pixel 38,11 13 pixel 39,11 13 pixel 40,11 13 pixel 41,11 12
+  pixel 37,12 13 pixel 38,12 13 pixel 39,12 13 pixel 40,12 12
+  pixel 38,13 13 pixel 39,13 12
+  pixel 38,14 12
+  pixel 16,15 12 pixel 17,15 12
+  pixel 15,16 12 pixel 16,16 12 pixel 17,16 12 pixel 18,16 13
+  pixel 15,17 12 pixel 16,17 12 pixel 18,17 12
+  pixel 17,18 12 pixel 18,18 12
+  pixel 16,19 12 pixel 17,19 12
+  pixel 16,20 12 pixel 17,20 12
+  pixel 15,21 12 pixel 16,21 12 pixel 17,21 12
+  pixel 15,22 12 pixel 16,22 12 pixel 17,22 12
+  pixel 15,23 12 pixel 24,23 13 pixel 25,23 13 pixel 26,23 13 pixel 27,23 13 pixel 31,23 13 pixel 32,23 13 pixel 33,23 13 pixel 34,23 13
+  pixel 23,24 13 pixel 26,24 19 pixel 27,24 18 pixel 31,24 19 pixel 32,24 18 pixel 35,24 13
+  pixel 13,25 13 pixel 26,25 18 pixel 27,25 18 pixel 31,25 18 pixel 32,25 18
+  pixel 11,26 13 pixel 12,26 13 pixel 13,26 13
+  pixel 10,27 13 pixel 11,27 13 pixel 29,27 11
+  pixel 28,29 11 pixel 29,29 11 pixel 30,29 11
+  pixel 19,42 12 pixel 20,42 12 pixel 21,42 12 pixel 35,42 12 pixel 36,42 12
+  pixel 18,43 12 pixel 19,43 12 pixel 20,43 12 pixel 35,43 12
+  pixel 17,44 12 pixel 18,44 12 pixel 34,44 12
+
+@cell cell_1_1
+  name: "walk_right - Frame 1"
+  frame: 1
+  grid_pos: 1,1
+@layer layer_legacy_cell_0_1_copy
+  cell: cell_1_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy
+  cell: cell_1_1
+  parent: layer_legacy_cell_0_1_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cell_1_2
+  name: "walk_right - Frame 2"
+  frame: 2
+  grid_pos: 1,2
+@layer layer_legacy_cell_0_2_copy
+  cell: cell_1_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy
+  cell: cell_1_2
+  parent: layer_legacy_cell_0_2_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cell_1_3
+  name: "walk_right - Frame 3"
+  frame: 3
+  grid_pos: 1,3
+@layer layer_legacy_cell_0_3_copy
+  cell: cell_1_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3_copy
+  cell: cell_1_3
+  parent: layer_legacy_cell_0_3_copy
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cell_1_4
+  name: "walk_right - Frame 4"
+  frame: 4
+  grid_pos: 1,4
+@layer layer_legacy_cell_0_4_copy
+  cell: cell_1_4
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_4_copy
+  cell: cell_1_4
+  parent: layer_legacy_cell_0_4_copy
+  name: "idle right 4"
+  visible: true
+  locked: false
+
+@cell cell_1_5
+  name: "walk_right - Frame 5"
+  frame: 5
+  grid_pos: 1,5
+@layer layer_legacy_cell_0_5_copy
+  cell: cell_1_5
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_5_copy
+  cell: cell_1_5
+  parent: layer_legacy_cell_0_5_copy
+  name: "idle right 5"
+  visible: true
+  locked: false
+
+@cell cell_1_6
+  name: "walk_right - Frame 6"
+  frame: 6
+  grid_pos: 1,6
+@layer layer_legacy_cell_0_6_copy
+  cell: cell_1_6
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_6_copy
+  cell: cell_1_6
+  parent: layer_legacy_cell_0_6_copy
+  name: "idle right 6"
+  visible: true
+  locked: false
+
+@cell cell_1_7
+  name: "walk_right - Frame 7"
+  frame: 7
+  grid_pos: 1,7
+@layer layer_legacy_cell_0_7_copy
+  cell: cell_1_7
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_7_copy
+  cell: cell_1_7
+  parent: layer_legacy_cell_0_7_copy
+  name: "idle right 7"
+  visible: true
+  locked: false
+
+@cell cast_right_0
+  name: "cast_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 2,0
+@layer view_right_hat_coat_layer_copy_copy
+  cell: cast_right_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy_copy
+  cell: cast_right_0
+  parent: view_right_hat_coat_layer_copy_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+  pixel 17,3 4 pixel 18,3 4 pixel 19,3 4 pixel 20,3 4 pixel 21,3 4
+  pixel 16,4 3 pixel 17,4 3 pixel 18,4 4 pixel 19,4 2 pixel 20,4 4 pixel 21,4 4 pixel 22,4 4 pixel 23,4 4 pixel 24,4 4
+  pixel 15,5 3 pixel 16,5 3 pixel 17,5 3 pixel 18,5 2 pixel 19,5 2 pixel 20,5 4 pixel 21,5 4 pixel 22,5 4 pixel 23,5 4 pixel 24,5 4 pixel 25,5 4 pixel 26,5 4
+  pixel 15,6 3 pixel 16,6 3 pixel 17,6 3 pixel 18,6 2 pixel 19,6 2 pixel 20,6 4 pixel 21,6 4 pixel 22,6 4 pixel 23,6 4 pixel 24,6 4 pixel 25,6 4 pixel 26,6 2 pixel 27,6 2 pixel 28,6 2 pixel 29,6 2
+  pixel 14,7 3 pixel 15,7 3 pixel 16,7 3 pixel 17,7 2 pixel 18,7 2 pixel 19,7 4 pixel 20,7 4 pixel 21,7 4 pixel 22,7 4 pixel 23,7 2 pixel 24,7 2 pixel 25,7 2 pixel 26,7 2 pixel 27,7 2 pixel 28,7 2 pixel 29,7 4 pixel 30,7 4 pixel 31,7 4
+  pixel 12,8 3 pixel 13,8 3 pixel 14,8 3 pixel 15,8 4 pixel 16,8 3 pixel 17,8 2 pixel 18,8 2 pixel 19,8 4 pixel 20,8 4 pixel 21,8 4 pixel 22,8 2 pixel 23,8 2 pixel 24,8 2 pixel 25,8 2 pixel 26,8 3 pixel 27,8 3 pixel 28,8 3 pixel 29,8 4 pixel 30,8 4 pixel 31,8 4 pixel 32,8 2 pixel 33,8 3 pixel 34,8 4 pixel 35,8 4 pixel 36,8 4 pixel 37,8 4 pixel 38,8 4 pixel 39,8 4 pixel 40,8 4 pixel 41,8 4
+  pixel 12,9 4 pixel 13,9 4 pixel 14,9 4 pixel 15,9 4 pixel 16,9 3 pixel 17,9 2 pixel 18,9 2 pixel 19,9 4 pixel 20,9 4 pixel 21,9 2 pixel 22,9 2 pixel 23,9 2 pixel 24,9 3 pixel 25,9 3 pixel 26,9 3 pixel 27,9 3 pixel 28,9 3 pixel 29,9 4 pixel 30,9 2 pixel 32,9 4 pixel 33,9 4 pixel 34,9 4 pixel 35,9 4 pixel 36,9 4 pixel 37,9 4 pixel 38,9 4 pixel 39,9 2
+  pixel 9,10 4 pixel 10,10 4 pixel 11,10 4 pixel 12,10 4 pixel 13,10 4 pixel 14,10 4 pixel 15,10 4 pixel 16,10 2 pixel 17,10 2 pixel 18,10 2 pixel 22,10 3 pixel 23,10 3 pixel 24,10 3 pixel 25,10 3 pixel 26,10 3 pixel 27,10 3 pixel 30,10 2 pixel 31,10 4 pixel 32,10 4 pixel 33,10 4 pixel 34,10 4 pixel 35,10 4 pixel 36,10 4 pixel 37,10 4
+  pixel 9,11 4 pixel 10,11 4 pixel 11,11 4 pixel 12,11 4 pixel 13,11 4 pixel 14,11 4 pixel 15,11 3 pixel 16,11 2 pixel 17,11 2 pixel 22,11 3 pixel 23,11 3 pixel 24,11 3 pixel 25,11 3 pixel 26,11 3 pixel 28,11 4 pixel 29,11 4 pixel 30,11 4 pixel 31,11 4 pixel 32,11 4 pixel 33,11 4 pixel 34,11 4 pixel 35,11 4
+  pixel 9,12 4 pixel 10,12 4 pixel 11,12 2 pixel 12,12 2 pixel 13,12 4 pixel 14,12 4 pixel 15,12 3 pixel 16,12 2 pixel 21,12 2 pixel 23,12 3 pixel 24,12 2 pixel 25,12 2 pixel 27,12 4 pixel 28,12 4 pixel 29,12 4 pixel 30,12 4 pixel 31,12 4 pixel 32,12 4 pixel 33,12 4
+  pixel 9,13 4 pixel 10,13 2 pixel 11,13 2 pixel 12,13 2 pixel 13,13 2 pixel 14,13 2 pixel 15,13 2 pixel 16,13 2 pixel 26,13 3 pixel 27,13 4 pixel 28,13 4 pixel 29,13 4 pixel 30,13 4 pixel 31,13 4
+  pixel 9,14 4 pixel 10,14 2 pixel 11,14 2 pixel 12,14 2 pixel 15,14 2 pixel 16,14 2 pixel 24,14 2 pixel 25,14 3 pixel 26,14 3 pixel 27,14 4 pixel 28,14 4 pixel 29,14 4 pixel 30,14 4 pixel 32,14 4 pixel 33,14 4
+  pixel 9,15 4 pixel 10,15 2 pixel 11,15 2 pixel 15,15 2 pixel 23,15 2 pixel 24,15 3 pixel 25,15 3 pixel 26,15 3 pixel 27,15 3 pixel 28,15 4
+  pixel 9,16 4 pixel 10,16 2 pixel 11,16 2 pixel 22,16 2 pixel 23,16 3 pixel 24,16 3 pixel 25,16 3 pixel 26,16 3 pixel 27,16 3
+  pixel 6,17 2 pixel 7,17 2 pixel 8,17 2 pixel 9,17 4 pixel 10,17 2 pixel 11,17 2 pixel 20,17 2 pixel 21,17 2 pixel 22,17 2 pixel 23,17 3 pixel 24,17 3 pixel 25,17 3 pixel 26,17 1
+  pixel 6,18 2 pixel 7,18 2 pixel 8,18 2 pixel 9,18 2 pixel 10,18 2 pixel 20,18 2 pixel 21,18 2 pixel 22,18 3 pixel 23,18 3 pixel 24,18 3 pixel 25,18 1
+  pixel 6,19 2 pixel 7,19 2 pixel 14,19 2 pixel 15,19 2 pixel 20,19 2 pixel 21,19 3 pixel 22,19 3 pixel 23,19 3
+  pixel 6,20 2 pixel 14,20 3 pixel 19,20 3 pixel 20,20 3 pixel 21,20 3
+  pixel 13,21 3 pixel 19,21 3
+  pixel 12,22 3 pixel 13,22 3 pixel 19,22 1
+  pixel 11,23 3 pixel 12,23 3 pixel 13,23 3
+  pixel 10,24 2 pixel 11,24 3 pixel 12,24 3
+  pixel 9,25 3 pixel 10,25 3
+  pixel 9,26 3
+  pixel 24,28 15 pixel 25,28 15 pixel 32,28 15
+  pixel 24,29 2 pixel 25,29 15 pixel 26,29 15 pixel 27,29 2 pixel 29,29 2 pixel 31,29 2 pixel 32,29 15
+  pixel 24,30 2 pixel 25,30 3 pixel 26,30 15 pixel 27,30 15 pixel 28,30 3 pixel 29,30 2 pixel 30,30 3 pixel 31,30 15 pixel 32,30 2
+  pixel 23,31 2 pixel 24,31 3 pixel 25,31 3 pixel 26,31 2 pixel 27,31 15 pixel 28,31 2 pixel 31,31 15 pixel 32,31 2
+  pixel 23,32 15 pixel 24,32 15 pixel 25,32 15 pixel 26,32 15 pixel 27,32 15 pixel 28,32 2 pixel 29,32 2 pixel 30,32 2 pixel 31,32 15 pixel 32,32 15 pixel 33,32 15
+  pixel 23,33 2 pixel 24,33 3 pixel 25,33 3 pixel 26,33 2 pixel 27,33 15 pixel 28,33 2 pixel 31,33 15 pixel 32,33 3 pixel 33,33 2
+  pixel 23,34 2 pixel 24,34 3 pixel 25,34 3 pixel 26,34 3 pixel 27,34 15 pixel 28,34 3 pixel 29,34 2 pixel 30,34 3 pixel 31,34 15 pixel 32,34 3 pixel 33,34 2
+  pixel 22,35 2 pixel 23,35 3 pixel 24,35 3 pixel 25,35 3 pixel 26,35 3 pixel 27,35 15 pixel 28,35 3 pixel 29,35 2 pixel 30,35 3 pixel 31,35 15 pixel 32,35 3 pixel 33,35 3
+  pixel 21,36 2 pixel 22,36 3 pixel 23,36 3 pixel 24,36 3 pixel 25,36 3 pixel 26,36 3 pixel 27,36 15 pixel 28,36 3 pixel 29,36 2 pixel 30,36 3 pixel 31,36 15 pixel 32,36 3 pixel 33,36 3 pixel 34,36 3
+  pixel 21,37 2 pixel 22,37 3 pixel 23,37 3 pixel 24,37 3 pixel 25,37 3 pixel 26,37 15 pixel 27,37 3 pixel 28,37 3 pixel 29,37 2 pixel 30,37 3 pixel 31,37 3 pixel 32,37 15 pixel 33,37 3 pixel 34,37 3
+  pixel 20,38 2 pixel 21,38 3 pixel 22,38 3 pixel 23,38 3 pixel 24,38 3 pixel 25,38 15 pixel 26,38 3 pixel 27,38 3 pixel 28,38 2 pixel 29,38 2 pixel 30,38 2 pixel 31,38 3 pixel 32,38 3 pixel 33,38 15 pixel 34,38 3 pixel 35,38 2
+  pixel 19,39 2 pixel 20,39 3 pixel 21,39 3 pixel 22,39 3 pixel 23,39 15 pixel 24,39 15 pixel 25,39 3 pixel 26,39 3 pixel 27,39 2 pixel 28,39 2 pixel 29,39 2 pixel 30,39 2 pixel 31,39 2 pixel 32,39 3 pixel 33,39 15 pixel 34,39 2 pixel 35,39 2 pixel 36,39 2
+  pixel 19,40 3 pixel 20,40 3 pixel 21,40 3 pixel 22,40 15 pixel 23,40 15 pixel 24,40 3 pixel 25,40 3 pixel 26,40 2 pixel 27,40 2 pixel 28,40 2 pixel 29,40 2 pixel 30,40 2 pixel 31,40 2 pixel 32,40 3 pixel 33,40 15 pixel 34,40 15 pixel 35,40 2 pixel 36,40 2
+  pixel 19,41 15 pixel 20,41 15 pixel 21,41 15 pixel 22,41 15 pixel 34,41 15 pixel 35,41 15 pixel 36,41 15
+  pixel 24,42 3 pixel 25,42 3 pixel 29,42 2 pixel 30,42 3 pixel 31,42 3
+  pixel 24,43 2 pixel 25,43 3 pixel 26,43 3 pixel 30,43 2 pixel 31,43 3
+  pixel 24,44 2 pixel 25,44 2 pixel 30,44 2 pixel 31,44 2
+@layer view_right_skin_layer_copy_copy
+  cell: cast_right_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy_copy
+  cell: cast_right_0
+  parent: view_right_skin_layer_copy_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+  pixel 26,18 9
+  pixel 26,19 8
+  pixel 26,20 10
+  pixel 26,21 9 pixel 27,21 9 pixel 33,21 9
+  pixel 25,22 10 pixel 26,22 10 pixel 27,22 10 pixel 32,22 10 pixel 33,22 10
+  pixel 24,24 10 pixel 27,24 10 pixel 28,24 10 pixel 29,24 10 pixel 30,24 10 pixel 31,24 10 pixel 34,24 10
+  pixel 23,25 10 pixel 24,25 10 pixel 27,25 10 pixel 28,25 10 pixel 29,25 10 pixel 30,25 10 pixel 31,25 10 pixel 34,25 10
+  pixel 23,26 10 pixel 24,26 10 pixel 25,26 10 pixel 26,26 10 pixel 27,26 10 pixel 28,26 10 pixel 29,26 10 pixel 30,26 10 pixel 31,26 10 pixel 32,26 10 pixel 33,26 10 pixel 34,26 10
+  pixel 24,27 10 pixel 25,27 10 pixel 26,27 10 pixel 27,27 10 pixel 28,27 10 pixel 30,27 10 pixel 31,27 10 pixel 32,27 10 pixel 33,27 10
+  pixel 25,28 10 pixel 26,28 10 pixel 27,28 10 pixel 28,28 10 pixel 29,28 10 pixel 30,28 10 pixel 31,28 10 pixel 32,28 10
+  pixel 24,41 8 pixel 25,41 10 pixel 26,41 10 pixel 29,41 8 pixel 30,41 10 pixel 31,41 10 pixel 32,41 8
+@layer view_right_outline_layer_copy_copy
+  cell: cast_right_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy_copy
+  cell: cast_right_0
+  parent: view_right_outline_layer_copy_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+  pixel 17,2 1 pixel 18,2 1 pixel 19,2 1 pixel 20,2 1 pixel 21,2 1 pixel 22,2 1
+  pixel 16,3 1 pixel 22,3 1 pixel 23,3 1 pixel 24,3 1
+  pixel 15,4 1 pixel 25,4 1 pixel 26,4 1 pixel 27,4 1
+  pixel 14,5 1 pixel 27,5 1 pixel 28,5 1 pixel 29,5 1 pixel 30,5 1
+  pixel 13,6 1 pixel 14,6 1 pixel 30,6 1 pixel 31,6 1 pixel 32,6 1
+  pixel 11,7 1 pixel 12,7 1 pixel 13,7 1 pixel 32,7 1 pixel 33,7 1 pixel 34,7 1 pixel 35,7 1 pixel 36,7 1 pixel 37,7 1 pixel 38,7 1 pixel 39,7 1 pixel 40,7 1 pixel 41,7 1
+  pixel 9,8 1 pixel 10,8 1 pixel 11,8 1 pixel 42,8 1
+  pixel 9,9 1 pixel 10,9 1 pixel 11,9 1 pixel 31,9 1 pixel 40,9 1 pixel 41,9 1 pixel 42,9 1
+  pixel 8,10 1 pixel 19,10 1 pixel 20,10 1 pixel 21,10 1 pixel 28,10 1 pixel 29,10 1 pixel 38,10 1 pixel 39,10 1 pixel 42,10 1
+  pixel 8,11 1 pixel 18,11 1 pixel 21,11 1 pixel 27,11 1 pixel 36,11 1 pixel 37,11 1 pixel 42,11 1
+  pixel 8,12 1 pixel 17,12 1 pixel 20,12 1 pixel 22,12 1 pixel 26,12 1 pixel 34,12 1 pixel 35,12 1 pixel 36,12 1 pixel 41,12 1
+  pixel 8,13 1 pixel 17,13 1 pixel 21,13 1 pixel 23,13 1 pixel 24,13 1 pixel 25,13 1 pixel 32,13 1 pixel 33,13 1 pixel 37,13 1 pixel 40,13 1
+  pixel 8,14 1 pixel 13,14 1 pixel 14,14 1 pixel 17,14 1 pixel 23,14 1 pixel 31,14 1 pixel 37,14 1 pixel 39,14 1
+  pixel 8,15 1 pixel 12,15 1 pixel 13,15 1 pixel 14,15 1 pixel 18,15 1 pixel 22,15 1 pixel 29,15 1 pixel 30,15 1 pixel 38,15 1
+  pixel 6,16 1 pixel 7,16 1 pixel 8,16 1 pixel 12,16 1 pixel 14,16 1 pixel 19,16 1 pixel 20,16 1 pixel 21,16 1 pixel 28,16 1 pixel 38,16 1
+  pixel 5,17 1 pixel 12,17 1 pixel 14,17 1 pixel 17,17 1 pixel 19,17 1 pixel 27,17 1 pixel 38,17 1 pixel 39,17 1
+  pixel 5,18 1 pixel 11,18 1 pixel 14,18 1 pixel 15,18 1 pixel 16,18 1 pixel 19,18 1 pixel 39,18 1
+  pixel 5,19 1 pixel 8,19 1 pixel 9,19 1 pixel 10,19 1 pixel 13,19 1 pixel 18,19 1 pixel 19,19 1 pixel 24,19 1 pixel 40,19 1
+  pixel 5,20 1 pixel 7,20 1 pixel 13,20 1 pixel 15,20 1 pixel 18,20 1 pixel 22,20 1 pixel 23,20 1 pixel 40,20 1
+  pixel 5,21 1 pixel 6,21 1 pixel 12,21 1 pixel 14,21 1 pixel 18,21 1 pixel 20,21 1 pixel 21,21 1 pixel 40,21 1
+  pixel 11,22 1 pixel 14,22 1 pixel 18,22 1 pixel 19,22 1 pixel 40,22 1
+  pixel 10,23 1 pixel 14,23 1 pixel 16,23 1 pixel 17,23 1 pixel 40,23 1
+  pixel 9,24 1 pixel 13,24 1 pixel 14,24 1 pixel 15,24 1 pixel 16,24 1 pixel 27,24 13 pixel 39,24 1
+  pixel 8,25 1 pixel 11,25 1 pixel 12,25 1 pixel 14,25 1 pixel 39,25 1
+  pixel 8,26 1 pixel 10,26 1 pixel 11,26 1 pixel 14,26 1 pixel 37,26 1 pixel 38,26 1
+  pixel 8,27 1 pixel 9,27 1 pixel 12,27 1 pixel 13,27 1 pixel 14,27 1 pixel 36,27 1
+  pixel 9,28 1 pixel 10,28 1 pixel 11,28 1 pixel 13,28 1 pixel 23,28 1 pixel 24,28 10 pixel 25,28 10 pixel 36,28 1
+  pixel 13,29 1 pixel 23,29 1 pixel 33,29 1 pixel 36,29 1
+  pixel 11,30 1 pixel 12,30 1 pixel 23,30 1 pixel 33,30 1 pixel 36,30 1
+  pixel 11,31 1 pixel 22,31 1 pixel 33,31 1 pixel 35,31 1
+  pixel 11,32 1 pixel 21,32 1 pixel 22,32 1 pixel 34,32 1
+  pixel 7,33 1 pixel 8,33 1 pixel 9,33 1 pixel 10,33 1 pixel 21,33 1 pixel 22,33 1 pixel 34,33 1
+  pixel 6,34 1 pixel 22,34 1 pixel 34,34 1
+  pixel 5,35 1 pixel 21,35 1 pixel 34,35 1 pixel 35,35 1
+  pixel 4,36 1 pixel 20,36 1 pixel 35,36 1
+  pixel 4,37 1 pixel 20,37 1 pixel 35,37 1 pixel 36,37 1
+  pixel 4,38 1 pixel 19,38 1 pixel 36,38 1
+  pixel 4,39 1 pixel 6,39 1 pixel 7,39 1 pixel 8,39 1 pixel 18,39 1 pixel 37,39 1
+  pixel 5,40 1 pixel 8,40 1 pixel 17,40 1 pixel 18,40 1 pixel 37,40 1
+  pixel 8,41 1 pixel 12,41 1 pixel 16,41 1 pixel 18,41 1 pixel 23,41 1 pixel 27,41 1 pixel 29,41 1 pixel 33,41 1 pixel 37,41 1
+  pixel 8,42 1 pixel 9,42 1 pixel 11,42 1 pixel 13,42 1 pixel 14,42 1 pixel 15,42 1 pixel 23,42 1 pixel 26,42 1 pixel 27,42 1 pixel 29,42 1 pixel 32,42 1 pixel 33,42 1
+  pixel 9,43 1 pixel 10,43 1 pixel 11,43 1 pixel 23,43 1 pixel 26,43 1 pixel 29,43 1 pixel 32,43 1
+  pixel 10,44 1 pixel 23,44 1 pixel 24,44 1 pixel 25,44 1 pixel 29,44 1 pixel 30,44 1 pixel 31,44 1
+@layer view_right_silver_hair_metal_layer_copy_copy
+  cell: cast_right_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy_copy
+  cell: cast_right_0
+  parent: view_right_silver_hair_metal_layer_copy_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+  pixel 19,11 6 pixel 20,11 7
+  pixel 18,12 5 pixel 19,12 7
+  pixel 18,13 5 pixel 19,13 7 pixel 20,13 17 pixel 22,13 6 pixel 34,13 5 pixel 35,13 5 pixel 36,13 5
+  pixel 18,14 5 pixel 19,14 6 pixel 20,14 7 pixel 21,14 7 pixel 22,14 6 pixel 34,14 5 pixel 35,14 6 pixel 36,14 6
+  pixel 19,15 5 pixel 20,15 6 pixel 21,15 6 pixel 31,15 17 pixel 32,15 17 pixel 33,15 5 pixel 34,15 6 pixel 35,15 6 pixel 36,15 6 pixel 37,15 7
+  pixel 29,16 6 pixel 30,16 6 pixel 31,16 6 pixel 32,16 17 pixel 33,16 6 pixel 34,16 6 pixel 35,16 7 pixel 36,16 7 pixel 37,16 7
+  pixel 28,17 6 pixel 29,17 6 pixel 30,17 6 pixel 31,17 6 pixel 32,17 7 pixel 33,17 7 pixel 34,17 7 pixel 35,17 7 pixel 36,17 7 pixel 37,17 7
+  pixel 27,18 17 pixel 28,18 6 pixel 29,18 6 pixel 30,18 17 pixel 31,18 7 pixel 32,18 7 pixel 33,18 7 pixel 34,18 6 pixel 35,18 7 pixel 36,18 7 pixel 37,18 7 pixel 38,18 7
+  pixel 25,19 5 pixel 27,19 17 pixel 28,19 6 pixel 29,19 6 pixel 30,19 17 pixel 31,19 7 pixel 32,19 7 pixel 33,19 5 pixel 34,19 5 pixel 35,19 7 pixel 36,19 7 pixel 37,19 6 pixel 38,19 7 pixel 39,19 5
+  pixel 24,20 5 pixel 25,20 17 pixel 27,20 17 pixel 28,20 6 pixel 29,20 6 pixel 30,20 7 pixel 31,20 7 pixel 32,20 7 pixel 33,20 5 pixel 34,20 5 pixel 35,20 7 pixel 36,20 7 pixel 37,20 6 pixel 38,20 7 pixel 39,20 7
+  pixel 22,21 17 pixel 23,21 17 pixel 24,21 17 pixel 25,21 17 pixel 28,21 6 pixel 29,21 6 pixel 30,21 7 pixel 31,21 7 pixel 32,21 6 pixel 34,21 5 pixel 35,21 6 pixel 36,21 6 pixel 37,21 6 pixel 38,21 6 pixel 39,21 7
+  pixel 20,22 5 pixel 21,22 17 pixel 22,22 17 pixel 23,22 17 pixel 24,22 17 pixel 28,22 17 pixel 29,22 7 pixel 30,22 17 pixel 31,22 5 pixel 34,22 5 pixel 35,22 6 pixel 36,22 6 pixel 37,22 6 pixel 38,22 5 pixel 39,22 7
+  pixel 18,23 5 pixel 19,23 5 pixel 20,23 17 pixel 21,23 17 pixel 22,23 17 pixel 23,23 17 pixel 28,23 6 pixel 29,23 5 pixel 30,23 5 pixel 35,23 6 pixel 36,23 6 pixel 37,23 6 pixel 38,23 5 pixel 39,23 7
+  pixel 17,24 5 pixel 18,24 5 pixel 19,24 5 pixel 20,24 17 pixel 21,24 17 pixel 22,24 17 pixel 23,24 17 pixel 25,24 7 pixel 33,24 7 pixel 35,24 6 pixel 36,24 6 pixel 37,24 5 pixel 38,24 5
+  pixel 15,25 5 pixel 16,25 6 pixel 17,25 5 pixel 18,25 5 pixel 19,25 5 pixel 20,25 17 pixel 21,25 17 pixel 22,25 17 pixel 25,25 7 pixel 33,25 7 pixel 35,25 5 pixel 36,25 6 pixel 37,25 5 pixel 38,25 5
+  pixel 15,26 5 pixel 16,26 6 pixel 17,26 5 pixel 18,26 5 pixel 19,26 5 pixel 20,26 5 pixel 21,26 5 pixel 22,26 17 pixel 34,26 5 pixel 35,26 5 pixel 36,26 6
+  pixel 15,27 5 pixel 16,27 6 pixel 17,27 5 pixel 18,27 5 pixel 19,27 6 pixel 20,27 5 pixel 21,27 5 pixel 22,27 5 pixel 23,27 17 pixel 34,27 5 pixel 35,27 6
+  pixel 14,28 5 pixel 15,28 6 pixel 16,28 6 pixel 17,28 5 pixel 18,28 5 pixel 19,28 17 pixel 20,28 5 pixel 21,28 6 pixel 22,28 17 pixel 23,28 6 pixel 24,28 6 pixel 33,28 5 pixel 34,28 6 pixel 35,28 6
+  pixel 14,29 5 pixel 15,29 6 pixel 16,29 5 pixel 17,29 5 pixel 18,29 5 pixel 19,29 17 pixel 20,29 5 pixel 21,29 17 pixel 22,29 17 pixel 23,29 6 pixel 34,29 7 pixel 35,29 7
+  pixel 13,30 6 pixel 14,30 6 pixel 15,30 5 pixel 16,30 5 pixel 17,30 5 pixel 18,30 17 pixel 19,30 5 pixel 20,30 5 pixel 21,30 17 pixel 22,30 17 pixel 34,30 6 pixel 35,30 6
+  pixel 12,31 5 pixel 13,31 6 pixel 14,31 5 pixel 15,31 5 pixel 16,31 5 pixel 17,31 17 pixel 18,31 17 pixel 19,31 5 pixel 20,31 17 pixel 21,31 17 pixel 28,31 7 pixel 29,31 6 pixel 30,31 7 pixel 34,31 5
+  pixel 12,32 5 pixel 13,32 5 pixel 14,32 5 pixel 15,32 7 pixel 16,32 7 pixel 17,32 17 pixel 18,32 17 pixel 19,32 5 pixel 20,32 17
+  pixel 11,33 7 pixel 12,33 7 pixel 13,33 7 pixel 14,33 7 pixel 15,33 7 pixel 16,33 7 pixel 17,33 7 pixel 18,33 5 pixel 19,33 5 pixel 20,33 5 pixel 28,33 7 pixel 29,33 6 pixel 30,33 7
+  pixel 7,34 7 pixel 8,34 7 pixel 9,34 7 pixel 10,34 7 pixel 11,34 7 pixel 12,34 7 pixel 13,34 7 pixel 14,34 7 pixel 15,34 7 pixel 16,34 5 pixel 17,34 5 pixel 18,34 5 pixel 19,34 5 pixel 20,34 5 pixel 21,34 5
+  pixel 6,35 7 pixel 7,35 7 pixel 8,35 6 pixel 9,35 6 pixel 10,35 6 pixel 11,35 6 pixel 12,35 7 pixel 13,35 7 pixel 14,35 5 pixel 15,35 5 pixel 16,35 5 pixel 17,35 6 pixel 18,35 6 pixel 19,35 5 pixel 20,35 5
+  pixel 5,36 7 pixel 6,36 7 pixel 7,36 5 pixel 8,36 5 pixel 9,36 5 pixel 10,36 6 pixel 11,36 6 pixel 12,36 5 pixel 13,36 5 pixel 14,36 6 pixel 15,36 6 pixel 16,36 6 pixel 17,36 6 pixel 18,36 5 pixel 19,36 5
+  pixel 5,37 7 pixel 6,37 7 pixel 7,37 5 pixel 8,37 5 pixel 9,37 5 pixel 10,37 5 pixel 11,37 6 pixel 12,37 6 pixel 13,37 6 pixel 14,37 6 pixel 15,37 6 pixel 16,37 5 pixel 17,37 5 pixel 18,37 5 pixel 19,37 6
+  pixel 5,38 7 pixel 6,38 5 pixel 7,38 5 pixel 8,38 5 pixel 9,38 6 pixel 10,38 6 pixel 11,38 6 pixel 12,38 6 pixel 13,38 6 pixel 14,38 6 pixel 15,38 5 pixel 16,38 5 pixel 17,38 6 pixel 18,38 6
+  pixel 5,39 17 pixel 9,39 6 pixel 10,39 6 pixel 11,39 6 pixel 12,39 6 pixel 13,39 6 pixel 14,39 5 pixel 15,39 5 pixel 16,39 5 pixel 17,39 6
+  pixel 9,40 6 pixel 10,40 6 pixel 11,40 6 pixel 12,40 5 pixel 13,40 5 pixel 14,40 5 pixel 15,40 5 pixel 16,40 5
+  pixel 9,41 6 pixel 10,41 6 pixel 11,41 5 pixel 13,41 5 pixel 14,41 5 pixel 15,41 5
+  pixel 9,42 6 pixel 10,42 5
+  pixel 10,43 5
+@layer view_right_wine_accents_layer_copy_copy
+  cell: cast_right_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy_copy
+  cell: cast_right_0
+  parent: view_right_wine_accents_layer_copy_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+  pixel 40,10 13 pixel 41,10 12
+  pixel 38,11 13 pixel 39,11 13 pixel 40,11 13 pixel 41,11 12
+  pixel 37,12 13 pixel 38,12 13 pixel 39,12 13 pixel 40,12 12
+  pixel 38,13 13 pixel 39,13 12
+  pixel 38,14 12
+  pixel 16,15 12 pixel 17,15 12
+  pixel 15,16 12 pixel 16,16 12 pixel 17,16 12 pixel 18,16 13
+  pixel 15,17 12 pixel 16,17 12 pixel 18,17 12
+  pixel 17,18 12 pixel 18,18 12
+  pixel 16,19 12 pixel 17,19 12
+  pixel 16,20 12 pixel 17,20 12
+  pixel 15,21 12 pixel 16,21 12 pixel 17,21 12
+  pixel 15,22 12 pixel 16,22 12 pixel 17,22 12
+  pixel 15,23 12 pixel 24,23 13 pixel 25,23 13 pixel 26,23 13 pixel 27,23 13 pixel 31,23 13 pixel 32,23 13 pixel 33,23 13 pixel 34,23 13
+  pixel 23,24 13 pixel 26,24 19 pixel 27,24 18 pixel 31,24 19 pixel 32,24 18 pixel 35,24 13
+  pixel 13,25 13 pixel 26,25 18 pixel 27,25 18 pixel 31,25 18 pixel 32,25 18
+  pixel 11,26 13 pixel 12,26 13 pixel 13,26 13
+  pixel 10,27 13 pixel 11,27 13 pixel 29,27 11
+  pixel 28,29 11 pixel 29,29 11 pixel 30,29 11
+  pixel 19,42 12 pixel 20,42 12 pixel 21,42 12 pixel 35,42 12 pixel 36,42 12
+  pixel 18,43 12 pixel 19,43 12 pixel 20,43 12 pixel 35,43 12
+  pixel 17,44 12 pixel 18,44 12 pixel 34,44 12
+
+@cell cast_right_1
+  name: "cast_right - Frame 1"
+  frame: 1
+  grid_pos: 2,1
+@layer layer_legacy_cell_0_1_copy_copy
+  cell: cast_right_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy_copy
+  cell: cast_right_1
+  parent: layer_legacy_cell_0_1_copy_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell cast_right_2
+  name: "cast_right - Frame 2"
+  frame: 2
+  grid_pos: 2,2
+@layer layer_legacy_cell_0_2_copy_copy
+  cell: cast_right_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy_copy
+  cell: cast_right_2
+  parent: layer_legacy_cell_0_2_copy_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell cast_right_3
+  name: "cast_right - Frame 3"
+  frame: 3
+  grid_pos: 2,3
+@layer layer_legacy_cell_0_3_copy_copy
+  cell: cast_right_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3_copy_copy
+  cell: cast_right_3
+  parent: layer_legacy_cell_0_3_copy_copy
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell cast_right_4
+  name: "cast_right - Frame 4"
+  frame: 4
+  grid_pos: 2,4
+@layer layer_legacy_cell_0_4_copy_copy
+  cell: cast_right_4
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_4_copy_copy
+  cell: cast_right_4
+  parent: layer_legacy_cell_0_4_copy_copy
+  name: "idle right 4"
+  visible: true
+  locked: false
+
+@cell cast_right_5
+  name: "cast_right - Frame 5"
+  frame: 5
+  grid_pos: 2,5
+@layer layer_legacy_cell_0_5_copy_copy
+  cell: cast_right_5
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_5_copy_copy
+  cell: cast_right_5
+  parent: layer_legacy_cell_0_5_copy_copy
+  name: "idle right 5"
+  visible: true
+  locked: false
+
+@cell cast_right_6
+  name: "cast_right - Frame 6"
+  frame: 6
+  grid_pos: 2,6
+@layer layer_legacy_cell_0_6_copy_copy
+  cell: cast_right_6
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_6_copy_copy
+  cell: cast_right_6
+  parent: layer_legacy_cell_0_6_copy_copy
+  name: "idle right 6"
+  visible: true
+  locked: false
+
+@cell cast_right_7
+  name: "cast_right - Frame 7"
+  frame: 7
+  grid_pos: 2,7
+@layer layer_legacy_cell_0_7_copy_copy
+  cell: cast_right_7
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_7_copy_copy
+  cell: cast_right_7
+  parent: layer_legacy_cell_0_7_copy_copy
+  name: "idle right 7"
+  visible: true
+  locked: false
+
+@cell hurt_right_0
+  name: "hurt_right - Frame 0"
+  direction: right
+  frame: 0
+  grid_pos: 3,0
+@layer view_right_hat_coat_layer_copy_copy_copy
+  cell: hurt_right_0
+  name: "hat_coat"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_hat_coat_copy_copy_copy
+  cell: hurt_right_0
+  parent: view_right_hat_coat_layer_copy_copy_copy
+  name: "view_right_hat_coat"
+  visible: true
+  locked: false
+  tags: [body, no_arms, hat_coat]
+  pixel 17,3 4 pixel 18,3 4 pixel 19,3 4 pixel 20,3 4 pixel 21,3 4
+  pixel 16,4 3 pixel 17,4 3 pixel 18,4 4 pixel 19,4 2 pixel 20,4 4 pixel 21,4 4 pixel 22,4 4 pixel 23,4 4 pixel 24,4 4
+  pixel 15,5 3 pixel 16,5 3 pixel 17,5 3 pixel 18,5 2 pixel 19,5 2 pixel 20,5 4 pixel 21,5 4 pixel 22,5 4 pixel 23,5 4 pixel 24,5 4 pixel 25,5 4 pixel 26,5 4
+  pixel 15,6 3 pixel 16,6 3 pixel 17,6 3 pixel 18,6 2 pixel 19,6 2 pixel 20,6 4 pixel 21,6 4 pixel 22,6 4 pixel 23,6 4 pixel 24,6 4 pixel 25,6 4 pixel 26,6 2 pixel 27,6 2 pixel 28,6 2 pixel 29,6 2
+  pixel 14,7 3 pixel 15,7 3 pixel 16,7 3 pixel 17,7 2 pixel 18,7 2 pixel 19,7 4 pixel 20,7 4 pixel 21,7 4 pixel 22,7 4 pixel 23,7 2 pixel 24,7 2 pixel 25,7 2 pixel 26,7 2 pixel 27,7 2 pixel 28,7 2 pixel 29,7 4 pixel 30,7 4 pixel 31,7 4
+  pixel 12,8 3 pixel 13,8 3 pixel 14,8 3 pixel 15,8 4 pixel 16,8 3 pixel 17,8 2 pixel 18,8 2 pixel 19,8 4 pixel 20,8 4 pixel 21,8 4 pixel 22,8 2 pixel 23,8 2 pixel 24,8 2 pixel 25,8 2 pixel 26,8 3 pixel 27,8 3 pixel 28,8 3 pixel 29,8 4 pixel 30,8 4 pixel 31,8 4 pixel 32,8 2 pixel 33,8 3 pixel 34,8 4 pixel 35,8 4 pixel 36,8 4 pixel 37,8 4 pixel 38,8 4 pixel 39,8 4 pixel 40,8 4 pixel 41,8 4
+  pixel 12,9 4 pixel 13,9 4 pixel 14,9 4 pixel 15,9 4 pixel 16,9 3 pixel 17,9 2 pixel 18,9 2 pixel 19,9 4 pixel 20,9 4 pixel 21,9 2 pixel 22,9 2 pixel 23,9 2 pixel 24,9 3 pixel 25,9 3 pixel 26,9 3 pixel 27,9 3 pixel 28,9 3 pixel 29,9 4 pixel 30,9 2 pixel 32,9 4 pixel 33,9 4 pixel 34,9 4 pixel 35,9 4 pixel 36,9 4 pixel 37,9 4 pixel 38,9 4 pixel 39,9 2
+  pixel 9,10 4 pixel 10,10 4 pixel 11,10 4 pixel 12,10 4 pixel 13,10 4 pixel 14,10 4 pixel 15,10 4 pixel 16,10 2 pixel 17,10 2 pixel 18,10 2 pixel 22,10 3 pixel 23,10 3 pixel 24,10 3 pixel 25,10 3 pixel 26,10 3 pixel 27,10 3 pixel 30,10 2 pixel 31,10 4 pixel 32,10 4 pixel 33,10 4 pixel 34,10 4 pixel 35,10 4 pixel 36,10 4 pixel 37,10 4
+  pixel 9,11 4 pixel 10,11 4 pixel 11,11 4 pixel 12,11 4 pixel 13,11 4 pixel 14,11 4 pixel 15,11 3 pixel 16,11 2 pixel 17,11 2 pixel 22,11 3 pixel 23,11 3 pixel 24,11 3 pixel 25,11 3 pixel 26,11 3 pixel 28,11 4 pixel 29,11 4 pixel 30,11 4 pixel 31,11 4 pixel 32,11 4 pixel 33,11 4 pixel 34,11 4 pixel 35,11 4
+  pixel 9,12 4 pixel 10,12 4 pixel 11,12 2 pixel 12,12 2 pixel 13,12 4 pixel 14,12 4 pixel 15,12 3 pixel 16,12 2 pixel 21,12 2 pixel 23,12 3 pixel 24,12 2 pixel 25,12 2 pixel 27,12 4 pixel 28,12 4 pixel 29,12 4 pixel 30,12 4 pixel 31,12 4 pixel 32,12 4 pixel 33,12 4
+  pixel 9,13 4 pixel 10,13 2 pixel 11,13 2 pixel 12,13 2 pixel 13,13 2 pixel 14,13 2 pixel 15,13 2 pixel 16,13 2 pixel 26,13 3 pixel 27,13 4 pixel 28,13 4 pixel 29,13 4 pixel 30,13 4 pixel 31,13 4
+  pixel 9,14 4 pixel 10,14 2 pixel 11,14 2 pixel 12,14 2 pixel 15,14 2 pixel 16,14 2 pixel 24,14 2 pixel 25,14 3 pixel 26,14 3 pixel 27,14 4 pixel 28,14 4 pixel 29,14 4 pixel 30,14 4 pixel 32,14 4 pixel 33,14 4
+  pixel 9,15 4 pixel 10,15 2 pixel 11,15 2 pixel 15,15 2 pixel 23,15 2 pixel 24,15 3 pixel 25,15 3 pixel 26,15 3 pixel 27,15 3 pixel 28,15 4
+  pixel 9,16 4 pixel 10,16 2 pixel 11,16 2 pixel 22,16 2 pixel 23,16 3 pixel 24,16 3 pixel 25,16 3 pixel 26,16 3 pixel 27,16 3
+  pixel 6,17 2 pixel 7,17 2 pixel 8,17 2 pixel 9,17 4 pixel 10,17 2 pixel 11,17 2 pixel 20,17 2 pixel 21,17 2 pixel 22,17 2 pixel 23,17 3 pixel 24,17 3 pixel 25,17 3 pixel 26,17 1
+  pixel 6,18 2 pixel 7,18 2 pixel 8,18 2 pixel 9,18 2 pixel 10,18 2 pixel 20,18 2 pixel 21,18 2 pixel 22,18 3 pixel 23,18 3 pixel 24,18 3 pixel 25,18 1
+  pixel 6,19 2 pixel 7,19 2 pixel 14,19 2 pixel 15,19 2 pixel 20,19 2 pixel 21,19 3 pixel 22,19 3 pixel 23,19 3
+  pixel 6,20 2 pixel 14,20 3 pixel 19,20 3 pixel 20,20 3 pixel 21,20 3
+  pixel 13,21 3 pixel 19,21 3
+  pixel 12,22 3 pixel 13,22 3 pixel 19,22 1
+  pixel 11,23 3 pixel 12,23 3 pixel 13,23 3
+  pixel 10,24 2 pixel 11,24 3 pixel 12,24 3
+  pixel 9,25 3 pixel 10,25 3
+  pixel 9,26 3
+  pixel 24,28 15 pixel 25,28 15 pixel 32,28 15
+  pixel 24,29 2 pixel 25,29 15 pixel 26,29 15 pixel 27,29 2 pixel 29,29 2 pixel 31,29 2 pixel 32,29 15
+  pixel 24,30 2 pixel 25,30 3 pixel 26,30 15 pixel 27,30 15 pixel 28,30 3 pixel 29,30 2 pixel 30,30 3 pixel 31,30 15 pixel 32,30 2
+  pixel 23,31 2 pixel 24,31 3 pixel 25,31 3 pixel 26,31 2 pixel 27,31 15 pixel 28,31 2 pixel 31,31 15 pixel 32,31 2
+  pixel 23,32 15 pixel 24,32 15 pixel 25,32 15 pixel 26,32 15 pixel 27,32 15 pixel 28,32 2 pixel 29,32 2 pixel 30,32 2 pixel 31,32 15 pixel 32,32 15 pixel 33,32 15
+  pixel 23,33 2 pixel 24,33 3 pixel 25,33 3 pixel 26,33 2 pixel 27,33 15 pixel 28,33 2 pixel 31,33 15 pixel 32,33 3 pixel 33,33 2
+  pixel 23,34 2 pixel 24,34 3 pixel 25,34 3 pixel 26,34 3 pixel 27,34 15 pixel 28,34 3 pixel 29,34 2 pixel 30,34 3 pixel 31,34 15 pixel 32,34 3 pixel 33,34 2
+  pixel 22,35 2 pixel 23,35 3 pixel 24,35 3 pixel 25,35 3 pixel 26,35 3 pixel 27,35 15 pixel 28,35 3 pixel 29,35 2 pixel 30,35 3 pixel 31,35 15 pixel 32,35 3 pixel 33,35 3
+  pixel 21,36 2 pixel 22,36 3 pixel 23,36 3 pixel 24,36 3 pixel 25,36 3 pixel 26,36 3 pixel 27,36 15 pixel 28,36 3 pixel 29,36 2 pixel 30,36 3 pixel 31,36 15 pixel 32,36 3 pixel 33,36 3 pixel 34,36 3
+  pixel 21,37 2 pixel 22,37 3 pixel 23,37 3 pixel 24,37 3 pixel 25,37 3 pixel 26,37 15 pixel 27,37 3 pixel 28,37 3 pixel 29,37 2 pixel 30,37 3 pixel 31,37 3 pixel 32,37 15 pixel 33,37 3 pixel 34,37 3
+  pixel 20,38 2 pixel 21,38 3 pixel 22,38 3 pixel 23,38 3 pixel 24,38 3 pixel 25,38 15 pixel 26,38 3 pixel 27,38 3 pixel 28,38 2 pixel 29,38 2 pixel 30,38 2 pixel 31,38 3 pixel 32,38 3 pixel 33,38 15 pixel 34,38 3 pixel 35,38 2
+  pixel 19,39 2 pixel 20,39 3 pixel 21,39 3 pixel 22,39 3 pixel 23,39 15 pixel 24,39 15 pixel 25,39 3 pixel 26,39 3 pixel 27,39 2 pixel 28,39 2 pixel 29,39 2 pixel 30,39 2 pixel 31,39 2 pixel 32,39 3 pixel 33,39 15 pixel 34,39 2 pixel 35,39 2 pixel 36,39 2
+  pixel 19,40 3 pixel 20,40 3 pixel 21,40 3 pixel 22,40 15 pixel 23,40 15 pixel 24,40 3 pixel 25,40 3 pixel 26,40 2 pixel 27,40 2 pixel 28,40 2 pixel 29,40 2 pixel 30,40 2 pixel 31,40 2 pixel 32,40 3 pixel 33,40 15 pixel 34,40 15 pixel 35,40 2 pixel 36,40 2
+  pixel 19,41 15 pixel 20,41 15 pixel 21,41 15 pixel 22,41 15 pixel 34,41 15 pixel 35,41 15 pixel 36,41 15
+  pixel 24,42 3 pixel 25,42 3 pixel 29,42 2 pixel 30,42 3 pixel 31,42 3
+  pixel 24,43 2 pixel 25,43 3 pixel 26,43 3 pixel 30,43 2 pixel 31,43 3
+  pixel 24,44 2 pixel 25,44 2 pixel 30,44 2 pixel 31,44 2
+@layer view_right_skin_layer_copy_copy_copy
+  cell: hurt_right_0
+  name: "skin"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_skin_copy_copy_copy
+  cell: hurt_right_0
+  parent: view_right_skin_layer_copy_copy_copy
+  name: "view_right_skin"
+  visible: true
+  locked: false
+  tags: [body, no_arms, skin]
+  pixel 26,18 9
+  pixel 26,19 8
+  pixel 26,20 10
+  pixel 26,21 9 pixel 27,21 9 pixel 33,21 9
+  pixel 25,22 10 pixel 26,22 10 pixel 27,22 10 pixel 32,22 10 pixel 33,22 10
+  pixel 24,24 10 pixel 27,24 10 pixel 28,24 10 pixel 29,24 10 pixel 30,24 10 pixel 31,24 10 pixel 34,24 10
+  pixel 23,25 10 pixel 24,25 10 pixel 27,25 10 pixel 28,25 10 pixel 29,25 10 pixel 30,25 10 pixel 31,25 10 pixel 34,25 10
+  pixel 23,26 10 pixel 24,26 10 pixel 25,26 10 pixel 26,26 10 pixel 27,26 10 pixel 28,26 10 pixel 29,26 10 pixel 30,26 10 pixel 31,26 10 pixel 32,26 10 pixel 33,26 10 pixel 34,26 10
+  pixel 24,27 10 pixel 25,27 10 pixel 26,27 10 pixel 27,27 10 pixel 28,27 10 pixel 30,27 10 pixel 31,27 10 pixel 32,27 10 pixel 33,27 10
+  pixel 25,28 10 pixel 26,28 10 pixel 27,28 10 pixel 28,28 10 pixel 29,28 10 pixel 30,28 10 pixel 31,28 10 pixel 32,28 10
+  pixel 24,41 8 pixel 25,41 10 pixel 26,41 10 pixel 29,41 8 pixel 30,41 10 pixel 31,41 10 pixel 32,41 8
+@layer view_right_outline_layer_copy_copy_copy
+  cell: hurt_right_0
+  name: "outline"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_outline_copy_copy_copy
+  cell: hurt_right_0
+  parent: view_right_outline_layer_copy_copy_copy
+  name: "view_right_outline"
+  visible: true
+  locked: false
+  tags: [body, no_arms, outline]
+  pixel 17,2 1 pixel 18,2 1 pixel 19,2 1 pixel 20,2 1 pixel 21,2 1 pixel 22,2 1
+  pixel 16,3 1 pixel 22,3 1 pixel 23,3 1 pixel 24,3 1
+  pixel 15,4 1 pixel 25,4 1 pixel 26,4 1 pixel 27,4 1
+  pixel 14,5 1 pixel 27,5 1 pixel 28,5 1 pixel 29,5 1 pixel 30,5 1
+  pixel 13,6 1 pixel 14,6 1 pixel 30,6 1 pixel 31,6 1 pixel 32,6 1
+  pixel 11,7 1 pixel 12,7 1 pixel 13,7 1 pixel 32,7 1 pixel 33,7 1 pixel 34,7 1 pixel 35,7 1 pixel 36,7 1 pixel 37,7 1 pixel 38,7 1 pixel 39,7 1 pixel 40,7 1 pixel 41,7 1
+  pixel 9,8 1 pixel 10,8 1 pixel 11,8 1 pixel 42,8 1
+  pixel 9,9 1 pixel 10,9 1 pixel 11,9 1 pixel 31,9 1 pixel 40,9 1 pixel 41,9 1 pixel 42,9 1
+  pixel 8,10 1 pixel 19,10 1 pixel 20,10 1 pixel 21,10 1 pixel 28,10 1 pixel 29,10 1 pixel 38,10 1 pixel 39,10 1 pixel 42,10 1
+  pixel 8,11 1 pixel 18,11 1 pixel 21,11 1 pixel 27,11 1 pixel 36,11 1 pixel 37,11 1 pixel 42,11 1
+  pixel 8,12 1 pixel 17,12 1 pixel 20,12 1 pixel 22,12 1 pixel 26,12 1 pixel 34,12 1 pixel 35,12 1 pixel 36,12 1 pixel 41,12 1
+  pixel 8,13 1 pixel 17,13 1 pixel 21,13 1 pixel 23,13 1 pixel 24,13 1 pixel 25,13 1 pixel 32,13 1 pixel 33,13 1 pixel 37,13 1 pixel 40,13 1
+  pixel 8,14 1 pixel 13,14 1 pixel 14,14 1 pixel 17,14 1 pixel 23,14 1 pixel 31,14 1 pixel 37,14 1 pixel 39,14 1
+  pixel 8,15 1 pixel 12,15 1 pixel 13,15 1 pixel 14,15 1 pixel 18,15 1 pixel 22,15 1 pixel 29,15 1 pixel 30,15 1 pixel 38,15 1
+  pixel 6,16 1 pixel 7,16 1 pixel 8,16 1 pixel 12,16 1 pixel 14,16 1 pixel 19,16 1 pixel 20,16 1 pixel 21,16 1 pixel 28,16 1 pixel 38,16 1
+  pixel 5,17 1 pixel 12,17 1 pixel 14,17 1 pixel 17,17 1 pixel 19,17 1 pixel 27,17 1 pixel 38,17 1 pixel 39,17 1
+  pixel 5,18 1 pixel 11,18 1 pixel 14,18 1 pixel 15,18 1 pixel 16,18 1 pixel 19,18 1 pixel 39,18 1
+  pixel 5,19 1 pixel 8,19 1 pixel 9,19 1 pixel 10,19 1 pixel 13,19 1 pixel 18,19 1 pixel 19,19 1 pixel 24,19 1 pixel 40,19 1
+  pixel 5,20 1 pixel 7,20 1 pixel 13,20 1 pixel 15,20 1 pixel 18,20 1 pixel 22,20 1 pixel 23,20 1 pixel 40,20 1
+  pixel 5,21 1 pixel 6,21 1 pixel 12,21 1 pixel 14,21 1 pixel 18,21 1 pixel 20,21 1 pixel 21,21 1 pixel 40,21 1
+  pixel 11,22 1 pixel 14,22 1 pixel 18,22 1 pixel 19,22 1 pixel 40,22 1
+  pixel 10,23 1 pixel 14,23 1 pixel 16,23 1 pixel 17,23 1 pixel 40,23 1
+  pixel 9,24 1 pixel 13,24 1 pixel 14,24 1 pixel 15,24 1 pixel 16,24 1 pixel 27,24 13 pixel 39,24 1
+  pixel 8,25 1 pixel 11,25 1 pixel 12,25 1 pixel 14,25 1 pixel 39,25 1
+  pixel 8,26 1 pixel 10,26 1 pixel 11,26 1 pixel 14,26 1 pixel 37,26 1 pixel 38,26 1
+  pixel 8,27 1 pixel 9,27 1 pixel 12,27 1 pixel 13,27 1 pixel 14,27 1 pixel 36,27 1
+  pixel 9,28 1 pixel 10,28 1 pixel 11,28 1 pixel 13,28 1 pixel 23,28 1 pixel 24,28 10 pixel 25,28 10 pixel 36,28 1
+  pixel 13,29 1 pixel 23,29 1 pixel 33,29 1 pixel 36,29 1
+  pixel 11,30 1 pixel 12,30 1 pixel 23,30 1 pixel 33,30 1 pixel 36,30 1
+  pixel 11,31 1 pixel 22,31 1 pixel 33,31 1 pixel 35,31 1
+  pixel 11,32 1 pixel 21,32 1 pixel 22,32 1 pixel 34,32 1
+  pixel 7,33 1 pixel 8,33 1 pixel 9,33 1 pixel 10,33 1 pixel 21,33 1 pixel 22,33 1 pixel 34,33 1
+  pixel 6,34 1 pixel 22,34 1 pixel 34,34 1
+  pixel 5,35 1 pixel 21,35 1 pixel 34,35 1 pixel 35,35 1
+  pixel 4,36 1 pixel 20,36 1 pixel 35,36 1
+  pixel 4,37 1 pixel 20,37 1 pixel 35,37 1 pixel 36,37 1
+  pixel 4,38 1 pixel 19,38 1 pixel 36,38 1
+  pixel 4,39 1 pixel 6,39 1 pixel 7,39 1 pixel 8,39 1 pixel 18,39 1 pixel 37,39 1
+  pixel 5,40 1 pixel 8,40 1 pixel 17,40 1 pixel 18,40 1 pixel 37,40 1
+  pixel 8,41 1 pixel 12,41 1 pixel 16,41 1 pixel 18,41 1 pixel 23,41 1 pixel 27,41 1 pixel 29,41 1 pixel 33,41 1 pixel 37,41 1
+  pixel 8,42 1 pixel 9,42 1 pixel 11,42 1 pixel 13,42 1 pixel 14,42 1 pixel 15,42 1 pixel 23,42 1 pixel 26,42 1 pixel 27,42 1 pixel 29,42 1 pixel 32,42 1 pixel 33,42 1
+  pixel 9,43 1 pixel 10,43 1 pixel 11,43 1 pixel 23,43 1 pixel 26,43 1 pixel 29,43 1 pixel 32,43 1
+  pixel 10,44 1 pixel 23,44 1 pixel 24,44 1 pixel 25,44 1 pixel 29,44 1 pixel 30,44 1 pixel 31,44 1
+@layer view_right_silver_hair_metal_layer_copy_copy_copy
+  cell: hurt_right_0
+  name: "silver_hair_metal"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_silver_hair_metal_copy_copy_copy
+  cell: hurt_right_0
+  parent: view_right_silver_hair_metal_layer_copy_copy_copy
+  name: "view_right_silver_hair_metal"
+  visible: true
+  locked: false
+  tags: [body, no_arms, silver_hair_metal]
+  pixel 19,11 6 pixel 20,11 7
+  pixel 18,12 5 pixel 19,12 7
+  pixel 18,13 5 pixel 19,13 7 pixel 20,13 17 pixel 22,13 6 pixel 34,13 5 pixel 35,13 5 pixel 36,13 5
+  pixel 18,14 5 pixel 19,14 6 pixel 20,14 7 pixel 21,14 7 pixel 22,14 6 pixel 34,14 5 pixel 35,14 6 pixel 36,14 6
+  pixel 19,15 5 pixel 20,15 6 pixel 21,15 6 pixel 31,15 17 pixel 32,15 17 pixel 33,15 5 pixel 34,15 6 pixel 35,15 6 pixel 36,15 6 pixel 37,15 7
+  pixel 29,16 6 pixel 30,16 6 pixel 31,16 6 pixel 32,16 17 pixel 33,16 6 pixel 34,16 6 pixel 35,16 7 pixel 36,16 7 pixel 37,16 7
+  pixel 28,17 6 pixel 29,17 6 pixel 30,17 6 pixel 31,17 6 pixel 32,17 7 pixel 33,17 7 pixel 34,17 7 pixel 35,17 7 pixel 36,17 7 pixel 37,17 7
+  pixel 27,18 17 pixel 28,18 6 pixel 29,18 6 pixel 30,18 17 pixel 31,18 7 pixel 32,18 7 pixel 33,18 7 pixel 34,18 6 pixel 35,18 7 pixel 36,18 7 pixel 37,18 7 pixel 38,18 7
+  pixel 25,19 5 pixel 27,19 17 pixel 28,19 6 pixel 29,19 6 pixel 30,19 17 pixel 31,19 7 pixel 32,19 7 pixel 33,19 5 pixel 34,19 5 pixel 35,19 7 pixel 36,19 7 pixel 37,19 6 pixel 38,19 7 pixel 39,19 5
+  pixel 24,20 5 pixel 25,20 17 pixel 27,20 17 pixel 28,20 6 pixel 29,20 6 pixel 30,20 7 pixel 31,20 7 pixel 32,20 7 pixel 33,20 5 pixel 34,20 5 pixel 35,20 7 pixel 36,20 7 pixel 37,20 6 pixel 38,20 7 pixel 39,20 7
+  pixel 22,21 17 pixel 23,21 17 pixel 24,21 17 pixel 25,21 17 pixel 28,21 6 pixel 29,21 6 pixel 30,21 7 pixel 31,21 7 pixel 32,21 6 pixel 34,21 5 pixel 35,21 6 pixel 36,21 6 pixel 37,21 6 pixel 38,21 6 pixel 39,21 7
+  pixel 20,22 5 pixel 21,22 17 pixel 22,22 17 pixel 23,22 17 pixel 24,22 17 pixel 28,22 17 pixel 29,22 7 pixel 30,22 17 pixel 31,22 5 pixel 34,22 5 pixel 35,22 6 pixel 36,22 6 pixel 37,22 6 pixel 38,22 5 pixel 39,22 7
+  pixel 18,23 5 pixel 19,23 5 pixel 20,23 17 pixel 21,23 17 pixel 22,23 17 pixel 23,23 17 pixel 28,23 6 pixel 29,23 5 pixel 30,23 5 pixel 35,23 6 pixel 36,23 6 pixel 37,23 6 pixel 38,23 5 pixel 39,23 7
+  pixel 17,24 5 pixel 18,24 5 pixel 19,24 5 pixel 20,24 17 pixel 21,24 17 pixel 22,24 17 pixel 23,24 17 pixel 25,24 7 pixel 33,24 7 pixel 35,24 6 pixel 36,24 6 pixel 37,24 5 pixel 38,24 5
+  pixel 15,25 5 pixel 16,25 6 pixel 17,25 5 pixel 18,25 5 pixel 19,25 5 pixel 20,25 17 pixel 21,25 17 pixel 22,25 17 pixel 25,25 7 pixel 33,25 7 pixel 35,25 5 pixel 36,25 6 pixel 37,25 5 pixel 38,25 5
+  pixel 15,26 5 pixel 16,26 6 pixel 17,26 5 pixel 18,26 5 pixel 19,26 5 pixel 20,26 5 pixel 21,26 5 pixel 22,26 17 pixel 34,26 5 pixel 35,26 5 pixel 36,26 6
+  pixel 15,27 5 pixel 16,27 6 pixel 17,27 5 pixel 18,27 5 pixel 19,27 6 pixel 20,27 5 pixel 21,27 5 pixel 22,27 5 pixel 23,27 17 pixel 34,27 5 pixel 35,27 6
+  pixel 14,28 5 pixel 15,28 6 pixel 16,28 6 pixel 17,28 5 pixel 18,28 5 pixel 19,28 17 pixel 20,28 5 pixel 21,28 6 pixel 22,28 17 pixel 23,28 6 pixel 24,28 6 pixel 33,28 5 pixel 34,28 6 pixel 35,28 6
+  pixel 14,29 5 pixel 15,29 6 pixel 16,29 5 pixel 17,29 5 pixel 18,29 5 pixel 19,29 17 pixel 20,29 5 pixel 21,29 17 pixel 22,29 17 pixel 23,29 6 pixel 34,29 7 pixel 35,29 7
+  pixel 13,30 6 pixel 14,30 6 pixel 15,30 5 pixel 16,30 5 pixel 17,30 5 pixel 18,30 17 pixel 19,30 5 pixel 20,30 5 pixel 21,30 17 pixel 22,30 17 pixel 34,30 6 pixel 35,30 6
+  pixel 12,31 5 pixel 13,31 6 pixel 14,31 5 pixel 15,31 5 pixel 16,31 5 pixel 17,31 17 pixel 18,31 17 pixel 19,31 5 pixel 20,31 17 pixel 21,31 17 pixel 28,31 7 pixel 29,31 6 pixel 30,31 7 pixel 34,31 5
+  pixel 12,32 5 pixel 13,32 5 pixel 14,32 5 pixel 15,32 7 pixel 16,32 7 pixel 17,32 17 pixel 18,32 17 pixel 19,32 5 pixel 20,32 17
+  pixel 11,33 7 pixel 12,33 7 pixel 13,33 7 pixel 14,33 7 pixel 15,33 7 pixel 16,33 7 pixel 17,33 7 pixel 18,33 5 pixel 19,33 5 pixel 20,33 5 pixel 28,33 7 pixel 29,33 6 pixel 30,33 7
+  pixel 7,34 7 pixel 8,34 7 pixel 9,34 7 pixel 10,34 7 pixel 11,34 7 pixel 12,34 7 pixel 13,34 7 pixel 14,34 7 pixel 15,34 7 pixel 16,34 5 pixel 17,34 5 pixel 18,34 5 pixel 19,34 5 pixel 20,34 5 pixel 21,34 5
+  pixel 6,35 7 pixel 7,35 7 pixel 8,35 6 pixel 9,35 6 pixel 10,35 6 pixel 11,35 6 pixel 12,35 7 pixel 13,35 7 pixel 14,35 5 pixel 15,35 5 pixel 16,35 5 pixel 17,35 6 pixel 18,35 6 pixel 19,35 5 pixel 20,35 5
+  pixel 5,36 7 pixel 6,36 7 pixel 7,36 5 pixel 8,36 5 pixel 9,36 5 pixel 10,36 6 pixel 11,36 6 pixel 12,36 5 pixel 13,36 5 pixel 14,36 6 pixel 15,36 6 pixel 16,36 6 pixel 17,36 6 pixel 18,36 5 pixel 19,36 5
+  pixel 5,37 7 pixel 6,37 7 pixel 7,37 5 pixel 8,37 5 pixel 9,37 5 pixel 10,37 5 pixel 11,37 6 pixel 12,37 6 pixel 13,37 6 pixel 14,37 6 pixel 15,37 6 pixel 16,37 5 pixel 17,37 5 pixel 18,37 5 pixel 19,37 6
+  pixel 5,38 7 pixel 6,38 5 pixel 7,38 5 pixel 8,38 5 pixel 9,38 6 pixel 10,38 6 pixel 11,38 6 pixel 12,38 6 pixel 13,38 6 pixel 14,38 6 pixel 15,38 5 pixel 16,38 5 pixel 17,38 6 pixel 18,38 6
+  pixel 5,39 17 pixel 9,39 6 pixel 10,39 6 pixel 11,39 6 pixel 12,39 6 pixel 13,39 6 pixel 14,39 5 pixel 15,39 5 pixel 16,39 5 pixel 17,39 6
+  pixel 9,40 6 pixel 10,40 6 pixel 11,40 6 pixel 12,40 5 pixel 13,40 5 pixel 14,40 5 pixel 15,40 5 pixel 16,40 5
+  pixel 9,41 6 pixel 10,41 6 pixel 11,41 5 pixel 13,41 5 pixel 14,41 5 pixel 15,41 5
+  pixel 9,42 6 pixel 10,42 5
+  pixel 10,43 5
+@layer view_right_wine_accents_layer_copy_copy_copy
+  cell: hurt_right_0
+  name: "wine_accents"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region view_right_wine_accents_copy_copy_copy
+  cell: hurt_right_0
+  parent: view_right_wine_accents_layer_copy_copy_copy
+  name: "view_right_wine_accents"
+  visible: true
+  locked: false
+  tags: [body, no_arms, wine_accents]
+  pixel 40,10 13 pixel 41,10 12
+  pixel 38,11 13 pixel 39,11 13 pixel 40,11 13 pixel 41,11 12
+  pixel 37,12 13 pixel 38,12 13 pixel 39,12 13 pixel 40,12 12
+  pixel 38,13 13 pixel 39,13 12
+  pixel 38,14 12
+  pixel 16,15 12 pixel 17,15 12
+  pixel 15,16 12 pixel 16,16 12 pixel 17,16 12 pixel 18,16 13
+  pixel 15,17 12 pixel 16,17 12 pixel 18,17 12
+  pixel 17,18 12 pixel 18,18 12
+  pixel 16,19 12 pixel 17,19 12
+  pixel 16,20 12 pixel 17,20 12
+  pixel 15,21 12 pixel 16,21 12 pixel 17,21 12
+  pixel 15,22 12 pixel 16,22 12 pixel 17,22 12
+  pixel 15,23 12 pixel 24,23 13 pixel 25,23 13 pixel 26,23 13 pixel 27,23 13 pixel 31,23 13 pixel 32,23 13 pixel 33,23 13 pixel 34,23 13
+  pixel 23,24 13 pixel 26,24 19 pixel 27,24 18 pixel 31,24 19 pixel 32,24 18 pixel 35,24 13
+  pixel 13,25 13 pixel 26,25 18 pixel 27,25 18 pixel 31,25 18 pixel 32,25 18
+  pixel 11,26 13 pixel 12,26 13 pixel 13,26 13
+  pixel 10,27 13 pixel 11,27 13 pixel 29,27 11
+  pixel 28,29 11 pixel 29,29 11 pixel 30,29 11
+  pixel 19,42 12 pixel 20,42 12 pixel 21,42 12 pixel 35,42 12 pixel 36,42 12
+  pixel 18,43 12 pixel 19,43 12 pixel 20,43 12 pixel 35,43 12
+  pixel 17,44 12 pixel 18,44 12 pixel 34,44 12
+
+@cell hurt_right_1
+  name: "hurt_right - Frame 1"
+  frame: 1
+  grid_pos: 3,1
+@layer layer_legacy_cell_0_1_copy_copy_copy
+  cell: hurt_right_1
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_1_copy_copy_copy
+  cell: hurt_right_1
+  parent: layer_legacy_cell_0_1_copy_copy_copy
+  name: "idle right 1"
+  visible: true
+  locked: false
+
+@cell hurt_right_2
+  name: "hurt_right - Frame 2"
+  frame: 2
+  grid_pos: 3,2
+@layer layer_legacy_cell_0_2_copy_copy_copy
+  cell: hurt_right_2
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_2_copy_copy_copy
+  cell: hurt_right_2
+  parent: layer_legacy_cell_0_2_copy_copy_copy
+  name: "idle right 2"
+  visible: true
+  locked: false
+
+@cell hurt_right_3
+  name: "hurt_right - Frame 3"
+  frame: 3
+  grid_pos: 3,3
+@layer layer_legacy_cell_0_3_copy_copy_copy
+  cell: hurt_right_3
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_3_copy_copy_copy
+  cell: hurt_right_3
+  parent: layer_legacy_cell_0_3_copy_copy_copy
+  name: "idle right 3"
+  visible: true
+  locked: false
+
+@cell hurt_right_4
+  name: "hurt_right - Frame 4"
+  frame: 4
+  grid_pos: 3,4
+@layer layer_legacy_cell_0_4_copy_copy_copy
+  cell: hurt_right_4
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_4_copy_copy_copy
+  cell: hurt_right_4
+  parent: layer_legacy_cell_0_4_copy_copy_copy
+  name: "idle right 4"
+  visible: true
+  locked: false
+
+@cell hurt_right_5
+  name: "hurt_right - Frame 5"
+  frame: 5
+  grid_pos: 3,5
+@layer layer_legacy_cell_0_5_copy_copy_copy
+  cell: hurt_right_5
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_5_copy_copy_copy
+  cell: hurt_right_5
+  parent: layer_legacy_cell_0_5_copy_copy_copy
+  name: "idle right 5"
+  visible: true
+  locked: false
+
+@cell hurt_right_6
+  name: "hurt_right - Frame 6"
+  frame: 6
+  grid_pos: 3,6
+@layer layer_legacy_cell_0_6_copy_copy_copy
+  cell: hurt_right_6
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_6_copy_copy_copy
+  cell: hurt_right_6
+  parent: layer_legacy_cell_0_6_copy_copy_copy
+  name: "idle right 6"
+  visible: true
+  locked: false
+
+@cell hurt_right_7
+  name: "hurt_right - Frame 7"
+  frame: 7
+  grid_pos: 3,7
+@layer layer_legacy_cell_0_7_copy_copy_copy
+  cell: hurt_right_7
+  name: "Default"
+  visible: true
+  locked: false
+  opacity: 1
+  blend: normal
+@region region_legacy_cell_0_7_copy_copy_copy
+  cell: hurt_right_7
+  parent: layer_legacy_cell_0_7_copy_copy_copy
+  name: "idle right 7"
+  visible: true
+  locked: false
+
+@animation idle_right
+  name: "idle_right"
+  frames: [cell_0_0, cell_0_1, cell_0_2, cell_0_3, cell_0_4, cell_0_5, cell_0_6, cell_0_7]
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation idle_left
+  name: "idle_left"
+  frames: []
+  fps: 6
+  loop: true
+  mode: loop
+
+@animation walk_right
+  name: "walk_right"
+  frames: [cell_1_0, cell_1_1, cell_1_2, cell_1_3, cell_1_4, cell_1_5, cell_1_6, cell_1_7]
+  fps: 6
+  loop: true
+
+@animation walk_left
+  name: "walk_left"
+  frames: []
+  fps: 6
+  loop: true
+
+@animation cast_right
+  name: "cast_right"
+  frames: [cast_right_0, cast_right_1, cast_right_2, cast_right_3, cast_right_4, cast_right_5, cast_right_6, cast_right_7]
+  fps: 6
+  loop: true
+
+@animation hurt_right
+  name: "hurt_right"
+  frames: [hurt_right_0, hurt_right_1, hurt_right_2, hurt_right_3, hurt_right_4, hurt_right_5, hurt_right_6, hurt_right_7]
+  fps: 6
+  loop: true
+
+@end

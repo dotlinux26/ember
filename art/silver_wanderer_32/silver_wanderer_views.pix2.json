@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "image": "silver_wanderer_views.png",
+    "cellWidth": 32,
+    "cellHeight": 32,
+    "size": {
+      "w": 32,
+      "h": 64
+    }
+  },
+  "frames": [
+    {
+      "name": "view_right",
+      "x": 0,
+      "y": 0,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    },
+    {
+      "name": "view_left",
+      "x": 0,
+      "y": 32,
+      "w": 32,
+      "h": 32,
+      "pivotX": 0.5,
+      "pivotY": 0.03125
+    }
+  ],
+  "animations": []
+}

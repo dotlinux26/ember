@@ -1,0 +1,28 @@
+using Ember;
+using System.Diagnostics;
+using System.Security.Cryptography;
+
+string address=args.FirstOrDefault(a=>!a.StartsWith("--"))??"127.0.0.1";bool forceRelay=args.Contains("--relay");
+string code=new string(RandomNumberGenerator.GetBytes(6).Select(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).ToArray());string password=Convert.ToBase64String(RandomNumberGenerator.GetBytes(18));
+using var host=new EmberLan{Capacity=4};var guests=new List<EmberLan>();int joined=0,actions=0;var replies=new HashSet<int>();
+host.Joined=(id,s)=>joined++;host.Input=(id,s)=>{if(s=="probe-action")actions++;};
+try
+{
+    host.OpenPublic(true,address,code,password,useStun:false);
+    for(int i=0;i<3;i++){int slot=i;var guest=new EmberLan();guest.State=s=>{if(s=="probe-encrypted-state")replies.Add(slot);};guest.OpenPublic(false,address,code,password,useStun:false);guests.Add(guest);}
+    var clock=Stopwatch.StartNew();double nextJoin=0;bool sent=false;int sequence=0;
+    while(clock.Elapsed.TotalSeconds<20)
+    {
+        double t=clock.Elapsed.TotalSeconds;host.Poll(t);foreach(var guest in guests)guest.Poll(t);
+        if(t>=nextJoin&&(!forceRelay||t>4)){foreach(var guest in guests)if(guest.LocalId==0)guest.Join("Probe");nextJoin=t+.5;}
+        if(joined==3&&!sent){foreach(var guest in guests)guest.SendAction("probe-action");sent=true;}
+        if(joined==3&&actions==3){host.Broadcast("probe-encrypted-state",++sequence);if(replies.Count==3)break;}
+        Thread.Sleep(20);
+    }
+    bool pass=joined==3&&actions==3&&replies.Count==3&&(!forceRelay||host.RelayActive);
+    Console.WriteLine($"{(pass?"PASS":"FAIL")} 4-player broker probe: joined={joined+1}, reliableActions={actions}/3, encryptedSnapshots={replies.Count}/3, route={(host.RelayActive?"RELAY":"DIRECT")}");
+    if(!pass){Console.WriteLine("Check UDP 27842, broker IP, broker logs, and whether local UDP 27841 is already in use.");foreach(var guest in guests)if(guest.Error!=null)Console.WriteLine(guest.Error);}
+    Environment.ExitCode=pass?0:1;
+}
+catch(Exception ex){Console.Error.WriteLine("FAIL "+ex.Message);Environment.ExitCode=1;}
+finally{foreach(var guest in guests){guest.Leave();guest.Dispose();}host.Leave();}

@@ -1,0 +1,912 @@
+fileFormatVersion: 2
+guid: cc200db329434eb4a93ffda0921c5222
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6434024291110167599
+    second: space_wraith_eyes_0
+  - first:
+      213: 4603639787499287297
+    second: space_wraith_eyes_1
+  - first:
+      213: -72738479754100180
+    second: space_wraith_eyes_2
+  - first:
+      213: 7938161015742754482
+    second: space_wraith_eyes_3
+  - first:
+      213: 1552709734233698657
+    second: space_wraith_eyes_4
+  - first:
+      213: -5037749337989309658
+    second: space_wraith_eyes_5
+  - first:
+      213: 3719252136259931217
+    second: space_wraith_eyes_6
+  - first:
+      213: -2093687515579093962
+    second: space_wraith_eyes_7
+  - first:
+      213: 1983565979021845149
+    second: space_wraith_eyes_8
+  - first:
+      213: 3197775136860687202
+    second: space_wraith_eyes_9
+  - first:
+      213: -2188232526077683854
+    second: space_wraith_eyes_10
+  - first:
+      213: -5523305925754697475
+    second: space_wraith_eyes_11
+  - first:
+      213: -7241347445268220480
+    second: space_wraith_eyes_12
+  - first:
+      213: -4311017364005255030
+    second: space_wraith_eyes_13
+  - first:
+      213: 4513675431044660422
+    second: space_wraith_eyes_14
+  - first:
+      213: 1901313905210612648
+    second: space_wraith_eyes_15
+  - first:
+      213: -3919966145240007609
+    second: space_wraith_eyes_16
+  - first:
+      213: 6652427376102147592
+    second: space_wraith_eyes_17
+  - first:
+      213: -8926733696787694745
+    second: space_wraith_eyes_18
+  - first:
+      213: 4256035829529611477
+    second: space_wraith_eyes_19
+  - first:
+      213: 7807109687913600732
+    second: space_wraith_eyes_20
+  - first:
+      213: -1717525713172115321
+    second: space_wraith_eyes_21
+  - first:
+      213: 6941339341111827084
+    second: space_wraith_eyes_22
+  - first:
+      213: -4504001096567246909
+    second: space_wraith_eyes_23
+  - first:
+      213: -93282111343473006
+    second: space_wraith_eyes_24
+  - first:
+      213: 3269442432338639147
+    second: space_wraith_eyes_25
+  - first:
+      213: 5430185641951048553
+    second: space_wraith_eyes_26
+  - first:
+      213: -3471779292486729622
+    second: space_wraith_eyes_27
+  - first:
+      213: 7817118750271031891
+    second: space_wraith_eyes_28
+  - first:
+      213: -186386210738387269
+    second: space_wraith_eyes_29
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: space_wraith_eyes_0
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dbd4240ff0c5b6a0800000000000000
+      internalID: -6434024291110167599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_1
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 235
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 103ffbfdef963ef30800000000000000
+      internalID: 4603639787499287297
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_2
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 236
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2241c0fcb49dfef0800000000000000
+      internalID: -72738479754100180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_3
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 203
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2be6339b2630a2e60800000000000000
+      internalID: 7938161015742754482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_4
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1617a44d6455c8510800000000000000
+      internalID: 1552709734233698657
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_5
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 204
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62b10b11ba1561ab0800000000000000
+      internalID: -5037749337989309658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_6
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 203
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15cc2ebcc107d9330800000000000000
+      internalID: 3719252136259931217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_7
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63cec332c4ab1f2e0800000000000000
+      internalID: -2093687515579093962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_8
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 170
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d92a520afba078b10800000000000000
+      internalID: 1983565979021845149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_9
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 172
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26b48206b87c06c20800000000000000
+      internalID: 3197775136860687202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_10
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 171
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2771f2d7c16d1a1e0800000000000000
+      internalID: -2188232526077683854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_11
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df8c49536864953b0800000000000000
+      internalID: -5523305925754697475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_12
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c5fa956dd0918b90800000000000000
+      internalID: -7241347445268220480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_13
+      rect:
+        serializedVersion: 2
+        x: 77
+        y: 138
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a880de55c803c24c0800000000000000
+      internalID: -4311017364005255030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_14
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 139
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6cc33dad3ebc3ae30800000000000000
+      internalID: 4513675431044660422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_15
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8abd6965ce2d26a10800000000000000
+      internalID: 1901313905210612648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_16
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 107
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74c796d4f8b7999c0800000000000000
+      internalID: -3919966145240007609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_17
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 108
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80607a6d37b225c50800000000000000
+      internalID: 6652427376102147592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_18
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 75
+        width: 11
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76bb576affedd1480800000000000000
+      internalID: -8926733696787694745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_19
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dc827a990a701b30800000000000000
+      internalID: 4256035829529611477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_20
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 76
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd6d996b5ec685c60800000000000000
+      internalID: 7807109687913600732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_21
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 75
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 780d6c5b67f1a28e0800000000000000
+      internalID: -1717525713172115321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_22
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8a1a6c9a57945060800000000000000
+      internalID: 6941339341111827084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_23
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 42
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cfa32badd29e71c0800000000000000
+      internalID: -4504001096567246909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_24
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 44
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29e4979f96894bef0800000000000000
+      internalID: -93282111343473006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_25
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 43
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b293229e1946f5d20800000000000000
+      internalID: 3269442432338639147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_26
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9633bec2215eb5b40800000000000000
+      internalID: 5430185641951048553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_27
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6085c4b023c1dfc0800000000000000
+      internalID: -3471779292486729622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_28
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 10
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35a43f4261cfb7c60800000000000000
+      internalID: 7817118750271031891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: space_wraith_eyes_29
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 11
+        width: 11
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb648e59ab2d96df0800000000000000
+      internalID: -186386210738387269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      space_wraith_eyes_0: -6434024291110167599
+      space_wraith_eyes_1: 4603639787499287297
+      space_wraith_eyes_10: -2188232526077683854
+      space_wraith_eyes_11: -5523305925754697475
+      space_wraith_eyes_12: -7241347445268220480
+      space_wraith_eyes_13: -4311017364005255030
+      space_wraith_eyes_14: 4513675431044660422
+      space_wraith_eyes_15: 1901313905210612648
+      space_wraith_eyes_16: -3919966145240007609
+      space_wraith_eyes_17: 6652427376102147592
+      space_wraith_eyes_18: -8926733696787694745
+      space_wraith_eyes_19: 4256035829529611477
+      space_wraith_eyes_2: -72738479754100180
+      space_wraith_eyes_20: 7807109687913600732
+      space_wraith_eyes_21: -1717525713172115321
+      space_wraith_eyes_22: 6941339341111827084
+      space_wraith_eyes_23: -4504001096567246909
+      space_wraith_eyes_24: -93282111343473006
+      space_wraith_eyes_25: 3269442432338639147
+      space_wraith_eyes_26: 5430185641951048553
+      space_wraith_eyes_27: -3471779292486729622
+      space_wraith_eyes_28: 7817118750271031891
+      space_wraith_eyes_29: -186386210738387269
+      space_wraith_eyes_3: 7938161015742754482
+      space_wraith_eyes_4: 1552709734233698657
+      space_wraith_eyes_5: -5037749337989309658
+      space_wraith_eyes_6: 3719252136259931217
+      space_wraith_eyes_7: -2093687515579093962
+      space_wraith_eyes_8: 1983565979021845149
+      space_wraith_eyes_9: 3197775136860687202
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

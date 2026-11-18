@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "image": "06_twintail.png",
+    "cellWidth": 48,
+    "cellHeight": 48,
+    "size": {
+      "w": 48,
+      "h": 96
+    }
+  },
+  "frames": [
+    {
+      "name": "06_twintail_right",
+      "x": 0,
+      "y": 0,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0.0625
+    },
+    {
+      "name": "06_twintail_left",
+      "x": 0,
+      "y": 48,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0.0625
+    }
+  ],
+  "animations": []
+}

@@ -1,0 +1,1380 @@
+fileFormatVersion: 2
+guid: e8245607b336a7f4aaf21bd98f05d509
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3053074196949748409
+    second: rune_warden_0
+  - first:
+      213: -4993466281825862305
+    second: rune_warden_1
+  - first:
+      213: 979626592422861598
+    second: rune_warden_2
+  - first:
+      213: -5678132103806506697
+    second: rune_warden_3
+  - first:
+      213: -6219733136853993957
+    second: rune_warden_4
+  - first:
+      213: 2927981398725226902
+    second: rune_warden_5
+  - first:
+      213: 1671154802129626887
+    second: rune_warden_6
+  - first:
+      213: 5237223215102391954
+    second: rune_warden_7
+  - first:
+      213: -9191863867052051266
+    second: rune_warden_8
+  - first:
+      213: -7945749172855400092
+    second: rune_warden_9
+  - first:
+      213: -8022680990988730418
+    second: rune_warden_10
+  - first:
+      213: -1883026225165900031
+    second: rune_warden_11
+  - first:
+      213: 505779858356387461
+    second: rune_warden_12
+  - first:
+      213: 6309850156454506742
+    second: rune_warden_13
+  - first:
+      213: 1906092389912478972
+    second: rune_warden_14
+  - first:
+      213: -6019905426321937002
+    second: rune_warden_15
+  - first:
+      213: -6959678627625919632
+    second: rune_warden_16
+  - first:
+      213: -4822345042634084643
+    second: rune_warden_17
+  - first:
+      213: -1393485987620030890
+    second: rune_warden_18
+  - first:
+      213: -6062720761213846970
+    second: rune_warden_19
+  - first:
+      213: 6721205537192040440
+    second: rune_warden_20
+  - first:
+      213: 3372294096437982415
+    second: rune_warden_21
+  - first:
+      213: 6181321160807734956
+    second: rune_warden_22
+  - first:
+      213: 4537131621820721581
+    second: rune_warden_23
+  - first:
+      213: 9006584259081706229
+    second: rune_warden_24
+  - first:
+      213: 8932906120796845136
+    second: rune_warden_25
+  - first:
+      213: 3998009140385862988
+    second: rune_warden_26
+  - first:
+      213: -3680358253134706407
+    second: rune_warden_27
+  - first:
+      213: -6667718240119528188
+    second: rune_warden_28
+  - first:
+      213: 47809463420726116
+    second: rune_warden_29
+  - first:
+      213: 9033992716491810121
+    second: rune_warden_30
+  - first:
+      213: -1144103458042205768
+    second: rune_warden_31
+  - first:
+      213: 2071878582473072612
+    second: rune_warden_32
+  - first:
+      213: -864651286337812839
+    second: rune_warden_33
+  - first:
+      213: -860294838374310745
+    second: rune_warden_34
+  - first:
+      213: 6146863574881116836
+    second: rune_warden_35
+  - first:
+      213: 8934047016903481183
+    second: rune_warden_36
+  - first:
+      213: 6326910783460902409
+    second: rune_warden_37
+  - first:
+      213: 6999714561286724471
+    second: rune_warden_38
+  - first:
+      213: -3776085186063603201
+    second: rune_warden_39
+  - first:
+      213: -5662095288446892881
+    second: rune_warden_40
+  - first:
+      213: 2408282515883878152
+    second: rune_warden_41
+  - first:
+      213: 9167343207569698594
+    second: rune_warden_42
+  - first:
+      213: -1527514424922480632
+    second: rune_warden_43
+  - first:
+      213: 4462737414155079548
+    second: rune_warden_44
+  - first:
+      213: -5123017427979103080
+    second: rune_warden_45
+  - first:
+      213: -4654358947042250796
+    second: rune_warden_46
+  - first:
+      213: -4238780311198257595
+    second: rune_warden_47
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rune_warden_0
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 449
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bac9166ec2be5a20800000000000000
+      internalID: 3053074196949748409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_1
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 449
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5df0e98fd4a3bab0800000000000000
+      internalID: -4993466281825862305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_2
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 449
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1b14ed0235589d00800000000000000
+      internalID: 979626592422861598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_3
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 449
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7392fd48fe83331b0800000000000000
+      internalID: -5678132103806506697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_4
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 449
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1677146aa11fa9a0800000000000000
+      internalID: -6219733136853993957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_5
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 449
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 691f7fba19742a820800000000000000
+      internalID: 2927981398725226902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_6
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 385
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 707ef993072213710800000000000000
+      internalID: 1671154802129626887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_7
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 385
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2967b9124ca5ea840800000000000000
+      internalID: 5237223215102391954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_8
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 384
+        width: 44
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb43d947380ff6080800000000000000
+      internalID: -9191863867052051266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_9
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 385
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4699995c9370bb190800000000000000
+      internalID: -7945749172855400092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_10
+      rect:
+        serializedVersion: 2
+        x: 266
+        y: 385
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecf76d90526b9a090800000000000000
+      internalID: -8022680990988730418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_11
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 385
+        width: 44
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 107ed3aff952ed5e0800000000000000
+      internalID: -1883026225165900031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_12
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 321
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58e31e7f914e40700800000000000000
+      internalID: 505779858356387461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_13
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 321
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f0f9694947119750800000000000000
+      internalID: 6309850156454506742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_14
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 321
+        width: 45
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf40fc10eecc37a10800000000000000
+      internalID: 1906092389912478972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_15
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 321
+        width: 46
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69d62aad8eff47ca0800000000000000
+      internalID: -6019905426321937002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_16
+      rect:
+        serializedVersion: 2
+        x: 264
+        y: 321
+        width: 45
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07b9a7189214a6f90800000000000000
+      internalID: -6959678627625919632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_17
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 321
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddeed6dcbb6931db0800000000000000
+      internalID: -4822345042634084643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_18
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 257
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6567c6490e759ace0800000000000000
+      internalID: -1393485987620030890
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_19
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 257
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64a767fd693ecdba0800000000000000
+      internalID: -6062720761213846970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_20
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 257
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f758ba53d4864d50800000000000000
+      internalID: 6721205537192040440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_21
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 257
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc435501d9bccce20800000000000000
+      internalID: 3372294096437982415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_22
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 257
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: caedc8088d678c550800000000000000
+      internalID: 6181321160807734956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_23
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 257
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da9e0d9db2127fe30800000000000000
+      internalID: 4537131621820721581
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_24
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 193
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fa903a2aa0ddfc70800000000000000
+      internalID: 9006584259081706229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_25
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 193
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 054320ec9ce08fb70800000000000000
+      internalID: 8932906120796845136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_26
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 193
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c45d67d7128cb7730800000000000000
+      internalID: 3998009140385862988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_27
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 193
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9198abb0badbcecc0800000000000000
+      internalID: -3680358253134706407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_28
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 193
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 405684376918773a0800000000000000
+      internalID: -6667718240119528188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_29
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 193
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46b2814247ad9a000800000000000000
+      internalID: 47809463420726116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_30
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 129
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 945e5f1f2803f5d70800000000000000
+      internalID: 9033992716491810121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_31
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 129
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b9291577f35f10f0800000000000000
+      internalID: -1144103458042205768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_32
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 128
+        width: 44
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ef1c0ee79ac0cc10800000000000000
+      internalID: 2071878582473072612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_33
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 129
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99600477c342004f0800000000000000
+      internalID: -864651286337812839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_34
+      rect:
+        serializedVersion: 2
+        x: 266
+        y: 129
+        width: 44
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7acd89c076e9f04f0800000000000000
+      internalID: -860294838374310745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_35
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 129
+        width: 44
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a2a3979adb0e4550800000000000000
+      internalID: 6146863574881116836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_36
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 65
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f579b216d6c1cfb70800000000000000
+      internalID: 8934047016903481183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_37
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 65
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90686cd06d3bdc750800000000000000
+      internalID: 6326910783460902409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_38
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 65
+        width: 45
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77bdf92be4bf32160800000000000000
+      internalID: 6999714561286724471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_39
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 65
+        width: 46
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff96013a786a89bc0800000000000000
+      internalID: -3776085186063603201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_40
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 65
+        width: 45
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa4c5bf85523c61b0800000000000000
+      internalID: -5662095288446892881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_41
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 65
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 807ea064030fb6120800000000000000
+      internalID: 2408282515883878152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_42
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 1
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22f284d9312f83f70800000000000000
+      internalID: 9167343207569698594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_43
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 1
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 800e53149bd2dcae0800000000000000
+      internalID: -1527514424922480632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_44
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 1
+        width: 44
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7f0f889804deed30800000000000000
+      internalID: 4462737414155079548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_45
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 1
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8949b2bcac267e8b0800000000000000
+      internalID: -5123017427979103080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_46
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 1
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dfa2609235686fb0800000000000000
+      internalID: -4654358947042250796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rune_warden_47
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 1
+        width: 44
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54eab16d3c3dc25c0800000000000000
+      internalID: -4238780311198257595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rune_warden_0: 3053074196949748409
+      rune_warden_1: -4993466281825862305
+      rune_warden_10: -8022680990988730418
+      rune_warden_11: -1883026225165900031
+      rune_warden_12: 505779858356387461
+      rune_warden_13: 6309850156454506742
+      rune_warden_14: 1906092389912478972
+      rune_warden_15: -6019905426321937002
+      rune_warden_16: -6959678627625919632
+      rune_warden_17: -4822345042634084643
+      rune_warden_18: -1393485987620030890
+      rune_warden_19: -6062720761213846970
+      rune_warden_2: 979626592422861598
+      rune_warden_20: 6721205537192040440
+      rune_warden_21: 3372294096437982415
+      rune_warden_22: 6181321160807734956
+      rune_warden_23: 4537131621820721581
+      rune_warden_24: 9006584259081706229
+      rune_warden_25: 8932906120796845136
+      rune_warden_26: 3998009140385862988
+      rune_warden_27: -3680358253134706407
+      rune_warden_28: -6667718240119528188
+      rune_warden_29: 47809463420726116
+      rune_warden_3: -5678132103806506697
+      rune_warden_30: 9033992716491810121
+      rune_warden_31: -1144103458042205768
+      rune_warden_32: 2071878582473072612
+      rune_warden_33: -864651286337812839
+      rune_warden_34: -860294838374310745
+      rune_warden_35: 6146863574881116836
+      rune_warden_36: 8934047016903481183
+      rune_warden_37: 6326910783460902409
+      rune_warden_38: 6999714561286724471
+      rune_warden_39: -3776085186063603201
+      rune_warden_4: -6219733136853993957
+      rune_warden_40: -5662095288446892881
+      rune_warden_41: 2408282515883878152
+      rune_warden_42: 9167343207569698594
+      rune_warden_43: -1527514424922480632
+      rune_warden_44: 4462737414155079548
+      rune_warden_45: -5123017427979103080
+      rune_warden_46: -4654358947042250796
+      rune_warden_47: -4238780311198257595
+      rune_warden_5: 2927981398725226902
+      rune_warden_6: 1671154802129626887
+      rune_warden_7: 5237223215102391954
+      rune_warden_8: -9191863867052051266
+      rune_warden_9: -7945749172855400092
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

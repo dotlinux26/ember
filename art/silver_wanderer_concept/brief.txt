@@ -1,0 +1,4 @@
+Visual concept draft. Built-in imagegen. Not a validated 32x32 game sprite or PIX2 animation.
+
+undefined
+

@@ -1,0 +1,3 @@
+Built-in imagegen. New visual concept, not a validated native-resolution 48x48 sprite.
+
+undefined
