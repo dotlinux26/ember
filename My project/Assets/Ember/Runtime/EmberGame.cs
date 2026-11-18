@@ -527,11 +527,7 @@ namespace Ember
             }
             return frames[Mathf.Abs(frame)%frames.Length];
         }
-        Sprite Glove(bool grip)
-        {
-            string key=grip?"white_glove_grip":"white_glove_relaxed";if(primitives.TryGetValue(key,out var cached))return cached;
-            var texture=Resources.Load<Texture2D>("Ember/Active/white_gloves_cupped");if(texture==null)return Primitive("hand");texture.filterMode=FilterMode.Point;cached=Sprite.Create(texture,new Rect(0,grip?0:16,16,16),new Vector2(.5f,.5f),32);primitives[key]=cached;return cached;
-        }
+        Sprite Glove(bool grip) => Primitive("hand");
         SpriteRenderer Put(string key,Sprite sprite,V2 pos,Color color,float scale=1,int? order=null,bool flip=false)
         {
             touched.Add(key);if(!renderers.TryGetValue(key,out var r)){r=new GameObject(key).AddComponent<SpriteRenderer>();r.transform.SetParent(entityRoot.transform);if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;renderers[key]=r;}

@@ -48,3 +48,4 @@ Desktop.ini
 # External reference downloads / scrap assets (keep git clean)
 /art/references/
 /scratch/
+/art_src/
