@@ -382,9 +382,12 @@ namespace Ember
                 };
             }
             int totalSec=Mathf.Max(0,Mathf.FloorToInt(State.Time));
-            int mins=totalSec/60,secs=totalSec%60;
-            string clockStr=mins.ToString("00")+":"+secs.ToString("00");
-            float w=108f,h=30f;
+            int hours=totalSec/3600,mins=(totalSec/60)%60,secs=totalSec%60;
+            string clockStr=hours>0
+                ?hours.ToString("0")+":"+mins.ToString("00")+":"+secs.ToString("00")
+                :mins.ToString("00")+":"+secs.ToString("00");
+            float textW=matchClockStyle.CalcSize(new GUIContent(clockStr)).x;
+            float w=Mathf.Max(108f,Mathf.Ceil(textW+32f)),h=30f;
             var box=new Rect(Mathf.Round((Screen.width-w)*.5f),10f,w,h);
             bool eclipse=State.Phase==Phase.Eclipse;
             bool boss=State.BossArenaActive;
