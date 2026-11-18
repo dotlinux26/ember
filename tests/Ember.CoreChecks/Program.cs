@@ -54,7 +54,7 @@ foreach(Vessel vessel in Enum.GetValues<Vessel>())
         for(int i=0;i<70;i++){skillWorld.Tick();impacted|=skillWorld.S.Effects.Any(e=>e.Kind==5);}
         Check(impacted,"Little Moone resolves delayed meteor impacts");
     }
-    if(vessel==Vessel.SpaceWraith)Check(caster.Pos.Length==0&&caster.SkillCD==60,"wraith returns to beacon");
+    if(vessel==Vessel.SpaceWraith)Check(caster.Pos.Length>=1.5f&&caster.Pos.Length<=3.2f&&caster.SkillCD==60,"wraith returns safely beside beacon");
 }
 var lampWorld=new EmberWorld(42);var carrier=lampWorld.AddPlayer(1,"Carrier",Vessel.Wanderer);var follower=lampWorld.AddPlayer(2,"Follower",Vessel.Wanderer);lampWorld.StartRun();carrier.Pos=new V2(10,0);follower.Pos=new V2(11,0);lampWorld.Submit(1,new Command{PassLamp=true});lampWorld.Tick();Check(!carrier.CarriesLantern&&follower.CarriesLantern,"lantern passes to nearby ally");
 var recipes=new EmberWorld(42);var smith=recipes.AddPlayer(1,"Smith",Vessel.Wanderer);foreach(Recipe recipe in Enum.GetValues<Recipe>()){smith.Bag=new[]{100,100,100,100,100};Check(recipes.Craft(smith,recipe),"craft branch "+recipe);}
@@ -216,7 +216,13 @@ Check(fallen.Pos.X==8&&fallen.Pos.Y==0,"downed player cannot move freely as a gh
 rescuer.Pos=new V2(1,0);reviveWorld.S.Charge=150;
 reviveWorld.Submit(1,new Command{Revive=true});
 reviveWorld.Tick();
-Check(!fallen.Ghost&&fallen.HP>0&&reviveWorld.S.Charge==50&&fallen.Pos.Length<2,"beacon revive spends 100 energy and revives ally at beacon");
+Check(!fallen.Ghost&&fallen.HP>0&&reviveWorld.S.Charge==50&&fallen.Pos.Length>=2f&&fallen.Pos.Length<=3.5f,"beacon revive spends 100 energy and revives ally safely outside beacon");
+var beaconBlock=new EmberWorld(7);
+var walker=beaconBlock.AddPlayer(1,"Walker",Vessel.Wanderer);
+beaconBlock.StartRun();
+walker.Pos=new V2(0,-1.8f);
+for(int i=0;i<30;i++){beaconBlock.Submit(1,new Command{X=0,Y=1});beaconBlock.Tick();}
+Check(V2.Distance(walker.Pos,new V2(0,.35f))>=1.3f,"beacon solid collision blocks player from clipping inside beacon");
 var statWorld=new EmberWorld(11);
 var wardenStat=statWorld.AddPlayer(1,"Warden",Vessel.RuneWarden);
 var wraithStat=statWorld.AddPlayer(2,"Wraith",Vessel.SpaceWraith);

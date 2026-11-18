@@ -148,6 +148,8 @@ namespace Ember
     public sealed class EmberWorld
     {
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
+        static readonly V2 BeaconColliderPos=new V2(0,.35f);
+        const float BeaconColliderRadius=1.35f;
         public Snapshot S=new Snapshot();
         public byte[] Tiles; public readonly int[] Chest=new int[5];
         readonly List<Player> players=new List<Player>(); readonly List<Enemy> enemies=new List<Enemy>();
@@ -213,6 +215,20 @@ namespace Ember
                 if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Nest,Pos=pos,HP=180,MaxHP=180,AttackCD=5});
             }
         }
+        V2 BeaconSpawnSpot(int slotIndex,float radius=2.4f)
+        {
+            float baseAngle=-1.5708f+(slotIndex%8)*(slotIndex%2==0?1:-1)*((slotIndex+1)/2)*.55f;
+            for(int attempt=0;attempt<12;attempt++)
+            {
+                float a=baseAngle+attempt*.52f;
+                V2 candidate=new V2((float)Math.Cos(a)*radius,(float)Math.Sin(a)*radius);
+                if(Walkable(candidate)&&V2.Distance(candidate,BeaconColliderPos)>BeaconColliderRadius+.35f&&
+                   !players.Any(q=>!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,candidate)<.9f))
+                    return candidate;
+            }
+            return new V2(0,-radius);
+        }
+
         public Player AddPlayer(int id,string name,Vessel vessel,int[] perks=null,int hat=-1,int pet=-1,int[] ranks=null,int[] recipes=null,string installationId=null)
         {
             var existing=players.Find(p=>p.Id==id);if(existing!=null)return existing;
@@ -224,7 +240,7 @@ namespace Ember
             if(displayName.Length==0)displayName="Traveler";
             int partySlot=1;
             while(players.Any(member=>member.PartySlot==partySlot))partySlot++;
-            var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=new V2(players.Count*1.5f,0)};
+            var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=BeaconSpawnSpot(partySlot-1,2.3f)};
             p.MaxHP=100;p.HP=p.MaxHP;
             p.CarriesLantern=players.Count==0;
             p.Ready=players.Count==0;
@@ -277,6 +293,7 @@ namespace Ember
             const float radius=.24f;
             if(!Walkable(to+new V2(radius,0))||!Walkable(to-new V2(radius,0))||
                !Walkable(to+new V2(0,radius))||!Walkable(to-new V2(0,radius)))return false;
+            if(ApproachesBody(from,to,BeaconColliderPos,BeaconColliderRadius))return false;
             foreach(var player in players)
                 if(player!=body&&!player.Ghost&&!player.Extracted&&ApproachesBody(from,to,player.Pos,.55f))return false;
             foreach(var enemy in enemies)
@@ -347,7 +364,7 @@ namespace Ember
             {
                 p.HP=p.MaxHP;p.Extracted=false;p.Stamina=100;p.LampOn=scenario==0;
                 if(scenario==0){p.HeldSlot=2;p.Items[0]=Math.Max(1,p.Items[0]);}
-                V2 position=scenario==0?new V2(slot*1.25f,0):new V2(12+slot*1.25f,0);
+                V2 position=scenario==0?BeaconSpawnSpot(slot,2.3f):new V2(12+slot*1.25f,0);
                 for(int radius=0;radius<20&&!Walkable(position);radius++)position=new V2(12+slot*1.25f,radius*.5f);
                 p.Pos=position;p.Dread=p.Id==playerId?(scenario==1?65:scenario==2?95:scenario==3?35:0):0;p.Safe=IsSafe(p.Pos);p.MirageCD=0;slot++;
             }
@@ -362,7 +379,7 @@ namespace Ember
                 case "supplies":for(int i=0;i<5;i++)p.Bag[i]=100;for(int i=0;i<4;i++)p.Items[i]=10;break;
                 case "heal":p.HP=p.MaxHP;p.Dread=0;p.Stamina=100;p.SkillCD=p.DashCD=0;break;
                 case "ghost":p.HP=0;break;
-                case "beacon":p.Pos=new V2();p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
+                case "beacon":p.Pos=BeaconSpawnSpot(0,2.3f);p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
                 case "eclipse":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=90;S.Phase=Phase.Eclipse;break;
                 case "portal":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=0;S.Phase=Phase.Extraction;break;
                 case "blackout":DebugInfiniteFuel=false;S.Fuel=0;S.LastLight=0;S.BeaconHP=0;lastLightSpent=true;break;
@@ -535,7 +552,7 @@ namespace Ember
                 S.BeaconHP=Math.Max(1,S.BeaconHP-ReviveBeaconHpCost);
                 Announce(" được hồi sinh tại hải đăng (-150 HP trụ).",dead.Name);
             }
-            dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=new V2(0,-1.2f);dead.Invulnerable=3;
+            dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=BeaconSpawnSpot(dead.PartySlot,2.6f);dead.Invulnerable=3;
             FX(new V2(),dead.Pos,2);
         }
         void Use(Player p,int item)
@@ -660,7 +677,7 @@ namespace Ember
             }
             if(p.Vessel==Vessel.SpaceWraith)
             {
-                var q=players.Find(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange);if(q!=null)q.Pos=new V2(1,0);p.Pos=new V2();p.SkillCD=60;FX(p.Pos,p.Pos,2);
+                var q=players.Find(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange);if(q!=null)q.Pos=BeaconSpawnSpot(q.PartySlot,2.4f);p.Pos=BeaconSpawnSpot(p.PartySlot-1,2.4f);p.SkillCD=60;FX(p.Pos,p.Pos,2);
             }
         }
         public static V2 EightWay(V2 direction)
