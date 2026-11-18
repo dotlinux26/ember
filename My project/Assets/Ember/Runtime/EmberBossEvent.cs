@@ -173,6 +173,7 @@ namespace Ember
                     float x=(Screen.width-barW)*.5f;
                     float y=12f;
                     var box=new Rect(x,y,barW,60f);
+                    RegisterHudRect(box);
                     Panel(new Rect(box.x-2,box.y-2,box.width+4,box.height+4),new Color(accent.r,accent.g,accent.b,.78f));
                     Panel(box,new Color(.11f,.05f,.13f,.92f));
 

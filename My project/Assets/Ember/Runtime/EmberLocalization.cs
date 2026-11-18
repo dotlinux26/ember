@@ -11,6 +11,7 @@ namespace Ember
         readonly Dictionary<GUISkin, GUIStyle[]> compactButtonStyles=new Dictionary<GUISkin, GUIStyle[]>();
         bool UiButton(Rect rect,string text)
         {
+            RegisterHudRect(rect);
             var content=new GUIContent(EmberLanguage.Text(text));
             if(!compactButtonStyles.TryGetValue(GUI.skin,out var styles))
             {

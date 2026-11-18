@@ -290,100 +290,378 @@ namespace Ember
             return (EmberLanguage.English?ItemNamesEn:ItemNamesVi)[slot-2];
         }
 
-        static readonly int[] InventoryGridSlots={1,7,8,2,3,4,5,6};
+        const int BackpackCapacity=30;
+        struct BackpackCell
+        {
+            public int Kind; // 0 empty, 1 equipSlot (1/7/8), 2 consumable (0..3), 3 resource (0..4)
+            public int Id;
+            public int Count;
+            public bool Empty=>Kind==0||Count<=0;
+        }
+        readonly BackpackCell[] backpackCells=new BackpackCell[BackpackCapacity];
+        Vector2 inventoryScroll;
+        int dragFromCell=-1,dragFromQuick=-1,inspectedCell=-1;
+        Vector2 dragStartMouse;
+        bool draggingItem;
+
+        static int StackLimitFor(int kind,int id)
+        {
+            if(kind==1)return 1;
+            if(kind==2)return 5;
+            if(kind==3)return (id==(int)Resource.Core||id==(int)Resource.Umbra)?10:20;
+            return 1;
+        }
+
+        void SyncBackpack(Player p)
+        {
+            // Required counts per (kind, id).
+            var needed=new Dictionary<int,int>();
+            needed[100+1]=1; // primary weapon
+            needed[100+7]=1; // side gun
+            if(p.HasPickaxe||p.Weapon==Weapon.Pickaxe)needed[100+8]=1;
+            for(int c=0;c<4;c++)if(p.Items[c]>0)needed[200+c]=p.Items[c];
+            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag[r]>0)needed[300+r]=p.Bag[r];
+
+            // 1. Clamp or remove cells that no longer exist or exceed live totals.
+            var remaining=new Dictionary<int,int>(needed);
+            for(int i=0;i<BackpackCapacity;i++)
+            {
+                var cell=backpackCells[i];
+                if(cell.Empty){backpackCells[i]=default;continue;}
+                int key=cell.Kind*100+cell.Id;
+                if(!remaining.TryGetValue(key,out int rem)||rem<=0)
+                {
+                    backpackCells[i]=default;
+                    continue;
+                }
+                int limit=StackLimitFor(cell.Kind,cell.Id);
+                int keep=Mathf.Min(cell.Count,Mathf.Min(limit,rem));
+                backpackCells[i].Count=keep;
+                remaining[key]=rem-keep;
+            }
+
+            // 2. Top up existing partial stacks of the same item.
+            for(int i=0;i<BackpackCapacity;i++)
+            {
+                var cell=backpackCells[i];
+                if(cell.Empty)continue;
+                int key=cell.Kind*100+cell.Id;
+                if(!remaining.TryGetValue(key,out int rem)||rem<=0)continue;
+                int limit=StackLimitFor(cell.Kind,cell.Id);
+                int add=Mathf.Min(limit-cell.Count,rem);
+                if(add>0){backpackCells[i].Count+=add;remaining[key]=rem-add;}
+            }
+
+            // 3. Place any brand-new items or overflow stacks into first free cells.
+            foreach(var kv in remaining.ToArray())
+            {
+                int rem=kv.Value;
+                if(rem<=0)continue;
+                int kind=kv.Key/100,id=kv.Key%100;
+                int limit=StackLimitFor(kind,id);
+                for(int i=0;i<BackpackCapacity&&rem>0;i++)
+                {
+                    if(!backpackCells[i].Empty)continue;
+                    int put=Mathf.Min(limit,rem);
+                    backpackCells[i]=new BackpackCell{Kind=kind,Id=id,Count=put};
+                    rem-=put;
+                }
+            }
+        }
+
+        void SortBackpack(Player p)
+        {
+            for(int i=0;i<BackpackCapacity;i++)backpackCells[i]=default;
+            int cursor=0;
+            void AddSorted(int kind,int id,int total)
+            {
+                int limit=StackLimitFor(kind,id);
+                while(total>0&&cursor<BackpackCapacity)
+                {
+                    int put=Mathf.Min(limit,total);
+                    backpackCells[cursor++]=new BackpackCell{Kind=kind,Id=id,Count=put};
+                    total-=put;
+                }
+            }
+            AddSorted(1,1,1);
+            AddSorted(1,7,1);
+            if(p.HasPickaxe||p.Weapon==Weapon.Pickaxe)AddSorted(1,8,1);
+            for(int c=0;c<4;c++)if(p.Items[c]>0)AddSorted(2,c,p.Items[c]);
+            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag[r]>0)AddSorted(3,r,p.Bag[r]);
+            inspectedCell=-1;
+        }
+
+        int UsedBackpackSlots()
+        {
+            int used=0;
+            for(int i=0;i<BackpackCapacity;i++)if(!backpackCells[i].Empty)used++;
+            return used;
+        }
+
+        int EquipSlotForCell(BackpackCell cell)=>cell.Kind==1?cell.Id:cell.Kind==2?cell.Id+2:0;
+
+        Sprite CellSprite(Player p,BackpackCell cell)
+        {
+            if(cell.Empty)return null;
+            if(cell.Kind==1)return SlotIconSprite(p,cell.Id);
+            if(cell.Kind==2)return HeldItemSprite(cell.Id);
+            if(cell.Kind==3)return MaterialSprite(ResourceIcons[Mathf.Clamp(cell.Id,0,ResourceIcons.Length-1)]);
+            return null;
+        }
+
+        string CellTitle(Player p,BackpackCell cell)
+        {
+            if(cell.Empty)return L("Trống","Empty");
+            if(cell.Kind==1)return InventorySlotName(p,cell.Id);
+            if(cell.Kind==2)return (EmberLanguage.English?ItemNamesEn:ItemNamesVi)[cell.Id];
+            string[] resEn={"Lumen Dust","Core","Umbra Shard","Wood","Ore"};
+            return (EmberLanguage.English?resEn:Catalog.ResourceNames)[Mathf.Clamp(cell.Id,0,4)];
+        }
+
+        string CellShortTag(Player p,BackpackCell cell)
+        {
+            if(cell.Empty)return "";
+            if(cell.Kind==1)return SlotShortValue(p,cell.Id);
+            return cell.Count+"/"+StackLimitFor(cell.Kind,cell.Id);
+        }
+
+        string CellDetailInfo(Player p,BackpackCell cell)
+        {
+            if(cell.Empty)return BuildHoldingInfo(p);
+            int eqSlot=EquipSlotForCell(cell);
+            if(eqSlot>0)
+            {
+                int prevHeld=heldSlot;
+                heldSlot=eqSlot;
+                string info=BuildHoldingInfo(p);
+                heldSlot=prevHeld;
+                return info;
+            }
+            string name=CellTitle(p,cell);
+            int limit=StackLimitFor(cell.Kind,cell.Id);
+            string desc=cell.Id==0?L("Nhiên liệu nạp đèn [Q] và nguyên liệu chế tạo cơ bản.","Refuels lantern [Q] and basic crafting.")
+                :cell.Id==1?L("Mang về Hải Đăng bấm [B] để nạp +25 năng lượng trụ.","Bring to Beacon and press [B] for +25 beacon energy.")
+                :cell.Id==2?L("Nguyên liệu hiếm từ quái tinh anh/tổ/Boss để chế trang bị cao cấp.","Rare drop from Elites/Nests/Bosses for high-tier gear.")
+                :cell.Id==3?L("Dùng chế tạo Đuốc, Tường, Rương chung và Vũ khí.","Used to craft Torches, Walls, Chests, and Weapons.")
+                :L("Dùng chế tạo Pháo sáng, Bẫy điện và Vũ khí tầm xa.","Used to craft Flares, Traps, and Ranged Weapons.");
+            return name+" ("+cell.Count+"/"+limit+") · "+L("Tài nguyên · ","Resource · ")+desc;
+        }
+
+        void MoveOrSwapBackpackCells(int from,int to)
+        {
+            if(from<0||from>=BackpackCapacity||to<0||to>=BackpackCapacity||from==to)return;
+            var a=backpackCells[from];
+            var b=backpackCells[to];
+            if(a.Empty)return;
+            if(!b.Empty&&a.Kind==b.Kind&&a.Id==b.Id)
+            {
+                int limit=StackLimitFor(b.Kind,b.Id);
+                int space=limit-b.Count;
+                if(space>0)
+                {
+                    int transfer=Mathf.Min(space,a.Count);
+                    backpackCells[to].Count+=transfer;
+                    backpackCells[from].Count-=transfer;
+                    if(backpackCells[from].Count<=0)backpackCells[from]=default;
+                    return;
+                }
+            }
+            backpackCells[to]=a;
+            backpackCells[from]=b;
+        }
 
         void DrawInventory(Player p)
         {
-            float width=Mathf.Min(456,Screen.width-28);
-            float size=Mathf.Min(78,(width-46)/4);
-            float boxHeight=210+2*size;
-            var box=new Rect((Screen.width-width)/2,Mathf.Max(94,(Screen.height-boxHeight)/2),width,boxHeight);
+            SyncBackpack(p);
+            const int cols=5,rows=6;
+            float width=Mathf.Min(492,Screen.width-24);
+            float cellSize=Mathf.Floor(Mathf.Min(72,(width-74)/cols));
+            float gap=6f;
+            float viewHeight=Mathf.Min(232,Mathf.Max(154,Screen.height-320));
+            float boxHeight=viewHeight+244;
+            var box=new Rect((Screen.width-width)/2,Mathf.Max(52,(Screen.height-boxHeight)/2),width,boxHeight);
             PixelPanel(box,FieldPaper);
-            UiLabel(new Rect(box.x+14,box.y+4,width-112,40),L("Kho đồ","Inventory"),title);
-            if(UiButton(new Rect(box.xMax-92,box.y+9,76,34),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;}
-            float gridWidth=4*size+18;
+            RegisterHudRect(box);
+
+            int usedSlots=UsedBackpackSlots();
+            UiLabel(new Rect(box.x+14,box.y+6,120,34),L("Kho đồ","Inventory"),title);
+            var countChip=new Rect(box.x+132,box.y+11,148,26);
+            PixelPanel(countChip,new Color(.19f,.13f,.30f));
+            UiLabel(new Rect(countChip.x+8,countChip.y+3,countChip.width-12,20),
+                L("Ô đồ: ","Slots: ")+usedSlots+"/"+BackpackCapacity+"  ·  "+p.Load+"/"+Mathf.FloorToInt(p.Capacity),small);
+
+            if(UiButton(new Rect(box.xMax-208,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
+            if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Tay 0","Empty"))){EquipSlot(6);inspectedCell=-1;}
+            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}
+
+            UiLabel(new Rect(box.x+14,box.y+42,width-28,20),
+                L("Kéo thả để sắp xếp hoặc kéo vào ô 1–4 · Nhấn để cầm · Chuột phải để gán nhanh",
+                  "Drag to reorder or drop into slots 1–4 · Click to equip · Right-click to bind"),small);
+
+            float gridTop=box.y+64;
+            var scrollFrame=new Rect(box.x+12,gridTop,width-24,viewHeight);
+            PixelPanel(scrollFrame,new Color(.11f,.08f,.19f));
+
+            float contentW=cols*cellSize+(cols-1)*gap;
+            float contentH=rows*cellSize+(rows-1)*gap+10;
+            var viewRect=new Rect(scrollFrame.x+8,scrollFrame.y+6,scrollFrame.width-16,scrollFrame.height-12);
+            var contentRect=new Rect(0,0,Mathf.Max(contentW,viewRect.width-20),contentH);
+
             var ev=Event.current;
-            for(int i=0;i<InventoryGridSlots.Length;i++)
+            Vector2 globalMouse=ev.mousePosition;
+            int hoveredCell=-1;
+
+            inventoryScroll=GUI.BeginScrollView(viewRect,inventoryScroll,contentRect,false,true);
+            Vector2 localMouse=ev.mousePosition;
+            bool insideViewport=viewRect.Contains(globalMouse);
+            for(int i=0;i<BackpackCapacity;i++)
             {
-                int slot=InventoryGridSlots[i];
-                bool emptyConsumable=slot>=2&&slot<=5&&p.Items[slot-2]<=0;
-                var tile=new Rect(box.center.x-gridWidth/2+(i%4)*(size+6),box.y+50+(i/4)*(size+6),size,size);
-                bool active=heldSlot==slot&&!emptyConsumable;
-                bool assigning=pendingQuickAssign==slot&&!emptyConsumable;
-                Color bg=assigning?new Color(.68f,.44f,.18f):active?Plum:emptyConsumable?new Color(.12f,.09f,.20f):new Color(.22f,.16f,.34f);
+                int col=i%cols,row=i/cols;
+                var tile=new Rect(col*(cellSize+gap)+2,row*(cellSize+gap)+4,cellSize,cellSize);
+                var cell=backpackCells[i];
+                int eqSlot=EquipSlotForCell(cell);
+                bool active=eqSlot>0&&heldSlot==eqSlot;
+                bool assigning=eqSlot>0&&pendingQuickAssign==eqSlot;
+                bool inspected=inspectedCell==i&&!cell.Empty;
+                bool isDragSource=draggingItem&&dragFromCell==i;
+                bool hovered=insideViewport&&tile.Contains(localMouse);
+                if(hovered)hoveredCell=i;
+
+                Color bg=isDragSource?new Color(.14f,.10f,.24f):
+                    (draggingItem&&hovered)?new Color(.34f,.52f,.62f):
+                    assigning?new Color(.68f,.44f,.18f):
+                    active?Plum:
+                    inspected?new Color(.32f,.24f,.50f):
+                    cell.Empty?new Color(.14f,.10f,.23f):new Color(.23f,.17f,.36f);
                 PixelPanel(tile,bg);
-                DrawSpritePreview(new Rect(tile.center.x-21,tile.y+7,42,42),SlotIconSprite(p,slot));
-                int qIdx=System.Array.IndexOf(quickSlots,slot);
-                if(qIdx>=0&&!emptyConsumable)
+
+                if(!cell.Empty&&!isDragSource)
                 {
-                    var badge=new Rect(tile.xMax-20,tile.y+3,17,17);
-                    Panel(badge,new Color(.10f,.08f,.18f,.90f));
-                    UiLabel(new Rect(badge.x+4,badge.y-1,14,18),(qIdx+1).ToString(),small);
-                }
-                string name=emptyConsumable?L("Trống","Empty"):InventorySlotName(p,slot);
-                string line=emptyConsumable?L("Trống","Empty"):
-                    slot==1?L("Cận chiến","Melee"):
-                    slot==7?L("Súng","Gun"):
-                    slot==8?L("Cuốc","Pickaxe"):
-                    slot>=2&&slot<=5?name.Split(' ')[0]+" · "+p.Items[slot-2]:name;
-                UiLabel(new Rect(tile.x+4,tile.yMax-22,size-7,21),line,small);
-                if(!emptyConsumable)
-                {
-                    if(ev.type==EventType.MouseDown&&ev.button==1&&tile.Contains(ev.mousePosition))
+                    DrawSpritePreview(new Rect(tile.center.x-19,tile.y+6,38,38),CellSprite(p,cell));
+                    if(eqSlot>0)
                     {
-                        pendingQuickAssign=pendingQuickAssign==slot?0:slot;
+                        int qIdx=System.Array.IndexOf(quickSlots,eqSlot);
+                        if(qIdx>=0)
+                        {
+                            var badge=new Rect(tile.xMax-18,tile.y+3,15,15);
+                            Panel(badge,new Color(.09f,.07f,.17f,.92f));
+                            UiLabel(new Rect(badge.x+3,badge.y-2,12,17),(qIdx+1).ToString(),small);
+                        }
+                    }
+                    string shortTag=CellShortTag(p,cell);
+                    if(!string.IsNullOrEmpty(shortTag))
+                    {
+                        UiLabel(new Rect(tile.x+4,tile.yMax-20,cellSize-8,18),shortTag,small);
+                    }
+                }
+                else if(cell.Empty)
+                {
+                    UiLabel(new Rect(tile.x+5,tile.y+3,24,16),(i+1).ToString(),small);
+                }
+
+                if(hovered&&ev.type==EventType.MouseDown)
+                {
+                    if(ev.button==1&&eqSlot>0)
+                    {
+                        pendingQuickAssign=pendingQuickAssign==eqSlot?0:eqSlot;
+                        inspectedCell=i;
                         ev.Use();
                     }
-                    else if(GUI.Button(tile,new GUIContent("",name),GUIStyle.none))
+                    else if(ev.button==0&&!cell.Empty)
                     {
-                        pendingQuickAssign=0;
-                        EquipSlot(slot);
+                        dragFromCell=i;
+                        dragFromQuick=-1;
+                        dragStartMouse=globalMouse;
+                        draggingItem=false;
+                        inspectedCell=i;
+                        ev.Use();
                     }
                 }
             }
+            GUI.EndScrollView();
 
-            float detailY=box.y+62+2*size;
-            var detail=new Rect(box.x+14,detailY,width-28,36);
+            if(dragFromCell>=0&&ev.type==EventType.MouseDrag&&Vector2.Distance(globalMouse,dragStartMouse)>6f)
+                draggingItem=true;
+
+            // Detail marquee bar.
+            float detailY=scrollFrame.yMax+8;
+            var detail=new Rect(box.x+12,detailY,width-24,34);
             PixelPanel(detail,new Color(.22f,.16f,.34f));
-            string equipped=InventorySlotName(p,heldSlot);
-            if(IsHoldingWeaponSlot(heldSlot))
-            {
-                Weapon activeW=WeaponForSlot(p,heldSlot);
-                bool ranged=activeW==Weapon.Crossbow||activeW==Weapon.LumenGun||activeW==Weapon.MirrorShield;
-                float range=WeaponRangeFor(activeW);
-                string kind=heldSlot==8?L("Đào/Chặt","Mine/Chop"):ranged?L("Tầm xa","Ranged"):L("Cận chiến","Melee");
-                equipped+=" · "+kind+" ("+range.ToString("0.#")+L(" ô)"," tiles)");
-                int mag=Catalog.WeaponMagSize(activeW);
-                if(mag>0)equipped+=" · "+L("Băng ","Mag ")+mag+L(" · Nạp "," · Reload ")+Catalog.WeaponReloadTime(activeW).ToString("0.#")+"s";
-            }
-            else if(heldSlot>=2&&heldSlot<=5&&p.Items[heldSlot-2]==0)equipped+=L(" · Hết đồ"," · Empty");
-            UiLabel(new Rect(detail.x+9,detail.y+5,detail.width-18,26),L("Đang cầm: ","Holding: ")+equipped,small);
+            var infoCell=(inspectedCell>=0&&inspectedCell<BackpackCapacity&&!backpackCells[inspectedCell].Empty)
+                ?backpackCells[inspectedCell]:default;
+            string detailText=infoCell.Empty?L("Đang cầm: ","Holding: ")+BuildHoldingInfo(p):CellDetailInfo(p,infoCell);
+            DrawMarqueeLabel(new Rect(detail.x+9,detail.y+5,detail.width-18,24),detailText,small);
 
-            float quickLabelY=detailY+42;
+            // Quick slots 1-4 (also valid drop targets!).
+            float quickLabelY=detail.yMax+6;
             string quickHint=pendingQuickAssign>0
                 ?L("Bấm ô 1–4 (hoặc phím 1–4) để gán: ","Click slot 1–4 (or press 1–4) to bind: ")+InventorySlotName(p,pendingQuickAssign)
-                :L("Ô phím tắt nhanh 1–4 · Chuột phải vào đồ để gán","Quick slots 1–4 · Right-click any item to assign");
+                :draggingItem?L("Thả vào ô trong kho để di chuyển / đổi chỗ, hoặc thả xuống ô 1–4 bên dưới","Drop onto a slot to move/swap, or drop onto quick slots 1–4 below")
+                :L("Ô phím tắt nhanh 1–4 · Kéo vũ khí/đồ dùng thả vào đây để gán","Quick slots 1–4 · Drag any weapon/consumable here to bind");
             var oldContent=GUI.contentColor;
-            if(pendingQuickAssign>0)GUI.contentColor=Gold;
+            if(pendingQuickAssign>0||draggingItem)GUI.contentColor=Gold;
             UiLabel(new Rect(box.x+14,quickLabelY,width-28,22),quickHint,small);
             GUI.contentColor=oldContent;
 
             float qY=quickLabelY+24;
             float qSize=Mathf.Min(64,(width-46)/4);
             float qGridW=4*qSize+18;
+            int hoveredQuick=-1;
             for(int q=0;q<4;q++)
             {
                 int boundSlot=quickSlots[q];
                 var qTile=new Rect(box.center.x-qGridW/2+q*(qSize+6),qY,qSize,qSize);
-                Color qBg=pendingQuickAssign>0?new Color(.42f,.28f,.60f):heldSlot==boundSlot?Plum:new Color(.18f,.13f,.28f);
+                bool qHover=qTile.Contains(globalMouse);
+                if(qHover)hoveredQuick=q;
+                bool dragAcceptable=draggingItem&&dragFromCell>=0&&EquipSlotForCell(backpackCells[dragFromCell])>0;
+                Color qBg=(dragAcceptable&&qHover)?new Color(.34f,.58f,.66f):
+                    pendingQuickAssign>0?new Color(.42f,.28f,.60f):
+                    heldSlot==boundSlot?Plum:new Color(.18f,.13f,.28f);
                 PixelPanel(qTile,qBg);
                 DrawSpritePreview(new Rect(qTile.center.x-16,qTile.y+5,32,32),SlotIconSprite(p,boundSlot));
                 UiLabel(new Rect(qTile.x+4,qTile.yMax-21,qSize-8,20),(q+1)+" · "+SlotShortValue(p,boundSlot),small);
-                if(GUI.Button(qTile,new GUIContent("",InventorySlotName(p,boundSlot)),GUIStyle.none))
+                if(!draggingItem&&GUI.Button(qTile,new GUIContent("",InventorySlotName(p,boundSlot)),GUIStyle.none))
                 {
                     if(pendingQuickAssign>0)BindQuickSlot(q,pendingQuickAssign);
                     else EquipSlot(boundSlot);
                 }
+            }
+
+            // Finish click or drag-and-drop on mouse up.
+            if(ev.type==EventType.MouseUp&&ev.button==0&&dragFromCell>=0)
+            {
+                if(draggingItem)
+                {
+                    if(hoveredCell>=0)
+                    {
+                        MoveOrSwapBackpackCells(dragFromCell,hoveredCell);
+                        inspectedCell=hoveredCell;
+                    }
+                    else if(hoveredQuick>=0)
+                    {
+                        int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
+                        if(eqSlot>0)BindQuickSlot(hoveredQuick,eqSlot);
+                    }
+                }
+                else
+                {
+                    int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
+                    if(eqSlot>0){pendingQuickAssign=0;EquipSlot(eqSlot);}
+                }
+                dragFromCell=-1;
+                dragFromQuick=-1;
+                draggingItem=false;
+                ev.Use();
+            }
+
+            // Floating ghost icon following the cursor while dragging.
+            if(draggingItem&&dragFromCell>=0&&!backpackCells[dragFromCell].Empty&&ev.type==EventType.Repaint)
+            {
+                var ghost=new Rect(globalMouse.x-26,globalMouse.y-26,52,52);
+                GUI.color=new Color(1,1,1,.88f);
+                PixelPanel(ghost,new Color(.38f,.28f,.58f,.92f));
+                DrawSpritePreview(new Rect(ghost.x+7,ghost.y+7,38,38),CellSprite(p,backpackCells[dragFromCell]));
+                GUI.color=Color.white;
             }
         }
     }

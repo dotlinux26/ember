@@ -14,8 +14,10 @@ namespace Ember
 
         bool CanSaveCurrentSoloRun()
         {
-            if(netSmoke||network||!host||debugSession||saveBlocked||rewarded)return false;
+            if(netSmoke||!host||debugSession||saveBlocked||rewarded)return false;
             if(World==null||State==null)return false;
+            bool soloHost=!network||((State.Players?.Length??0)==1&&(State.Disconnected==null||State.Disconnected.Length==0));
+            if(!soloHost)return false;
             return State.Phase==Phase.Explore||State.Phase==Phase.Eclipse||State.Phase==Phase.Extraction;
         }
 

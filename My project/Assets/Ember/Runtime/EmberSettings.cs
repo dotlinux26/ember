@@ -58,7 +58,7 @@ namespace Ember
         {
             showFps=PlayerPrefs.GetInt("Ember.ShowFps",1)!=0;
             zoomLevel=Mathf.Clamp(PlayerPrefs.GetInt("Ember.CameraZoom",DefaultZoom),0,CameraZoomPixels.Length-1);
-            soundVolume=PlayerPrefs.GetFloat("Ember.Volume",.7f);AudioListener.volume=soundVolume;moba=PlayerPrefs.GetInt("Ember.Moba",0)==1;
+            soundVolume=PlayerPrefs.GetFloat("Ember.Volume",.7f);AudioListener.volume=soundVolume;moba=PlayerPrefs.GetInt("Ember.Moba",1)==1;
             int count=22050;var samples=new float[count];
             for(int i=0;i<count;i++){float t=i/22050f,pulse=Mathf.Max(0,Mathf.Sin(t*22));samples[i]=Mathf.Sin(t*(210+Mathf.Sin(t*17)*35)*Mathf.PI*2)*pulse*Mathf.Sin(t*Mathf.PI)*.18f;}
             jesterLaugh=AudioClip.Create("Jester laugh",count,1,22050,false);jesterLaugh.SetData(samples,0);
@@ -75,7 +75,8 @@ namespace Ember
         void DrawPauseMenu()
         {
             float width=Mathf.Min(438,Screen.width-30);
-            float height=pauseSettings?Mathf.Min(520,Screen.height-56):(!network&&CanSaveCurrentSoloRun()?344:300);
+            bool canSaveRun=CanSaveCurrentSoloRun();
+            float height=pauseSettings?Mathf.Min(520,Screen.height-56):(canSaveRun?344:300);
             var box=new Rect((Screen.width-width)/2,(Screen.height-height)/2,width,height);
             Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.035f,.025f,.075f,.70f));
             PixelPanel(box,FieldPaper);
@@ -116,7 +117,7 @@ namespace Ember
                 GUILayout.Space(10);
                 if(UiButton(L("Tiếp tục","Resume"),GUILayout.Height(40)))menu=false;
                 if(UiButton(L("Thiết lập","Settings"),GUILayout.Height(40))){pauseSettings=true;pauseScroll=Vector2.zero;}
-                if(!network&&CanSaveCurrentSoloRun())
+                if(canSaveRun)
                 {
                     if(UiButton(L("Lưu & Về sảnh","Save & Sanctuary"),GUILayout.Height(40))){SaveActiveRun(true);LeaveRoom();}
                     if(UiButton(L("Bỏ trận (xóa save)","Discard run"),GUILayout.Height(36)))pauseConfirm=true;

@@ -43,6 +43,7 @@ namespace Ember
         {
             Dispose();Host=host;LocalId=host?1:0;Error=null;Capacity=Math.Max(1,Math.Min(4,Capacity));AcceptingJoins=true;LastStateTime=0;using(var sha=SHA256.Create())secret=sha.ComputeHash(Encoding.UTF8.GetBytes("Ember LAN v2:"+password));
             udp=new UdpClient(host?Port:0);udp.Client.Blocking=false;udp.Client.ReceiveBufferSize=1024*1024;
+            try{udp.Client.IOControl(-1744830452,new byte[]{0,0,0,0},null);}catch{}
             epoch=host?EmberCrypto.Random(16):null;sessionKey=host?EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2"):null;
             handshake=Convert.ToBase64String(EmberCrypto.Random(16));
             if(!host)server=new IPEndPoint(IPAddress.Parse(address),Port);
@@ -76,7 +77,7 @@ namespace Ember
                     if(!encrypted&&split[0]!="JOIN"&&split[0]!="ID"&&split[0]!="REJECT")continue;
                     if(Host)ReceiveHost(from,split);else if(from.Equals(server))ReceiveClient(split);
                 }
-                catch(SocketException ex){if(ex.SocketErrorCode!=SocketError.WouldBlock)Error=ex.Message;}
+                catch(SocketException ex){if(ex.SocketErrorCode!=SocketError.WouldBlock&&ex.SocketErrorCode!=SocketError.ConnectionReset&&ex.SocketErrorCode!=SocketError.Interrupted)Error=ex.Message;}
                 catch(CryptographicException){RejectedPackets++;}
                 catch(Exception ex){Error="Rejected packet: "+ex.Message;}
             }

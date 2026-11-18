@@ -76,6 +76,7 @@ namespace Ember
         void PixelPanel(Rect rect,Color fill)
         {
             if(Event.current.type!=EventType.Repaint||rect.width<14||rect.height<14)return;
+            RegisterHudRect(rect);
             if(frameStyle==null)
             {
                 frameStyle=new GUIStyle{border=new RectOffset(6,6,6,6)};

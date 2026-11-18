@@ -184,6 +184,7 @@ namespace Ember
                     float x=14+step*(i++ +.5f), y=PartyPortraitY;
                     var center=new Vector2(x,y);
                     var hit=new Rect(x-30,y-30,60,60);
+                    RegisterHudRect(new Rect(x-step*.5f,y-32,step,88));
                     if(Event.current.type==EventType.Repaint)
                     {
                         GUI.DrawTexture(hit,partyBubble);
@@ -209,6 +210,7 @@ namespace Ember
                 {
                     float x=14+step*(i++ +.5f), y=PartyPortraitY;
                     var hit=new Rect(x-30,y-30,60,60);
+                    RegisterHudRect(new Rect(x-step*.5f,y-32,step,88));
                     if(Event.current.type==EventType.Repaint)
                     {
                         GUI.color=new Color(.55f,.55f,.62f,.78f);
@@ -349,6 +351,7 @@ namespace Ember
                 meterValue=new GUIStyle(small){alignment=TextAnchor.MiddleRight,wordWrap=false};
             string number=Mathf.CeilToInt(value)+" / "+Mathf.CeilToInt(max);
             float numberWidth=meterValue.CalcSize(new GUIContent(number)).x+4;
+            RegisterHudRect(new Rect(x-4,y-2,width+8,44));
             bool stacked=small.CalcSize(new GUIContent(caption)).x+numberWidth+5>width;
             UiLabel(new Rect(x,y,stacked?width:width-numberWidth,18),caption,small);
             GUI.Label(new Rect(x,stacked?y+15:y,width,18),number,meterValue);

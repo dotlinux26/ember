@@ -117,6 +117,7 @@ namespace Ember
                 if(coopReconnectTimer<=0)
                 {
                     coopReconnectAttempts++;
+                    coopReconnectArmed=false;
                     ReconnectCoop(false);
                 }
             }
@@ -161,7 +162,10 @@ namespace Ember
             PixelArt(new Rect(box.x+15,box.y+16,32,32),"umbra");
             UiLabel(new Rect(box.x+56,box.y+10,box.width-72,42),
                 resumable?L("Kết nối bị gián đoạn","Connection interrupted"):L("Không vào được phòng","Could not join room"),label);
-            UiLabel(new Rect(box.x+16,box.y+58,box.width-32,48),reason,label);
+            string friendlyReason=reason!=null&&reason.Contains("forcibly closed")
+                ?L("Không liên lạc được với Host (Host đã tắt hoặc mất mạng).","Could not reach Host (Host offline or network dropped).")
+                :reason;
+            UiLabel(new Rect(box.x+16,box.y+58,box.width-32,48),friendlyReason,label);
             if(resumable)
             {
                 UiLabel(new Rect(box.x+16,box.y+108,box.width-32,58),

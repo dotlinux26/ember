@@ -18,7 +18,24 @@ namespace Ember
         readonly Dictionary<string,Sprite[]> atlases=new Dictionary<string,Sprite[]>();
         readonly Dictionary<string,Sprite> primitives=new Dictionary<string,Sprite>();
         readonly Queue<V2> path=new Queue<V2>();
-        V2 clickMarker;float clickMarkerUntil;
+        V2 clickMarker;float clickMarkerUntil,mobaHoldClock;
+        readonly List<Rect> hudBlockingRects=new List<Rect>();
+        bool hudCapturing;
+        void RegisterHudRect(Rect rect)
+        {
+            if(hudCapturing&&Event.current!=null&&Event.current.type==EventType.Repaint&&rect.width>4&&rect.height>4)
+                hudBlockingRects.Add(rect);
+        }
+        bool IsMouseOverHud()
+        {
+            if(Mouse.current==null)return false;
+            Vector2 mp=Mouse.current.position.ReadValue();
+            Vector2 guiPos=new Vector2(mp.x,Screen.height-mp.y);
+            if(new Rect(Screen.width-108,8,100,36).Contains(guiPos))return true;
+            for(int i=0;i<hudBlockingRects.Count;i++)
+                if(hudBlockingRects[i].Contains(guiPos))return true;
+            return false;
+        }
         readonly HashSet<string> touched=new HashSet<string>();
         string installationId;
         const string InstallationIdPref="Ember.PlayerId";
@@ -186,7 +203,7 @@ namespace Ember
             spectateId=alive[(index+delta+alive.Length)%alive.Length].Id;
         }
         void BeginRoomRun(){if(World.StartRun(true)){lan.AcceptingJoins=false;ClearActions();}}
-        void LeaveRoom(){try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
+        void LeaveRoom(){coopReconnectArmed=false;try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
         static AudioClip MakeTone(float hz,float seconds)
         {
             int count=(int)(22050*seconds);var samples=new float[count];for(int i=0;i<count;i++)samples[i]=Mathf.Sin(i*hz*Mathf.PI*2/22050)*(1-(float)i/count)*.2f;
@@ -201,7 +218,7 @@ namespace Ember
                 if(inventoryOpen)
                 {
                     if(pendingQuickAssign>0)pendingQuickAssign=0;
-                    else inventoryOpen=false;
+                    else {inventoryOpen=false;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}
                 }
                 else if(craftOpen)craftOpen=false;
                 else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
@@ -216,7 +233,7 @@ namespace Ember
                 if(Press(Key.D)||Press(Key.RightArrow)||Press(Key.E)||Press(Key.Space))CycleSpectate(1);
                 return;
             }
-            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen)pendingQuickAssign=0;craftOpen=false;path.Clear();}
+            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;}craftOpen=false;path.Clear();}
             if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;pendingQuickAssign=0;}
             if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
             if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}
@@ -224,13 +241,28 @@ namespace Ember
             if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else EquipSlot(quickSlots[3]);}
             if(inventoryOpen){intent.X=intent.Y=0;return;}
             if(Press(Key.R))ranges=!ranges;
-            if(Press(Key.M)){moba=!moba;notice=moba?"Chuột phải: đi đến điểm. WASD hủy đường đi.":"Điều khiển bàn phím.";}
+            if(Press(Key.M))
+            {
+                moba=!moba;
+                PlayerPrefs.SetInt("Ember.Moba",moba?1:0);
+                PlayerPrefs.Save();
+                if(!moba)path.Clear();
+                notice=moba?L("MOBA chuột phải: BẬT (click hoặc giữ chuột phải để di chuyển).","MOBA right-click: ON (click or hold RMB to move)."):L("MOBA chuột phải: TẮT.","MOBA right-click: OFF.");
+            }
             Vector2 move=new Vector2((Held(Key.D)||Held(Key.RightArrow)?1:0)-(Held(Key.A)||Held(Key.LeftArrow)?1:0),(Held(Key.W)||Held(Key.UpArrow)?1:0)-(Held(Key.S)||Held(Key.DownArrow)?1:0));
             if(move.sqrMagnitude>0)path.Clear();
-            bool overUI=Mouse.current!=null&&(Mouse.current.position.ReadValue().y>Screen.height-92||Mouse.current.position.ReadValue().y<168||(craftOpen&&Mouse.current.position.ReadValue().x>Screen.width-390));
-            if(moba&&Mouse.current!=null&&Mouse.current.rightButton.wasPressedThisFrame&&!overUI&&Local!=null)
+            bool overUI=IsMouseOverHud();
+            if(moba&&Mouse.current!=null&&!overUI&&Local!=null)
             {
-                Vector3 p=cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());MakePath(Local.Pos,new V2(p.x,p.y));
+                bool rDown=Mouse.current.rightButton.wasPressedThisFrame;
+                bool rHeld=Mouse.current.rightButton.isPressed;
+                if(rDown||(rHeld&&clock>=mobaHoldClock))
+                {
+                    Vector2 mp=Mouse.current.position.ReadValue();
+                    Vector3 wp=cam.ScreenToWorldPoint(new Vector3(mp.x,mp.y,-cam.transform.position.z));
+                    MakePath(Local.Pos,new V2(wp.x,wp.y));
+                    mobaHoldClock=clock+.12f;
+                }
             }
             if(move.sqrMagnitude==0&&path.Count>0&&Local!=null)
             {
@@ -250,8 +282,23 @@ namespace Ember
         {
             path.Clear();int size=State.Size;byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,size);
             int sx=Mathf.FloorToInt(from.X+size/2),sy=Mathf.FloorToInt(from.Y+size/2),tx=Mathf.FloorToInt(to.X+size/2),ty=Mathf.FloorToInt(to.Y+size/2);
-            if(tx<3||ty<3||tx>=size-3||ty>=size-3)return;
+            tx=Mathf.Clamp(tx,3,size-4);ty=Mathf.Clamp(ty,3,size-4);
+            // If clicked directly on a tree/wall/obstacle, snap to nearest walkable tile within 4 tiles so movement still responds.
+            if(tiles[ty*size+tx]>=3||(host&&!World.Walkable(new V2(tx-size/2+.5f,ty-size/2+.5f))))
+            {
+                int bestX=tx,bestY=ty;float bestDist=float.MaxValue;
+                for(int r=1;r<=4;r++)for(int dy=-r;dy<=r;dy++)for(int dx=-r;dx<=r;dx++)
+                {
+                    int cx=Mathf.Clamp(tx+dx,3,size-4),cy=Mathf.Clamp(ty+dy,3,size-4);
+                    if(tiles[cy*size+cx]>=3)continue;
+                    if(host&&!World.Walkable(new V2(cx-size/2+.5f,cy-size/2+.5f)))continue;
+                    float d=dx*dx+dy*dy;
+                    if(d<bestDist){bestDist=d;bestX=cx;bestY=cy;}
+                }
+                if(bestDist<float.MaxValue){tx=bestX;ty=bestY;to=new V2(tx-size/2+.5f,ty-size/2+.5f);}
+            }
             clickMarker=to;clickMarkerUntil=clock+.8f;
+            if(sx==tx&&sy==ty){path.Enqueue(to);return;}
             int start=sy*size+sx,target=ty*size+tx;var frontier=new List<int>{start};var cost=new Dictionary<int,int>{{start,0}};var parent=new Dictionary<int,int>();
             int limit=5000;
             while(frontier.Count>0&&limit-->0)
@@ -265,7 +312,7 @@ namespace Ember
                     int nextCost=cost[current]+1;if(cost.TryGetValue(next,out var old)&&old<=nextCost)continue;cost[next]=nextCost;parent[next]=current;if(!frontier.Contains(next))frontier.Add(next);
                 }
             }
-            if(!parent.ContainsKey(target))return;var route=new List<V2>();int at=target;
+            if(!parent.ContainsKey(target)){path.Enqueue(to);return;}var route=new List<V2>();int at=target;
             while(at!=start){route.Add(new V2(at%size-size/2+.5f,at/size-size/2+.5f));at=parent[at];}route.Reverse();foreach(var p in route)path.Enqueue(p);
         }
         Sprite Primitive(string name)
@@ -570,12 +617,14 @@ namespace Ember
             }
             if(!p.Ghost&&!inventoryOpen&&!craftOpen)DrawInteractPrompt(p);
             if(!p.Ghost&&inventoryOpen){DrawInventory(p);return;}
+            if(Event.current.type==EventType.Repaint){hudBlockingRects.Clear();hudCapturing=true;}
             DrawFieldHud(p);
             DrawBossHud();
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
             DrawFieldNotices(p,objectiveY+80);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
+            hudCapturing=false;
 
         }
         void DrawDarkness()
@@ -599,6 +648,7 @@ namespace Ember
             float width=Mathf.Min(360,Screen.width-28);
             Rect panel=new Rect(Screen.width-width-14,100,width,Mathf.Max(108,Screen.height-224));
             PixelPanel(panel,FieldPaper);
+            bool prevCapture=hudCapturing;hudCapturing=false;
             GUILayout.BeginArea(new Rect(panel.x+12,panel.y+10,panel.width-24,panel.height-20));
             UiText(L("Chế tạo","Crafting"),title);
             scroll=GUILayout.BeginScrollView(scroll);
@@ -637,6 +687,7 @@ namespace Ember
             }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
+            hudCapturing=prevCapture;
         }
         void DrawMenu()
         {
