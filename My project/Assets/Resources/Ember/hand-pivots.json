@@ -1,0 +1,46 @@
+{
+    "Vessels": [
+        {
+            "Vessel": 0,
+            "FrontX": 14,
+            "FrontY": 14,
+            "BackX": 5,
+            "BackY": 14
+        },
+        {
+            "Vessel": 1,
+            "FrontX": 11,
+            "FrontY": 14,
+            "BackX": 11,
+            "BackY": 14
+        },
+        {
+            "Vessel": 2,
+            "FrontX": 11,
+            "FrontY": 14,
+            "BackX": 11,
+            "BackY": 14
+        },
+        {
+            "Vessel": 3,
+            "FrontX": 11,
+            "FrontY": 14,
+            "BackX": 11,
+            "BackY": 14
+        },
+        {
+            "Vessel": 4,
+            "FrontX": 11,
+            "FrontY": 14,
+            "BackX": 11,
+            "BackY": 14
+        },
+        {
+            "Vessel": 5,
+            "FrontX": 17,
+            "FrontY": 12,
+            "BackX": 8,
+            "BackY": 12
+        }
+    ]
+}

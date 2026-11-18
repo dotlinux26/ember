@@ -25,18 +25,17 @@ namespace Ember
         Vector2 handPivotScroll;
         string handPivotStatus;
         string HandPivotPath=>Path.Combine(Application.persistentDataPath,"hand-pivots.json");
+#if UNITY_EDITOR
+        string ProjectHandPivotPath=>Path.Combine(Application.dataPath,"Resources/Ember/hand-pivots.json");
+#endif
 
         static HandPivot DefaultHandPivot(int vessel)
         {
-            bool moone=vessel==(int)Vessel.LittleMoone;
-            return new HandPivot
-            {
-                Vessel=vessel,
-                FrontX=moone?10:11,
-                FrontY=moone?12:14,
-                BackX=moone?11:11,
-                BackY=moone?12:14
-            };
+            if(vessel==(int)Vessel.Wanderer)
+                return new HandPivot{Vessel=vessel,FrontX=14,FrontY=14,BackX=5,BackY=14};
+            if(vessel==(int)Vessel.LittleMoone)
+                return new HandPivot{Vessel=vessel,FrontX=17,FrontY=12,BackX=8,BackY=12};
+            return new HandPivot{Vessel=vessel,FrontX=11,FrontY=14,BackX=11,BackY=14};
         }
 
         HandPivot HandPivotFor(Vessel vessel)
@@ -45,24 +44,38 @@ namespace Ember
             return handPivots[Mathf.Clamp(index,0,handPivots.Length-1)];
         }
 
+        void ApplyHandPivotJson(string json)
+        {
+            if(string.IsNullOrWhiteSpace(json))return;
+            var stored=JsonUtility.FromJson<HandPivotFile>(json);
+            if(stored?.Vessels==null)return;
+            foreach(var pivot in stored.Vessels)
+            {
+                if(pivot==null||pivot.Vessel<0||pivot.Vessel>=handPivots.Length)continue;
+                pivot.FrontX=Mathf.Clamp(pivot.FrontX,0,40);
+                pivot.BackX=Mathf.Clamp(pivot.BackX,0,40);
+                pivot.FrontY=Mathf.Clamp(pivot.FrontY,-8,42);
+                pivot.BackY=Mathf.Clamp(pivot.BackY,-8,42);
+                handPivots[pivot.Vessel]=pivot;
+            }
+        }
+
         void LoadHandPivots()
         {
             handPivots=new HandPivot[Catalog.VesselNames.Length];
             for(int i=0;i<handPivots.Length;i++)handPivots[i]=DefaultHandPivot(i);
-            if(!File.Exists(HandPivotPath))return;
             try
             {
-                var stored=JsonUtility.FromJson<HandPivotFile>(File.ReadAllText(HandPivotPath));
-                if(stored?.Vessels==null)return;
-                foreach(var pivot in stored.Vessels)
-                {
-                    if(pivot==null||pivot.Vessel<0||pivot.Vessel>=handPivots.Length)continue;
-                    pivot.FrontX=Mathf.Clamp(pivot.FrontX,0,40);
-                    pivot.BackX=Mathf.Clamp(pivot.BackX,0,40);
-                    pivot.FrontY=Mathf.Clamp(pivot.FrontY,-8,42);
-                    pivot.BackY=Mathf.Clamp(pivot.BackY,-8,42);
-                    handPivots[pivot.Vessel]=pivot;
-                }
+#if UNITY_EDITOR
+                if(File.Exists(ProjectHandPivotPath))
+                    ApplyHandPivotJson(File.ReadAllText(ProjectHandPivotPath));
+                else if(File.Exists(HandPivotPath))
+                    ApplyHandPivotJson(File.ReadAllText(HandPivotPath));
+#else
+                var bundled=Resources.Load<TextAsset>("Ember/hand-pivots");
+                if(bundled!=null)ApplyHandPivotJson(bundled.text);
+                if(File.Exists(HandPivotPath))ApplyHandPivotJson(File.ReadAllText(HandPivotPath));
+#endif
             }
             catch(Exception ex)
             {
@@ -116,8 +129,16 @@ namespace Ember
                 try
                 {
                     string json=JsonUtility.ToJson(new HandPivotFile{Vessels=handPivots},true);
-                    EmberSave.WriteAtomic(HandPivotPath,System.Text.Encoding.UTF8.GetBytes(json));
+                    byte[] bytes=System.Text.Encoding.UTF8.GetBytes(json);
+                    EmberSave.WriteAtomic(HandPivotPath,bytes);
+#if UNITY_EDITOR
+                    Directory.CreateDirectory(Path.GetDirectoryName(ProjectHandPivotPath));
+                    File.WriteAllBytes(ProjectHandPivotPath,bytes);
+                    UnityEditor.AssetDatabase.Refresh();
+                    handPivotStatus=L("Đã lưu pivot vào project (Assets/Resources/Ember/hand-pivots.json).","Pivots saved to project (Assets/Resources/Ember/hand-pivots.json).");
+#else
                     handPivotStatus=L("Đã lưu pivot.","Pivots saved.");
+#endif
                 }
                 catch(Exception ex){handPivotStatus=ex.Message;}
             }
@@ -126,9 +147,21 @@ namespace Ember
                 GUIUtility.systemCopyBuffer=JsonUtility.ToJson(new HandPivotFile{Vessels=handPivots},true);
                 handPivotStatus=L("Đã chép JSON.","JSON copied.");
             }
-            if(UiButton(L("Mở thư mục","Open folder"))&&File.Exists(HandPivotPath))EmberFileDialog.Reveal(HandPivotPath);
+            if(UiButton(L("Mở thư mục","Open folder")))
+            {
+#if UNITY_EDITOR
+                string revealPath=File.Exists(ProjectHandPivotPath)?ProjectHandPivotPath:HandPivotPath;
+#else
+                string revealPath=HandPivotPath;
+#endif
+                if(File.Exists(revealPath))EmberFileDialog.Reveal(revealPath);
+            }
             GUILayout.EndHorizontal();
+#if UNITY_EDITOR
+            UiText(ProjectHandPivotPath,small);
+#else
             UiText(HandPivotPath,small);
+#endif
             if(!string.IsNullOrEmpty(handPivotStatus))UiText(handPivotStatus,small);
         }
 
