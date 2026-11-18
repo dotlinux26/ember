@@ -95,6 +95,22 @@ namespace Ember
         public V2 Pos;
         public float Life,MaxLife;
     }
+    [Serializable] public sealed class DisconnectedSeat
+    {
+        public string InstallationId="",Name="Traveler";
+        public int PartySlot;
+        public Vessel Vessel;
+        public float HP=100,MaxHP=100,Stamina=100,Dread;
+        public Weapon Weapon,SideWeapon=Weapon.LumenGun,AmmoWeapon=Weapon.LumenGun;
+        public int Ammo=-1,HeldSlot=1;
+        public bool HasPickaxe=true,LampOn=true;
+        public Lantern Lantern;
+        public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
+        public int[] Perks=Array.Empty<int>(),PerkRanks=Array.Empty<int>(),Recipes;
+        public int Hat=-1,Pet=-1,Gathered,Crafted;
+        public V2 LastPos;
+        public float DisconnectedAt;
+    }
     [Serializable] public sealed class Node
     {
         public int Id; public V2 Pos; public Resource Resource; public int Amount; public bool Dropped;
@@ -128,6 +144,7 @@ namespace Ember
         public BossTelegraph[] BossTelegraphs=Array.Empty<BossTelegraph>();
         public TransientLight[] Lights=Array.Empty<TransientLight>();
         public CombatPopup[] Popups=Array.Empty<CombatPopup>();
+        public DisconnectedSeat[] Disconnected=Array.Empty<DisconnectedSeat>();
     }
     [Serializable] public sealed class PendingMeteor
     {
@@ -280,6 +297,7 @@ namespace Ember
         readonly List<BossTelegraph> bossTelegraphs=new List<BossTelegraph>();
         readonly List<TransientLight> transientLights=new List<TransientLight>();
         readonly List<CombatPopup> combatPopups=new List<CombatPopup>();
+        readonly Dictionary<string,DisconnectedSeat> disconnectedSeats=new Dictionary<string,DisconnectedSeat>();
         readonly Dictionary<int,Command> commands=new Dictionary<int,Command>();
         readonly Dictionary<int,Queue<Command>> actions=new Dictionary<int,Queue<Command>>();
         readonly Dictionary<int,float> inputAt=new Dictionary<int,float>();
@@ -344,6 +362,7 @@ namespace Ember
             if(s.BossTelegraphs==null)s.BossTelegraphs=Array.Empty<BossTelegraph>();
             if(s.Lights==null)s.Lights=Array.Empty<TransientLight>();
             if(s.Popups==null)s.Popups=Array.Empty<CombatPopup>();
+            if(s.Disconnected==null)s.Disconnected=Array.Empty<DisconnectedSeat>();
             if(s.NextBossEventTime<=0)s.NextBossEventTime=s.Time+BossEventInterval;
             if(data.Chest==null||data.Chest.Length!=5)data.Chest=new int[5];
             if(data.PendingMeteors==null)data.PendingMeteors=Array.Empty<PendingMeteor>();
@@ -364,6 +383,7 @@ namespace Ember
             w.projectiles.AddRange(w.S.Projectiles);
             w.bossTelegraphs.AddRange(w.S.BossTelegraphs);
             w.transientLights.AddRange(w.S.Lights);
+            foreach(var seat in w.S.Disconnected)if(seat!=null&&!string.IsNullOrEmpty(seat.InstallationId))w.disconnectedSeats[seat.InstallationId]=seat;
             int maxId=Math.Max(10,data.NextId);
             foreach(var p in w.players)maxId=Math.Max(maxId,p.Id+1);
             foreach(var e in w.enemies)maxId=Math.Max(maxId,e.Id+1);
@@ -451,7 +471,7 @@ namespace Ember
             var displayName=new string((name??"").Where(c=>!char.IsControl(c)).Take(20).ToArray()).Trim();
             if(displayName.Length==0)displayName="Traveler";
             int partySlot=1;
-            while(players.Any(member=>member.PartySlot==partySlot))partySlot++;
+            while(players.Any(member=>member.PartySlot==partySlot)||disconnectedSeats.Values.Any(seat=>seat.PartySlot==partySlot))partySlot++;
             var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=BeaconSpawnSpot(partySlot-1,2.3f)};
             p.MaxHP=100;p.HP=p.MaxHP;
             p.CarriesLantern=players.Count==0;
@@ -464,8 +484,123 @@ namespace Ember
         }
         public void RemovePlayer(int id)
         {
-            var removed=players.Find(p=>p.Id==id);if(removed!=null&&removed.CarriesLantern){var other=players.Find(p=>p.Id!=id&&!p.Ghost);if(other!=null){other.CarriesLantern=true;other.Lantern=removed.Lantern;}}
+            var removed=players.Find(p=>p.Id==id);
+            if(removed!=null)
+            {
+                if(removed.CarriesLantern)
+                {
+                    var other=players.Find(p=>p.Id!=id&&!p.Ghost);
+                    if(other!=null){other.CarriesLantern=true;other.Lantern=removed.Lantern;}
+                }
+                bool activeMatch=S.Phase==Phase.Explore||S.Phase==Phase.Eclipse||S.Phase==Phase.Extraction;
+                if(activeMatch&&!removed.Extracted&&!string.IsNullOrEmpty(removed.InstallationId))
+                {
+                    var keptBag=new int[(int)Resource.Count];
+                    for(int r=0;r<(int)Resource.Count;r++)
+                    {
+                        int total=Math.Max(0,removed.Bag[r]);
+                        int drop=(int)Math.Round(total*.30f);
+                        if(drop>total)drop=total;
+                        keptBag[r]=total-drop;
+                        if(drop>0)
+                        {
+                            double a=r*1.2566;
+                            V2 dropPos=removed.Pos+new V2((float)Math.Cos(a)*.65f,(float)Math.Sin(a)*.65f);
+                            nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=(Resource)r,Amount=drop,Dropped=true});
+                        }
+                    }
+                    disconnectedSeats[removed.InstallationId]=new DisconnectedSeat
+                    {
+                        InstallationId=removed.InstallationId,
+                        Name=removed.Name,
+                        PartySlot=removed.PartySlot,
+                        Vessel=removed.Vessel,
+                        HP=removed.HP,
+                        MaxHP=removed.MaxHP,
+                        Stamina=removed.Stamina,
+                        Dread=removed.Dread,
+                        Weapon=removed.Weapon,
+                        SideWeapon=removed.SideWeapon,
+                        AmmoWeapon=removed.AmmoWeapon,
+                        Ammo=removed.Ammo,
+                        HeldSlot=removed.HeldSlot,
+                        HasPickaxe=removed.HasPickaxe,
+                        LampOn=removed.LampOn,
+                        Lantern=removed.Lantern,
+                        Bag=keptBag,
+                        Items=(int[])removed.Items.Clone(),
+                        Perks=(int[])removed.Perks.Clone(),
+                        PerkRanks=(int[])removed.PerkRanks.Clone(),
+                        Recipes=removed.Recipes!=null?(int[])removed.Recipes.Clone():null,
+                        Hat=removed.Hat,
+                        Pet=removed.Pet,
+                        Gathered=removed.Gathered,
+                        Crafted=removed.Crafted,
+                        LastPos=removed.Pos,
+                        DisconnectedAt=S.Time
+                    };
+                    Announce(" đã mất kết nối — Hành trang được giữ tại Hải Đăng (rơi 30% tài nguyên tại chỗ cũ).",removed.Name);
+                }
+            }
             players.RemoveAll(p=>p.Id==id);commands.Remove(id);actions.Remove(id);inputAt.Remove(id);navigation.Remove(id);Publish();
+        }
+        public bool CanRejoin(string installationId)
+        {
+            if(S.Phase!=Phase.Explore&&S.Phase!=Phase.Eclipse&&S.Phase!=Phase.Extraction)return false;
+            if(!Guid.TryParseExact(installationId,"N",out var guid)||guid==Guid.Empty)return false;
+            string key=guid.ToString("N");
+            return disconnectedSeats.ContainsKey(key)&&!players.Any(p=>p.InstallationId==key);
+        }
+        public Player RejoinPlayer(int newId,string installationId)
+        {
+            if(!CanRejoin(installationId))throw new InvalidOperationException("Cannot rejoin this match");
+            string key=Guid.ParseExact(installationId,"N").ToString("N");
+            var seat=disconnectedSeats[key];
+            disconnectedSeats.Remove(key);
+            V2 spawnPos=S.BossArenaActive
+                ?FindArenaSpot(S.BossArenaCenter,2.4f,Math.Max(3.5f,S.BossArenaRadius-2.5f),seat.PartySlot)
+                :BeaconSpawnSpot(seat.PartySlot-1,2.5f);
+            bool wasGhost=seat.HP<=0;
+            var restored=new Player
+            {
+                Id=newId,
+                PartySlot=seat.PartySlot,
+                InstallationId=seat.InstallationId,
+                Name=seat.Name,
+                Vessel=seat.Vessel,
+                Pos=spawnPos,
+                HP=wasGhost?0f:Math.Max(30f,Math.Min(seat.MaxHP,seat.HP)),
+                MaxHP=seat.MaxHP,
+                Stamina=100,
+                Dread=seat.Dread,
+                Invulnerable=wasGhost?0f:2.0f,
+                Weapon=seat.Weapon,
+                SideWeapon=seat.SideWeapon,
+                AmmoWeapon=seat.AmmoWeapon,
+                Ammo=seat.Ammo,
+                HeldSlot=seat.HeldSlot,
+                HasPickaxe=seat.HasPickaxe,
+                LampOn=seat.LampOn,
+                Lantern=seat.Lantern,
+                Bag=(int[])seat.Bag.Clone(),
+                Items=(int[])seat.Items.Clone(),
+                Perks=(int[])seat.Perks.Clone(),
+                PerkRanks=(int[])seat.PerkRanks.Clone(),
+                Recipes=seat.Recipes!=null?(int[])seat.Recipes.Clone():null,
+                Hat=seat.Hat,
+                Pet=seat.Pet,
+                Gathered=seat.Gathered,
+                Crafted=seat.Crafted,
+                Ready=true
+            };
+            players.Add(restored);
+            FX(restored.Pos,restored.Pos,2);
+            Announce(S.BossArenaActive
+                ?" đã kết nối lại và được kéo vào đấu trường Boss!"
+                :wasGhost?" đã kết nối lại (đang gục, chờ hồi sinh tại Hải Đăng)."
+                :" đã kết nối lại và hồi sinh tại Hải Đăng!",restored.Name);
+            Publish();
+            return restored;
         }
         public void SetReady(int id,bool ready){if(S.Phase==Phase.Sanctuary){var p=PlayerById(id);if(p!=null)p.Ready=ready;}}
         public bool StartRun(bool requireReady=false)
@@ -1417,6 +1552,6 @@ namespace Ember
         void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();}
+        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
     }
 }

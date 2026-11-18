@@ -365,6 +365,56 @@ popupWorld.Tick();
 Check(popupWorld.S.Popups.Any(p=>p.Kind==3&&p.Amount>0),"mining a node spawns a floating harvest popup");
 for(int k=0;k<40;k++)popupWorld.Tick();
 Check(popupWorld.S.Popups.Length==0,"combat and harvest popups expire automatically");
+
+var coopWorld=new EmberWorld(2026,250,Difficulty.Normal);
+string hostGuid="11111111111111111111111111111111";
+string guestGuid="22222222222222222222222222222222";
+string strangerGuid="33333333333333333333333333333333";
+coopWorld.AddPlayer(1,"Host",Vessel.Wanderer,installationId:hostGuid);
+var coopGuest=coopWorld.AddPlayer(2,"Guest",Vessel.LittleMoone,installationId:guestGuid);
+coopWorld.StartRun();
+coopGuest.Pos=new V2(28,18);
+coopGuest.HP=64;
+coopGuest.Weapon=Weapon.CrystalAxe;
+coopGuest.Items[0]=2;
+coopGuest.Bag[(int)Resource.Core]=10;
+coopGuest.Bag[(int)Resource.Wood]=10;
+int droppedBefore=coopWorld.S.Nodes.Count(n=>n.Dropped);
+coopWorld.RemovePlayer(2);
+Check(coopWorld.CanRejoin(guestGuid)&&!coopWorld.CanRejoin(strangerGuid)&&coopWorld.S.Disconnected.Length==1,"disconnecting mid-match reserves host-side seat only for that player identity");
+Check(coopWorld.S.Nodes.Count(n=>n.Dropped&&n.Resource==Resource.Core&&n.Amount==3&&V2.Distance(n.Pos,new V2(28,18))<1.5f)==1,"Rule B drops 30% of raw resources at the disconnect spot");
+var rejoined=coopWorld.RejoinPlayer(5,guestGuid);
+Check(rejoined.PartySlot==2&&rejoined.Weapon==Weapon.CrystalAxe&&rejoined.Items[0]==2&&rejoined.Bag[(int)Resource.Core]==7&&Math.Abs(rejoined.HP-64)<.1f&&rejoined.Pos.Length<4f,"rejoining restores gear, 70% bag, slot, HP, and respawns safely at Home Beacon");
+rejoined.HP=0;
+coopWorld.RemovePlayer(5);
+var ghostRejoin=coopWorld.RejoinPlayer(6,guestGuid);
+Check(ghostRejoin.Ghost,"disconnected ghost stays downed on rejoin (prevents self-revive exploit)");
+ghostRejoin.HP=80;
+coopWorld.RemovePlayer(6);
+coopWorld.TriggerWorldBossEvent((int)BossType.CinderBehemoth,1);
+var bossRejoin=coopWorld.RejoinPlayer(7,guestGuid);
+Check(V2.Distance(bossRejoin.Pos,coopWorld.S.BossArenaCenter)<coopWorld.S.BossArenaRadius,"rejoining during an active World Boss pulls player directly into the Boss Arena");
+using(var rejoinHost=new EmberLan{Capacity=2})
+using(var rejoinGuest=new EmberLan())
+using(var strangerClient=new EmberLan())
+{
+    rejoinHost.Open(true,"","rejoin-pass");
+    rejoinHost.AcceptingJoins=false;
+    rejoinHost.CanRejoin=id=>id==guestGuid;
+    int admittedId=0;
+    rejoinHost.Joined=(id,idText)=>{admittedId=id;};
+    strangerClient.Open(false,"127.0.0.1","rejoin-pass");
+    rejoinGuest.Open(false,"127.0.0.1","rejoin-pass");
+    double simNow=0;
+    for(int step=0;step<40;step++)
+    {
+        simNow+=.05;
+        if(step==1){strangerClient.Join(strangerGuid);rejoinGuest.Join(guestGuid);}
+        rejoinHost.Poll(simNow);strangerClient.Poll(simNow);rejoinGuest.Poll(simNow);
+        System.Threading.Thread.Sleep(5);
+    }
+    Check(strangerClient.Error!=null&&rejoinGuest.LocalId>=2&&admittedId==rejoinGuest.LocalId,"EmberLan rejects strangers after match start while selectively admitting rejoining teammates");
+}
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

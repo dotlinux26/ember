@@ -169,8 +169,9 @@ namespace Ember
                 partyBubble.Apply(false,true);
                 partyName=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=false,clipping=TextClipping.Clip};
             }
-            var members=State.Players;
-            int count=Mathf.Min(members.Length,4);
+            var members=State.Players??System.Array.Empty<Player>();
+            var offline=State.Disconnected??System.Array.Empty<DisconnectedSeat>();
+            int count=Mathf.Min(members.Length+offline.Length,4);
             float step=Mathf.Min(102,(Screen.width-28f)/Mathf.Max(1,count));
             int i=0;
             bool spectating=Local!=null&&Local.Ghost;
@@ -178,27 +179,48 @@ namespace Ember
             {
                 Player teammate=null;
                 foreach(var member in members)if(member.PartySlot==slot){teammate=member;break;}
-                if(teammate==null)continue;
-                float x=14+step*(i++ +.5f), y=PartyPortraitY;
-                var center=new Vector2(x,y);
-                var hit=new Rect(x-30,y-30,60,60);
-                if(Event.current.type==EventType.Repaint)
+                if(teammate!=null)
                 {
-                    GUI.DrawTexture(hit,partyBubble);
-                    DrawSpritePreview(new Rect(x-23,y-28,46,46),teammate.Ghost?Primitive("pet_ghost"):Frame(teammate.Vessel,"idle",0));
-                    DrawPartyArc(center,26,teammate.HP/Mathf.Max(1,teammate.MaxHP),Cyan);
-                    DrawPartyArc(center,31,teammate.Dread/100,Coral);
+                    float x=14+step*(i++ +.5f), y=PartyPortraitY;
+                    var center=new Vector2(x,y);
+                    var hit=new Rect(x-30,y-30,60,60);
+                    if(Event.current.type==EventType.Repaint)
+                    {
+                        GUI.DrawTexture(hit,partyBubble);
+                        DrawSpritePreview(new Rect(x-23,y-28,46,46),teammate.Ghost?Primitive("pet_ghost"):Frame(teammate.Vessel,"idle",0));
+                        DrawPartyArc(center,26,teammate.HP/Mathf.Max(1,teammate.MaxHP),Cyan);
+                        DrawPartyArc(center,31,teammate.Dread/100,Coral);
+                    }
+                    string name="P"+teammate.PartySlot+" · "+teammate.Name;
+                    string stats=name+"\nHP "+Mathf.CeilToInt(teammate.HP)+"/"+Mathf.CeilToInt(teammate.MaxHP)+
+                        " ( "+L("vòng xanh","cyan arc")+" )\n"+L("Hoảng Loạn ","Dread ")+Mathf.CeilToInt(teammate.Dread)+
+                        "% ( "+L("vòng hồng","pink arc")+" )";
+                    if(spectating&&!teammate.Ghost&&!teammate.Extracted&&teammate.Id!=localId)
+                    {
+                        if(GUI.Button(hit,new GUIContent("",stats),GUIStyle.none))spectateId=teammate.Id;
+                    }
+                    else GUI.Label(hit,new GUIContent("",stats),GUIStyle.none);
+                    GUI.Label(new Rect(x-step/2,y+34,step,20),new GUIContent(name,stats),partyName);
+                    continue;
                 }
-                string name="P"+teammate.PartySlot+" · "+teammate.Name;
-                string stats=name+"\nHP "+Mathf.CeilToInt(teammate.HP)+"/"+Mathf.CeilToInt(teammate.MaxHP)+
-                    " ( "+L("vòng xanh","cyan arc")+" )\n"+L("Hoảng Loạn ","Dread ")+Mathf.CeilToInt(teammate.Dread)+
-                    "% ( "+L("vòng hồng","pink arc")+" )";
-                if(spectating&&!teammate.Ghost&&!teammate.Extracted&&teammate.Id!=localId)
+                DisconnectedSeat seat=null;
+                foreach(var d in offline)if(d.PartySlot==slot){seat=d;break;}
+                if(seat==null)continue;
                 {
-                    if(GUI.Button(hit,new GUIContent("",stats),GUIStyle.none))spectateId=teammate.Id;
+                    float x=14+step*(i++ +.5f), y=PartyPortraitY;
+                    var hit=new Rect(x-30,y-30,60,60);
+                    if(Event.current.type==EventType.Repaint)
+                    {
+                        GUI.color=new Color(.55f,.55f,.62f,.78f);
+                        GUI.DrawTexture(hit,partyBubble);
+                        DrawSpritePreview(new Rect(x-23,y-28,46,46),Frame(seat.Vessel,"idle",0));
+                        GUI.color=Color.white;
+                    }
+                    string name="P"+seat.PartySlot+" · "+L("Mất mạng","Offline");
+                    string tip="P"+seat.PartySlot+" · "+seat.Name+"\n"+L("Mất kết nối — Hành trang đang được giữ tại Hải Đăng.","Disconnected — Gear preserved at the Beacon.");
+                    GUI.Label(hit,new GUIContent("",tip),GUIStyle.none);
+                    GUI.Label(new Rect(x-step/2,y+34,step,20),new GUIContent(name,tip),partyName);
                 }
-                else GUI.Label(hit,new GUIContent("",stats),GUIStyle.none);
-                GUI.Label(new Rect(x-step/2,y+34,step,20),new GUIContent(name,stats),partyName);
             }
         }
 

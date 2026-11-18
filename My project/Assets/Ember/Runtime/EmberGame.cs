@@ -64,6 +64,7 @@ namespace Ember
             LoadProfile();selected=Profile.SelectedVessel;
             if(!Profile.CanPlay(selected))selected=0;
             RefreshSavedRunPreview();
+            LoadLastCoopSession();
             NewWorld(Environment.TickCount);
             foreach(var arg in Environment.GetCommandLineArgs())
             {
@@ -107,7 +108,8 @@ namespace Ember
             try{lan?.Leave();lan=new EmberLan{Capacity=roomCapacity,Mode=routeMode,Trace=Trace};
                 if(usePublicBroker){const string chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";var bytes=EmberCrypto.Random(6);if(!fixedRoomCode)joinRoomCode=new string(bytes.Select(b=>chars[b%chars.Length]).ToArray());lan.OpenPublic(true,brokerAddress,joinRoomCode,password);}else lan.Open(true,"",password);
                 network=true;host=true;localId=1;NewWorld(Environment.TickCount);
-                lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId);};
+                lan.CanRejoin=json=>{try{var info=JsonUtility.FromJson<JoinInfo>(json);return info!=null&&!(info.Sandbox&&!debugSession)&&World!=null&&World.CanRejoin(info.PlayerId);}catch{return false;}};
+                lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();if(World.CanRejoin(info.PlayerId)){World.RejoinPlayer(id,info.PlayerId);return;}World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId);};
                 lan.Left=id=>World.RemovePlayer(id);lan.Input=(id,json)=>World.Submit(id,JsonUtility.FromJson<Command>(json));
                 lan.ReadyChanged=(id,ready)=>World.SetReady(id,ready);
                 menu=false;notice="Phòng đã mở. Có thể bắt đầu với 1 người hoặc chờ bạn bè.";
@@ -118,7 +120,8 @@ namespace Ember
             try{lan?.Leave();lan=new EmberLan{Mode=routeMode,Trace=Trace};
                 if(usePublicBroker){joinRoomCode=joinRoomCode.Trim().ToUpperInvariant();if(joinRoomCode.Length!=6)throw new ArgumentException("Mã phòng gồm 6 ký tự.");lan.OpenPublic(false,brokerAddress,joinRoomCode,password);}else lan.Open(false,address,password);
                 network=true;host=false;localId=0;menu=false;State=null;readyWanted=false;
-                lan.State=json=>{var snapshot=JsonUtility.FromJson<Snapshot>(json);if(snapshot?.Players!=null){if(snapshot.Sandbox&&!debugSession){debugSession=true;Profile=SandboxProfile();Trace("debug.remote_sandbox","host test room: local profile writes disabled");}State=snapshot;localId=lan.LocalId;}};
+                SaveLastCoopSession();
+                lan.State=json=>{var snapshot=JsonUtility.FromJson<Snapshot>(json);if(snapshot?.Players!=null){if(snapshot.Sandbox&&!debugSession){debugSession=true;Profile=SandboxProfile();Trace("debug.remote_sandbox","host test room: local profile writes disabled");}bool firstState=State==null;State=snapshot;localId=lan.LocalId;if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=8)heldSlot=Local.HeldSlot;}};
                 joinClock=0;notice="Đang kết nối LAN/VPN...";
             }catch(Exception ex){notice=ex.Message;}
         }
@@ -126,6 +129,7 @@ namespace Ember
         void Update()
         {
             clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
+            TickCoopAutoReconnect(Time.deltaTime);
             if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet}));joinClock=1;}}
             SampleFrameRate();
             if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
@@ -710,6 +714,7 @@ namespace Ember
             }
             GUILayout.Space(8);
             DrawSavedRunCard();
+            DrawCoopResumeCard();
             GUI.enabled=Profile.CanPlay(selected);
             if(UiButton(savedRunPreview!=null?L("Bắt đầu trận mới (Solo)","Start new solo run"):L("Chơi một mình","Play solo"),GUILayout.Height(PlayActionHeight)))StartSolo();
             GUI.enabled=true;

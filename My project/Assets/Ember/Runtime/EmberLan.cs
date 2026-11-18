@@ -36,6 +36,7 @@ namespace Ember
         sealed class Outbound{public string Type,Payload;public double Next;public int Tries;}
         int nextPlayer=2,sequence;long accepted=-1;double now;
         public Action<int,string> Joined;public Action<int> Left;public Action<int,string> Input;public Action<string> State;public Action<int,bool> ReadyChanged;
+        public Func<string,bool> CanRejoin;
         sealed class Peer{public int Id;public IPEndPoint Address;public string Handshake;public double Seen,RepairAt;public int RepairBudget;public int Sequence=-1,HighestAction=-1;public HashSet<int> Actions=new HashSet<int>();public HashSet<ulong> Packets=new HashSet<ulong>();public ulong HighestPacket;}
         sealed class Assembly{public byte[][] Parts;public double Since,NextRepair;}
         public void Open(bool host,string address,string password)
@@ -108,10 +109,11 @@ namespace Ember
                 int separator=message[2].IndexOf('.');if(separator<1)return;string challenge=message[2].Substring(0,separator),identity=message[2].Substring(separator+1);if(Convert.FromBase64String(challenge).Length!=16)return;
                 if(!peers.TryGetValue(key,out var peer))
                 {
-                    if(!AcceptingJoins){Send(from,"REJECT|0|STARTED");return;}
-                    if(peers.Count>=Capacity-1){Send(from,"REJECT|0|FULL");return;}
+                    bool rejoining=!AcceptingJoins&&CanRejoin!=null&&CanRejoin(identity);
+                    if(!AcceptingJoins&&!rejoining){Send(from,"REJECT|0|STARTED");return;}
+                    if(!rejoining&&peers.Count>=Capacity-1){Send(from,"REJECT|0|FULL");return;}
                     peer=new Peer{Id=nextPlayer++,Address=from,Seen=now,Handshake=challenge};
-                    try{Joined?.Invoke(peer.Id,identity);}catch{Send(from,"REJECT|0|INVALID");return;}peers[key]=peer;Trace?.Invoke("peer.join","id="+peer.Id);
+                    try{Joined?.Invoke(peer.Id,identity);}catch{Send(from,"REJECT|0|INVALID");return;}peers[key]=peer;Trace?.Invoke(rejoining?"peer.rejoin":"peer.join","id="+peer.Id);
                 }
                 if(peer.Handshake!=challenge)return;peer.Seen=now;Send(from,"ID|0|"+peer.Id+","+Convert.ToBase64String(epoch)+","+challenge);return;
             }

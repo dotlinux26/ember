@@ -8,6 +8,144 @@ namespace Ember
 {
     public sealed partial class EmberGame
     {
+        const string LastCoopSessionPref="Ember.LastCoopSession";
+        [Serializable] sealed class CoopSessionInfo
+        {
+            public string Address,RoomCode,BrokerAddress,Password,RoomName;
+            public bool UsePublicBroker;
+            public int RouteMode;
+        }
+        CoopSessionInfo lastCoopSession;
+        int coopReconnectAttempts;
+        float coopReconnectTimer;
+        bool coopReconnectArmed;
+        static readonly float[] CoopReconnectDelays={3f,5f,8f};
+
+        void LoadLastCoopSession()
+        {
+            lastCoopSession=null;
+            if(debugSession)return;
+            string raw=PlayerPrefs.GetString(LastCoopSessionPref,"");
+            if(string.IsNullOrEmpty(raw))return;
+            try
+            {
+                var parsed=JsonUtility.FromJson<CoopSessionInfo>(raw);
+                if(parsed!=null&&(!string.IsNullOrEmpty(parsed.RoomCode)||!string.IsNullOrEmpty(parsed.Address)))
+                    lastCoopSession=parsed;
+            }
+            catch{lastCoopSession=null;}
+        }
+
+        void SaveLastCoopSession()
+        {
+            if(debugSession||host||!network)return;
+            lastCoopSession=new CoopSessionInfo
+            {
+                Address=address,
+                RoomCode=joinRoomCode,
+                BrokerAddress=brokerAddress,
+                Password=password,
+                RoomName=State?.RoomName??(usePublicBroker?joinRoomCode:address),
+                UsePublicBroker=usePublicBroker,
+                RouteMode=(int)routeMode
+            };
+            PlayerPrefs.SetString(LastCoopSessionPref,JsonUtility.ToJson(lastCoopSession));
+            PlayerPrefs.Save();
+        }
+
+        void ClearLastCoopSession()
+        {
+            lastCoopSession=null;
+            PlayerPrefs.DeleteKey(LastCoopSessionPref);
+            PlayerPrefs.Save();
+        }
+
+        bool IsResumableConnectionError(string reason)
+        {
+            if(string.IsNullOrEmpty(reason))return false;
+            if(reason.Contains("Host đã đóng phòng")||reason.Contains("Phòng đã đủ người"))return false;
+            return true;
+        }
+
+        void ReconnectCoop(bool manual=false)
+        {
+            if(manual)coopReconnectAttempts=0;
+            coopReconnectArmed=false;
+            coopReconnectTimer=0;
+            if(lastCoopSession!=null)
+            {
+                usePublicBroker=lastCoopSession.UsePublicBroker;
+                address=lastCoopSession.Address??address;
+                joinRoomCode=lastCoopSession.RoomCode??joinRoomCode;
+                brokerAddress=string.IsNullOrEmpty(lastCoopSession.BrokerAddress)?brokerAddress:lastCoopSession.BrokerAddress;
+                password=lastCoopSession.Password??password;
+                routeMode=(RouteMode)Mathf.Clamp(lastCoopSession.RouteMode,0,2);
+            }
+            JoinGame();
+            notice=L("Đang kết nối lại phòng cũ (Resume)…","Reconnecting to previous room (Resume)…");
+        }
+
+        void TickCoopAutoReconnect(float dt)
+        {
+            if(!network||host||lan==null)return;
+            if(string.IsNullOrEmpty(lan.Error))
+            {
+                if(lan.LocalId>0&&State!=null)
+                {
+                    coopReconnectAttempts=0;
+                    coopReconnectArmed=false;
+                    coopReconnectTimer=0;
+                    if(lastCoopSession==null||lastCoopSession.RoomName!=State.RoomName)SaveLastCoopSession();
+                }
+                return;
+            }
+            if(lan.Error.Contains("Host đã đóng phòng"))
+            {
+                ClearLastCoopSession();
+                coopReconnectArmed=false;
+                return;
+            }
+            if(!IsResumableConnectionError(lan.Error))return;
+            if(!coopReconnectArmed&&coopReconnectAttempts<CoopReconnectDelays.Length)
+            {
+                coopReconnectArmed=true;
+                coopReconnectTimer=CoopReconnectDelays[coopReconnectAttempts];
+            }
+            if(coopReconnectArmed)
+            {
+                coopReconnectTimer-=dt;
+                if(coopReconnectTimer<=0)
+                {
+                    coopReconnectAttempts++;
+                    ReconnectCoop(false);
+                }
+            }
+        }
+
+        void DrawCoopResumeCard()
+        {
+            if(debugSession||lastCoopSession==null)return;
+            Rect box=GUILayoutUtility.GetRect(180,98,GUILayout.ExpandWidth(true));
+            var card=new Rect(box.x+4,box.y,Mathf.Max(140,box.width-8),box.height);
+            PixelPanel(card,Color.Lerp(Lilac,Plum,.12f));
+            PixelArt(new Rect(card.x+10,card.y+12,38,38),"beacon");
+            string endpoint=lastCoopSession.UsePublicBroker
+                ?L("Mã phòng ","Code ")+lastCoopSession.RoomCode
+                :"IP "+lastCoopSession.Address;
+            string roomLabel=string.IsNullOrEmpty(lastCoopSession.RoomName)?endpoint:lastCoopSession.RoomName+" · "+endpoint;
+            UiLabel(new Rect(card.x+56,card.y+8,card.width-64,22),L("Trận Co-op gần nhất","Last Co-op match"),label);
+            UiLabel(new Rect(card.x+56,card.y+30,card.width-64,20),roomLabel,small);
+            float clearW=76;
+            float resumeW=Mathf.Max(90,card.width-24-clearW);
+            if(UiButton(new Rect(card.x+8,card.y+56,resumeW,34),L("Kết nối lại phòng Co-op (Resume)","Reconnect Co-op (Resume)")))ReconnectCoop(true);
+            if(UiButton(new Rect(card.x+16+resumeW,card.y+56,clearW,34),L("Xóa","Clear")))
+            {
+                ClearLastCoopSession();
+                notice=L("Đã xóa phiên Co-op gần nhất.","Cleared last Co-op session.");
+            }
+            GUILayout.Space(8);
+        }
+
         string localAddresses;
         void Avatar(Rect rect,Vessel vessel)
         {
@@ -15,15 +153,32 @@ namespace Ember
         }
         void DrawConnectionIssue(string reason)
         {
-            var box=new Rect(0,0,Mathf.Min(490,Screen.width-28),224);
+            bool resumable=IsResumableConnectionError(reason);
+            var box=new Rect(0,0,Mathf.Min(530,Screen.width-28),resumable?286:228);
             box.center=new Vector2(Screen.width/2f,Screen.height/2f);
-            Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.08f,.05f,.13f,.75f));
+            Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.08f,.05f,.13f,.78f));
             PixelPanel(box,FieldPaper);
             PixelArt(new Rect(box.x+15,box.y+16,32,32),"umbra");
-            UiLabel(new Rect(box.x+56,box.y+10,box.width-72,45),
-                Local==null?L("Không vào được phòng","Could not join room"):L("Kết nối bị gián đoạn","Connection interrupted"),label);
-            UiLabel(new Rect(box.x+16,box.y+63,box.width-32,89),reason,label);
-            if(UiButton(new Rect(box.x+16,box.yMax-58,box.width-32,40),L("Về sảnh","Back to Sanctuary")))LeaveRoom();
+            UiLabel(new Rect(box.x+56,box.y+10,box.width-72,42),
+                resumable?L("Kết nối bị gián đoạn","Connection interrupted"):L("Không vào được phòng","Could not join room"),label);
+            UiLabel(new Rect(box.x+16,box.y+58,box.width-32,48),reason,label);
+            if(resumable)
+            {
+                UiLabel(new Rect(box.x+16,box.y+108,box.width-32,58),
+                    L("Hành trang & vũ khí được Host giữ an toàn (rơi 30% tài nguyên tại chỗ cũ). Khi quay lại sẽ hồi sinh tại Hải Đăng (hoặc đấu trường Boss nếu đang giao tranh).",
+                      "Your gear & weapons are preserved by the Host (30% raw resources drop where you disconnected). Rejoining respawns you at the Beacon (or Boss Arena if active)."),small);
+                string retryStatus=coopReconnectArmed
+                    ?L("Tự động kết nối lại (lần ","Auto-reconnecting (attempt ")+(coopReconnectAttempts+1)+"/"+CoopReconnectDelays.Length+L(") sau ",") in ")+Mathf.Max(0,coopReconnectTimer).ToString("0.0")+"s…"
+                    :L("Đã hết lượt tự nối lại — bấm nút bên dưới để thử lại.","Auto-reconnect paused — click below to retry.");
+                UiLabel(new Rect(box.x+16,box.y+168,box.width-32,24),retryStatus,small);
+                float half=(box.width-40)/2f;
+                if(UiButton(new Rect(box.x+16,box.yMax-58,half+36,40),L("Kết nối lại ngay (Resume)","Reconnect now (Resume)")))ReconnectCoop(true);
+                if(UiButton(new Rect(box.x+24+half+36,box.yMax-58,half-36,40),L("Về sảnh","Sanctuary")))LeaveRoom();
+            }
+            else
+            {
+                if(UiButton(new Rect(box.x+16,box.yMax-58,box.width-32,40),L("Về sảnh","Back to Sanctuary")))LeaveRoom();
+            }
         }
 
         void DrawLobby()=>WithSanctuaryTheme(DrawRoomSanctuary);

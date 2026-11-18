@@ -18,6 +18,7 @@ namespace Ember
             if(runStones>0)Trace("reward.awakening_stone","count="+runStones);
             SaveProfile();
             if(!network)ClearSavedRun();
+            else ClearLastCoopSession();
             rewarded=true;
         }
 
