@@ -366,6 +366,41 @@ namespace Ember
             }
         }
 
+        GUIStyle matchClockStyle;
+
+        void DrawMatchClock()
+        {
+            if(State==null||State.Phase==Phase.Sanctuary||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
+            if(matchClockStyle==null)
+            {
+                matchClockStyle=new GUIStyle(label)
+                {
+                    alignment=TextAnchor.MiddleCenter,
+                    fontStyle=FontStyle.Bold,
+                    fontSize=15,
+                    wordWrap=false
+                };
+            }
+            int totalSec=Mathf.Max(0,Mathf.FloorToInt(State.Time));
+            int mins=totalSec/60,secs=totalSec%60;
+            string clockStr=mins.ToString("00")+":"+secs.ToString("00");
+            float w=108f,h=30f;
+            var box=new Rect(Mathf.Round((Screen.width-w)*.5f),10f,w,h);
+            bool eclipse=State.Phase==Phase.Eclipse;
+            bool boss=State.BossArenaActive;
+            PixelPanel(box,boss?new Color(.28f,.07f,.14f,.94f):eclipse?new Color(.30f,.14f,.08f,.94f):FieldPaper);
+            if(Event.current.type==EventType.Repaint)
+            {
+                matchClockStyle.normal.textColor=boss?new Color(1f,.76f,.78f):eclipse?Gold:new Color(.96f,.94f,1f);
+                GUI.Label(box,clockStr,matchClockStyle);
+            }
+            int bossRem=Mathf.Max(0,Mathf.CeilToInt(State.NextBossEventTime-State.Time));
+            string tip=boss?L("Đang trong Sự kiện Boss","World Boss Event active")
+                :State.Phase==Phase.Explore?L("Thời gian trận · Boss tiếp theo sau ","Match time · Next Boss in ")+(bossRem/60).ToString("00")+":"+(bossRem%60).ToString("00")
+                :L("Thời gian trong trận","In-game match time");
+            GUI.Label(box,new GUIContent("",tip),GUIStyle.none);
+        }
+
         void DrawCornerPauseButton()
         {
             var rect=new Rect(Screen.width-48,Screen.height-48,36,36);
@@ -391,6 +426,7 @@ namespace Ember
         void DrawSpectateHud()
         {
             if(network)DrawPartyBubbles();
+            DrawMatchClock();
             DrawCornerPauseButton();
             float width=Mathf.Min(Screen.width-28,460);
             var panel=new Rect((Screen.width-width)/2,Screen.height-96,width,78);
@@ -598,6 +634,7 @@ namespace Ember
         void DrawFieldHud(Player p)
         {
             if(p.Ghost){DrawSpectateHud();return;}
+            DrawMatchClock();
             DrawCornerPauseButton();
             float toolWidth=Mathf.Clamp((Screen.width-120)/2f,72,130);
             float toolX=Screen.width-116-toolWidth;

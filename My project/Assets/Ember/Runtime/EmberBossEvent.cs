@@ -171,7 +171,7 @@ namespace Ember
                     float barW=Mathf.Min(430f,Screen.width-320f);
                     if(barW<240f)barW=Mathf.Min(320f,Screen.width-24f);
                     float x=(Screen.width-barW)*.5f;
-                    float y=12f;
+                    float y=46f;
                     var box=new Rect(x,y,barW,60f);
                     RegisterHudRect(box);
                     Panel(new Rect(box.x-2,box.y-2,box.width+4,box.height+4),new Color(accent.r,accent.g,accent.b,.78f));
@@ -212,7 +212,7 @@ namespace Ember
                 float fade=Mathf.Clamp01(State.BossAlertTimer/.8f);
                 float flash=.75f+.25f*Mathf.Sin(clock*12f);
                 float w=Mathf.Min(540f,Screen.width-32f);
-                float y=State.BossArenaActive?104f:66f;
+                float y=State.BossArenaActive?138f:56f;
                 var banner=new Rect((Screen.width-w)*.5f,y,w,58f);
                 Panel(new Rect(banner.x-3,banner.y-3,banner.width+6,banner.height+6),new Color(1f,.14f,.18f,.92f*fade*flash));
                 Panel(banner,new Color(.26f,.03f,.06f,.92f*fade));
