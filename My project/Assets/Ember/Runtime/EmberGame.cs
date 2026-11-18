@@ -467,7 +467,7 @@ namespace Ember
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||(name.StartsWith("beacon")&&!name.Contains("crystal"))||name.StartsWith("tree")||name.StartsWith("rock")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name=="wall"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -548,21 +548,31 @@ namespace Ember
             if(Mathf.Abs(center.X)<=viewHalfW+3f&&Mathf.Abs(center.Y)<=viewHalfH+3f)
             {
                 bool beaconLit=State.BeaconHP>0;
-                string beaconArt=beaconLit?"beacon":"beacon_dark";
-                var br=Put("beacon",Primitive(beaconArt),new V2(0,-.15f),Color.white,1.8f);
-                if(beaconLit&&emissionMaterial!=null)br.sharedMaterial=emissionMaterial;
+                string lakeArt=beaconLit?"beacon_lit":"beacon_dark";
+                var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,-50);
+                if(beaconLit&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
 
-                // Floating levitating crystal shards orbiting around the obelisk
-                Color crystalColor=beaconLit?Color.white:new Color(.68f,.72f,.82f,.85f);
-                for(int ci=0;ci<4;ci++)
+                // Central Floating Monolith Crystal (Cách không lơ lửng trên mặt hồ)
+                Color shadowCol=beaconLit?new Color(.12f,.65f,.88f,.45f):new Color(0,0,0,.32f);
+                var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,beaconLit?.85f:.65f,-45);
+                if(beaconLit&&emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
+
+                float floatY=Mathf.Sin(clock*2.0f)*.14f;
+                Color crystalColor=beaconLit?Color.white:new Color(.65f,.70f,.82f,.95f);
+                float crystalY=1.05f+floatY; // Cách không: hovers gracefully above the lake
+                var core=Put("beacon_crystal_core",Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(0,crystalY),crystalColor,1.45f,1005);
+                if(beaconLit&&emissionMaterial!=null)core.sharedMaterial=emissionMaterial;
+
+                // 3 Floating satellite shards orbiting around the monolith over the sacred water
+                for(int ci=0;ci<3;ci++)
                 {
-                    float angle=clock*.75f+ci*(Mathf.PI*.5f);
-                    float floatY=Mathf.Sin(clock*2.2f+ci*1.57f)*.16f;
-                    float rx=Mathf.Cos(angle)*1.25f;
-                    float depthY=Mathf.Sin(angle)*.42f;
-                    float ry=1.35f+depthY+floatY;
-                    var cr=Put("beacon_crystal_"+ci,Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(rx,ry),crystalColor,1.15f);
-                    cr.sortingOrder=depthY<0?1005:995;
+                    float angle=clock*.85f+ci*(Mathf.PI*2f/3f);
+                    float floatYOrb=Mathf.Sin(clock*2.4f+ci*2.1f)*.08f;
+                    float rx=Mathf.Cos(angle)*.82f;
+                    float depthY=Mathf.Sin(angle)*.35f;
+                    float ry=crystalY+depthY+floatYOrb;
+                    var cr=Put("beacon_crystal_"+ci,Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(rx,ry),crystalColor,.75f);
+                    cr.sortingOrder=depthY<0?1006:1004;
                     if(beaconLit&&emissionMaterial!=null)cr.sharedMaterial=emissionMaterial;
                 }
             }
@@ -690,6 +700,7 @@ namespace Ember
                 int dx=tx-size/2,dy=ty-size/2;
                 int dist2=dx*dx+dy*dy;
                 bool isSanctuary=dist2<=38;
+                bool isPath=!isSanctuary&&(Math.Abs(dx)<=1||Math.Abs(dy)<=1||(dx>=4&&dx<=17&&dy>=2&&dy<=12));
                 for(int ly=0;ly<8;ly++)for(int lx=0;lx<8;lx++)
                 {
                     int gx=tx*8+lx,gy=ty*8+ly;
@@ -704,33 +715,47 @@ namespace Ember
                         else if(dist2>8&&(h%31==0))col=new Color32(45,215,245,255);
                         else col=new Color32(40,36,52,255);
                     }
+                    else if(isPath&&tile!=3&&tile!=4)
+                    {
+                        // Cobblestone / Dirt Path
+                        bool mortar=(lx%4==0)||(ly%4==0);
+                        if(mortar)col=new Color32(52,44,38,255);
+                        else if(h%17==0)col=new Color32(165,150,130,255);
+                        else if(h%5==0)col=new Color32(125,112,96,255);
+                        else col=new Color32(96,86,74,255);
+                    }
                     else if(tile==4)col=new Color32(4,3,7,255);
                     else if(tile==3)col=(h%5==0)?new Color32(34,24,40,255):new Color32(22,16,28,255);
                     else if(tile==0)
                     {
-                        int m=h%64;
-                        if(m<3)col=new Color32(120,235,215,255);
-                        else if(m<14)col=new Color32(56,92,76,255);
-                        else if(m<30)col=new Color32(40,64,52,255);
-                        else if(m<36)col=new Color32(50,46,60,255);
-                        else col=new Color32(26,38,32,255);
+                        // Biome 0: Lush Meadow Grass
+                        int m=h%100;
+                        if(m<3)col=new Color32(255,240,140,255);
+                        else if(m<6)col=new Color32(230,105,105,255);
+                        else if(m<10)col=new Color32(245,250,255,255);
+                        else if(m<25)col=new Color32(118,184,110,255);
+                        else if(m<55)col=new Color32(88,152,92,255);
+                        else if(m<80)col=new Color32(68,120,74,255);
+                        else col=new Color32(48,84,54,255);
                     }
                     else if(tile==1)
                     {
-                        int m=h%64;
-                        if(m<2)col=new Color32(65,235,160,255);
-                        else if(m<12)col=new Color32(48,88,72,255);
-                        else if(m<26)col=new Color32(34,60,50,255);
-                        else if(m<38)col=new Color32(15,25,25,255);
-                        else col=new Color32(22,34,32,255);
+                        // Biome 1: Mist Swamp & Water Glints
+                        int m=h%100;
+                        if(m<8)col=new Color32(55,160,190,255);
+                        else if(m<20)col=new Color32(32,95,120,255);
+                        else if(m<45)col=new Color32(42,88,72,255);
+                        else if(m<75)col=new Color32(28,58,50,255);
+                        else col=new Color32(18,36,32,255);
                     }
                     else
                     {
-                        int m=h%64;
-                        if(m<2)col=new Color32(205,170,255,255);
-                        else if(m<8)col=new Color32(145,80,230,255);
-                        else if(m<20)col=new Color32(95,50,155,255);
-                        else if(m<36)col=new Color32(46,28,70,255);
+                        // Biome 2: Violet Eldritch Void
+                        int m=h%100;
+                        if(m<4)col=new Color32(215,180,255,255);
+                        else if(m<15)col=new Color32(145,80,230,255);
+                        else if(m<35)col=new Color32(95,50,155,255);
+                        else if(m<65)col=new Color32(46,28,70,255);
                         else col=new Color32(18,12,28,255);
                     }
                     colors[gy*px+gx]=col;
@@ -758,11 +783,11 @@ namespace Ember
                 int hash=((x*374761393)^(y*668265263))&0x7FFFFFFF;
                 string treeArt;
                 if(r>=size*.37f)treeArt=(hash%5==0)?"tree_dead":"tree_void";
-                else if(r>=size*.22f)treeArt=(hash%4==0)?"tree_pine":"tree_dead";
+                else if(r>=size*.22f)treeArt=(hash%4==0)?"tree_pine":(hash%7==0)?"bush_wide":"tree_dead";
                 else
                 {
-                    int m=hash%8;
-                    treeArt=(m<=3)?"tree_oak":(m<=5)?"tree_autumn":(m==6)?"tree_pine":"rock_large";
+                    int m=hash%12;
+                    treeArt=(m<=3)?"tree_oak":(m<=5)?"tree_autumn":(m==6)?"tree_pine":(m==7)?"tree_stump":(m==8)?"bush_round":(m==9)?"bush_wide":"rock_large";
                 }
                 SpriteRenderer tree;
                 if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
@@ -773,7 +798,7 @@ namespace Ember
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
-                float scale=treeArt=="rock_large"?1.15f:1.35f;
+                float scale=treeArt=="rock_large"?1.15f:treeArt=="tree_stump"?1.0f:treeArt.StartsWith("bush")?1.05f:1.35f;
                 tree.transform.localScale=Vector3.one*scale;
                 tree.transform.position=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
                 tree.sortingOrder=1000-Mathf.RoundToInt((y-size/2+.1f)*10);
