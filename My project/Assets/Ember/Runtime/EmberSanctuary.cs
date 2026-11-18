@@ -210,8 +210,23 @@ namespace Ember
             DrawVesselStatBars((Vessel)selected);
             GUILayout.Space(6);
             UiText(L("Kỹ năng","Skill"),label);
-            UiText(Catalog.VesselDescriptions[selected],label);
-            if(selected!=(int)Vessel.Wanderer)UiText(SkillRangeText((Vessel)selected),small);
+            if(selected==(int)Vessel.Wanderer)
+            {
+                if(Profile.WandererAwake)
+                {
+                    UiText(L("100 HP • 100 thể lực • ⭐ Gia Tốc Gió Đêm: Tăng 45% tốc chạy cho bản thân và đồng đội trong 8 ô trong 10 giây. Hồi chiêu 22 giây.","100 HP • 100 Stamina • ⭐ Swiftwind Aura: Grants +45% movement speed to self and allies within 8 tiles for 10s. Cooldown 22s."),label);
+                    UiText(L("Thước 2 · Bán kính tăng tốc đồng đội: 8.0 ô   ·   Hồi chiêu: 22s","Range 2 · Ally speedup radius: 8.0 tiles   ·   Cooldown: 22s"),small);
+                }
+                else
+                {
+                    UiText(Catalog.VesselDescriptions[selected],label);
+                }
+            }
+            else
+            {
+                UiText(Catalog.VesselDescriptions[selected],label);
+                if(selected!=(int)Vessel.Wanderer)UiText(SkillRangeText((Vessel)selected),small);
+            }
             GUILayout.Space(8);
             UiText(L("Truyện nền","Story"),label);
             UiText((EmberLanguage.English?LoreEn:LoreVi)[selected],label);
@@ -461,6 +476,7 @@ namespace Ember
             {
                 Profile.Vessels=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Range(0,Catalog.VesselNames.Length));
                 Profile.LittleMooneAwake=true;
+                Profile.WandererAwake=true;
                 SaveProfile();
                 notice=L("Đã mở toàn bộ Bản Ngã và lưu vào profile.ember.","Unlocked all vessels and saved to profile.ember.");
                 Trace("debug.unlock_vessels_saved",notice);

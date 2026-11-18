@@ -118,7 +118,8 @@ namespace Ember
         Difficulty selectedDifficulty=Difficulty.Normal;
         void NewWorld(int seed)
         {
-            World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId);
+            World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId,awake:Profile.IsAwake(selected));
+            World.S.Charge=50; // Starter beacon energy for responsive visual fill and safe zone from match start
             heldSlot=1;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
             var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();enemyFacingLeft.Clear();ClearActions();
@@ -130,7 +131,7 @@ namespace Ember
                 if(usePublicBroker){const string chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";var bytes=EmberCrypto.Random(6);if(!fixedRoomCode)joinRoomCode=new string(bytes.Select(b=>chars[b%chars.Length]).ToArray());lan.OpenPublic(true,brokerAddress,joinRoomCode,password);}else lan.Open(true,"",password);
                 network=true;host=true;localId=1;NewWorld(Environment.TickCount);
                 lan.CanRejoin=json=>{try{var info=JsonUtility.FromJson<JoinInfo>(json);return info!=null&&!(info.Sandbox&&!debugSession)&&World!=null&&World.CanRejoin(info.PlayerId);}catch{return false;}};
-                lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();if(World.CanRejoin(info.PlayerId)){World.RejoinPlayer(id,info.PlayerId);return;}World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId);};
+                lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();if(World.CanRejoin(info.PlayerId)){World.RejoinPlayer(id,info.PlayerId);return;}World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId,awake:info.Awake);};
                 lan.Left=id=>World.RemovePlayer(id);lan.Input=(id,json)=>World.Submit(id,JsonUtility.FromJson<Command>(json));
                 lan.ReadyChanged=(id,ready)=>World.SetReady(id,ready);
                 menu=false;notice="Phòng đã mở. Có thể bắt đầu với 1 người hoặc chờ bạn bè.";
@@ -146,7 +147,7 @@ namespace Ember
                 joinClock=0;notice="Đang kết nối LAN/VPN...";
             }catch(Exception ex){notice=ex.Message;}
         }
-        [Serializable] sealed class JoinInfo{public string Name,PlayerId;public bool Sandbox;public int Vessel,Hat=-1,Pet=-1;public int[] Perks,Ranks,Recipes;}
+        [Serializable] sealed class JoinInfo{public string Name,PlayerId;public bool Sandbox;public int Vessel,Hat=-1,Pet=-1;public int[] Perks,Ranks,Recipes;public bool Awake;}
         void CapturePrevPositions()
         {
             if(State==null)return;
@@ -170,7 +171,7 @@ namespace Ember
         {
             clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
             TickCoopAutoReconnect(Time.deltaTime);
-            if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet}));joinClock=1;}}
+            if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet,Awake=Profile.IsAwake(selected)}));joinClock=1;}}
             SampleFrameRate();
             if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
             ReadInput();
@@ -316,15 +317,76 @@ namespace Ember
                 else move=new Vector2(delta.X,delta.Y).normalized;
             }
             intent.X=move.x;intent.Y=move.y;
-            bool attack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
+            bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
+            if(wantAttack&&heldSlot!=8&&ShouldAutoEquipPickaxe(Local))
+            {
+                AutoEquipHarvestTool(Local);
+            }
+            bool attack=wantAttack&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;
+            intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
             bool pressedInteract=Press(Key.E);
-            if(pressedInteract&&Local!=null&&!Local.Ghost&&ShouldAutoEquipPickaxe(Local))EquipSlot(8);
+            if(pressedInteract&&Local!=null&&!Local.Ghost)
+            {
+                if(ShouldAutoEquipPickaxe(Local))
+                {
+                    AutoEquipHarvestTool(Local);
+                }
+                else if(IsNearTreeOrRock(Local)&&!HasHarvestTool(Local))
+                {
+                    pressedInteract=false; // Block interaction when missing tool
+                    bool isTree=IsNearTree(Local);
+                    notice=isTree
+                        ?(EmberLanguage.English?"Need an Axe or Pickaxe to chop trees!":"Không có Rìu hoặc Cuốc để chặt cây!")
+                        :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
+                }
+            }
             intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
             intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);intent.Revive|=Press(Key.H);intent.Reload|=Press(Key.X);
+            if(Local!=null&&Local.Pos.Length<4.5f)
+            {
+                if(Press(Key.Z))intent.Use=10; // Brew Lumidust Tea
+                else if(Press(Key.C))intent.Use=11; // Polish Pickaxe
+            }
             if(Press(Key.U)&&CanUseSelectedItem(Local))intent.Use=selectedItem;
             ApplyTouchInput();
         }
         void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
+        bool IsNearTree(Player p)
+        {
+            if(p==null||currentTiles==null||State==null)return false;
+            int size=State.Size;
+            int px=(int)Math.Floor(p.Pos.X+size/2f),py=(int)Math.Floor(p.Pos.Y+size/2f);
+            for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+            {
+                int tx=px+dx,ty=py+dy;
+                if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                byte t=currentTiles[ty*size+tx];
+                if(t==3)
+                {
+                    V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                    if(V2.Distance(p.Pos,blockPos)<2.6f)return true;
+                }
+            }
+            return State.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.Resource==Resource.Wood&&V2.Distance(n.Pos,p.Pos)<2.4f);
+        }
+        bool IsNearTreeOrRock(Player p)
+        {
+            if(p==null||currentTiles==null||State==null)return false;
+            int size=State.Size;
+            int px=(int)Math.Floor(p.Pos.X+size/2f),py=(int)Math.Floor(p.Pos.Y+size/2f);
+            for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+            {
+                int tx=px+dx,ty=py+dy;
+                if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                byte t=currentTiles[ty*size+tx];
+                if(t==3||t==2)
+                {
+                    V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                    if(V2.Distance(p.Pos,blockPos)<2.6f)return true;
+                }
+            }
+            return State.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&(n.Resource==Resource.Wood||n.Resource==Resource.Ore)&&V2.Distance(n.Pos,p.Pos)<2.4f);
+        }
         bool IsNavWalkable(byte[] tiles,int size,V2 pos)
         {
             int x=Mathf.FloorToInt(pos.X+size/2f),y=Mathf.FloorToInt(pos.Y+size/2f);
@@ -492,9 +554,16 @@ namespace Ember
             }
             t.SetPixels32(c);t.Apply();cached=Sprite.Create(t,new Rect(0,0,size,size),new Vector2(.5f,.5f),16);primitives[name]=cached;return cached;
         }
+        AnimationClip LoadCharacterAnim(string characterName,string clipName)
+        {
+            var outer=Resources.Load<AnimationClip>("Characters/"+characterName+"/"+clipName);
+            if(outer!=null)return outer;
+            return Resources.Load<AnimationClip>("Characters/"+characterName+"/Animations/"+clipName);
+        }
         Sprite Frame(Vessel vessel,string clip,int frame,bool eyes=false)
         {
             if(vessel==Vessel.LittleMoone)return eyes?null:MooneFrame(clip,frame);
+            if(vessel==Vessel.Wanderer)return eyes?null:TravelFrame(clip,frame);
             string slug=Art[(int)vessel]+(eyes?"_eyes":"");if(!atlases.TryGetValue(slug,out var sprites))
             {
                 Texture2D tex=Resources.Load<Texture2D>("Ember/Active/"+slug);if(tex==null)return eyes?null:Primitive("enemy");tex.filterMode=FilterMode.Point;int columns=tex.width/32;sprites=new Sprite[columns*4];
@@ -502,6 +571,32 @@ namespace Ember
                 atlases[slug]=sprites;
             }
             int s=clip=="run"?1:clip=="cast"?2:clip=="hurt"?3:0,count=sprites.Length/4;return sprites[s*count+frame%count];
+        }
+        static readonly string[][] TravelFrames={
+            new[]{"idle right 0 [cell_0_0]","idle right 1 [cell_0_1]","idle right 2 [cell_0_2]","idle right 3 [cell_0_3]","idle right 4 [cell_0_4]","idle right 5 [cell_0_5]","idle right 6 [cell_0_6]","idle right 7 [cell_0_7]"},
+            new[]{"walk_right - Frame 0 [cell_1_0]","walk_right - Frame 1 [cell_1_1]","walk_right - Frame 2 [cell_1_2]","walk_right - Frame 3 [cell_1_3]","walk_right - Frame 4 [cell_1_4]","walk_right - Frame 5 [cell_1_5]","walk_right - Frame 6 [cell_1_6]","walk_right - Frame 7 [cell_1_7]"},
+            new[]{"cast_right - Frame 0 [cell_2_0]","cast_right - Frame 1 [cell_2_1]","cast_right - Frame 2 [cell_2_2]","cast_right - Frame 3 [cell_2_3]","cast_right - Frame 4 [cell_2_4]","cast_right - Frame 5 [cell_2_5]","cast_right - Frame 6 [cell_2_6]","cast_right - Frame 7 [cell_2_7]"},
+            new[]{"hurt_right - Frame 0 [cell_3_0]","hurt_right - Frame 1 [cell_3_1]","hurt_right - Frame 2 [cell_3_2]","hurt_right - Frame 3 [cell_3_3]","hurt_right - Frame 4 [cell_3_4]","hurt_right - Frame 5 [cell_3_5]","hurt_right - Frame 6 [cell_3_6]","hurt_right - Frame 7 [cell_3_7]"}
+        };
+        Dictionary<string,Sprite> travelSprites;
+        Sprite TravelFrame(string clip,int frame)
+        {
+            if(travelSprites==null)
+            {
+                var loaded=Resources.LoadAll<Sprite>("Characters/Travel/hooded_traveler_big_hood_&_moone_boots___48x48");
+                if(loaded!=null&&loaded.Length>0)
+                {
+                    travelSprites=loaded.ToDictionary(s=>s.name);
+                }
+                else travelSprites=new Dictionary<string,Sprite>();
+            }
+            int row=clip=="run"?1:clip=="cast"?2:clip=="hurt"?3:0;
+            if(travelSprites!=null&&row<TravelFrames.Length)
+            {
+                int f=frame%8;
+                if(travelSprites.TryGetValue(TravelFrames[row][f],out var sprite))return sprite;
+            }
+            return Primitive("enemy");
         }
         static readonly string[][] MooneFrames={new[]{"idle right 0 [cell_0_0]","idle right 1 [cell_0_1]","idle right 2 [cell_0_2]","idle right 3 [cell_0_3]","idle right 4 [cell_0_4]","idle right 5 [cell_0_5]","idle right 6 [cell_0_6]","idle right 7 [cell_0_7]"},new[]{"walk_right - Frame 0 [cell_1_0]","walk_right - Frame 1 [cell_1_1]","walk_right - Frame 2 [cell_1_2]","walk_right - Frame 3 [cell_1_3]","walk_right - Frame 4 [cell_1_4]","walk_right - Frame 5 [cell_1_5]","walk_right - Frame 6 [cell_1_6]","walk_right - Frame 7 [cell_1_7]"},new[]{"cast_right - Frame 0 [cast_right_0]","cast_right - Frame 1 [cast_right_1]","cast_right - Frame 2 [cast_right_2]","cast_right - Frame 3 [cast_right_3]","cast_right - Frame 4 [cast_right_4]","cast_right - Frame 5 [cast_right_5]","cast_right - Frame 6 [cast_right_6]","cast_right - Frame 7 [cast_right_7]"},new[]{"hurt_right - Frame 0 [hurt_right_0]","hurt_right - Frame 1 [hurt_right_1]","hurt_right - Frame 2 [hurt_right_2]","hurt_right - Frame 3 [hurt_right_3]","hurt_right - Frame 4 [hurt_right_4]","hurt_right - Frame 5 [hurt_right_5]","hurt_right - Frame 6 [hurt_right_6]","hurt_right - Frame 7 [hurt_right_7]"}};
         Dictionary<string,Sprite> mooneSprites;
@@ -551,33 +646,68 @@ namespace Ember
             float viewHalfW=cam.orthographicSize*cam.aspect+2.4f;
             if(Mathf.Abs(center.X)<=viewHalfW+3f&&Mathf.Abs(center.Y)<=viewHalfH+3f)
             {
-                bool beaconLit=State.BeaconHP>0;
-                string lakeArt=beaconLit?"beacon_lit":"beacon_dark";
+                bool hasEnergy=State.Charge>0||State.BeaconHP>0||State.Fuel>0;
+                string lakeArt=hasEnergy?"beacon_lit":"beacon_dark";
                 var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,10);
-                if(beaconLit&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
+                if(hasEnergy&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
 
                 // Central Floating Monolith Crystal (Cách không lơ lửng trên mặt hồ)
-                Color shadowCol=beaconLit?new Color(.12f,.65f,.88f,.45f):new Color(0,0,0,.32f);
-                var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,beaconLit?.85f:.65f,12);
-                if(beaconLit&&emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
+                Color shadowCol=hasEnergy?new Color(.12f,.65f,.88f,.45f):new Color(0,0,0,.32f);
+                var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,hasEnergy?.85f:.65f,12);
+                if(hasEnergy&&emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
 
                 float floatY=Mathf.Sin(clock*2.0f)*.14f;
-                Color crystalColor=beaconLit?Color.white:new Color(.65f,.70f,.82f,.95f);
+                Color crystalColor=hasEnergy?Color.white:new Color(.65f,.70f,.82f,.95f);
                 float crystalY=1.05f+floatY; // Cách không: hovers gracefully above the lake
-                var core=Put("beacon_crystal_core",Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(0,crystalY),crystalColor,1.45f,1005);
-                if(beaconLit&&emissionMaterial!=null)core.sharedMaterial=emissionMaterial;
+                float energyRatio=Mathf.Clamp01(State.Fuel/100f);
+                float chargeRatio=State.ChargeTarget>0?Mathf.Clamp01(State.Charge/(float)State.ChargeTarget):0f;
+                float fillRatio=Mathf.Max(energyRatio,chargeRatio);
+
+                // Base dark crystal monolith frame
+                Put("beacon_crystal_dark_core",Primitive("beacon_crystal_dark"),new V2(0,crystalY),new Color(.6f,.65f,.75f,.9f),1.45f,1004);
+                // Glowing cyan energy liquid rising/falling along Y-axis
+                if(hasEnergy&&fillRatio>0.005f)
+                {
+                    var coreLit=Put("beacon_crystal_core",Primitive("beacon_crystal_lit"),new V2(0,crystalY),crystalColor,1.45f,1005);
+                    if(crystalFillMaterial!=null)ApplyCrystalFill(coreLit,fillRatio,clock);
+                    else if(emissionMaterial!=null)
+                    {
+                        coreLit.sharedMaterial=emissionMaterial;
+                        coreLit.transform.localScale=new Vector3(1.45f,1.45f*fillRatio,1f);
+                        coreLit.transform.position=new Vector3(0,crystalY-(1f-fillRatio)*.3f,0);
+                    }
+
+                    // Delicate rising energy particles floating upward along Y-axis from the liquid
+                    for(int bi=0;bi<4;bi++)
+                    {
+                        float bSeed=bi*0.25f;
+                        float bLife=Mathf.Repeat(clock*0.65f+bSeed,1f);
+                        float bY=Mathf.Lerp(-0.25f,0.65f*fillRatio+0.1f,bLife);
+                        float bX=Mathf.Sin(clock*3.2f+bi*2.1f)*0.24f;
+                        float bAlpha=Mathf.Sin(bLife*Mathf.PI)*0.9f;
+                        Color bCol=new Color(.4f,1f,.95f,bAlpha);
+                        var bubble=Put($"crystal_bubble_{bi}",Primitive("circle"),new V2(bX,crystalY+bY),bCol,0.12f,1008);
+                        if(emissionMaterial!=null)bubble.sharedMaterial=emissionMaterial;
+                    }
+                }
 
                 // 3 Floating satellite shards orbiting around the monolith over the sacred water
+                float orbSpeed=State.Charge>State.ChargeTarget?1.35f:.85f;
                 for(int ci=0;ci<3;ci++)
                 {
-                    float angle=clock*.85f+ci*(Mathf.PI*2f/3f);
+                    float angle=clock*orbSpeed+ci*(Mathf.PI*2f/3f);
                     float floatYOrb=Mathf.Sin(clock*2.4f+ci*2.1f)*.08f;
                     float rx=Mathf.Cos(angle)*.82f;
                     float depthY=Mathf.Sin(angle)*.35f;
                     float ry=crystalY+depthY+floatYOrb;
-                    var cr=Put("beacon_crystal_"+ci,Primitive(beaconLit?"beacon_crystal_lit":"beacon_crystal_dark"),new V2(rx,ry),crystalColor,.75f);
-                    cr.sortingOrder=depthY<0?5006:5004;
-                    if(beaconLit&&emissionMaterial!=null)cr.sharedMaterial=emissionMaterial;
+                    int sOrder=depthY<0?5006:5004;
+                    Put("beacon_crystal_dark_"+ci,Primitive("beacon_crystal_dark"),new V2(rx,ry),new Color(.6f,.65f,.75f,.9f),.75f,sOrder-1);
+                    if(hasEnergy&&fillRatio>0.005f)
+                    {
+                        var crLit=Put("beacon_crystal_"+ci,Primitive("beacon_crystal_lit"),new V2(rx,ry),crystalColor,.75f,sOrder);
+                        if(crystalFillMaterial!=null)ApplyCrystalFill(crLit,fillRatio,clock);
+                        else if(emissionMaterial!=null)crLit.sharedMaterial=emissionMaterial;
+                    }
                 }
             }
             if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
@@ -603,14 +733,44 @@ namespace Ember
                     scale*=squish;
                 }
                 int order=5000-Mathf.RoundToInt(n.Pos.Y*10);
-                bool showGoldGlow=n.Dropped||(!isWoodTree&&!isDustBush)||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
-                if(showGoldGlow)
+                if(isDustBush)
                 {
-                    float pulse=.82f+.18f*Mathf.Sin(clock*6f+n.Id);
-                    Color glowColor=isDustBush?new Color(.4f,1f,.95f,pulse):new Color(1f,.84f,.24f,pulse);
-                    Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowColor,scale,order-1),sprite);
+                    // Main bush sprite - clean and natural without harsh outline or ground light
+                    Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
+
+                    // Delicate rising lumidust particles floating upward along Y axis (chậm thôi, sáng sáng glow)
+                    for(int pIdx=0;pIdx<4;pIdx++)
+                    {
+                        float seed=n.Id*0.37f+pIdx*0.25f;
+                        float life=Mathf.Repeat((clock*0.42f)+seed,1f);
+                        float riseY=Mathf.Lerp(0.12f,1.45f,life);
+                        float driftX=Mathf.Sin(clock*1.6f+pIdx*2.4f+n.Id)*0.16f+(pIdx%2==0?0.06f:-0.06f);
+                        float alpha=Mathf.Sin(life*Mathf.PI);
+                        float sparkle=.8f+.25f*Mathf.Sin(clock*6f+pIdx*3.1f+n.Id);
+                        float pScale=0.15f*sparkle*(.85f+.35f*(1f-life*.5f));
+                        Color pColor=new Color(.55f,1f,.92f,alpha*.92f);
+                        V2 partPos=n.Pos+new V2(driftX,riseY);
+                        var pr=Put("dust_part_"+n.Id+"_"+pIdx,Primitive("circle"),partPos,pColor,pScale,order+2);
+                        if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+                    }
                 }
-                Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
+                else
+                {
+                    bool showGoldGlow=n.Dropped||!isWoodTree||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
+                    if(showGoldGlow)
+                    {
+                        float pulse=.82f+.18f*Mathf.Sin(clock*6f+n.Id);
+                        Color glowColor=new Color(1f,.84f,.24f,pulse);
+                        Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowColor,scale,order-1),sprite);
+                    }
+                    Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
+                    if(n.Dropped&&n.Resource==Resource.Dust)
+                    {
+                        float dPulse=.85f+.15f*Mathf.Sin(clock*4f+n.Id);
+                        var dropAura=Put("dropDustAura"+n.Id,Primitive("circle"),n.Pos,new Color(.2f,1f,.9f,.28f*dPulse),.85f,order-1);
+                        if(emissionMaterial!=null)dropAura.sharedMaterial=emissionMaterial;
+                    }
+                }
             }
             if(State.TreeRespawns!=null)
             {
@@ -631,25 +791,65 @@ namespace Ember
             {
                 int size=State.Size;
                 int px=(int)Math.Floor(localVisual.X+size/2f),py=(int)Math.Floor(localVisual.Y+size/2f);
-                int targetTx=-1,targetTy=-1;float closestD=2.4f;
-                for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                int targetTx=-1,targetTy=-1;float closestD=2.6f;
+                // 1. Scan grid around player to find closest target
+                for(int dy=-3;dy<=3;dy++)for(int dx=-3;dx<=3;dx++)
                 {
                     int tx=px+dx,ty=py+dy;
                     if(tx<0||ty<0||tx>=size||ty>=size)continue;
                     byte t=currentTiles[ty*size+tx];
-                    if(t==3||t==2)
+                    if(t==3||t==2||t==7)
                     {
                         V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
                         float d=V2.Distance(localVisual,blockPos);
                         if(d<closestD){closestD=d;targetTx=tx;targetTy=ty;}
                     }
                 }
-                if(targetTx>=0)
+
+                // 2. Render glowing outlines for ALL trees (tile 3) and rocks (tile 2) within range (3.4 tiles)
+                for(int dy=-3;dy<=3;dy++)for(int dx=-3;dx<=3;dx++)
                 {
-                    V2 targetPos=new V2(targetTx-size/2f+.5f,targetTy-size/2f+.15f);
-                    float pulse=.82f+.18f*Mathf.Sin(clock*6f);
-                    Color targetGlow=currentTiles[targetTy*size+targetTx]==3?new Color(1f,.86f,.3f,pulse):new Color(.65f,.9f,1f,pulse);
-                    Put("blockTargetGlow",Primitive("ring"),targetPos,targetGlow,1.1f,4999);
+                    int tx=px+dx,ty=py+dy;
+                    if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                    byte t=currentTiles[ty*size+tx];
+                    if(t!=3&&t!=2)continue;
+                    V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                    float d=V2.Distance(localVisual,blockPos);
+                    if(d>3.4f)continue;
+
+                    bool isTarget=(tx==targetTx&&ty==targetTy);
+                    float pulse=isTarget?(.82f+.18f*Mathf.Sin(clock*7f)):.45f;
+                    Color glowCol=t==3
+                        ?(isTarget?new Color(1f,.92f,.35f,pulse):new Color(.95f,.82f,.38f,pulse*.75f))
+                        :(isTarget?new Color(.38f,.92f,1f,pulse):new Color(.35f,.75f,.98f,pulse*.75f));
+
+                    int key=ty*size+tx;
+                    int baseTreeOrder=5000-Mathf.RoundToInt((ty-size/2f+.1f)*10);
+                    if(t==3&&visibleTrees.TryGetValue(key,out var tSr)&&tSr!=null&&tSr.enabled&&tSr.sprite!=null)
+                    {
+                        var pos=tSr.transform.position;
+                        var scale=tSr.transform.localScale.x;
+                        var outlineR=Put("treeGlow_"+tx+"_"+ty,tSr.sprite,new V2(pos.x,pos.y),glowCol,scale,tSr.sortingOrder-1);
+                        Outline(outlineR,tSr.sprite);
+                    }
+                    else if(t==2) // Rock/cliff
+                    {
+                        var rockSprite=Primitive("rock_large");
+                        V2 rPos=new V2(tx-size/2f+.5f,ty-size/2f+.2f);
+                        var outlineR=Put("rockGlow_"+tx+"_"+ty,rockSprite,rPos,glowCol,1.15f,baseTreeOrder-1);
+                        Outline(outlineR,rockSprite);
+                    }
+
+                    if(isTarget)
+                    {
+                        // Target ground rune indicator - strictly placed on ground layer UNDER the tree/rock (order <= 20)
+                        V2 groundPos=new V2(tx-size/2f+.5f,ty-size/2f+.12f);
+                        int groundOrder=Mathf.Min(baseTreeOrder-3,20);
+                        var ringR=Put("blockTargetGlow",Primitive("ring"),groundPos,glowCol,1.18f,groundOrder);
+                        if(emissionMaterial!=null)ringR.sharedMaterial=emissionMaterial;
+                        var innerR=Put("blockTargetGlowInner",Primitive("circle"),groundPos,new Color(glowCol.r,glowCol.g,glowCol.b,.22f*pulse),1.25f,groundOrder-1);
+                        if(emissionMaterial!=null)innerR.sharedMaterial=emissionMaterial;
+                    }
                 }
             }
             var structsArr=State.Structures;
@@ -693,8 +893,8 @@ namespace Ember
                 bool hallucination=local!=null&&!local.Ghost&&p.Id!=local.Id&&local.Mad;Color glow=hallucination?Coral:Cyan;
                 string clip=p.CastTime>0?"cast":p.Invulnerable>0&&p.DashTime<=0?"hurt":p.Move.Length>.1f?"run":"idle";
                 if(!animationState.TryGetValue(p.Id,out var anim)||anim.clip!=clip){anim=(clip,clock);animationState[p.Id]=anim;}
-                int frames=p.Vessel==Vessel.LittleMoone||Art[(int)p.Vessel]=="lyra_moonscout"?8:4;
-                int raw=(int)((clock-anim.began)*(p.Vessel==Vessel.LittleMoone?6:clip=="run"?10:clip=="cast"?(frames==8?12:9):clip=="hurt"?(frames==8?10:8):6));int f=clip=="cast"||clip=="hurt"?Mathf.Min(frames-1,raw):raw%frames;
+                int frames=p.Vessel==Vessel.LittleMoone||p.Vessel==Vessel.Wanderer||Art[(int)p.Vessel]=="lyra_moonscout"?8:4;
+                int raw=(int)((clock-anim.began)*((p.Vessel==Vessel.LittleMoone||p.Vessel==Vessel.Wanderer)?6:clip=="run"?10:clip=="cast"?(frames==8?12:9):clip=="hurt"?(frames==8?10:8):6));int f=clip=="cast"||clip=="hurt"?Mathf.Min(frames-1,raw):raw%frames;
                 var sprite=hallucination?Primitive("enemy_void"):Frame(p.Vessel,clip,f);Color tint=Color.white;
                 Put("shadow"+p.Id,Primitive("circle"),pPos,new Color(0,0,0,.35f),.8f,5);
                 Outline(Put("outline"+p.Id,sprite,pPos,glow,1,5000-Mathf.RoundToInt(pPos.Y*10)-1,!p.Right),sprite);
@@ -704,6 +904,24 @@ namespace Ember
                 if(p.Hat>=0&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),pPos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,5010-Mathf.RoundToInt(pPos.Y*10));
                 if(p.Pet>=0&&!hallucination)Put("pet"+p.Id,Primitive(new[]{"pet_firefly","pet_bat","pet_cat","pet_ghost"}[p.Pet]),pPos+new V2(-1,.1f+Mathf.Sin(clock*4)*.15f),Color.white,.65f);
                 if(p.ShieldTime>0)Put("shield"+p.Id,Primitive("ring"),pPos+new V2(0,.5f),Cyan,2,-1);
+                if(p.HasBuff(BuffKind.Swiftness))
+                {
+                    Put("swift_aura"+p.Id,Primitive("ring"),pPos+new V2(0,.45f),new Color(.28f,.85f,.95f,.40f+Mathf.Sin(clock*8f)*.18f),1.4f,-1);
+                    if(p.Move.Length>.1f)
+                    {
+                        for(int wi=0;wi<3;wi++)
+                        {
+                            float wOffset=(wi+1)*0.22f;
+                            V2 streakPos=pPos-p.Move*wOffset+new V2(0,Mathf.Sin(clock*14f+wi)*0.10f);
+                            float alpha=(1f-wi*0.3f)*0.40f;
+                            Put($"swift_trail_{p.Id}_{wi}",Primitive("diamond"),streakPos,new Color(.4f,.95f,.8f,alpha),.25f-wi*.05f);
+                        }
+                    }
+                }
+                if(p.HasBuff(BuffKind.IronSkin))
+                {
+                    Put("ironskin_aura"+p.Id,Primitive("ring"),pPos+new V2(0,.5f),new Color(.95f,.8f,.25f,.50f),1.6f,-1);
+                }
             }
             var projsArr=State.Projectiles;
             if(projsArr!=null)for(int qi=0;qi<projsArr.Length;qi++)
@@ -1171,6 +1389,7 @@ namespace Ember
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
+            DrawHarvestBars();
             DrawEnemyHealthBars();
             DrawCombatPopups();
             foreach(var q in State.Players)
@@ -1312,6 +1531,21 @@ namespace Ember
                     GUI.enabled=Profile.AwakeningStones>0;
                     if(UiButton("Thức tỉnh Little Moone")&&Profile.AwakenLittleMoone())SaveProfile();
                     GUI.enabled=true;
+                }
+            }
+            if(selected==(int)Vessel.Wanderer)
+            {
+                if(!Profile.WandererAwake)
+                {
+                    UiText(L("Chưa thức tỉnh · Chưa có kỹ năng chủ động","Unawakened · Active skill locked"),small);
+                    UiText(EmberLanguage.Text("Đá Ký Ức Thức Tỉnh")+": "+Profile.AwakeningStones,small);
+                    GUI.enabled=Profile.AwakeningStones>0;
+                    if(UiButton(L("Thức tỉnh Lữ Hành (1 Đá)","Awaken Wanderer (1 Stone)"))&&Profile.AwakenWanderer())SaveProfile();
+                    GUI.enabled=true;
+                }
+                else
+                {
+                    UiText(L("⭐ Đã Thức Tỉnh: Gia Tốc Gió Đêm [J] (+45% Tốc chạy, 10s)","⭐ Awakened: Swiftwind Aura [J] (+45% Speed, 10s)"),small);
                 }
             }
             GUILayout.Space(10);

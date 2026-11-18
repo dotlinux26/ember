@@ -32,7 +32,7 @@ namespace Ember
         static HandPivot DefaultHandPivot(int vessel)
         {
             if(vessel==(int)Vessel.Wanderer)
-                return new HandPivot{Vessel=vessel,FrontX=14,FrontY=14,BackX=5,BackY=14};
+                return new HandPivot{Vessel=vessel,FrontX=17,FrontY=12,BackX=8,BackY=12};
             if(vessel==(int)Vessel.LittleMoone)
                 return new HandPivot{Vessel=vessel,FrontX=17,FrontY=12,BackX=8,BackY=12};
             return new HandPivot{Vessel=vessel,FrontX=11,FrontY=14,BackX=11,BackY=14};

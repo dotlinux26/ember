@@ -1,0 +1,434 @@
+{
+  "meta": {
+    "app": "NOIRADIX Studio v2.2.9",
+    "version": "2.2.9",
+    "formatVersion": "1.1",
+    "image": "hooded_traveler_big_hood_&_moone_boots___48x48.png",
+    "cellWidth": 48,
+    "cellHeight": 48,
+    "size": {
+      "w": 393,
+      "h": 197
+    },
+    "spacing": 1,
+    "margin": 1,
+    "extrude": false,
+    "scale": 1
+  },
+  "frames": [
+    {
+      "name": "idle right 0 [cell_0_0]",
+      "displayName": "idle right 0",
+      "cellId": "cell_0_0",
+      "x": 1,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 1 [cell_0_1]",
+      "displayName": "idle right 1",
+      "cellId": "cell_0_1",
+      "x": 50,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 2 [cell_0_2]",
+      "displayName": "idle right 2",
+      "cellId": "cell_0_2",
+      "x": 99,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 3 [cell_0_3]",
+      "displayName": "idle right 3",
+      "cellId": "cell_0_3",
+      "x": 148,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 4 [cell_0_4]",
+      "displayName": "idle right 4",
+      "cellId": "cell_0_4",
+      "x": 197,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 5 [cell_0_5]",
+      "displayName": "idle right 5",
+      "cellId": "cell_0_5",
+      "x": 246,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 6 [cell_0_6]",
+      "displayName": "idle right 6",
+      "cellId": "cell_0_6",
+      "x": 295,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "idle right 7 [cell_0_7]",
+      "displayName": "idle right 7",
+      "cellId": "cell_0_7",
+      "x": 344,
+      "y": 1,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 0 [cell_1_0]",
+      "displayName": "walk_right - Frame 0",
+      "cellId": "cell_1_0",
+      "x": 1,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 1 [cell_1_1]",
+      "displayName": "walk_right - Frame 1",
+      "cellId": "cell_1_1",
+      "x": 50,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 2 [cell_1_2]",
+      "displayName": "walk_right - Frame 2",
+      "cellId": "cell_1_2",
+      "x": 99,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 3 [cell_1_3]",
+      "displayName": "walk_right - Frame 3",
+      "cellId": "cell_1_3",
+      "x": 148,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 4 [cell_1_4]",
+      "displayName": "walk_right - Frame 4",
+      "cellId": "cell_1_4",
+      "x": 197,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 5 [cell_1_5]",
+      "displayName": "walk_right - Frame 5",
+      "cellId": "cell_1_5",
+      "x": 246,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 6 [cell_1_6]",
+      "displayName": "walk_right - Frame 6",
+      "cellId": "cell_1_6",
+      "x": 295,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "walk_right - Frame 7 [cell_1_7]",
+      "displayName": "walk_right - Frame 7",
+      "cellId": "cell_1_7",
+      "x": 344,
+      "y": 50,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 0 [cell_2_0]",
+      "displayName": "cast_right - Frame 0",
+      "cellId": "cell_2_0",
+      "x": 1,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 1 [cell_2_1]",
+      "displayName": "cast_right - Frame 1",
+      "cellId": "cell_2_1",
+      "x": 50,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 2 [cell_2_2]",
+      "displayName": "cast_right - Frame 2",
+      "cellId": "cell_2_2",
+      "x": 99,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 3 [cell_2_3]",
+      "displayName": "cast_right - Frame 3",
+      "cellId": "cell_2_3",
+      "x": 148,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 4 [cell_2_4]",
+      "displayName": "cast_right - Frame 4",
+      "cellId": "cell_2_4",
+      "x": 197,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 5 [cell_2_5]",
+      "displayName": "cast_right - Frame 5",
+      "cellId": "cell_2_5",
+      "x": 246,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 6 [cell_2_6]",
+      "displayName": "cast_right - Frame 6",
+      "cellId": "cell_2_6",
+      "x": 295,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "cast_right - Frame 7 [cell_2_7]",
+      "displayName": "cast_right - Frame 7",
+      "cellId": "cell_2_7",
+      "x": 344,
+      "y": 99,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 0 [cell_3_0]",
+      "displayName": "hurt_right - Frame 0",
+      "cellId": "cell_3_0",
+      "x": 1,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 1 [cell_3_1]",
+      "displayName": "hurt_right - Frame 1",
+      "cellId": "cell_3_1",
+      "x": 50,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 2 [cell_3_2]",
+      "displayName": "hurt_right - Frame 2",
+      "cellId": "cell_3_2",
+      "x": 99,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 3 [cell_3_3]",
+      "displayName": "hurt_right - Frame 3",
+      "cellId": "cell_3_3",
+      "x": 148,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 4 [cell_3_4]",
+      "displayName": "hurt_right - Frame 4",
+      "cellId": "cell_3_4",
+      "x": 197,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 5 [cell_3_5]",
+      "displayName": "hurt_right - Frame 5",
+      "cellId": "cell_3_5",
+      "x": 246,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 6 [cell_3_6]",
+      "displayName": "hurt_right - Frame 6",
+      "cellId": "cell_3_6",
+      "x": 295,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    },
+    {
+      "name": "hurt_right - Frame 7 [cell_3_7]",
+      "displayName": "hurt_right - Frame 7",
+      "cellId": "cell_3_7",
+      "x": 344,
+      "y": 148,
+      "w": 48,
+      "h": 48,
+      "pivotX": 0.5,
+      "pivotY": 0
+    }
+  ],
+  "animations": [
+    {
+      "clipName": "idle_right",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "idle right 0 [cell_0_0]",
+        "idle right 1 [cell_0_1]",
+        "idle right 2 [cell_0_2]",
+        "idle right 3 [cell_0_3]",
+        "idle right 4 [cell_0_4]",
+        "idle right 5 [cell_0_5]",
+        "idle right 6 [cell_0_6]",
+        "idle right 7 [cell_0_7]"
+      ]
+    },
+    {
+      "clipName": "walk_right",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "walk_right - Frame 0 [cell_1_0]",
+        "walk_right - Frame 1 [cell_1_1]",
+        "walk_right - Frame 2 [cell_1_2]",
+        "walk_right - Frame 3 [cell_1_3]",
+        "walk_right - Frame 4 [cell_1_4]",
+        "walk_right - Frame 5 [cell_1_5]",
+        "walk_right - Frame 6 [cell_1_6]",
+        "walk_right - Frame 7 [cell_1_7]"
+      ]
+    },
+    {
+      "clipName": "cast_right",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "cast_right - Frame 0 [cell_2_0]",
+        "cast_right - Frame 1 [cell_2_1]",
+        "cast_right - Frame 2 [cell_2_2]",
+        "cast_right - Frame 3 [cell_2_3]",
+        "cast_right - Frame 4 [cell_2_4]",
+        "cast_right - Frame 5 [cell_2_5]",
+        "cast_right - Frame 6 [cell_2_6]",
+        "cast_right - Frame 7 [cell_2_7]"
+      ]
+    },
+    {
+      "clipName": "hurt_right",
+      "fps": 6,
+      "loop": true,
+      "frameNames": [
+        "hurt_right - Frame 0 [cell_3_0]",
+        "hurt_right - Frame 1 [cell_3_1]",
+        "hurt_right - Frame 2 [cell_3_2]",
+        "hurt_right - Frame 3 [cell_3_3]",
+        "hurt_right - Frame 4 [cell_3_4]",
+        "hurt_right - Frame 5 [cell_3_5]",
+        "hurt_right - Frame 6 [cell_3_6]",
+        "hurt_right - Frame 7 [cell_3_7]"
+      ]
+    }
+  ]
+}

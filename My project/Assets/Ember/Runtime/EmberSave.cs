@@ -12,12 +12,21 @@ namespace Ember
         public int[] Vessels={0},Perks=Array.Empty<int>(),Hats=Array.Empty<int>(),Pets=Array.Empty<int>(),EquippedPerks=Array.Empty<int>();
         public int AwakeningStones;
         public bool LittleMooneAwake;
+        public bool WandererAwake;
+        public bool IsAwake(int vessel)=>vessel==(int)Vessel.Wanderer?WandererAwake:vessel==(int)Vessel.LittleMoone?LittleMooneAwake:false;
         public bool CanPlay(int vessel)=>Vessels.Contains(vessel)&&(vessel!=(int)Vessel.LittleMoone||LittleMooneAwake);
         public bool AwakenLittleMoone()
         {
             if(!Vessels.Contains((int)Vessel.LittleMoone)||LittleMooneAwake||AwakeningStones<1)return false;
             AwakeningStones--;
             LittleMooneAwake=true;
+            return true;
+        }
+        public bool AwakenWanderer()
+        {
+            if(WandererAwake||AwakeningStones<1)return false;
+            AwakeningStones--;
+            WandererAwake=true;
             return true;
         }
         public int SelectedVessel,SelectedHat=-1,SelectedPet=-1;
@@ -38,7 +47,7 @@ namespace Ember
         public void ValidateAndNormalize()
         {
             if(Version!=1||Ash<0||Memory<0||Tokens<0||Ash>1000000000||Memory>1000000000||Tokens>1000000000||PerkSlots<1||PerkSlots>3||Runs<0||Extractions<0||Vessels==null||Perks==null||Hats==null||Pets==null||EquippedPerks==null||EquippedPerks.Length>PerkSlots)throw new InvalidDataException("Profile không hợp lệ.");
-            if(!CanPlay(SelectedVessel)||AwakeningStones<0||(LittleMooneAwake&&!Vessels.Contains((int)Vessel.LittleMoone))||Vessels.Any(v=>v<0||v>=Catalog.VesselNames.Length)||Perks.Any(v=>v<0||v>=Catalog.PerkNames.Length)||Hats.Any(v=>v<0||v>3)||Pets.Any(v=>v<0||v>3)||EquippedPerks.Any(v=>!Perks.Contains(v))||(SelectedHat!=-1&&!Hats.Contains(SelectedHat))||(SelectedPet!=-1&&!Pets.Contains(SelectedPet)))throw new InvalidDataException("Profile chứa lựa chọn không hợp lệ.");
+            if(!CanPlay(SelectedVessel)||AwakeningStones<0||(LittleMooneAwake&&!Vessels.Contains((int)Vessel.LittleMoone))||(WandererAwake&&!Vessels.Contains((int)Vessel.Wanderer))||Vessels.Any(v=>v<0||v>=Catalog.VesselNames.Length)||Perks.Any(v=>v<0||v>=Catalog.PerkNames.Length)||Hats.Any(v=>v<0||v>3)||Pets.Any(v=>v<0||v>3)||EquippedPerks.Any(v=>!Perks.Contains(v))||(SelectedHat!=-1&&!Hats.Contains(SelectedHat))||(SelectedPet!=-1&&!Pets.Contains(SelectedPet)))throw new InvalidDataException("Profile chứa lựa chọn không hợp lệ.");
             if(PerkRanks==null)PerkRanks=new int[7];if(Recipes==null)Recipes=Enumerable.Range(0,14).ToArray(); // Existing pre-recipe saves keep their unlocked content.
             if(PerkRanks.Length!=7||PerkRanks.Any(v=>v<0||v>3)||Recipes.Length>14||Recipes.Any(v=>v<0||v>=14)||TotalCrafted<0||TotalGathered<0)throw new InvalidDataException("Profile progression không hợp lệ.");
             Vessels=Vessels.Distinct().ToArray();Perks=Perks.Distinct().ToArray();Hats=Hats.Distinct().ToArray();Pets=Pets.Distinct().ToArray();EquippedPerks=EquippedPerks.Distinct().ToArray();Recipes=Recipes.Distinct().ToArray();

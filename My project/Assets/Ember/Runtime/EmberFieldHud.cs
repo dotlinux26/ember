@@ -10,9 +10,11 @@ namespace Ember
 
         string SkillRangeText(Vessel vessel)
         {
-            string distance=Catalog.SkillRange(vessel).ToString("0.#")+L(" ô"," tiles");
+            string distance=Catalog.SkillRange(vessel,Local!=null?Local.Awake:true).ToString("0.#")+L(" ô"," tiles");
             return vessel==Vessel.SpaceWraith
                 ?L("Thước 2 · Bán kính kéo đồng đội: ","Range 2 · Ally pickup radius: ")+distance
+                :vessel==Vessel.Wanderer
+                ?L("Thước 2 · Bán kính tăng tốc đồng đội: ","Range 2 · Ally speedup radius: ")+distance
                 :L("Thước 2 · Tầm cast: ","Range 2 · Cast radius: ")+distance;
         }
 
@@ -59,6 +61,45 @@ namespace Ember
             }
         }
 
+        void DrawHarvestBars()
+        {
+            if(Event.current.type!=EventType.Repaint)return;
+            V2 focus=CameraTarget()?.Pos??new V2();
+            if(State?.Nodes!=null)
+            {
+                foreach(var n in State.Nodes)
+                {
+                    if(n.Dropped||V2.Distance(n.Pos,focus)>22f)continue;
+                    int maxAmt=n.MaxAmount>0?n.MaxAmount:5;
+                    if(n.Amount>=maxAmt)continue;
+                    float ratio=Mathf.Clamp01(n.Amount/(float)maxAmt);
+                    Vector2 anchor=ScreenPos(n.Pos+new V2(0,.78f));
+                    float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
+                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
+                    Color fill=ratio<.3f?Coral:n.Resource==Resource.Dust?new Color(.3f,1f,.85f):n.Resource==Resource.Wood?new Color(.35f,.85f,.4f):new Color(.4f,.85f,.95f);
+                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                }
+            }
+            if(State?.HarvestTargets!=null)
+            {
+                int size=State.Size;
+                foreach(var ht in State.HarvestTargets)
+                {
+                    if(ht.HP<=0||ht.MaxHP<=0)continue;
+                    V2 tPos=new V2(ht.Tx-size/2f+.5f,ht.Ty-size/2f+.5f);
+                    if(V2.Distance(tPos,focus)>22f)continue;
+                    float ratio=Mathf.Clamp01(ht.HP/ht.MaxHP);
+                    if(ratio>=1f)continue;
+                    float yOff=ht.Tile==3?1.35f:.72f;
+                    Vector2 anchor=ScreenPos(tPos+new V2(0,yOff));
+                    float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
+                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
+                    Color fill=ratio<.3f?Coral:ht.Tile==3?new Color(.35f,.85f,.4f):new Color(.4f,.85f,.95f);
+                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                }
+            }
+        }
+
         void DrawInteractPrompt(Player p)
         {
             V2 targetPos;
@@ -84,10 +125,13 @@ namespace Ember
                     if(node!=null)
                     {
                         string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
-                        bool needsPick=!node.Dropped&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
-                        string verb=node.Dropped?L("Nhặt","Pick up"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
+                        bool isDust=node.Resource==Resource.Dust;
+                        bool needsPick=!node.Dropped&&!isDust&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe&&p.Weapon!=Weapon.CrystalAxe;
+                        string verb=node.Dropped?(node.Resource==Resource.Wood?L("Nhặt cành","Pick up branch"):L("Nhặt","Pick up")):isDust?L("Hái","Harvest"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
+                        bool hasTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
+                        string keyPrefix=(!node.Dropped&&hasTool)?L("[K / Click] ","[K / Click] "):"[E] ";
                         targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
-                        caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×"+node.Amount;
+                        caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):keyPrefix+verb+" · "+resName+" ×"+node.Amount;
                     }
                     else
                     {
@@ -106,7 +150,7 @@ namespace Ember
                                 int idx=ty*size+tx;
                                 if(idx<0||idx>=tiles.Length)continue;
                                 byte t=tiles[idx];
-                                if(t==3||t==2)
+                                if(t==3||t==2||t==7)
                                 {
                                     V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
                                     float d=V2.Distance(p.Pos,blockPos);
@@ -116,12 +160,22 @@ namespace Ember
                         }
                         if(bestTx>=0)
                         {
-                            bool isTree=targetTile==3;
                             targetPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
-                            bool needsPick=!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe;
-                            string verb=isTree?L("Chặt","Chop"):L("Đào","Mine");
-                            string resName=isTree?L("Gỗ","Wood"):L("Quặng","Ore");
-                            caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):verb+" · "+resName+" ×2";
+                            if(targetTile==7)
+                            {
+                                bool canRepair=p.Bag[(int)Resource.Wood]>=4&&p.Bag[(int)Resource.Ore]>=2;
+                                caption=canRepair?L("Sửa cầu · Gỗ ×4, Quặng ×2","Repair · Wood ×4, Ore ×2"):L("Cầu gãy (Cần Gỗ ×4, Quặng ×2)","Broken (Need Wood ×4, Ore ×2)");
+                            }
+                            else
+                            {
+                                bool isTree=targetTile==3;
+                                bool needsPick=!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe&&p.Weapon!=Weapon.CrystalAxe;
+                                string verb=isTree?L("Chặt","Chop"):L("Đào","Mine");
+                                string resName=isTree?L("Gỗ","Wood"):L("Quặng","Ore");
+                                bool hasTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
+                                string keyPrefix=hasTool?L("[K / Click] ","[K / Click] "):"[E] ";
+                                caption=needsPick?(isTree?L("Cần Rìu/Cuốc để chặt cây","Requires Axe/Pickaxe"):L("Cần Cuốc để khai thác","Requires Pickaxe")):keyPrefix+verb+" · "+resName+" ×2";
+                            }
                         }
                         else return;
                     }
@@ -144,8 +198,22 @@ namespace Ember
             GUI.contentColor=oldColor;
             if(GUI.Button(box,GUIContent.none,GUIStyle.none))
             {
-                if(ShouldAutoEquipPickaxe(p))EquipSlot(8);
-                intent.Interact=true;
+                if(ShouldAutoEquipPickaxe(p))
+                {
+                    AutoEquipHarvestTool(p);
+                    intent.Interact=true;
+                }
+                else if(IsNearTreeOrRock(p)&&!HasHarvestTool(p))
+                {
+                    bool isTree=IsNearTree(p);
+                    notice=isTree
+                        ?(EmberLanguage.English?"Need an Axe or Pickaxe to chop trees!":"Không có Rìu hoặc Cuốc để chặt cây!")
+                        :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
+                }
+                else
+                {
+                    intent.Interact=true;
+                }
             }
         }
 
@@ -185,6 +253,12 @@ namespace Ember
             GUI.enabled=oldEnabled;
             GUI.color=oldColor;
             GUI.contentColor=oldContentColor;
+            if(player.HasBuff(BuffKind.Swiftness))
+            {
+                var swiftBuff=player.GetBuff(BuffKind.Swiftness);
+                string bText=$"⚡ +{Mathf.RoundToInt(swiftBuff.Value*100)}%";
+                UiLabel(new Rect(x-30,y-32,60,16),bText,small);
+            }
             Panel(new Rect(x-25,y-17,50,13),new Color(.05f,.04f,.09f,.92f));
             Panel(new Rect(x-24,y-16,48*Mathf.Clamp01(player.HP/Mathf.Max(1,player.MaxHP)),5),player.Ghost?Color.gray:Cyan);
             Panel(new Rect(x-24,y-9,48*Mathf.Clamp01(player.Dread/100),4),new Color(.75f,.35f,.7f));
@@ -700,6 +774,30 @@ namespace Ember
             }
         }
 
+        void DrawActiveBuffs(Player p,float startX,float startY)
+        {
+            if(p.Buffs==null||p.Buffs.Count==0)return;
+            float curX=startX,curY=startY;
+            for(int i=0;i<p.Buffs.Count;i++)
+            {
+                var b=p.Buffs[i];
+                if(b.Duration<=0)continue;
+                var def=Catalog.GetBuffDef(b.Kind);
+                string valStr=def.FormatValue(b.Value,b.Stacks);
+                string iconPrefix=b.Kind==BuffKind.Swiftness?"⚡ ":b.Kind==BuffKind.AttackPower?"⚔️ ":b.Kind==BuffKind.IronSkin?"🛡️ ":b.Kind==BuffKind.Regen?"💖 ":b.Kind==BuffKind.StaminaSurge?"🏃 ":"✦ ";
+                string text=$"{iconPrefix}{def.DisplayName} {valStr} ({b.Duration:0.0}s)";
+                float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+18,110,220);
+                Rect badgeRect=new Rect(curX,curY,badgeW,22);
+                Color badgeBg=b.Kind==BuffKind.Swiftness?new Color(.12f,.28f,.38f,.90f):b.Kind==BuffKind.IronSkin?new Color(.38f,.30f,.12f,.90f):b.Kind==BuffKind.Regen?new Color(.12f,.38f,.18f,.90f):new Color(.20f,.16f,.32f,.90f);
+                PixelPanel(badgeRect,badgeBg);
+                float ratio=Mathf.Clamp01(b.Duration/Mathf.Max(0.1f,b.MaxDuration));
+                Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),b.Kind==BuffKind.Swiftness?Cyan:Gold);
+                UiLabel(new Rect(badgeRect.x+6,badgeRect.y+1,badgeRect.width-12,19),text,small);
+                curX+=badgeW+6;
+                if(curX+110>Screen.width-150){curX=startX;curY+=26;}
+            }
+        }
+
         void DrawFieldHud(Player p)
         {
             if(p.Ghost){DrawSpectateHud();return;}
@@ -713,6 +811,7 @@ namespace Ember
             DrawFieldMeter(16,upperY,upperWidth,L("Hoảng loạn","Dread"),p.Dread,100,new Color(.65f,.4f,.85f));
             if(heldSlot==2&&p.Items[0]>0)
                 DrawFieldMeter(22+upperWidth,upperY,upperWidth,L("Nhiên liệu đuốc","Torch fuel"),State.Fuel,100,Gold);
+            DrawActiveBuffs(p,16,upperY+36);
 
             if(UiButton(new Rect(toolX-toolWidth-8,12,toolWidth,29),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
             if(network)DrawPartyBubbles();
@@ -751,6 +850,13 @@ namespace Ember
 
             var itemChip=new Rect(x,y-36,width,32);
             PixelPanel(itemChip,FieldPaper);
+            if(p.Pos.Length<4.5f&&!p.Ghost)
+            {
+                var hearthChip=new Rect(x,itemChip.y-32,width,28);
+                PixelPanel(hearthChip,new Color(.16f,.14f,.25f,.92f));
+                string hearthText=L("[Z] Pha trà Bụi quang (2 Bụi)   [C] Mài cuốc đá (2 Quặng)","[Z] Lumidust Tea (2 Dust)   [C] Sharpen Pickaxe (2 Ore)");
+                UiLabel(new Rect(hearthChip.x+8,hearthChip.y+4,hearthChip.width-16,20),hearthText,small);
+            }
             int activeMag=IsHoldingWeaponSlot(heldSlot)?Catalog.WeaponMagSize(WeaponForSlot(p,heldSlot)):0;
             bool showReloadBtn=IsHoldingWeaponSlot(heldSlot)&&activeMag>0&&!p.Reloading&&p.CurrentAmmo<activeMag;
             bool showUseBtn=!showReloadBtn&&heldSlot>=2&&heldSlot<=5;
@@ -769,7 +875,7 @@ namespace Ember
                 GUI.enabled=true;
             }
             // Floating status banner removed by user request
-            int count=p.Vessel==Vessel.Wanderer?4:5;
+            int count=(p.Vessel==Vessel.Wanderer&&!p.Awake)?4:5;
             float cell=Mathf.Min(72,(width-12)/count);
             float start=(Screen.width-count*cell)/2;
             float flank=Mathf.Min(220,start-30);

@@ -493,6 +493,83 @@ harvestWorld.Submit(1, new Command{Interact=true});
 harvestWorld.Tick();
 Check(!harvestPlayer.HasPickaxe&&harvestPlayer.PickaxeDurability==0, "depleted tier 0 pickaxe breaks completely");
 
+// Wanderer Awakening Profile Checks
+var wandererProfile = new Profile{ AwakeningStones = 0, WandererAwake = false };
+Check(!wandererProfile.AwakenWanderer(), "cannot awaken wanderer without awakening stone");
+wandererProfile.AwakeningStones = 2;
+Check(wandererProfile.AwakenWanderer() && wandererProfile.WandererAwake && wandererProfile.AwakeningStones == 1, "awakening wanderer consumes 1 stone and enables wanderer awakening");
+Check(!wandererProfile.AwakenWanderer() && wandererProfile.AwakeningStones == 1, "awakening already awakened wanderer returns false and preserves stone");
+
+// Awakened Wanderer Skill & Buff Range Check
+var buffWorld = new EmberWorld(77);
+var awkWanderer = buffWorld.AddPlayer(1, "AwkWanderer", Vessel.Wanderer, awake: true);
+var nearTeammate = buffWorld.AddPlayer(2, "NearMate", Vessel.MoonMender);
+var farTeammate = buffWorld.AddPlayer(3, "FarMate", Vessel.RuneWarden);
+buffWorld.StartRun();
+awkWanderer.Pos = new V2(0, 0);
+nearTeammate.Pos = new V2(4, 0);   // distance 4 (in 8m range)
+farTeammate.Pos = new V2(15, 0);   // distance 15 (outside 8m range)
+
+Check(awkWanderer.SkillRange == 8f, "awakened wanderer has 8 tile skill range");
+buffWorld.Submit(1, new Command{ Skill = true });
+buffWorld.Tick();
+
+Check(awkWanderer.SkillCD == 22f && awkWanderer.HasBuff(BuffKind.Swiftness) && Math.Abs(awkWanderer.BuffValue(BuffKind.Swiftness) - 0.45f) < 0.001f, "casting swiftwind aura grants 10s +45% swiftness buff to self and triggers 22s cooldown");
+Check(nearTeammate.HasBuff(BuffKind.Swiftness) && Math.Abs(nearTeammate.BuffValue(BuffKind.Swiftness) - 0.45f) < 0.001f, "swiftwind aura applies swiftness buff to nearby ally within 8 tiles");
+Check(!farTeammate.HasBuff(BuffKind.Swiftness), "swiftwind aura does not affect distant ally outside 8 tiles");
+
+// Movement speed verification with Swiftness buff
+float unbuffedSpeed = awkWanderer.Stats.MoveSpeed;
+var startPos = awkWanderer.Pos;
+buffWorld.Submit(1, new Command{ X = 1, Y = 0 });
+buffWorld.Tick();
+float distanceTraveled = awkWanderer.Pos.X - startPos.X;
+float expectedDistance = unbuffedSpeed * 1.45f * (1f / 30f);
+Check(Math.Abs(distanceTraveled - expectedDistance) < 0.02f, "swiftness buff accelerates movement speed by 45%");
+
+// Multi-buff & Industrial-grade status effect system checks
+var testSubject = nearTeammate;
+testSubject.HP = 50f;
+testSubject.MaxHP = 100f;
+testSubject.ApplyBuff(BuffKind.Regen, duration: 5f, value: 10f); // 10 HP/s
+testSubject.ApplyBuff(BuffKind.IronSkin, duration: 5f, value: 0.30f); // 30% dmg reduction
+testSubject.ApplyBuff(BuffKind.AttackPower, duration: 5f, value: 0.50f); // +50% dmg
+
+Check(testSubject.HasBuff(BuffKind.Regen) && testSubject.HasBuff(BuffKind.IronSkin) && testSubject.HasBuff(BuffKind.AttackPower), "multiple status effects coexist simultaneously");
+float hpBeforeRegen = testSubject.HP;
+buffWorld.Tick();
+Check(testSubject.HP > hpBeforeRegen, "regen buff restores health over time");
+
+// Test buff duration expiration
+for(int t = 0; t < 310; t++) buffWorld.Tick(); // 310 ticks = ~10.3 seconds (> 10s)
+Check(!awkWanderer.HasBuff(BuffKind.Swiftness) && !nearTeammate.HasBuff(BuffKind.Swiftness) && !testSubject.HasBuff(BuffKind.Regen), "status effects automatically expire when duration ends");
+
+// Test beacon passive energy drain over time
+var drainWorld = new EmberWorld(42){DebugEnabled=true,DebugNoEnemies=true};
+drainWorld.AddPlayer(1, "DrainTester", Vessel.Wanderer);
+drainWorld.StartRun();
+drainWorld.S.Charge = 200;
+drainWorld.S.Time = 16f; // Past the 15s grace period
+float chargeBefore = drainWorld.S.Charge;
+drainWorld.Tick();
+Check(drainWorld.S.Charge < chargeBefore, "beacon passively consumes energy over time after grace period");
+
+// Test overcharge and milestone safe light expansion
+drainWorld.S.Charge = 500;
+Check(drainWorld.IsSafe(new V2(14, 0)), "higher energy expands beacon safe light radius dynamically");
+drainWorld.S.Charge = 50;
+Check(!drainWorld.IsSafe(new V2(14, 0)) && drainWorld.IsSafe(new V2(2, 0)), "lower energy contracts safe radius while protecting home base");
+
+// Test harvest tool attack never fires projectiles
+var harvestCombatWorld = new EmberWorld(42){DebugEnabled=true,DebugNoEnemies=true};
+var minerAttacker = harvestCombatWorld.AddPlayer(1, "MinerAttacker", Vessel.Wanderer);
+harvestCombatWorld.StartRun();
+minerAttacker.HeldSlot = 8;
+minerAttacker.HasPickaxe = true;
+harvestCombatWorld.Submit(1, new Command{Attack=true});
+harvestCombatWorld.Tick();
+Check(!harvestCombatWorld.S.Projectiles.Any(p => p.Owner == minerAttacker.Id), "pickaxe attack is melee and never spawns projectiles");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

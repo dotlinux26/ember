@@ -8,6 +8,7 @@ namespace Ember
         bool HasSkillFocus(Player p)
         {
             if(p.Vessel==Vessel.SpaceWraith)return true;
+            if(p.Vessel==Vessel.Wanderer)return p.Awake;
             if(p.Vessel==Vessel.MoonMender)return State.Players.Any(q=>!q.Ghost&&!q.Extracted&&
                 V2.Distance(q.Pos,p.Pos)<p.SkillRange&&(q.HP<q.MaxHP||q.Dread>0));
             return State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<p.SkillRange)||

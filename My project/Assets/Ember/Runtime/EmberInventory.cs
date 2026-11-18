@@ -67,19 +67,59 @@ namespace Ember
             return "—";
         }
 
-        bool ShouldAutoEquipPickaxe(Player p)
+        bool HasHarvestTool(Player p)
         {
-            if(p==null||(!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe))return false;
-            if(State.Phase==Phase.Extraction&&p.Pos.Length<3)return false;
-            if(State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
-            var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
-                .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
-            return node!=null&&!node.Dropped;
+            if(p==null)return false;
+            return p.HasPickaxe||p.Weapon==Weapon.Pickaxe||p.Weapon==Weapon.CrystalAxe||p.SideWeapon==Weapon.Pickaxe||p.SideWeapon==Weapon.CrystalAxe;
         }
 
-        void EquipSlot(int slot)
+        bool ShouldAutoEquipPickaxe(Player p)
         {
-            if(heldSlot==slot)slot=6; // Toggle: pressing/clicking active held slot unequips to empty hands
+            if(p==null||!HasHarvestTool(p))return false;
+            if(State==null||(State.Phase==Phase.Extraction&&p.Pos.Length<3))return false;
+            if(State.Structures!=null&&State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
+            var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
+                .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+            if(node!=null&&!node.Dropped)return true;
+            if(currentTiles!=null)
+            {
+                int size=State.Size;
+                int px=Mathf.FloorToInt(p.Pos.X+size/2f),py=Mathf.FloorToInt(p.Pos.Y+size/2f);
+                for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                {
+                    int tx=px+dx,ty=py+dy;
+                    if(tx<0||ty<0||tx>=size||ty>=size)continue;
+                    byte t=currentTiles[ty*size+tx];
+                    if(t==3||t==2)
+                    {
+                        V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
+                        if(V2.Distance(p.Pos,blockPos)<2.6f)return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        void AutoEquipHarvestTool(Player p)
+        {
+            if(p==null)return;
+            if(p.HasPickaxe)
+            {
+                if(heldSlot!=8)EquipSlot(8,toggle:false);
+            }
+            else if(p.Weapon==Weapon.Pickaxe||p.Weapon==Weapon.CrystalAxe)
+            {
+                if(heldSlot!=1)EquipSlot(1,toggle:false);
+            }
+            else if(p.SideWeapon==Weapon.Pickaxe||p.SideWeapon==Weapon.CrystalAxe)
+            {
+                if(heldSlot!=7)EquipSlot(7,toggle:false);
+            }
+        }
+
+        void EquipSlot(int slot,bool toggle=true)
+        {
+            if(toggle&&heldSlot==slot)slot=6; // Toggle: pressing/clicking active held slot unequips to empty hands
             heldSlot=slot;
             if(slot>=2&&slot<=5)selectedItem=slot-2;
             intent.Equip=slot;

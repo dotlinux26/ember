@@ -29,7 +29,7 @@ namespace Ember
                 }
                 if(AttackTouch.Contains(gui)&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0)intent.Attack=true;
                 if(!touch.press.wasPressedThisFrame)continue;
-                if(SkillTouch.Contains(gui)&&Local!=null&&Local.Vessel!=Vessel.Wanderer)intent.Skill=true;if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
+                if(SkillTouch.Contains(gui)&&Local!=null&&(Local.Vessel!=Vessel.Wanderer||Local.Awake))intent.Skill=true;if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
                 if(InteractTouch.Contains(gui))intent.Interact=true;
                 if(DepositTouch.Contains(gui))intent.Deposit=true;
                 if(RefuelTouch.Contains(gui))intent.Refuel=true;
@@ -48,7 +48,7 @@ namespace Ember
             var knob=center+new Vector2(joystickDelta.x,-joystickDelta.y)*55;GUI.DrawTexture(new Rect(knob.x-25,knob.y-25,50,50),touchDisc);
             var p=Local;
             DrawTouchTile(AttackTouch,L("Đánh","Attack"),IsHoldingWeaponSlot(heldSlot)?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,heldSlot)]):null,IsHoldingWeaponSlot(heldSlot));
-            if(p.Vessel!=Vessel.Wanderer)
+            if(p.Vessel!=Vessel.Wanderer||p.Awake)
                 DrawTouchTile(SkillTouch,L("Kỹ năng","Skill"),p.Vessel==Vessel.LittleMoone?MaterialSprite("meteor"):Frame(p.Vessel,"cast",0),
                     p.SkillCD<=0&&HasSkillFocus(p));
             DrawTouchTile(DashTouch,L("Lướt","Dash"),MaterialSprite("perk_2"),p.DashCD<=0);

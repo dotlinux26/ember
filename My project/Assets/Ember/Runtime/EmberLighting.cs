@@ -9,12 +9,13 @@ namespace Ember
     {
         readonly Dictionary<string,Light2D> lights=new Dictionary<string,Light2D>();
         readonly HashSet<Light2D> activeLights=new HashSet<Light2D>();
-        MaterialPropertyBlock outlineProperties;
-        Material outlineMaterial,emissionMaterial;
+        MaterialPropertyBlock outlineProperties,crystalProperties;
+        Material outlineMaterial,emissionMaterial,crystalFillMaterial;
         void SetupLighting()
         {
             var ambient=new GameObject("Night ambient").AddComponent<Light2D>();ambient.lightType=Light2D.LightType.Global;ambient.targetSortingLayers=new[]{0};ambient.intensity=.12f;ambient.color=new Color(.48f,.55f,.8f);
             outlineMaterial=Resources.Load<Material>("Ember/EmberOutline");emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
+            var cShader=Shader.Find("Ember/CrystalFill");if(cShader!=null)crystalFillMaterial=new Material(cShader);
         }
         void Illuminate(string key,V2 pos,float radius,Color color,float intensity)
         {
@@ -50,7 +51,8 @@ namespace Ember
             activeLights.Clear();
             var local=Local;
             var focus=CameraTarget();
-            if(State.BeaconHP>0&&State.Charge>=State.ChargeTarget)Illuminate("beacon",new V2(),7,new Color(.72f,.95f,1),1.1f);
+            float beaconRadius=5.5f+(State.Charge/100f)*2.4f;
+            if(State.Charge>0||State.BeaconHP>0)Illuminate("beacon",new V2(),beaconRadius,new Color(.72f,.95f,1f),1.15f);
             if(State.BossArenaActive)
             {
                 Color accent=BossAccentColor(State.BossType);
@@ -100,6 +102,15 @@ namespace Ember
             if(outlineProperties==null)outlineProperties=new MaterialPropertyBlock();
             var props=outlineProperties;Rect r=sprite.rect;var tex=sprite.texture;
             props.SetVector("_CellUV",new Vector4(r.xMin/tex.width,r.yMin/tex.height,r.xMax/tex.width,r.yMax/tex.height));renderer.SetPropertyBlock(props);
+        }
+        void ApplyCrystalFill(SpriteRenderer renderer,float fillLevel,float timeVal)
+        {
+            if(crystalFillMaterial==null)return;
+            renderer.sharedMaterial=crystalFillMaterial;
+            if(crystalProperties==null)crystalProperties=new MaterialPropertyBlock();
+            crystalProperties.SetFloat("_FillLevel",Mathf.Clamp01(fillLevel));
+            crystalProperties.SetFloat("_TimeVal",timeVal);
+            renderer.SetPropertyBlock(crystalProperties);
         }
     }
 }
