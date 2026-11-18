@@ -64,6 +64,26 @@ namespace Ember
             var prev=GUI.contentColor;
             GUI.contentColor=displayFps>=55?new Color(.72f,1f,.80f):displayFps>=35?Gold:Coral;
             UiLabel(new Rect(badge.x+6,badge.y+2,badge.width-8,21),displayFps+" FPS · "+displayMs.ToString("0.0")+" ms",small);
+            if(network&&lan!=null)
+            {
+                string pingText;
+                if(host)
+                {
+                    GUI.contentColor=Cyan;
+                    pingText="Host · 0 ms";
+                }
+                else if(lan.PingMs<0)
+                {
+                    GUI.contentColor=new Color(.82f,.82f,.92f);
+                    pingText="Ping …";
+                }
+                else
+                {
+                    GUI.contentColor=lan.PingMs<60?new Color(.72f,1f,.80f):lan.PingMs<=140?Gold:Coral;
+                    pingText="Ping "+lan.PingMs+" ms";
+                }
+                UiLabel(new Rect(badge.x+160,badge.y+2,116,21),pingText,small);
+            }
             GUI.contentColor=prev;
         }
 

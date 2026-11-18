@@ -18,6 +18,8 @@ namespace Ember
     {
         public const int Port=27841;
         public bool Host;public int LocalId=1;public string Error;public int Capacity=4;public bool AcceptingJoins=true;public double LastStateTime;
+        public int PingMs{get;private set;}=-1;
+        int pingSeq;double nextPingAt,pingSentAt;
         UdpClient udp;IPEndPoint server;byte[] secret,sessionKey,epoch;ulong packetCounter;string handshake;
         readonly HashSet<ulong> hostPackets=new HashSet<ulong>();ulong hostHighest;
         EmberRoomRoute route;bool broadcasting;string previousRouteError;
@@ -41,7 +43,7 @@ namespace Ember
         sealed class Assembly{public byte[][] Parts;public double Since,NextRepair;}
         public void Open(bool host,string address,string password)
         {
-            Dispose();Host=host;LocalId=host?1:0;Error=null;Capacity=Math.Max(1,Math.Min(4,Capacity));AcceptingJoins=true;LastStateTime=0;using(var sha=SHA256.Create())secret=sha.ComputeHash(Encoding.UTF8.GetBytes("Ember LAN v2:"+password));
+            Dispose();Host=host;LocalId=host?1:0;Error=null;PingMs=host?0:-1;pingSeq=0;nextPingAt=0;pingSentAt=0;Capacity=Math.Max(1,Math.Min(4,Capacity));AcceptingJoins=true;LastStateTime=0;using(var sha=SHA256.Create())secret=sha.ComputeHash(Encoding.UTF8.GetBytes("Ember LAN v2:"+password));
             udp=new UdpClient(host?Port:0);udp.Client.Blocking=false;udp.Client.ReceiveBufferSize=1024*1024;
             try{udp.Client.IOControl(-1744830452,new byte[]{0,0,0,0},null);}catch{}
             epoch=host?EmberCrypto.Random(16):null;sessionKey=host?EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2"):null;
@@ -94,6 +96,11 @@ namespace Ember
                 var m=item.Value;if(m.Tries++>30){Error="Không nhận được xác nhận từ host.";outgoing.Remove(item.Key);continue;}
                 Retries++;if(m.Tries==3||m.Tries==10)Trace?.Invoke("action.retry","sequence="+item.Key+" tries="+m.Tries);Send(server,m.Type+"|"+item.Key+"|"+m.Payload);m.Next=now+.15;
             }
+            if(!Host&&LocalId>0&&now>=nextPingAt)
+            {
+                pingSeq++;pingSentAt=now;nextPingAt=now+1.0;
+                Send(server,"PING|"+pingSeq+"|0");
+            }
             if(!Host&&now-openedAt>12&&(LocalId==0||now-LastStateTime>12)&&Error==null)Error="Mất kết nối host. Hãy kiểm tra địa chỉ và mật khẩu phòng.";
         }
         void ReceiveHost(IPEndPoint from,string[] message)
@@ -120,6 +127,7 @@ namespace Ember
             }
             if(message[0]=="INPUT"&&peers.TryGetValue(key,out var p)&&int.TryParse(message[1],out int seq)&&seq>p.Sequence)
             {p.Sequence=seq;p.Seen=now;Input?.Invoke(p.Id,message[2]);}
+            if(message[0]=="PING"&&peers.TryGetValue(key,out var pingPeer)){pingPeer.Seen=now;Send(from,"PONG|"+message[1]+"|"+message[2]);return;}
             if(message[0]=="LEAVE"&&peers.TryGetValue(key,out var leaving)){peers.Remove(key);Left?.Invoke(leaving.Id);Trace?.Invoke("peer.leave","id="+leaving.Id);return;}
             if((message[0]=="ACTION"||message[0]=="READY")&&peers.TryGetValue(key,out var actor)&&int.TryParse(message[1],out int action)&&action>=0)
             {
@@ -138,6 +146,7 @@ namespace Ember
                 if(epoch!=null&&!epoch.SequenceEqual(nextEpoch))return;bool fresh=LocalId==0;epoch=nextEpoch;LocalId=id;sessionKey=EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2");if(fresh)Trace?.Invoke("peer.assigned","id="+id);return;
             }
             if(m[0]=="REJECT"){Error=m[2]=="FULL"?"Phòng đã đủ người.":m[2]=="STARTED"?"Trận đã bắt đầu; hãy chờ phòng mới.":"Yêu cầu vào phòng không hợp lệ.";return;}
+            if(m[0]=="PONG"){if(int.TryParse(m[1],out int seq)&&seq==pingSeq){int rtt=(int)Math.Round(Math.Max(0,(now-pingSentAt)*1000.0));PingMs=PingMs<0?rtt:(int)Math.Round(PingMs*.65+rtt*.35);}return;}
             if(m[0]=="ACK"){if(int.TryParse(m[1],out int ack))outgoing.Remove(ack);return;}
             if(m[0]=="CLOSED"){Error="Host đã đóng phòng.";LocalId=0;return;}
             if(m[0]!="STATE"||!long.TryParse(m[1],out long tick)||tick<=accepted)return;
@@ -206,6 +215,6 @@ namespace Ember
             var header=packet.Take(31).ToArray();var plain=EmberCrypto.Open(sessionKey,header.Skip(19).Take(12).ToArray(),packet.Skip(31).ToArray(),header);
             highest=Math.Max(highest,counter);seen.Add(counter);seen.RemoveWhere(n=>highest>1024&&n<highest-1024);if(peer!=null)peer.HighestPacket=highest;else hostHighest=highest;return plain;
         }
-        public void Dispose(){udp?.Dispose();udp=null;route=null;stunDns=null;stunServer=null;stunRequest=stunTransaction=null;stunAttempts=stunService=0;openedAt=-1;PublicEndpoint=null;peers.Clear();pending.Clear();recentStates.Clear();outgoing.Clear();hostPackets.Clear();hostHighest=packetCounter=0;sessionKey=null;epoch=null;accepted=-1;sequence=0;nextPlayer=2;now=0;}
+        public void Dispose(){udp?.Dispose();udp=null;route=null;stunDns=null;stunServer=null;stunRequest=stunTransaction=null;stunAttempts=stunService=0;openedAt=-1;PublicEndpoint=null;PingMs=-1;pingSeq=0;nextPingAt=0;pingSentAt=0;peers.Clear();pending.Clear();recentStates.Clear();outgoing.Clear();hostPackets.Clear();hostHighest=packetCounter=0;sessionKey=null;epoch=null;accepted=-1;sequence=0;nextPlayer=2;now=0;}
     }
 }

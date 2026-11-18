@@ -414,6 +414,7 @@ using(var strangerClient=new EmberLan())
         System.Threading.Thread.Sleep(5);
     }
     Check(strangerClient.Error!=null&&rejoinGuest.LocalId>=2&&admittedId==rejoinGuest.LocalId,"EmberLan rejects strangers after match start while selectively admitting rejoining teammates");
+    Check(rejoinGuest.PingMs>=0&&rejoinGuest.PingMs<500,"EmberLan measures real RTT network ping over PING/PONG");
 }
 var cullWorld=new EmberWorld(404){DebugEnabled=true};
 var cullPlayer=cullWorld.AddPlayer(1,"Culler",Vessel.Wanderer);
