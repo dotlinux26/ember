@@ -55,6 +55,7 @@ namespace Ember
             audioSource=gameObject.AddComponent<AudioSource>();tone=MakeTone(440,.12f);footstep=MakeTone(90,.08f);
             InitializeSettings();
             LoadHandPivots();
+            LoadQuickSlots();
             InitializeIdentity();
             if(FindAnyObjectByType<AudioListener>()==null)cam.gameObject.AddComponent<AudioListener>();
             white=new Texture2D(1,1);white.SetPixel(0,0,Color.white);white.Apply();
@@ -89,10 +90,12 @@ namespace Ember
             Invoke(nameof(SmokeQuit),1);
         }
         void SmokeQuit(){Application.Quit();}
+        Difficulty selectedDifficulty=Difficulty.Normal;
         void NewWorld(int seed)
         {
-            World=new EmberWorld(seed){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId);
-            heldSlot=6;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
+            World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId);
+            heldSlot=1;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
+            var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();ClearActions();
         }
         void StartSolo(){lan?.Leave();network=false;host=true;localId=1;NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();menu=false;}
@@ -150,7 +153,29 @@ namespace Ember
                 var p=Local;if(p!=null)RecordRunReward(p);
             }
         }
+        int spectateId;
         Player Local=>State?.Players?.FirstOrDefault(p=>p.Id==localId);
+        Player[] SpectateCandidates()=>State?.Players?.Where(q=>q.Id!=localId&&!q.Ghost&&!q.Extracted).OrderBy(q=>q.PartySlot).ToArray()??Array.Empty<Player>();
+        Player CameraTarget()
+        {
+            var local=Local;
+            if(local==null)return null;
+            if(!local.Ghost&&!local.Extracted){spectateId=0;return local;}
+            var alive=SpectateCandidates();
+            if(alive.Length==0)return local;
+            var picked=alive.FirstOrDefault(q=>q.Id==spectateId);
+            if(picked!=null)return picked;
+            spectateId=alive[0].Id;
+            return alive[0];
+        }
+        void CycleSpectate(int delta)
+        {
+            var alive=SpectateCandidates();
+            if(alive.Length==0)return;
+            int index=Array.FindIndex(alive,q=>q.Id==spectateId);
+            if(index<0)index=0;
+            spectateId=alive[(index+delta+alive.Length)%alive.Length].Id;
+        }
         void BeginRoomRun(){if(World.StartRun(true)){lan.AcceptingJoins=false;ClearActions();}}
         void LeaveRoom(){try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
         static AudioClip MakeTone(float hz,float seconds)
@@ -164,20 +189,30 @@ namespace Ember
         {
             if(Press(Key.Escape))
             {
-                if(inventoryOpen)inventoryOpen=false;
+                if(inventoryOpen)
+                {
+                    if(pendingQuickAssign>0)pendingQuickAssign=0;
+                    else inventoryOpen=false;
+                }
                 else if(craftOpen)craftOpen=false;
                 else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
                 else {menu=!menu;pauseConfirm=false;pauseSettings=false;}
                 path.Clear();
             }
             if(menu||debugOpen||State==null||State.Phase==Phase.Sanctuary||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))){intent.X=intent.Y=0;return;}
-            if(Press(Key.I)){inventoryOpen=!inventoryOpen;craftOpen=false;path.Clear();}
-            if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;}
-            if(Press(Key.Digit0)||Press(Key.Numpad0))EquipSlot(1);
-            if(Press(Key.Digit1)||Press(Key.Numpad1))EquipSlot(2);
-            if(Press(Key.Digit2)||Press(Key.Numpad2))EquipSlot(3);
-            if(Press(Key.Digit3)||Press(Key.Numpad3))EquipSlot(4);
-            if(Press(Key.Digit4)||Press(Key.Numpad4))EquipSlot(5);
+            if(Local!=null&&Local.Ghost)
+            {
+                intent.X=intent.Y=0;inventoryOpen=false;craftOpen=false;path.Clear();
+                if(Press(Key.A)||Press(Key.LeftArrow)||Press(Key.Q))CycleSpectate(-1);
+                if(Press(Key.D)||Press(Key.RightArrow)||Press(Key.E)||Press(Key.Space))CycleSpectate(1);
+                return;
+            }
+            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen)pendingQuickAssign=0;craftOpen=false;path.Clear();}
+            if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;pendingQuickAssign=0;}
+            if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
+            if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}
+            if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else EquipSlot(quickSlots[2]);}
+            if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else EquipSlot(quickSlots[3]);}
             if(inventoryOpen){intent.X=intent.Y=0;return;}
             if(Press(Key.R))ranges=!ranges;
             if(Press(Key.M)){moba=!moba;notice=moba?"Chuột phải: đi đến điểm. WASD hủy đường đi.":"Điều khiển bàn phím.";}
@@ -193,13 +228,13 @@ namespace Ember
                 V2 delta=path.Peek()-Local.Pos;if(delta.Length<.2f)path.Dequeue();else move=new Vector2(delta.X,delta.Y).normalized;
             }
             intent.X=move.x;intent.Y=move.y;
-            bool attack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&heldSlot==1&&Local.AttackCD<=0;intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
+            bool attack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
             intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=Press(Key.E);intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
-            intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);
+            intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);intent.Revive|=Press(Key.H);intent.Reload|=Press(Key.X);
             if(Press(Key.U)&&CanUseSelectedItem(Local))intent.Use=selectedItem;
             ApplyTouchInput();
         }
-        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
+        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
         void MakePath(V2 from,V2 to)
         {
             path.Clear();int size=State.Size;byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,size);
@@ -279,11 +314,11 @@ namespace Ember
         }
         void Render()
         {
-            touched.Clear();var local=Local;V2 center=local?.Pos??new V2();
+            touched.Clear();var local=Local;var focus=CameraTarget();V2 center=focus?.Pos??new V2();
             int pixels=CameraZoomPixels[zoomLevel];
             cam.orthographicSize=Screen.height/(2f*pixels);
             cam.transform.position=new Vector3(Mathf.Round(center.X*pixels)/pixels,Mathf.Round(center.Y*pixels)/pixels,-10);
-            Put("beacon",Primitive("beacon"),new V2(),State.BeaconHP>0&&State.Charge>=100?Color.white:Color.gray,3);
+            Put("beacon",Primitive("beacon"),new V2(),State.BeaconHP>0&&State.Charge>=State.ChargeTarget?Color.white:Color.gray,3);
             if(local!=null&&local.MirageLife>0)Put("mirage",Primitive("box"),local.MiragePos,Cyan*(.8f+.2f*Mathf.Sin(clock*3)),.7f);
             if(State.Phase==Phase.Extraction)Put("portal",Primitive("ring"),new V2(),Cyan*(.8f+.2f*Mathf.Sin(clock*4)),4,-20);
             foreach(var n in State.Nodes)
@@ -304,25 +339,24 @@ namespace Ember
             }
             foreach(var p in State.Players)
             {
-                if(p.Extracted)continue;bool hallucination=local!=null&&p.Id!=local.Id&&local.Mad&&!p.Ghost;Color glow=hallucination?Coral:Cyan;
-                string clip=p.Ghost?"idle":p.CastTime>0?"cast":p.Invulnerable>0&&p.DashTime<=0?"hurt":p.Move.Length>.1f?"run":"idle";
+                if(p.Extracted||p.Ghost)continue;bool hallucination=local!=null&&!local.Ghost&&p.Id!=local.Id&&local.Mad;Color glow=hallucination?Coral:Cyan;
+                string clip=p.CastTime>0?"cast":p.Invulnerable>0&&p.DashTime<=0?"hurt":p.Move.Length>.1f?"run":"idle";
                 if(!animationState.TryGetValue(p.Id,out var anim)||anim.clip!=clip){anim=(clip,clock);animationState[p.Id]=anim;}
                 int frames=p.Vessel==Vessel.LittleMoone||Art[(int)p.Vessel]=="lyra_moonscout"?8:4;
                 int raw=(int)((clock-anim.began)*(p.Vessel==Vessel.LittleMoone?6:clip=="run"?10:clip=="cast"?(frames==8?12:9):clip=="hurt"?(frames==8?10:8):6));int f=clip=="cast"||clip=="hurt"?Mathf.Min(frames-1,raw):raw%frames;
-                var sprite=p.Ghost?Primitive("diamond"):hallucination?Primitive("enemy_void"):Frame(p.Vessel,clip,f);Color tint=p.Ghost?new Color(.5f,1,1,.55f):Color.white;
+                var sprite=hallucination?Primitive("enemy_void"):Frame(p.Vessel,clip,f);Color tint=Color.white;
                 Put("shadow"+p.Id,Primitive("circle"),p.Pos,new Color(0,0,0,.35f),.8f,-10);
-                float bodyScale=p.Ghost?.45f:1;
-                Outline(Put("outline"+p.Id,sprite,p.Pos,glow,bodyScale,1000-Mathf.RoundToInt(p.Pos.Y*10)-1,!p.Right),sprite);
-                var body=Put("player"+p.Id,sprite,p.Pos,tint,bodyScale,flip:!p.Right);
-                if(!p.Ghost&&!hallucination){var eyes=Frame(p.Vessel,clip,f,true);if(eyes!=null){var glowEyes=Put("eyes"+p.Id,eyes,p.Pos,tint,1,1001-Mathf.RoundToInt(p.Pos.Y*10),!p.Right);if(emissionMaterial!=null)glowEyes.sharedMaterial=emissionMaterial;}}
-                if(!p.Ghost&&!hallucination&&p.CastTime<=0)DrawHands(p,body);
-                if(p.Hat>=0&&!p.Ghost&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),p.Pos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,1010-Mathf.RoundToInt(p.Pos.Y*10));
+                Outline(Put("outline"+p.Id,sprite,p.Pos,glow,1,1000-Mathf.RoundToInt(p.Pos.Y*10)-1,!p.Right),sprite);
+                var body=Put("player"+p.Id,sprite,p.Pos,tint,1,flip:!p.Right);
+                if(!hallucination){var eyes=Frame(p.Vessel,clip,f,true);if(eyes!=null){var glowEyes=Put("eyes"+p.Id,eyes,p.Pos,tint,1,1001-Mathf.RoundToInt(p.Pos.Y*10),!p.Right);if(emissionMaterial!=null)glowEyes.sharedMaterial=emissionMaterial;}}
+                if(!hallucination&&p.CastTime<=0)DrawHands(p,body);
+                if(p.Hat>=0&&!hallucination)Put("hat"+p.Id,Primitive(new[]{"hat_straw","hat_witch","hat_candle","hat_jester"}[p.Hat]),p.Pos+new V2(0,p.Hat==3?.47f:.82f),Color.white,p.Hat==3?.7f:.8f,1010-Mathf.RoundToInt(p.Pos.Y*10));
                 if(p.Pet>=0&&!hallucination)Put("pet"+p.Id,Primitive(new[]{"pet_firefly","pet_bat","pet_cat","pet_ghost"}[p.Pet]),p.Pos+new V2(-1,.1f+Mathf.Sin(clock*4)*.15f),Color.white,.65f);
                 if(p.ShieldTime>0)Put("shield"+p.Id,Primitive("ring"),p.Pos+new V2(0,.5f),Cyan,2,-1);
             }
             foreach(var shot in State.Projectiles??Array.Empty<Projectile>())
             {
-                var r=Put("projectile"+shot.Id,Primitive("diamond"),shot.Pos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):Cyan,.23f);r.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
+                var r=Put("projectile"+shot.Id,Primitive("diamond"),shot.Pos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);r.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
             }
             if(local!=null&&local.Dread>=30&&!local.Safe&&Mathf.Sin(clock*.8f)>0.6f)
             {
@@ -357,7 +391,7 @@ namespace Ember
         }
         void StreamTrees()
         {
-            if(currentTiles==null||State==null)return;var pos=Local?.Pos??new V2();int size=State.Size;
+            if(currentTiles==null||State==null)return;var pos=CameraTarget()?.Pos??new V2();int size=State.Size;
             var chunk=new Vector2Int(Mathf.FloorToInt(pos.X/8),Mathf.FloorToInt(pos.Y/8));if(chunk==visibleChunk)return;visibleChunk=chunk;
             int cx=chunk.x*8+size/2,cy=chunk.y*8+size/2;var keep=new HashSet<int>();
             for(int y=Mathf.Max(3,cy-24);y<Mathf.Min(size-3,cy+32);y++)for(int x=Mathf.Max(3,cx-24);x<Mathf.Min(size-3,cx+32);x++)if(currentTiles[y*size+x]==3)
@@ -389,7 +423,7 @@ namespace Ember
             return points;
         }
 
-        void Ring(V2 pos,float radius,Color color)
+        void Ring(V2 pos,float radius,Color color,float width=1.6f)
         {
             if(Event.current.type!=EventType.Repaint||radius<=0)return;
             Vector2 center=ScreenPos(pos);
@@ -399,10 +433,53 @@ namespace Ember
             foreach(var point in RingPoints)
             {
                 Vector2 next=center+point*scale;
-                Line(previous,next,1);
+                Line(previous,next,width);
                 previous=next;
             }
             GUI.color=Color.white;
+        }
+
+        void GlowRing(V2 pos,float radius,Color color,float width=2f)
+        {
+            if(Event.current.type!=EventType.Repaint||radius<=0)return;
+            Ring(pos,radius,new Color(color.r,color.g,color.b,color.a*.32f),width*2.6f);
+            Ring(pos,radius,color,width);
+        }
+
+        void DrawRangeRulers(Player p)
+        {
+            if(Event.current.type!=EventType.Repaint||p.Ghost)return;
+            if(ranges&&IsHoldingWeaponSlot(heldSlot))
+            {
+                Weapon activeWeapon=WeaponForSlot(p,heldSlot);
+                float weaponRange=WeaponRangeFor(activeWeapon);
+                bool hasNode=heldSlot==8&&State.Nodes.Any(n=>V2.Distance(n.Pos,p.Pos)<weaponRange);
+                bool basic=State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<weaponRange)||
+                    (p.Mad&&State.Players.Any(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&!q.Safe&&V2.Distance(q.Pos,p.Pos)<weaponRange));
+                Color weaponColor=hasNode?new Color(.52f,1f,.64f,.95f):basic?new Color(1f,.66f,.26f,.95f):new Color(.62f,.92f,1f,.54f);
+                GlowRing(p.Pos,weaponRange,weaponColor,basic||hasNode?2.4f:1.8f);
+            }
+
+            if(p.Vessel!=Vessel.Wanderer&&p.SkillRange>0)
+            {
+                bool hasTarget=HasSkillFocus(p);
+                bool ready=p.SkillCD<=0;
+                if(hasTarget&&ready)
+                {
+                    float blink=.5f+.5f*Mathf.Sin(clock*14f);
+                    Color activeColor=Color.Lerp(new Color(1f,.20f,.22f,.35f),new Color(1f,.58f,.58f,1f),blink);
+                    GlowRing(p.Pos,p.SkillRange,activeColor,2.2f+1.4f*blink);
+                }
+                else if(hasTarget)
+                {
+                    float slow=.5f+.5f*Mathf.Sin(clock*5f);
+                    GlowRing(p.Pos,p.SkillRange,new Color(1f,.22f,.24f,.38f+.20f*slow),1.9f);
+                }
+                else
+                {
+                    Ring(p.Pos,p.SkillRange,new Color(.95f,.20f,.24f,.45f),1.8f);
+                }
+            }
         }
 
         void Line(Vector2 a,Vector2 b,float width)
@@ -443,28 +520,23 @@ namespace Ember
             if(p.Dread>=60&&!p.Safe&&Event.current.type==EventType.Repaint)
                 Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.8f,.2f,.4f,.2f));
             if(clock<clickMarkerUntil)Ring(clickMarker,.3f,new Color(1,.8f,.4f,(clickMarkerUntil-clock)/.8f));
-            if(Event.current.type==EventType.Repaint&&ranges&&!p.Ghost)
-            {
-                bool basic=State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<p.Range)||p.Mad&&State.Players.Any(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&!q.Safe&&V2.Distance(q.Pos,p.Pos)<p.Range);
-                if(heldSlot==1)Ring(p.Pos,p.Range,basic?Coral:new Color(.5f,.8f,.8f,.22f));
-                if(p.Vessel!=Vessel.Wanderer)
-                    Ring(p.Pos,p.SkillRange,HasSkillFocus(p)?new Color(.4f,1,.9f,.35f+.2f*Mathf.Sin(clock*8)):new Color(.3f,.7f,.7f,.15f));
-            }
+            DrawRangeRulers(p);
             foreach(var e in State.Effects){
                 if(e.Kind==6){Ring(e.To,.35f+(.3f-e.Life)*2,new Color(.83f,.73f,1,e.Life/.3f));continue;}
+                if(e.Kind==7){DrawHarvestChips(e);continue;}
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             foreach(var q in State.Players)
             {
-                if(q.Extracted||(p.Mad&&q.Id!=p.Id))continue;
+                if(q.Extracted||q.Ghost||(!p.Ghost&&p.Mad&&q.Id!=p.Id))continue;
                 DrawOverheadStatus(q);
             }
-            if(inventoryOpen){DrawInventory(p);return;}
+            if(!p.Ghost&&inventoryOpen){DrawInventory(p);return;}
             DrawFieldHud(p);
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
             DrawFieldNotices(p,objectiveY+80);
-            if(craftOpen)DrawCraft(p);
+            if(!p.Ghost&&craftOpen)DrawCraft(p);
 
         }
         void DrawDarkness()
@@ -477,7 +549,7 @@ namespace Ember
                 Vector3 point=cam.ScreenToWorldPoint(new Vector3(x+cell/2,Screen.height-y-cell/2));V2 world=new V2(point.x,point.y);float light=0;
                 if(State.BeaconHP>0)light=Mathf.Max(light,1-world.Length/7);
                 if(State.Fuel>0||State.LastLight>0)foreach(var p in State.Players.Where(q=>q.CarriesLantern&&q.LampOn&&!q.Ghost&&!q.Extracted))light=Mathf.Max(light,1-V2.Distance(world,p.Pos)/(p.Lantern==Lantern.Relic?9:6));
-                foreach(var p in State.Players.Where(q=>q.Hat==(int)Hat.Candle||q.Ghost))light=Mathf.Max(light,(1-V2.Distance(world,p.Pos)/2)*(p.Ghost?.3f:1));
+                foreach(var p in State.Players.Where(q=>!q.Ghost&&!q.Extracted&&q.Hat==(int)Hat.Candle))light=Mathf.Max(light,1-V2.Distance(world,p.Pos)/2);
                 foreach(var s in State.Structures.Where(q=>q.Kind<=1))light=Mathf.Max(light,1-V2.Distance(world,s.Pos)/(s.Kind==1?9:5));
                 float border=State.Size/2-3-Mathf.Max(Mathf.Abs(world.X),Mathf.Abs(world.Y));float alpha=Mathf.Lerp(.87f,.08f,Mathf.Clamp01(light*1.5f));if(border<5)alpha=Mathf.Max(alpha,1-Mathf.Clamp01(border/5));
                 Panel(new Rect(x,y,cell,cell),new Color(.01f,.015f,.04f,alpha));
@@ -539,18 +611,21 @@ namespace Ember
             float x=(Screen.width-width)/2;
             if(sanctuaryBrandSubtitle==null)
             {
-                sanctuaryBrandSubtitle=new GUIStyle(label){alignment=TextAnchor.MiddleCenter};
+                sanctuaryBrandSubtitle=new GUIStyle(label){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
             }
-            PixelArt(new Rect(0,14,Screen.width,52),EmberLanguage.English?"wordmark_en":"wordmark_vi");
-            UiLabel(new Rect(0,68,Screen.width,25),L("Sảnh giữ lửa","Sanctuary"),sanctuaryBrandSubtitle);
+            PixelArt(new Rect(0,12,Screen.width,78),EmberLanguage.English?"wordmark_en":"wordmark_vi");
+            UiLabel(new Rect(0,92,Screen.width,24),L("Sảnh giữ lửa","Sanctuary"),sanctuaryBrandSubtitle);
+            bool headerCurrencies=width>=940;
+            if(headerCurrencies)DrawSanctuaryHeaderCurrencies(x,width);
             bool wide=width>=800;
             float stage=wide?width*.40f:0;
-            if(wide)DrawSanctuaryStage(new Rect(x,112,stage,Screen.height-144));
+            if(wide)DrawSanctuaryStage(new Rect(x,130,stage,Screen.height-156));
             float offset=wide?stage+16:0;
-            var content=new Rect(x+offset,112,width-offset,Screen.height-144);
+            var content=new Rect(x+offset,130,width-offset,Screen.height-156);
             PixelPanel(content,Paper);
             GUILayout.BeginArea(new Rect(content.x+18,content.y+15,content.width-36,content.height-30));
             ApplySanctuaryNavigation();
+            if(!headerCurrencies)DrawSanctuaryCompactCurrencies();
             int page=DrawSanctuaryTabs();
             if(page!=sanctuaryPage)pendingSanctuaryPage=page;
             int currentPage=sanctuaryPage;
@@ -558,6 +633,8 @@ namespace Ember
             DrawSanctuarySubtabs(currentPage);
             GUILayout.Space(8);
             metaScroll=GUILayout.BeginScrollView(metaScroll);
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             if(currentPage==0)
             {
             DrawCharacterCheat();
@@ -585,6 +662,13 @@ namespace Ember
                 }
             }
             GUILayout.Space(10);
+            UiText(L("Độ khó · Năng lượng trụ","Difficulty · Beacon energy"),small);
+            selectedDifficulty=(Difficulty)DrawSpacedChoices((int)selectedDifficulty,new[]{
+                L("Dễ · 500","Easy · 500"),
+                L("Trung bình · 750","Normal · 750"),
+                L("Khó · 1000","Hard · 1000")
+            },38);
+            GUILayout.Space(8);
             GUI.enabled=Profile.CanPlay(selected);
             if(UiButton("Chơi một mình",GUILayout.Height(PlayActionHeight)))StartSolo();
             GUI.enabled=true;
@@ -596,13 +680,13 @@ namespace Ember
             else if(currentPage==1)DrawSummoning();
             else if(currentPage==2)
             {
-                if(collectionPage==0)
+                if(collectionPage==0)DrawOwnedPortraits();
+                else if(collectionPage==1)
                 {
-                    DrawOwnedPortraits();
                     DrawEquipmentCards(1);
                     DrawEquipmentCards(2);
                 }
-                else if(collectionPage==1)DrawPerkCards();
+                else if(collectionPage==2)DrawPerkCards();
                 else DrawProgressionExtras();
             }
             else
@@ -616,6 +700,9 @@ namespace Ember
             }
             GUILayout.Space(8);
             UiText(notice,small);
+            GUILayout.EndVertical();
+            GUILayout.Space(10);
+            GUILayout.EndHorizontal();
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }

@@ -27,9 +27,9 @@ namespace Ember
             {
                 sanctuarySkin=Instantiate(previousSkin);
                 sanctuarySkin.label.normal.textColor=Ink;
-                sanctuaryTitle=new GUIStyle(title){fontSize=38,normal={textColor=Ink}};
-                sanctuaryLabel=new GUIStyle(label){normal={textColor=Ink}};
-                sanctuarySmall=new GUIStyle(small){normal={textColor=Plum}};
+                sanctuaryTitle=new GUIStyle(title){fontSize=38,normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuaryLabel=new GUIStyle(label){normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuarySmall=new GUIStyle(small){normal={textColor=Plum},hover={textColor=Plum}};
                 PaintPixelSkin(sanctuarySkin,true);
             }
             GUI.skin=sanctuarySkin;
@@ -90,16 +90,69 @@ namespace Ember
             }
         }
 
+        int DrawSpacedChoices(int active,string[] options,float height=36)
+        {
+            if(inactiveTabText==null)
+            {
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
+                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+            }
+            Rect raw=GUILayoutUtility.GetRect(180,height,GUILayout.ExpandWidth(true));
+            const float margin=4, gap=8;
+            float innerX=raw.x+margin;
+            float innerW=Mathf.Max(40,raw.width-2*margin);
+            float step=(innerW-gap*(options.Length-1))/options.Length;
+            int next=active;
+            for(int i=0;i<options.Length;i++)
+            {
+                var cell=new Rect(innerX+i*(step+gap),raw.y,step,raw.height);
+                bool on=i==active;
+                bool hover=cell.Contains(Event.current.mousePosition);
+                PixelPanel(cell,on?Plum:hover?Color.Lerp(Lilac,Plum,.18f):Lilac);
+                GUI.Label(cell,options[i],on?activeTabText:inactiveTabText);
+                if(GUI.Button(cell,GUIContent.none,GUIStyle.none))next=i;
+            }
+            return next;
+        }
+
+        int DrawSpacedSubtabs(int active,string[] tabs)
+        {
+            Rect raw=GUILayoutUtility.GetRect(180,34,GUILayout.ExpandWidth(true));
+            const float margin=4, arrowW=34, gap=8;
+            var row=new Rect(raw.x+margin,raw.y,Mathf.Max(80,raw.width-2*margin),raw.height);
+            int next=active;
+            if(GUI.Button(new Rect(row.x,row.y,arrowW,row.height),"‹"))next=(active+tabs.Length-1)%tabs.Length;
+            if(GUI.Button(new Rect(row.xMax-arrowW,row.y,arrowW,row.height),"›"))next=(active+1)%tabs.Length;
+            float innerX=row.x+arrowW+gap;
+            float innerW=Mathf.Max(40,row.width-2*(arrowW+gap));
+            float step=(innerW-gap*(tabs.Length-1))/tabs.Length;
+            for(int i=0;i<tabs.Length;i++)
+            {
+                var cell=new Rect(innerX+i*(step+gap),row.y,step,row.height);
+                bool on=i==active;
+                bool hover=cell.Contains(Event.current.mousePosition);
+                PixelPanel(cell,on?Plum:hover?Color.Lerp(Lilac,Plum,.18f):Lilac);
+                GUI.Label(cell,tabs[i],on?activeTabText:inactiveTabText);
+                if(GUI.Button(cell,GUIContent.none,GUIStyle.none))next=i;
+            }
+            return next;
+        }
+
         void DrawSanctuarySubtabs(int page)
         {
+            if(inactiveTabText==null)
+            {
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
+                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+            }
             if(page==2)
             {
-                int next=UiToolbar(collectionPage,new[]{L("Trang bị","Loadout"),L("Đặc quyền","Perks"),L("Tiến trình","Progress")});
+                int next=DrawSpacedSubtabs(collectionPage,new[]{L("Bản Ngã","Vessels"),L("Trang bị","Loadout"),L("Đặc quyền","Perks"),L("Tiến trình","Progress")});
                 if(next!=collectionPage)pendingCollectionPage=next;
             }
             if(page==3)
             {
-                int next=UiToolbar(settingsPage,new[]{L("Trò chơi","Game"),L("Sao lưu","Backups")});
+                int next=DrawSpacedSubtabs(settingsPage,new[]{L("Trò chơi","Game"),L("Sao lưu","Backups")});
                 if(next!=settingsPage)pendingSettingsPage=next;
             }
         }
@@ -115,10 +168,10 @@ namespace Ember
                 activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
             }
             int page=sanctuaryPage;
-            float step=Mathf.Max(1,(row.width-18)/names.Length);
+            float step=Mathf.Max(1,(row.width-8-24)/names.Length);
             for(int i=0;i<names.Length;i++)
             {
-                var cell=new Rect(row.x+i*(step+6),row.y,step,row.height);
+                var cell=new Rect(row.x+4+i*(step+8),row.y,step,row.height);
                 bool active=i==sanctuaryPage;
                 bool hover=cell.Contains(Event.current.mousePosition);
                 PixelPanel(cell,active?Plum:hover?Color.Lerp(Lilac,Plum,.18f):Lilac);
@@ -135,9 +188,9 @@ namespace Ember
             Rect row=GUILayoutUtility.GetRect(180,184,GUILayout.ExpandWidth(true));
             if(Event.current.type!=EventType.Layout)
             {
-                const float edge=46;
-                if(GUI.Button(new Rect(row.x+2,row.center.y-22,36,44),"‹"))selected=(selected+names.Length-1)%names.Length;
-                if(GUI.Button(new Rect(row.xMax-38,row.center.y-22,36,44),"›"))selected=(selected+1)%names.Length;
+                const float edge=48;
+                if(GUI.Button(new Rect(row.x+4,row.center.y-22,36,44),"‹"))selected=(selected+names.Length-1)%names.Length;
+                if(GUI.Button(new Rect(row.xMax-40,row.center.y-22,36,44),"›"))selected=(selected+1)%names.Length;
                 var card=new Rect(row.x+edge,row.y,row.width-2*edge,row.height);
                 PixelPanel(card,Lilac);
                 PixelArt(new Rect(card.x+7,card.y+7,card.width-14,112),"sanctuary",ScaleMode.ScaleAndCrop);
@@ -153,7 +206,10 @@ namespace Ember
             if(UiButton(vesselProfileOpen?L("Đóng hồ sơ","Close profile"):L("Đọc hồ sơ","Read profile"),GUILayout.Height(PlayActionHeight)))vesselProfileOpen=!vesselProfileOpen;
             if(!vesselProfileOpen)return;
             GUILayout.Space(8);
-            UiText(L("Chỉ số và kỹ năng","Stats and skill"),label);
+            UiText(L("Chỉ số Bản Ngã (cố định · 10 cấp)","Vessel stats (fixed · 10 tiers)"),label);
+            DrawVesselStatBars((Vessel)selected);
+            GUILayout.Space(6);
+            UiText(L("Kỹ năng","Skill"),label);
             UiText(Catalog.VesselDescriptions[selected],label);
             if(selected!=(int)Vessel.Wanderer)UiText(SkillRangeText((Vessel)selected),small);
             GUILayout.Space(8);
@@ -162,21 +218,63 @@ namespace Ember
             GUILayout.Space(8);
         }
 
+        void DrawVesselStatBars(Vessel vessel)
+        {
+            var stats=Catalog.StatsFor(vessel);
+            string[] names={
+                L("Tốc độ","Speed"),
+                L("Phòng thủ","Defense"),
+                L("Kháng sợ","Dread Res"),
+                L("Hỏa lực","Power"),
+                L("Thể lực","Endurance"),
+                L("Khai thác","Gathering")
+            };
+            int[] values={stats.Speed,stats.Defense,stats.DreadResist,stats.Power,stats.Endurance,stats.Gathering};
+            Color[] colors={
+                new Color(.24f,.72f,.86f),
+                new Color(.85f,.64f,.20f),
+                new Color(.56f,.38f,.84f),
+                new Color(.88f,.34f,.38f),
+                new Color(.26f,.74f,.52f),
+                new Color(.82f,.52f,.28f)
+            };
+            var raw=GUILayoutUtility.GetRect(220,164,GUILayout.ExpandWidth(true));
+            var box=new Rect(raw.x+4,raw.y,Mathf.Max(180,raw.width-8),raw.height);
+            PixelPanel(box,Lilac);
+            UiLabel(new Rect(box.x+10,box.y+6,box.width-20,20),L("HP 100 · Thể lực 100 · Không thể nâng cấp","100 HP · 100 Stamina · Hardcore fixed"),small);
+            for(int i=0;i<names.Length;i++)
+            {
+                float rowY=box.y+30+i*21;
+                UiLabel(new Rect(box.x+10,rowY,86,20),names[i],small);
+                float barX=box.x+98;
+                float barW=Mathf.Max(80,box.width-148);
+                const int tiers=10;
+                const float segGap=3;
+                float segW=(barW-segGap*(tiers-1))/tiers;
+                for(int t=0;t<tiers;t++)
+                {
+                    var seg=new Rect(barX+t*(segW+segGap),rowY+4,segW,12);
+                    Panel(seg,t<values[i]?colors[i]:new Color(.78f,.73f,.88f));
+                }
+                UiLabel(new Rect(box.xMax-44,rowY,38,20),values[i]+"/10",small);
+            }
+        }
+
         void DrawMultiplayerSetup()
         {
-            usePublicBroker=UiToolbar(usePublicBroker?1:0,new[]{"LAN / VPN",L("Internet · mã phòng","Internet · room code")})==1;
+            usePublicBroker=DrawSpacedChoices(usePublicBroker?1:0,new[]{"LAN / VPN",L("Internet · mã phòng","Internet · room code")},34)==1;
             if(usePublicBroker)
             {
                 UiText(L("Máy chủ kết nối","Connection server"),small);
                 brokerAddress=GUILayout.TextField(brokerAddress);
-                routeMode=(RouteMode)GUILayout.Toolbar((int)routeMode,new[]{"Auto","P2P","Relay"});
+                routeMode=(RouteMode)DrawSpacedChoices((int)routeMode,new[]{"Auto","P2P","Relay"},32);
             }
             UiText("Mật khẩu phòng",small);
             password=GUILayout.PasswordField(password,'•');
             UiText(L("Tạo phòng","Create room"),label);
             roomName=GUILayout.TextField(roomName,32);
             UiText(L("Số người tối đa","Maximum players"),small);
-            roomCapacity=UiSelection(roomCapacity-1,new[]{"1","2","3","4"},4)+1;
+            roomCapacity=DrawSpacedChoices(roomCapacity-1,new[]{"1","2","3","4"},34)+1;
             GUI.enabled=Profile.CanPlay(selected);
             if(UiButton(L("Tạo phòng","Create room"),GUILayout.Height(32)))HostGame();
             GUI.enabled=true;
@@ -213,7 +311,8 @@ namespace Ember
                 bool owned=Profile.Perks.Contains(i);
                 bool equipped=Profile.EquippedPerks.Contains(i);
                 int rank=Profile.Rank(i);
-                Rect card=GUILayoutUtility.GetRect(180,113,GUILayout.ExpandWidth(true));
+                Rect rawCard=GUILayoutUtility.GetRect(180,113,GUILayout.ExpandWidth(true));
+                Rect card=new Rect(rawCard.x+4,rawCard.y,Mathf.Max(160,rawCard.width-8),rawCard.height);
                 PixelPanel(card,equipped?Lilac:Paper);
                 PixelArt(new Rect(card.x+12,card.y+12,36,36),"perk_"+i);
                 UiLabel(new Rect(card.x+58,card.y+7,card.width-70,24),Catalog.PerkNames[i],label);
@@ -288,16 +387,37 @@ namespace Ember
 
         void DrawOwnedPortraits()
         {
-            GUILayout.BeginHorizontal();
-            foreach(var vessel in Profile.Vessels)
+            UiText(L("Bản Ngã sở hữu","Owned vessels")+"   "+Profile.Vessels.Length+"/"+Catalog.VesselNames.Length,label);
+            GUILayout.Space(6);
+            int columns=Screen.width<640?2:3;
+            const float margin=4, gap=8;
+            for(int first=0;first<Catalog.VesselNames.Length;first+=columns)
             {
-                var card=GUILayoutUtility.GetRect(48,62,GUILayout.Width(48));
-                PixelPanel(card,Lilac);
-                DrawSpritePreview(new Rect(card.x,card.y,48,48),Frame((Vessel)vessel,"idle",0));
-                if(!Profile.CanPlay(vessel))PixelArt(new Rect(card.x+31,card.y+43,15,15),"awakening");
+                Rect row=GUILayoutUtility.GetRect(180,114,GUILayout.ExpandWidth(true));
+                float innerW=Mathf.Max(80,row.width-2*margin);
+                float cellW=(innerW-gap*(columns-1))/columns;
+                for(int col=0;col<columns&&first+col<Catalog.VesselNames.Length;col++)
+                {
+                    int vessel=first+col;
+                    bool owned=Profile.Vessels.Contains(vessel);
+                    bool playable=Profile.CanPlay(vessel);
+                    bool isSelected=selected==vessel;
+                    var card=new Rect(row.x+margin+col*(cellW+gap),row.y,cellW,row.height);
+                    PixelPanel(card,isSelected?Plum:owned?Lilac:Paper);
+                    if(owned)
+                        DrawSpritePreview(new Rect(card.center.x-28,card.y+6,56,56),Frame((Vessel)vessel,"idle",0));
+                    else
+                        PixelArt(new Rect(card.center.x-22,card.y+12,44,44),"token");
+                    if(owned&&!playable)PixelArt(new Rect(card.xMax-20,card.y+6,15,15),"awakening");
+                    var nameStyle=isSelected?activeTabText:inactiveTabText;
+                    GUI.Label(new Rect(card.x+4,card.y+64,card.width-8,26),EmberLanguage.Text(Catalog.VesselNames[vessel]),nameStyle);
+                    string state=isSelected?L("Đang chọn","Selected"):playable?EmberLanguage.Text(Catalog.VesselRarities[vessel]):owned?L("Ngủ đông","Dormant"):L("Chưa mở","Locked");
+                    GUI.Label(new Rect(card.x+4,card.y+88,card.width-8,18),state,nameStyle);
+                    if(owned&&GUI.Button(card,GUIContent.none,GUIStyle.none)){selected=vessel;SaveProfile();}
+                }
+                GUILayout.Space(8);
             }
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
+            GUILayout.Space(4);
         }
 
         static readonly string[] ResourceIcons={"dust","core","umbra","wood","ore"};
@@ -338,7 +458,7 @@ namespace Ember
             Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.95f,.92f,.98f));
             PixelArt(new Rect(0,8,Screen.width,Screen.height-8),"sanctuary_paper",ScaleMode.StretchToFill);
             Panel(new Rect(0,0,Screen.width,8),Plum);
-            Panel(new Rect(0,101,Screen.width,1),new Color(.81f,.74f,.89f));
+            Panel(new Rect(0,120,Screen.width,1),new Color(.81f,.74f,.89f));
         }
 
         void DrawSanctuaryStage(Rect area)
@@ -384,37 +504,66 @@ namespace Ember
                 :new[]{"pet_firefly","pet_bat","pet_cat","pet_ghost"}[index]);
         }
 
-        void DrawSanctuaryBalances()
+        void DrawCurrencyChip(Rect rect,string icon,string name,int amount,string tooltip)
         {
-            var strip=GUILayoutUtility.GetRect(180,34,GUILayout.ExpandWidth(true));
-            if(Event.current.type!=EventType.Repaint)return;
-            int[] amounts={Profile.Ash,Profile.Memory,Profile.AwakeningStones};
-            string[] icons={"ash","memory","awakening"};
-            string[] labels={L("Tro","Ash"),L("Ký ức","Memory"),L("Thức tỉnh","Awakening")};
-            float step=strip.width/3;
-            for(int i=0;i<amounts.Length;i++)
-            {
-                var chip=new Rect(strip.x+i*step+2,strip.y,step-4,32);
-                PixelPanel(chip,Lilac);
-                PixelArt(new Rect(chip.x+5,chip.y+5,22,22),icons[i]);
-                UiLabel(new Rect(chip.x+30,chip.y+5,chip.width-32,25),labels[i]+" "+amounts[i],small);
-            }
+            PixelPanel(rect,Paper);
+            PixelArt(new Rect(rect.x+7,rect.y+7,22,22),icon);
+            UiLabel(new Rect(rect.x+33,rect.y+3,rect.width-38,16),name,small);
+            UiLabel(new Rect(rect.x+33,rect.y+17,rect.width-38,19),amount.ToString(),sanctuaryLabel);
+            GUI.Label(rect,new GUIContent("",tooltip),GUIStyle.none);
+        }
+
+        void DrawSanctuaryHeaderCurrencies(float leftX,float totalWidth)
+        {
+            string[] icons={"ash","memory","token","awakening"};
+            string[] names={L("Tro","Ash"),L("Ký ức","Memory"),L("Định Mệnh","Tokens"),L("Thức tỉnh","Awaken")};
+            int[] amounts={Profile.Ash,Profile.Memory,Profile.Tokens,Profile.AwakeningStones};
+            string[] tips={
+                L("Tro Tàn · Mở/nâng Đặc quyền hoặc đổi 100 Tro → 1 Đá Định Mệnh","Ash · Unlock/upgrade Perks or exchange 100 Ash → 1 Void Token"),
+                L("Mảnh Ký Ức · Mở ô Đặc quyền và công thức chế tạo","Memory · Unlock Perk slots and crafting recipes"),
+                L("Đá Định Mệnh · Dùng 3 đá để Triệu hồi Bản Ngã, Mũ, Thú cưng","Void Tokens · Spend 3 to Summon Vessels, Hats, Pets"),
+                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone","Awakening Stones · Awaken Little Moone")
+            };
+            const float chipW=130, chipH=38, gap=8;
+            float y=58;
+            for(int i=0;i<2;i++)
+                DrawCurrencyChip(new Rect(leftX+i*(chipW+gap),y,chipW,chipH),icons[i],names[i],amounts[i],tips[i]);
+            float rightStart=leftX+totalWidth-(chipW*2+gap);
+            for(int i=0;i<2;i++)
+                DrawCurrencyChip(new Rect(rightStart+i*(chipW+gap),y,chipW,chipH),icons[i+2],names[i+2],amounts[i+2],tips[i+2]);
+        }
+
+        void DrawSanctuaryCompactCurrencies()
+        {
+            var raw=GUILayoutUtility.GetRect(180,40,GUILayout.ExpandWidth(true));
+            string[] icons={"ash","memory","token","awakening"};
+            string[] names={L("Tro","Ash"),L("Ký ức","Memory"),L("Định Mệnh","Tokens"),L("Thức tỉnh","Awaken")};
+            int[] amounts={Profile.Ash,Profile.Memory,Profile.Tokens,Profile.AwakeningStones};
+            string[] tips={
+                L("Tro Tàn · Mở/nâng Đặc quyền hoặc đổi Đá Định Mệnh","Ash · Unlock/upgrade Perks or exchange for Void Tokens"),
+                L("Mảnh Ký Ức · Mở ô Đặc quyền và công thức chế tạo","Memory · Unlock Perk slots and crafting recipes"),
+                L("Đá Định Mệnh · Dùng 3 đá để Triệu hồi","Void Tokens · Spend 3 to Summon"),
+                L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone","Awakening Stones · Awaken Little Moone")
+            };
+            const float margin=4, gap=6;
+            float innerW=Mathf.Max(120,raw.width-2*margin);
+            float step=(innerW-gap*3)/4;
+            for(int i=0;i<4;i++)
+                DrawCurrencyChip(new Rect(raw.x+margin+i*(step+gap),raw.y,step,38),icons[i],names[i],amounts[i],tips[i]);
+            GUILayout.Space(6);
         }
 
         void DrawSummoning()
         {
             float elapsed=Time.unscaledTime-summonStart;
             bool spinning=summonPrize>=0&&elapsed<SummonDuration;
-            DrawSanctuaryBalances();
-            var balance=GUILayoutUtility.GetRect(120,36,GUILayout.ExpandWidth(true));
-            PixelArt(new Rect(balance.x+4,balance.y+4,28,28),"token");
-            UiLabel(new Rect(balance.x+39,balance.y+6,balance.width-44,27),
-                Profile.Tokens+L(" Đá Định Mệnh"," Void Tokens"),label);
             GUI.enabled=!spinning;
-            summonPool=UiToolbar(summonPool,new[]{L("Bản Ngã","Vessels"),L("Mũ","Hats"),L("Thú cưng","Pets")});
+            summonPool=DrawSpacedChoices(summonPool,new[]{L("Bản Ngã","Vessels"),L("Mũ","Hats"),L("Thú cưng","Pets")},36);
             GUI.enabled=true;
+            GUILayout.Space(8);
 
-            var hero=GUILayoutUtility.GetRect(0,166,GUILayout.ExpandWidth(true));
+            var rawHero=GUILayoutUtility.GetRect(0,166,GUILayout.ExpandWidth(true));
+            var hero=new Rect(rawHero.x+4,rawHero.y,Mathf.Max(120,rawHero.width-8),rawHero.height);
             PixelArt(hero,"sanctuary",ScaleMode.ScaleAndCrop);
             PixelPanel(new Rect(hero.x,hero.y+106,hero.width,60),Paper);
             GUILayout.Space(10);
@@ -427,7 +576,7 @@ namespace Ember
                 float size=spinning?88+Mathf.Sin(elapsed*16)*7:96;
                 DrawSpritePreview(new Rect(hero.center.x-size/2,hero.y+9,size,size),SummonSprite(pool,shown));
                 UiLabel(new Rect(hero.x+12,hero.y+110,hero.width-24,28),
-                    spinning?L("Đang triệu hồi…","Summoning…"):poolNames[shown],label);
+                    spinning?L("Đang triệu hồi…","Summoning…"):poolNames[shown],sanctuaryLabel);
                 if(!spinning)
                 {
                     string detail=pool==0?EmberLanguage.Text(Catalog.VesselRarities[shown]):pool==1?L("Mũ","Hat"):L("Thú cưng","Pet");
@@ -451,23 +600,25 @@ namespace Ember
                 SaveProfile();
             }
             GUI.enabled=true;
-            GUILayout.Space(12);
+            GUILayout.Space(10);
             var names=SummonNames(summonPool);
+            const float margin=4, gap=8;
             for(int first=0;first<names.Length;first+=3)
             {
-                GUILayout.BeginHorizontal();
-                for(int i=first;i<Math.Min(first+3,names.Length);i++)
+                Rect row=GUILayoutUtility.GetRect(180,110,GUILayout.ExpandWidth(true));
+                float innerW=Mathf.Max(90,row.width-2*margin);
+                float cellW=(innerW-gap*2)/3;
+                for(int col=0;col<3&&first+col<names.Length;col++)
                 {
-                    var card=GUILayoutUtility.GetRect(85,114,GUILayout.ExpandWidth(true));
-                    card=new Rect(card.x+4,card.y+3,card.width-8,card.height-6);
+                    int i=first+col;
+                    var card=new Rect(row.x+margin+col*(cellW+gap),row.y,cellW,row.height);
                     PixelPanel(card,Lilac);
-                    DrawSpritePreview(new Rect(card.center.x-29,card.y+4,58,58),SummonSprite(summonPool,i));
-                    UiLabel(new Rect(card.x+4,card.y+62,card.width-8,31),names[i],small);
+                    DrawSpritePreview(new Rect(card.center.x-28,card.y+6,56,56),SummonSprite(summonPool,i));
+                    UiLabel(new Rect(card.x+6,card.y+62,card.width-12,24),names[i],small);
                     string odds=summonPool==0?EmberLanguage.Text(Catalog.VesselRarities[i])+" · "+Catalog.VesselDrawWeights[i]+"%":"25%";
-                    GUI.Label(new Rect(card.x+4,card.y+88,card.width-8,20),odds,small);
+                    GUI.Label(new Rect(card.x+6,card.y+84,card.width-12,20),odds,small);
                 }
-                GUILayout.EndHorizontal();
-                GUILayout.Space(5);
+                GUILayout.Space(8);
             }
         }
     }

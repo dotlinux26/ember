@@ -169,18 +169,22 @@ namespace Ember
         void DrawProgressionExtras()
         {
             GUILayout.Space(8);GUILayout.Label(L("Kinh tế và thành tựu","Economy and achievements"));
-            if(GUILayout.Button(L("Đổi 100 tro → 1 xu","Exchange 100 ash → 1 token"))){Profile.ExchangeAsh();SaveProfile();}
+            GUI.enabled=Profile.Ash>=100;
+            if(GUILayout.Button(L("Đổi 100 tro → 1 Đá Định Mệnh","Exchange 100 ash → 1 Void Token"))){Profile.ExchangeAsh();SaveProfile();}
+            GUI.enabled=true;
+            GUILayout.Space(4);
             string[] achievements=EmberLanguage.English?new[]{"Survive 120 seconds","First extraction","Defeat a boss","Craft 5 items"}:new[]{"Sống sót 120 giây","Rút lui lần đầu","Hạ một boss","Chế tạo 5 vật phẩm"};
             for(int bit=0;bit<achievements.Length;bit++)
             {
                 bool earned=(Profile.AchievementFlags&(1<<bit))!=0;
-                Rect card=GUILayoutUtility.GetRect(160,56,GUILayout.ExpandWidth(true));
+                Rect raw=GUILayoutUtility.GetRect(160,56,GUILayout.ExpandWidth(true));
+                Rect card=new Rect(raw.x+4,raw.y,Mathf.Max(140,raw.width-8),raw.height);
                 PixelPanel(card,earned?Lilac:Paper);
                 PixelArt(new Rect(card.x+10,card.y+12,32,32),"perk_"+new[]{3,5,0,4}[bit]);
                 GUI.Label(new Rect(card.x+52,card.y+5,card.width-60,24),achievements[bit],label);
                 GUI.Label(new Rect(card.x+52,card.y+30,card.width-60,21),
-                    (earned?L("Đã nhận","Claimed"):L("Chưa đạt","Incomplete"))+" · "+(bit==1?3:2)+L(" xu"," tokens"),small);
-                GUILayout.Space(5);
+                    (earned?L("Đã nhận","Claimed"):L("Chưa đạt","Incomplete"))+" · "+(bit==1?3:2)+L(" Đá Định Mệnh"," Void Tokens"),small);
+                GUILayout.Space(6);
             }
             GUILayout.Label(L("Mở công thức bằng ký ức","Unlock recipes with memory"));
             for(int i=7;i<Catalog.Recipes.Length;i++)

@@ -66,6 +66,13 @@ namespace Ember
             Panel(new Rect(x-25,y-17,50,13),new Color(.05f,.04f,.09f,.92f));
             Panel(new Rect(x-24,y-16,48*Mathf.Clamp01(player.HP/Mathf.Max(1,player.MaxHP)),5),player.Ghost?Color.gray:Cyan);
             Panel(new Rect(x-24,y-9,48*Mathf.Clamp01(player.Dread/100),4),new Color(.75f,.35f,.7f));
+            if(player.Reloading&&player.MaxAmmo>0)
+            {
+                float reloadMax=Mathf.Max(.1f,Catalog.WeaponReloadTime(player.ActiveWeapon));
+                float progress=1f-Mathf.Clamp01(player.ReloadTimer/reloadMax);
+                Panel(new Rect(x-25,y-2,50,6),new Color(.05f,.04f,.09f,.92f));
+                Panel(new Rect(x-24,y-1,48*progress,4),Gold);
+            }
         }
 
         Texture2D partyBubble;
@@ -77,7 +84,6 @@ namespace Ember
 
         void DrawPartyBubbles()
         {
-            if(Event.current.type!=EventType.Repaint)return;
             if(partyBubble==null)
             {
                 const int size=40;
@@ -98,6 +104,7 @@ namespace Ember
             int count=Mathf.Min(members.Length,4);
             float step=Mathf.Min(102,(Screen.width-28f)/Mathf.Max(1,count));
             int i=0;
+            bool spectating=Local!=null&&Local.Ghost;
             for(int slot=1;slot<=4;slot++)
             {
                 Player teammate=null;
@@ -105,15 +112,23 @@ namespace Ember
                 if(teammate==null)continue;
                 float x=14+step*(i++ +.5f), y=PartyPortraitY;
                 var center=new Vector2(x,y);
-                GUI.DrawTexture(new Rect(x-30,y-30,60,60),partyBubble);
-                DrawSpritePreview(new Rect(x-23,y-28,46,46),teammate.Ghost?Primitive("pet_ghost"):Frame(teammate.Vessel,"idle",0));
-                DrawPartyArc(center,26,teammate.HP/Mathf.Max(1,teammate.MaxHP),Cyan);
-                DrawPartyArc(center,31,teammate.Dread/100,Coral);
+                var hit=new Rect(x-30,y-30,60,60);
+                if(Event.current.type==EventType.Repaint)
+                {
+                    GUI.DrawTexture(hit,partyBubble);
+                    DrawSpritePreview(new Rect(x-23,y-28,46,46),teammate.Ghost?Primitive("pet_ghost"):Frame(teammate.Vessel,"idle",0));
+                    DrawPartyArc(center,26,teammate.HP/Mathf.Max(1,teammate.MaxHP),Cyan);
+                    DrawPartyArc(center,31,teammate.Dread/100,Coral);
+                }
                 string name="P"+teammate.PartySlot+" · "+teammate.Name;
                 string stats=name+"\nHP "+Mathf.CeilToInt(teammate.HP)+"/"+Mathf.CeilToInt(teammate.MaxHP)+
                     " ( "+L("vòng xanh","cyan arc")+" )\n"+L("Hoảng Loạn ","Dread ")+Mathf.CeilToInt(teammate.Dread)+
                     "% ( "+L("vòng hồng","pink arc")+" )";
-                GUI.Label(new Rect(x-30,y-30,60,60),new GUIContent("",stats),GUIStyle.none);
+                if(spectating&&!teammate.Ghost&&!teammate.Extracted&&teammate.Id!=localId)
+                {
+                    if(GUI.Button(hit,new GUIContent("",stats),GUIStyle.none))spectateId=teammate.Id;
+                }
+                else GUI.Label(hit,new GUIContent("",stats),GUIStyle.none);
                 GUI.Label(new Rect(x-step/2,y+34,step,20),new GUIContent(name,stats),partyName);
             }
         }
@@ -156,15 +171,15 @@ namespace Ember
             }
             else if(p.Ghost)
             {
-                heading=L("Hồn ma","Wisp");
-                hint=L("Đồng đội dùng Đá Hồi Sinh tại hải đăng","An ally can use a Revival Stone at the beacon");
+                heading=L("Đã gục · Đang theo dõi","Downed · Spectating");
+                hint=L("Chờ đồng đội hồi sinh tại hải đăng (-100 NL trụ)","Wait for an ally to revive you at the beacon (-100 energy)");
                 progress=0;
                 icon="revival";
             }
             else if(State.Phase==Phase.Eclipse)
             {
                 heading=L("Nhật thực","Eclipse")+" · "+Mathf.CeilToInt(State.Wave)+"s";
-                hint=L("Bảo vệ hải đăng","Defend the beacon");
+                hint=L("Bảo vệ hải đăng","Defend the beacon")+" · HP "+Mathf.CeilToInt(State.BeaconHP)+"/600";
                 progress=1-State.Wave/90;
                 icon="umbra";
             }
@@ -177,9 +192,11 @@ namespace Ember
             }
             else
             {
-                heading=L("Thắp sáng hải đăng","Light the beacon")+" · "+Mathf.RoundToInt(State.Charge)+"%";
-                hint=L("Mang lõi về trụ · B để nạp","Bring cores to the beacon · B to deposit");
-                progress=State.Charge/100;
+                string diffName=(EmberLanguage.English?Catalog.DifficultyNamesEn:Catalog.DifficultyNamesVi)[Mathf.Clamp((int)State.Difficulty,0,2)];
+                float target=Mathf.Max(1,State.ChargeTarget);
+                heading=L("Nạp trụ","Beacon")+" ("+diffName+") · "+Mathf.RoundToInt(State.Charge)+"/"+Mathf.RoundToInt(target);
+                hint=L("Mang lõi về trụ · B để nạp (+25 NL/lõi)","Bring cores to beacon · B to deposit (+25/core)");
+                progress=State.Charge/target;
                 icon="core";
             }
 
@@ -254,8 +271,33 @@ namespace Ember
             }
         }
 
+        void DrawSpectateHud()
+        {
+            if(network)DrawPartyBubbles();
+            float width=Mathf.Min(Screen.width-28,460);
+            var panel=new Rect((Screen.width-width)/2,Screen.height-96,width,78);
+            PixelPanel(panel,FieldPaper);
+            var candidates=SpectateCandidates();
+            var target=CameraTarget();
+            bool hasTarget=target!=null&&target.Id!=localId&&!target.Ghost;
+            if(candidates.Length>1)
+            {
+                if(UiButton(new Rect(panel.x+10,panel.y+10,42,36),"‹"))CycleSpectate(-1);
+                if(UiButton(new Rect(panel.xMax-52,panel.y+10,42,36),"›"))CycleSpectate(1);
+            }
+            string headline=hasTarget
+                ?L("Đang theo dõi: ","Spectating: ")+"P"+target.PartySlot+" · "+target.Name+" ("+EmberLanguage.Text(Catalog.VesselNames[(int)target.Vessel])+")"
+                :L("Không còn đồng đội nào đang sống","No living teammates to spectate");
+            string detail=hasTarget
+                ?"HP "+Mathf.CeilToInt(target.HP)+"/"+Mathf.CeilToInt(target.MaxHP)+"  ·  "+L("Hoảng loạn ","Dread ")+Mathf.CeilToInt(target.Dread)+"%  ·  "+L("A / D đổi góc nhìn","A / D switch view")
+                :L("Chờ kết thúc trận hoặc được hồi sinh tại hải đăng","Waiting for run end or beacon revival");
+            UiLabel(new Rect(panel.x+60,panel.y+10,panel.width-120,28),headline,label);
+            UiLabel(new Rect(panel.x+16,panel.y+44,panel.width-32,26),detail,small);
+        }
+
         void DrawFieldHud(Player p)
         {
+            if(p.Ghost){DrawSpectateHud();return;}
             float toolWidth=Mathf.Clamp((Screen.width-120)/2f,72,130);
             float toolX=Screen.width-116-toolWidth;
             if(UiButton(new Rect(toolX,12,toolWidth,29),"Chế tạo [Tab]"))craftOpen=!craftOpen;
@@ -267,6 +309,18 @@ namespace Ember
 
             if(UiButton(new Rect(toolX-toolWidth-8,12,toolWidth,29),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
             if(network)DrawPartyBubbles();
+
+            bool anyDowned=State.Players.Any(q=>q.Ghost);
+            if(anyDowned&&p.Pos.Length<=5)
+            {
+                bool explore=State.Phase==Phase.Explore;
+                bool canRevive=explore?State.Charge>=EmberWorld.ReviveChargeCost:(State.Phase==Phase.Eclipse||State.Phase==Phase.Extraction)&&State.BeaconHP>EmberWorld.ReviveBeaconHpCost;
+                string costText=explore?L("-100 NL trụ","-100 energy"):L("-150 HP trụ","-150 beacon HP");
+                float rw=Mathf.Min(290,Screen.width-28);
+                GUI.enabled=canRevive&&!debugOpen;
+                if(UiButton(new Rect((Screen.width-rw)/2,Screen.height-210,rw,32),L("Hồi sinh đồng đội [H] · ","Revive ally [H] · ")+costText))intent.Revive=true;
+                GUI.enabled=true;
+            }
 
             float width=Mathf.Min(Screen.width-26,570);
             float x=(Screen.width-width)/2;
@@ -287,8 +341,33 @@ namespace Ember
             string itemStatus=p.Items[selectedItem]==0?L("Hết đồ","Empty"):
                 !CanUseSelectedItem(p)&&selectedItem==3?L("Cần hải đăng và đồng đội gục","Requires beacon and a downed teammate"):
                 L("Đã chọn","Selected");
-            UiLabel(new Rect(x+8,itemChip.y+2,width-110,22),heldSlot==1?L("Đang cầm vũ khí","Weapon equipped"):heldSlot==6?L("Tay không","Empty hands"):itemName+" · "+itemStatus,small);
-            if(heldSlot>=2&&heldSlot<=5)
+            string holdingLabel;
+            int activeMag=0;
+            if(IsHoldingWeaponSlot(heldSlot))
+            {
+                Weapon activeW=WeaponForSlot(p,heldSlot);
+                bool ranged=activeW==Weapon.Crossbow||activeW==Weapon.LumenGun||activeW==Weapon.MirrorShield;
+                float range=WeaponRangeFor(activeW);
+                string kind=heldSlot==8?L("Đào/Chặt","Mine/Chop"):ranged?L("Tầm xa","Ranged"):L("Cận chiến","Melee");
+                holdingLabel=InventorySlotName(p,heldSlot)+" · "+kind+" ("+range.ToString("0.#")+L(" ô)"," tiles)");
+                activeMag=Catalog.WeaponMagSize(activeW);
+                if(activeMag>0)
+                {
+                    int curAmmo=p.Ammo<0||p.AmmoWeapon!=activeW?activeMag:Mathf.Clamp(p.Ammo,0,activeMag);
+                    holdingLabel+=p.Reloading
+                        ?" · "+L("Đang nạp ","Reloading ")+p.ReloadTimer.ToString("0.0")+"s"
+                        :" · "+L("Đạn ","Ammo ")+curAmmo+"/"+activeMag;
+                }
+            }
+            else holdingLabel=heldSlot==6?L("Tay không","Empty hands"):itemName+" · "+itemStatus;
+            UiLabel(new Rect(x+8,itemChip.y+2,width-110,22),holdingLabel,small);
+            if(IsHoldingWeaponSlot(heldSlot)&&activeMag>0&&!p.Reloading&&p.CurrentAmmo<activeMag)
+            {
+                GUI.enabled=!debugOpen;
+                if(UiButton(new Rect(itemChip.xMax-96,itemChip.y+2,92,28),L("Nạp [X]","Reload [X]")))intent.Reload=true;
+                GUI.enabled=true;
+            }
+            else if(heldSlot>=2&&heldSlot<=5)
             {
                 GUI.enabled=CanUseSelectedItem(p)&&!debugOpen;
                 if(UiButton(new Rect(itemChip.xMax-96,itemChip.y+2,92,28),L("Dùng [U]","Use [U]")))intent.Use=selectedItem;
@@ -319,22 +398,26 @@ namespace Ember
             for(int i=0;i<count;i++)
             {
                 bool skill=i==4;
+                int slot=skill?0:quickSlots[i];
                 bool enabled=!debugOpen&&(!skill||(!p.Ghost&&!p.Extracted&&p.SkillCD<=0&&HasSkillFocus(p)));
                 Rect tile=new Rect(start+i*cell,y+38,Mathf.Min(58,cell-4),Mathf.Min(58,cell-4));
-                PixelPanel(tile,!skill&&heldSlot==i+2?new Color(.51f,.34f,.72f):enabled?new Color(.22f,.16f,.34f):FieldPaper);
+                PixelPanel(tile,!skill&&heldSlot==slot?new Color(.51f,.34f,.72f):enabled?new Color(.22f,.16f,.34f):FieldPaper);
                 Rect icon=new Rect(tile.center.x-14,tile.y+5,28,28);
-                if(!skill&&i==0)DrawSpritePreview(icon,Primitive("torch"));
-                else if(skill&&p.Vessel!=Vessel.LittleMoone)DrawSpritePreview(icon,Frame(p.Vessel,"cast",0));
-                else PixelArt(icon,skill?"meteor":ActionIcons[i]);
+                if(skill)
+                {
+                    if(p.Vessel!=Vessel.LittleMoone)DrawSpritePreview(icon,Frame(p.Vessel,"cast",0));
+                    else PixelArt(icon,"meteor");
+                }
+                else DrawSpritePreview(icon,SlotIconSprite(p,slot));
                 string key=skill?"J":(i+1).ToString();
-                string value=skill?(p.SkillCD<=0?(HasSkillFocus(p)?L("Sẵn","Ready"):L("Chờ","Aim")):p.SkillCD.ToString("0.0")+"s"):p.Items[i].ToString();
-                UiLabel(new Rect(tile.x+5,tile.y+36,tile.width-8,20),key+"  ·  "+value,small);
-                string tooltip=skill?L("Kỹ năng","Skill"):(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[i];
+                string value=skill?(p.SkillCD<=0?(HasSkillFocus(p)?L("Sẵn","Ready"):L("Chờ","Aim")):p.SkillCD.ToString("0.0")+"s"):SlotShortValue(p,slot);
+                UiLabel(new Rect(tile.x+5,tile.y+36,tile.width-8,20),key+" · "+value,small);
+                string tooltip=skill?L("Kỹ năng","Skill"):InventorySlotName(p,slot);
                 GUI.enabled=enabled;
                 if(GUI.Button(tile,new GUIContent("",tooltip),GUIStyle.none))
                 {
                     if(skill)intent.Skill=true;
-                    else EquipSlot(i+2);
+                    else EquipSlot(slot);
                 }
                 GUI.enabled=true;
             }

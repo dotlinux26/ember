@@ -59,7 +59,7 @@ namespace Ember
         }
         public void Reward(Snapshot s,Player p,Random random=null)
         {
-            if(p.Extracted&&s.Charge>=100&&(random??new Random()).Next(100)<30)AwakeningStones++;
+            if(p.Extracted&&s.Charge>=Math.Max(100,s.ChargeTarget)&&(random??new Random()).Next(100)<30)AwakeningStones++;
             Runs++;bool escaped=s.TeamExtracted>0||s.Players.Any(q=>q.Extracted);float share=p.Extracted?1:p.Ghost&&escaped?.5f:0;Memory+=(int)(s.BossesDefeated*2*(p.Ghost&&escaped?.5f:1));
             Ash+=(int)((s.Time*.1f+Math.Max(p.Gathered,p.Bag.Sum())*2+20)*(share>0?share:.25f));if(share>0){Memory+=(int)(4*share);Tokens+=p.Extracted?2:1;}if(p.Extracted)Extractions++;
             TotalGathered+=p.Gathered;TotalCrafted+=p.Crafted;

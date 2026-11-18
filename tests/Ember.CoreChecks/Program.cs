@@ -10,8 +10,8 @@ Check(!w.Walkable(new V2(124,0)),"abyss blocked");
 Check(!w.CanHarm(p,b),"safe zone blocks friendly fire");
 w.S.Fuel=0;w.S.BeaconHP=0;p.Pos=new V2(10,0);b.Pos=new V2(11,0);p.Dread=90;
 Check(w.CanHarm(p,b)&&!w.CanHarm(b,p),"host validates attacker madness");
-w.S.BeaconHP=600;w.S.Charge=100;p.Pos=new V2();Check(!w.CanHarm(p,b),"either safe participant blocks friendly fire");
-w.S.Charge=0;w.S.Fuel=100;p.Pos=new V2();p.Bag[1]=20;w.Submit(1,new Command{Deposit=true});w.Tick();Check(w.S.Phase==Phase.Eclipse&&w.S.Charge==100&&p.Bag[1]==0,"20 core starts eclipse, consumed once");
+w.S.BeaconHP=600;w.S.Charge=w.S.ChargeTarget;p.Pos=new V2();Check(!w.CanHarm(p,b),"either safe participant blocks friendly fire");
+w.S.Charge=0;w.S.Fuel=100;p.Pos=new V2();p.Bag[1]=20;w.Submit(1,new Command{Deposit=true});w.Tick();Check(w.S.Phase==Phase.Eclipse&&w.S.Charge==w.S.ChargeTarget&&p.Bag[1]==0,"20 core starts eclipse, consumed once");
 w.S.Wave=.01f;w.Tick();Check(w.S.Phase==Phase.Extraction,"wave opens extraction");
 b.HP=0;w.Submit(1,new Command{Interact=true});w.Tick();Check(w.S.Phase==Phase.Won&&p.Extracted,"survivor extraction wins for team");
 var profile=new Profile();profile.Reward(w.S,b);Check(profile.Memory==2&&profile.Ash>0,"dead ally receives half reward");
@@ -49,9 +49,9 @@ foreach(Vessel vessel in Enum.GetValues<Vessel>())
     if(vessel==Vessel.RuneWarden)Check(caster.ShieldTime==4&&caster.SkillCD==18,"warden gains timed shield");
     if(vessel==Vessel.LittleMoone)
     {
-        Check(caster.SkillCD==24&&skillWorld.S.Effects.Count(e=>e.Kind==4)==5,"Little Moone queues five auto-aimed meteors");
+        Check(caster.SkillCD==24&&skillWorld.S.Effects.Count(e=>e.Kind==4)==12,"Little Moone queues twelve auto-aimed meteors");
         bool impacted=false;
-        for(int i=0;i<50;i++){skillWorld.Tick();impacted|=skillWorld.S.Effects.Any(e=>e.Kind==5);}
+        for(int i=0;i<70;i++){skillWorld.Tick();impacted|=skillWorld.S.Effects.Any(e=>e.Kind==5);}
         Check(impacted,"Little Moone resolves delayed meteor impacts");
     }
     if(vessel==Vessel.SpaceWraith)Check(caster.Pos.Length==0&&caster.SkillCD==60,"wraith returns to beacon");
@@ -100,9 +100,11 @@ if(args.Contains("--broker"))foreach(bool relay in new[]{false,true})
     room.Broadcast("encrypted-state-for-all-four",42);PumpPublic(30);Check(receivedStates.All(s=>s=="encrypted-state-for-all-four"),"encrypted snapshot reaches all 3 guests via "+(relay?"fan-out relay":"direct"));
     foreach(var guest in guests)guest.Leave();room.Leave();
 }
-var ff=new EmberWorld(42);var paranoid=ff.AddPlayer(1,"A",Vessel.Wanderer,new[]{(int)Perk.ReluctantHealer});var friend=ff.AddPlayer(2,"B",Vessel.Wanderer);ff.StartRun();ff.S.Fuel=0;ff.S.BeaconHP=0;paranoid.Pos=new V2(10,0);friend.Pos=new V2(11,0);paranoid.Dread=95;ff.Submit(1,new Command{Equip=1,Attack=true});ff.Tick();Check(friend.HP==91,"GDD Reluctant Healer halves outgoing friendly fire");
+var ff=new EmberWorld(42);var paranoid=ff.AddPlayer(1,"A",Vessel.Wanderer,new[]{(int)Perk.ReluctantHealer});var friend=ff.AddPlayer(2,"B",Vessel.Wanderer);ff.StartRun();ff.S.Fuel=0;ff.S.BeaconHP=0;paranoid.Pos=new V2(10,0);friend.Pos=new V2(11,0);paranoid.Dread=95;ff.Submit(1,new Command{Equip=1,Attack=true});ff.Tick();
+float expectedFfDmg=18f*paranoid.Stats.PowerMultiplier*.5f*friend.Stats.DamageTakenMultiplier;
+Check(Math.Abs((100-friend.HP)-expectedFfDmg)<.001,"GDD Reluctant Healer halves outgoing friendly fire");
 Check(ff.CanHarm(friend,paranoid),"attacked ally may defend outside light");
-ff.S.BeaconHP=600;ff.S.Charge=100;paranoid.Pos=new V2();ff.Tick();Check(!ff.CanHarm(friend,paranoid),"entering safe light immediately blocks retaliation");
+ff.S.BeaconHP=600;ff.S.Charge=ff.S.ChargeTarget;paranoid.Pos=new V2();ff.Tick();Check(!ff.CanHarm(friend,paranoid),"entering safe light immediately blocks retaliation");
 EmberLanguage.English=false;Check(EmberLanguage.Text("Sẵn sàng")=="Sẵn sàng","Vietnamese UI preserves original text");EmberLanguage.English=true;Check(EmberLanguage.Text("Sẵn sàng")=="Ready"&&EmberLanguage.Text("Y Sư Ánh Trăng")=="Moon Mender","English UI translates lobby and vessel names");
 Check(EmberLanguage.Text("Lõi hải đăng: 25% — mang lõi về trung tâm, nhấn B.")=="Beacon charge: 25% — bring cores to the beacon and press B.","English dynamic HUD preserves numbers");EmberLanguage.English=false;
 var sandbox=new EmberWorld(42);var debugA=sandbox.AddPlayer(1,"DebugA",Vessel.Wanderer);var debugB=sandbox.AddPlayer(2,"DebugB",Vessel.Wanderer);
@@ -114,13 +116,13 @@ Check(sandbox.DebugScenario(2)&&debugA.Mad&&sandbox.CanHarm(debugA,debugB),"madn
 Check(sandbox.DebugAction("supplies")&&debugA.Bag.All(n=>n==100)&&debugA.Items.All(n=>n==10),"debug supplies are host-side test state");
 sandbox.DebugAction("eclipse");Check(sandbox.S.Phase==Phase.Eclipse&&sandbox.S.Wave==90,"debug eclipse keeps real 90-second countdown");sandbox.DebugAction("portal");Check(sandbox.S.Phase==Phase.Extraction,"debug portal scenario ready");
 var economy=new Profile{Ash=1000,Memory=20};Check(economy.UnlockPerk((int)Perk.StrongBack)&&economy.Rank((int)Perk.StrongBack)==1,"perk unlock preserves GDD base rank");Check(economy.UpgradePerk((int)Perk.StrongBack)&&economy.UpgradePerk((int)Perk.StrongBack)&&!economy.UpgradePerk((int)Perk.StrongBack),"perk upgrades cap at three ranks");
-var upgraded=new EmberWorld(42);var strong=upgraded.AddPlayer(1,"Strong",Vessel.Wanderer,new[]{(int)Perk.StrongBack},ranks:economy.PerkRanks);Check(Math.Abs(strong.Capacity-71)<.001,"upgraded carry perk uses declared tuning");
+var upgraded=new EmberWorld(42);var strong=upgraded.AddPlayer(1,"Strong",Vessel.Wanderer,new[]{(int)Perk.StrongBack},ranks:economy.PerkRanks);Check(Math.Abs(strong.Capacity-strong.BaseCapacity*1.42f)<.001,"upgraded carry perk uses declared tuning");
 Check(economy.ExchangeAsh()&&economy.Tokens==1,"ash exchange adds token and spends balance");int memoryBefore=economy.Memory;Check(economy.UnlockRecipe(9)&&economy.Memory==memoryBefore-3&&!economy.UnlockRecipe(9),"memory unlocks recipe once");
 var locked=new EmberWorld(42);var learner=locked.AddPlayer(1,"Learner",Vessel.Wanderer,recipes:new[]{0});learner.Bag=new[]{100,100,100,100,100};Check(!locked.Craft(learner,Recipe.CrystalAxe)&&locked.Craft(learner,Recipe.Torch),"host enforces unlocked recipes");
 var legacy=new Profile{PerkRanks=null,Recipes=null};legacy.ValidateAndNormalize();Check(legacy.PerkRanks.Length==7&&legacy.Recipes.Length==14,"legacy saves migrate without losing prior recipes");
 bool invalidRank=false;try{new Profile{PerkRanks=new[]{99}}.ValidateAndNormalize();}catch(System.IO.InvalidDataException){invalidRank=true;}Check(invalidRank,"malformed progression rejected");
 var awardProfile=new Profile();var awardPlayer=new Player{Extracted=true,Crafted=5};var awardState=new Snapshot{Time=200,BossesDefeated=1,TeamExtracted=1,Players=new[]{awardPlayer}};awardProfile.Reward(awardState,awardPlayer);int tokenBefore=awardProfile.Tokens;awardProfile.Reward(awardState,awardPlayer);Check(awardProfile.AchievementFlags==15&&awardProfile.Tokens-tokenBefore==2,"one-time achievement rewards are not granted twice");
-var unlitBeacon=new EmberWorld(4);var torch=unlitBeacon.AddPlayer(1,"Torch",Vessel.Wanderer);torch.Pos=new V2(15,0);Check(!unlitBeacon.IsSafe(new V2()),"GDD beacon starts unlit before awakening");unlitBeacon.S.Charge=100;unlitBeacon.S.BeaconHP=600;Check(unlitBeacon.IsSafe(new V2()),"fully charged beacon creates safe light");
+var unlitBeacon=new EmberWorld(4);var torch=unlitBeacon.AddPlayer(1,"Torch",Vessel.Wanderer);torch.Pos=new V2(15,0);Check(!unlitBeacon.IsSafe(new V2()),"GDD beacon starts unlit before awakening");unlitBeacon.S.Charge=unlitBeacon.S.ChargeTarget;unlitBeacon.S.BeaconHP=600;Check(unlitBeacon.IsSafe(new V2()),"fully charged beacon creates safe light");
 Check(sandbox.DebugScenario(3)&&debugA.Dread==35&&!debugA.Mad,"suspicion threshold is separately testable");
 using(var repairHost=new EmberLan())using(var repairClient=new EmberLan())
 {
@@ -131,8 +133,8 @@ using(var repairHost=new EmberLan())using(var repairClient=new EmberLan())
     Check(repaired==fragmented&&repairHost.SnapshotRepairs>0,"fragmented snapshot recovers missing chunks under 30 percent loss");
 }
 var deadBossReward=new Profile();var deadBossPlayer=new Player{HP=0};deadBossReward.Reward(new Snapshot{TeamExtracted=1,BossesDefeated=1,Players=new[]{deadBossPlayer}},deadBossPlayer);Check(deadBossReward.Memory==3,"dead teammate receives half boss and extraction memory");
-var candleWorld=new EmberWorld(42);var candlePlayer=candleWorld.AddPlayer(1,"Candle",Vessel.Wanderer,hat:(int)Hat.Candle);candlePlayer.LampOn=false;candleWorld.StartRun();candleWorld.Tick();Check(!candlePlayer.Safe&&Math.Abs(candlePlayer.Dread-.09f)<.00001,"candle hat emits light but reduces rather than eliminates dread");
-var nearestHeal=new EmberWorld(42);var healer=nearestHeal.AddPlayer(1,"Healer",Vessel.MoonMender);var nearAlly=nearestHeal.AddPlayer(2,"Near",Vessel.Wanderer);var farAlly=nearestHeal.AddPlayer(3,"Far",Vessel.Wanderer);nearAlly.Pos=new V2(1,0);nearAlly.HP=80;farAlly.Pos=new V2(3,0);farAlly.HP=10;nearestHeal.StartRun();nearestHeal.S.Charge=100;nearestHeal.S.BeaconHP=600;nearestHeal.Submit(1,new Command{Skill=true});nearestHeal.Tick();Check(nearAlly.HP==100&&farAlly.HP==10,"healing auto-aim selects nearest eligible ally in 360 degrees");
+var candleWorld=new EmberWorld(42);var candlePlayer=candleWorld.AddPlayer(1,"Candle",Vessel.Wanderer,hat:(int)Hat.Candle);candlePlayer.LampOn=false;candleWorld.StartRun();candleWorld.Tick();float expectedCandleDread=3f*candlePlayer.Stats.DreadGainMultiplier*.9f*EmberWorld.Step;Check(!candlePlayer.Safe&&candlePlayer.Dread>0&&Math.Abs(candlePlayer.Dread-expectedCandleDread)<.00001,"candle hat emits light but reduces rather than eliminates dread");
+var nearestHeal=new EmberWorld(42);var healer=nearestHeal.AddPlayer(1,"Healer",Vessel.MoonMender);var nearAlly=nearestHeal.AddPlayer(2,"Near",Vessel.Wanderer);var farAlly=nearestHeal.AddPlayer(3,"Far",Vessel.Wanderer);nearAlly.Pos=new V2(1,0);nearAlly.HP=80;farAlly.Pos=new V2(3,0);farAlly.HP=10;nearestHeal.StartRun();nearestHeal.S.Charge=nearestHeal.S.ChargeTarget;nearestHeal.S.BeaconHP=600;nearestHeal.Submit(1,new Command{Skill=true});nearestHeal.Tick();Check(nearAlly.HP==100&&farAlly.HP==10,"healing auto-aim selects nearest eligible ally in 360 degrees");
 using(var fakeBroker=new System.Net.Sockets.UdpClient(0))using(var routeSocket=new System.Net.Sockets.UdpClient(0))
 {
     var brokerEnd=new System.Net.IPEndPoint(System.Net.IPAddress.Loopback,((System.Net.IPEndPoint)fakeBroker.Client.LocalEndPoint).Port);
@@ -181,6 +183,64 @@ darkStart.Submit(1,new Command{Equip=2});
 darkStart.Tick();
 darkStart.Tick();
 Check(lightBearer.HasHeldTorch&&darkStart.IsSafe(lightBearer.Pos)&&darkStart.S.Fuel<100,"equipping the starter torch creates safety and burns fuel");
+var kbWorld=new EmberWorld(42){DebugEnabled=true,DebugNoEnemies=true};
+var fighter=kbWorld.AddPlayer(1,"Fighter",Vessel.Wanderer);
+kbWorld.StartRun();
+kbWorld.DebugAction("enemy",1);
+kbWorld.Tick();
+var dummy=kbWorld.S.Enemies.OrderBy(e=>V2.Distance(e.Pos,fighter.Pos)).First();
+dummy.HP=dummy.MaxHP=200;
+dummy.Pos=fighter.Pos+new V2(1.2f,0);
+float beforeMeleeX=dummy.Pos.X;
+kbWorld.Submit(1,new Command{Equip=1,Attack=true});
+kbWorld.Tick();
+Check(dummy.Pos.X>beforeMeleeX&&dummy.HP<200,"melee stick hit deals damage and knocks enemy back");
+dummy.Pos=fighter.Pos+new V2(4.5f,0);
+float beforeGunX=dummy.Pos.X,beforeGunHp=dummy.HP;
+for(int i=0;i<20;i++)kbWorld.Tick();
+kbWorld.Submit(1,new Command{Equip=7,Attack=true});
+for(int i=0;i<20;i++)kbWorld.Tick();
+Check(dummy.Pos.X>beforeGunX&&dummy.HP<beforeGunHp,"ranged side gun auto-aims, hits and knocks enemy back");
+var diffEasy=new EmberWorld(7,250,Difficulty.Easy);
+var diffNormal=new EmberWorld(7,250,Difficulty.Normal);
+var diffHard=new EmberWorld(7,250,Difficulty.Hard);
+Check(diffEasy.S.ChargeTarget==500&&diffNormal.S.ChargeTarget==750&&diffHard.S.ChargeTarget==1000,"difficulty scales beacon charge target 500/750/1000");
+var reviveWorld=new EmberWorld(7,250,Difficulty.Easy);
+var rescuer=reviveWorld.AddPlayer(1,"Rescuer",Vessel.Wanderer);
+var fallen=reviveWorld.AddPlayer(2,"Fallen",Vessel.MoonMender);
+reviveWorld.StartRun();
+fallen.HP=0;fallen.Pos=new V2(8,0);
+reviveWorld.Submit(2,new Command{X=1,Y=0});
+reviveWorld.Tick();
+Check(fallen.Pos.X==8&&fallen.Pos.Y==0,"downed player cannot move freely as a ghost");
+rescuer.Pos=new V2(1,0);reviveWorld.S.Charge=150;
+reviveWorld.Submit(1,new Command{Revive=true});
+reviveWorld.Tick();
+Check(!fallen.Ghost&&fallen.HP>0&&reviveWorld.S.Charge==50&&fallen.Pos.Length<2,"beacon revive spends 100 energy and revives ally at beacon");
+var statWorld=new EmberWorld(11);
+var wardenStat=statWorld.AddPlayer(1,"Warden",Vessel.RuneWarden);
+var wraithStat=statWorld.AddPlayer(2,"Wraith",Vessel.SpaceWraith);
+var mooneStat=statWorld.AddPlayer(3,"Moone",Vessel.LittleMoone);
+Check(wardenStat.MaxHP==100&&wraithStat.MaxHP==100&&mooneStat.MaxHP==100,"all vessels share standardized 100 base HP");
+Check(wardenStat.Stats.DamageTakenMultiplier<wraithStat.Stats.DamageTakenMultiplier&&wraithStat.Stats.MoveSpeed>wardenStat.Stats.MoveSpeed&&mooneStat.Stats.PowerMultiplier>wardenStat.Stats.PowerMultiplier,"hardcore vessel stats differentiate defense, speed, and power");
+var mineWorld=new EmberWorld(42);
+var miner=mineWorld.AddPlayer(1,"Miner",Vessel.Wanderer);
+mineWorld.StartRun();
+var nearestNode=mineWorld.S.Nodes.OrderBy(n=>V2.Distance(n.Pos,miner.Pos)).First();
+miner.Pos=nearestNode.Pos-new V2(1,0);
+int bagBefore=miner.Load;
+mineWorld.Submit(1,new Command{Equip=8,Attack=true});
+mineWorld.Tick();
+Check(miner.Load>bagBefore&&miner.HarvestCD>0&&mineWorld.S.Effects.Any(e=>e.Kind==7),"pickaxe slot mines nearby resource nodes with harvest swing and chip FX");
+var gunWorld=new EmberWorld(42){DebugEnabled=true,DebugNoEnemies=true};
+var gunner=gunWorld.AddPlayer(1,"Gunner",Vessel.Wanderer);
+gunWorld.StartRun();
+gunWorld.Submit(1,new Command{Equip=7});
+gunWorld.Tick();
+for(int s=0;s<8;s++){gunWorld.Submit(1,new Command{Attack=true});for(int k=0;k<12;k++)gunWorld.Tick();}
+Check(gunner.Reloading&&gunner.CurrentAmmo==0,"ranged gun triggers reload automatically after emptying its 8-shot magazine");
+for(int k=0;k<60;k++)gunWorld.Tick();
+Check(!gunner.Reloading&&gunner.CurrentAmmo==8,"ranged gun refills magazine after reload completes");
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

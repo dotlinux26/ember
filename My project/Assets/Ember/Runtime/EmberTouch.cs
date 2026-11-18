@@ -27,7 +27,7 @@ namespace Ember
                     joystickHeld=true;joystickDelta=Vector2.ClampMagnitude((pos-joystickStart)/80,1);if(joystickDelta.magnitude<.15f)joystickDelta=Vector2.zero;
                     intent.X=joystickDelta.x;intent.Y=joystickDelta.y;if(joystickDelta.sqrMagnitude>0)path.Clear();continue;
                 }
-                if(AttackTouch.Contains(gui)&&Local!=null&&heldSlot==1&&Local.AttackCD<=0)intent.Attack=true;
+                if(AttackTouch.Contains(gui)&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0)intent.Attack=true;
                 if(!touch.press.wasPressedThisFrame)continue;
                 if(SkillTouch.Contains(gui)&&Local!=null&&Local.Vessel!=Vessel.Wanderer)intent.Skill=true;if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
                 if(InteractTouch.Contains(gui))intent.Interact=true;
@@ -38,7 +38,7 @@ namespace Ember
         }
         void DrawTouchControls()
         {
-            if(!TouchEnabled||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))||menu||inventoryOpen||craftOpen||debugOpen||State==null||State.Phase==Phase.Sanctuary||Local==null||Local.Extracted||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
+            if(!TouchEnabled||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))||menu||inventoryOpen||craftOpen||debugOpen||State==null||State.Phase==Phase.Sanctuary||Local==null||Local.Ghost||Local.Extracted||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
             if(touchDisc==null)
             {
                 touchDisc=new Texture2D(64,64,TextureFormat.RGBA32,false){filterMode=FilterMode.Point};var pixels=new Color[4096];for(int y=0;y<64;y++)for(int x=0;x<64;x++){float r=Vector2.Distance(new Vector2(x,y),new Vector2(31.5f,31.5f));pixels[y*64+x]=r<31?new Color(.4f,.8f,.85f,r>28?.6f:.13f):Color.clear;}touchDisc.SetPixels(pixels);touchDisc.Apply();
@@ -47,7 +47,7 @@ namespace Ember
             GUI.DrawTexture(new Rect(center.x-80,center.y-80,160,160),touchDisc);
             var knob=center+new Vector2(joystickDelta.x,-joystickDelta.y)*55;GUI.DrawTexture(new Rect(knob.x-25,knob.y-25,50,50),touchDisc);
             var p=Local;
-            DrawTouchTile(AttackTouch,L("Đánh","Attack"),heldSlot==1?Primitive(InventoryWeaponArt[(int)p.Weapon]):null,heldSlot==1);
+            DrawTouchTile(AttackTouch,L("Đánh","Attack"),IsHoldingWeaponSlot(heldSlot)?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,heldSlot)]):null,IsHoldingWeaponSlot(heldSlot));
             if(p.Vessel!=Vessel.Wanderer)
                 DrawTouchTile(SkillTouch,L("Kỹ năng","Skill"),p.Vessel==Vessel.LittleMoone?MaterialSprite("meteor"):Frame(p.Vessel,"cast",0),
                     p.SkillCD<=0&&HasSkillFocus(p));

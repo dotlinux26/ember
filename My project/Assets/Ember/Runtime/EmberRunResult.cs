@@ -42,7 +42,7 @@ namespace Ember
             if(rewarded)
             {
                 int[] amounts={runAsh,runMemory,runTokens,runStones};
-                string[] captions={L("Tro","Ash"),L("Ký ức","Memory"),L("Xu","Tokens"),L("Đá thức tỉnh","Awakening")};
+                string[] captions={L("Tro","Ash"),L("Ký ức","Memory"),L("Định Mệnh","Tokens"),L("Đá thức tỉnh","Awakening")};
                 float step=(width-28)/4;
                 for(int i=0;i<amounts.Length;i++)
                 {

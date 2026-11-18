@@ -90,7 +90,7 @@ namespace Ember
             var p=World.PlayerById(localId);
             if(p==null||(int)p.Vessel==vessel)return;
             p.Vessel=(Vessel)vessel;
-            p.MaxHP=vessel==3?140:vessel==1?90:vessel==4?85:100;
+            p.MaxHP=100;
             p.HP=Mathf.Min(p.HP>0?p.HP:p.MaxHP,p.MaxHP);
             p.SkillCD=0;
             animationState.Remove(p.Id);

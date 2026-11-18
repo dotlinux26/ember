@@ -5,6 +5,7 @@ using System.Linq;
 namespace Ember
 {
     public enum Phase { Sanctuary, Explore, Eclipse, Extraction, Won, Lost }
+    public enum Difficulty { Easy, Normal, Hard }
     public enum Vessel { Wanderer, MoonMender, BombTrapper, RuneWarden, SpaceWraith, LittleMoone }
     public enum Resource { Dust, Core, Umbra, Wood, Ore, Count }
     public enum Weapon { Stick, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield, Pickaxe }
@@ -29,17 +30,17 @@ namespace Ember
     }
     [Serializable] public sealed class Command
     {
-        public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push;
+        public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
         public int Craft=-1,Use=-1,Equip; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive
-        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Craft>=0||Use>=0||Equip>0;
+        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0;
     }
     [Serializable] public sealed class Player
     {
         public int Id,PartySlot; [NonSerialized] public string InstallationId; public string Name="Traveler"; public Vessel Vessel;
         public V2 Pos,Move; public bool Right=true,Safe,Extracted,CarriesLantern,LampOn=true,Ready;
         public float HP=100,MaxHP=100,Stamina=100,Dread,AttackCD,SkillCD,DashCD,DashTime,CastTime,Invulnerable,ShieldTime,Shield,HarvestCD;
-        public float PushCD;
-        public V2 DashDir; public Weapon Weapon; public int HeldSlot=6; public Lantern Lantern;
+        public float PushCD,ReloadTimer;
+        public V2 DashDir; public Weapon Weapon; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6; public Lantern Lantern;
         public V2 MiragePos;public float MirageLife,MirageCD=12;
         public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
         public int[] Perks=Array.Empty<int>(); public int Hat=-1,Pet=-1;
@@ -47,10 +48,17 @@ namespace Ember
         public int Rank(Perk perk)=>Has(perk)?Math.Max(1,Math.Min(3,PerkRanks!=null&&PerkRanks.Length>(int)perk?PerkRanks[(int)perk]:1)):0;
         public float PerkStrength(Perk perk)=>1+.2f*Math.Max(0,Rank(perk)-1);
         public bool Ghost=>HP<=0; public bool Has(Perk perk)=>Array.IndexOf(Perks,(int)perk)>=0;
-        public int Load=>Bag.Sum(); public float Capacity=>50*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1)*(Vessel==Vessel.BombTrapper?1.1f:1);
+        public VesselStats Stats=>Catalog.StatsFor(Vessel);
+        public float BaseCapacity=>30f+Stats.Gathering*4.5f;
+        public int Load=>Bag.Sum(); public float Capacity=>BaseCapacity*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1);
         public bool HasHeldTorch=>HeldSlot==2&&Items[0]>0&&LampOn&&!Ghost&&!Extracted;
-        public bool Ranged=>Weapon==Weapon.Crossbow||Weapon==Weapon.LumenGun||Weapon==Weapon.MirrorShield;
-        public float Range=>Ranged?7:Weapon==Weapon.CrystalAxe?2.6f:2;
+        public bool HoldingWeapon=>HeldSlot==1||HeldSlot==7||HeldSlot==8;
+        public Weapon ActiveWeapon=>HeldSlot==7?SideWeapon:HeldSlot==8?Weapon.Pickaxe:Weapon;
+        public bool Ranged=>ActiveWeapon==Weapon.Crossbow||ActiveWeapon==Weapon.LumenGun||ActiveWeapon==Weapon.MirrorShield;
+        public float Range=>Ranged?7:ActiveWeapon==Weapon.CrystalAxe?2.6f:ActiveWeapon==Weapon.Pickaxe?2.4f:2;
+        public int MaxAmmo=>Catalog.WeaponMagSize(ActiveWeapon);
+        public int CurrentAmmo=>MaxAmmo<=0?0:(Ammo<0||AmmoWeapon!=ActiveWeapon?MaxAmmo:Math.Min(Ammo,MaxAmmo));
+        public bool Reloading=>ReloadTimer>0;
         public float SkillRange=>Catalog.SkillRange(Vessel);
         public bool Mad=>Dread>=90&&!Safe;
     }
@@ -76,7 +84,7 @@ namespace Ember
     }
     [Serializable] public sealed class Snapshot
     {
-        public int Seed,Size,Tick,Capacity=4,BossesDefeated,TeamExtracted; public string RoomName="Ember";public Phase Phase; public float Time,Fuel,BeaconHP,Charge,Wave,Blackout,LastLight;
+        public int Seed,Size,Tick,Capacity=4,BossesDefeated,TeamExtracted; public string RoomName="Ember";public Phase Phase; public Difficulty Difficulty; public float Time,Fuel,BeaconHP,Charge,ChargeTarget=100,Wave,Blackout,LastLight;
         public Player[] Players; public Enemy[] Enemies; public Node[] Nodes; public Structure[] Structures; public Effect[] Effects;public Projectile[] Projectiles=Array.Empty<Projectile>();
         public string Event,EventActor,EventTarget;public int EventTick;
         public bool Sandbox;
@@ -85,8 +93,37 @@ namespace Ember
     {
         public string Name; public int[] Cost; public RecipeData(string name,int dust=0,int core=0,int umbra=0,int wood=0,int ore=0){Name=name;Cost=new[]{dust,core,umbra,wood,ore};}
     }
+    public struct VesselStats
+    {
+        public int Speed,Defense,DreadResist,Power,Endurance,Gathering;
+        public VesselStats(int speed,int defense,int dreadResist,int power,int endurance,int gathering)
+        {Speed=speed;Defense=defense;DreadResist=dreadResist;Power=power;Endurance=endurance;Gathering=gathering;}
+        public float MoveSpeed=>3.2f+Speed*.18f;
+        public float DashCooldown=>1.4f-Speed*.04f;
+        public float DamageTakenMultiplier=>1f-(Defense-1)*.04f;
+        public float DreadGainMultiplier=>1.24f-(DreadResist-1)*.06f;
+        public float DreadCalmMultiplier=>.72f+(DreadResist-1)*.07f;
+        public float PowerMultiplier=>.8f+(Power-1)*.06f;
+        public float StaminaRegenMultiplier=>.76f+(Endurance-1)*.06f;
+        public float StaminaCostMultiplier=>1f-(Endurance-5)*.04f;
+        public float HarvestCooldown=>.5f-Gathering*.022f;
+    }
     public static class Catalog
     {
+        public static readonly VesselStats[] VesselStatTable={
+            new VesselStats(6,6,6,5,6,7),   // Wanderer (36)
+            new VesselStats(5,4,9,4,8,5),   // MoonMender (35)
+            new VesselStats(5,6,5,8,4,8),   // BombTrapper (36)
+            new VesselStats(3,10,7,6,5,5),  // RuneWarden (36)
+            new VesselStats(10,2,4,5,9,5),  // SpaceWraith (35)
+            new VesselStats(7,3,8,10,5,3),  // LittleMoone (36)
+        };
+        public static VesselStats StatsFor(Vessel vessel)=>VesselStatTable[Math.Max(0,Math.Min(VesselStatTable.Length-1,(int)vessel))];
+        public static int WeaponMagSize(Weapon w)=>w==Weapon.LumenGun?8:w==Weapon.Crossbow?5:w==Weapon.MirrorShield?4:0;
+        public static float WeaponReloadTime(Weapon w)=>w==Weapon.LumenGun?1.6f:w==Weapon.Crossbow?1.4f:w==Weapon.MirrorShield?1.8f:0f;
+        public static float BeaconChargeTarget(Difficulty difficulty)=>difficulty==Difficulty.Hard?1000:difficulty==Difficulty.Normal?750:500;
+        public static readonly string[] DifficultyNamesVi={"Dễ","Trung bình","Khó"};
+        public static readonly string[] DifficultyNamesEn={"Easy","Normal","Hard"};
         public static float SkillRange(Vessel vessel)=>vessel==Vessel.LittleMoone?18:vessel==Vessel.BombTrapper?10:vessel==Vessel.RuneWarden?5:vessel==Vessel.SpaceWraith?2:vessel==Vessel.MoonMender?8:0;
         public static readonly string[] VesselNames={"Lữ Hành Vô Danh","Y Sư Ánh Trăng","Kẻ Đặt Bẫy Hỏa Ngục","Hộ Vệ Cổ Ngữ","Bóng Ma Không Gian","Little Moone"};
         public static readonly string[] VesselRarities={"Phổ thông","Hiếm","Hiếm","Sử thi","Sử thi","Đặc biệt"};
@@ -94,7 +131,7 @@ namespace Ember
         public static readonly int[] VesselDrawWeights={49,20,20,5,5,1};
         public static readonly string[] ResourceNames={"Bụi quang","Lõi","Mảnh tối","Gỗ","Quặng"};
         public static readonly string[] PerkNames={"Thần Kinh Thép","Lưng Trâu","Bước Chân Bóng Ma","Kẻ Phòng Xa","Thợ Mỏ Lão Luyện","Tia Sáng Cuối","Lương Y Bất Đắc Dĩ"};
-        public static readonly string[] VesselDescriptions={"100 HP • 100 thể lực • Không có kỹ năng chủ động.","90 HP • Hồi 35 HP, xóa 40% hoảng loạn • Hồi chiêu 25 giây.","100 HP • +10% tải trọng • Bom diện rộng, làm mù 3 giây • Hồi chiêu 20 giây.","140 HP • Chậm hơn 5% • Đẩy lùi và tạo giáp ảo 4 giây • Hồi chiêu 18 giây.","85 HP • Nhanh hơn 15% • Đưa bản thân và một đồng đội sát cạnh về hải đăng • Hồi chiêu 60 giây.","100 HP • Mưa sao băng tự ngắm • Hồi chiêu 24 giây."};
+        public static readonly string[] VesselDescriptions={"100 HP • 100 thể lực • Không có kỹ năng chủ động, bù lại chỉ số cân bằng và khai thác ổn định.","100 HP • 100 thể lực • Hồi 35 HP, xóa 40% hoảng loạn • Hồi chiêu 25 giây.","100 HP • 100 thể lực • Bom diện rộng, làm mù 3 giây • Hồi chiêu 20 giây.","100 HP • 100 thể lực • Đẩy lùi và tạo giáp ảo 4 giây • Hồi chiêu 18 giây.","100 HP • 100 thể lực • Đưa bản thân và một đồng đội sát cạnh về hải đăng • Hồi chiêu 60 giây.","100 HP • 100 thể lực • Mưa ánh sao trắng tự ngắm • Hồi chiêu 24 giây."};
         public static readonly string[] PerkDescriptions={"Giảm 25% tốc độ tăng hoảng loạn.","Tăng 30% tải trọng.","Giảm 20% thể lực tiêu hao khi lướt.","Khởi đầu với 2 pháo sáng và 1 thuốc an thần.","Khởi đầu với cuốc sắt.","Đèn cạn nhiên liệu vẫn bùng sáng 5 giây cuối.","Giảm 50% sát thương friendly fire gây ra khi bị ảo giác."};
         public static readonly string[] HatNames={"Mũ Rơm","Mũ Phù Thủy","Vương Miện Nến Chảy","Mặt Nạ Hề Hư Không"};
         public static readonly string[] PetNames={"Đom Đóm Béo","Dơi Bóng Đêm","Mèo Tinh Thể","Hồn Ma Nhỏ"};
@@ -110,7 +147,7 @@ namespace Ember
     // The host alone advances simulation. Clients send intent, never HP/inventory.
     public sealed class EmberWorld
     {
-        public const float Step=1f/30;
+        public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public Snapshot S=new Snapshot();
         public byte[] Tiles; public readonly int[] Chest=new int[5];
         readonly List<Player> players=new List<Player>(); readonly List<Enemy> enemies=new List<Enemy>();
@@ -123,9 +160,11 @@ namespace Ember
         readonly Dictionary<int,FlowField> navigation=new Dictionary<int,FlowField>();
         sealed class FlowField{public int[] Distance;public int Goal=-1;public float Built=-100;}
         Random rng;int nextId=10;float spawnClock,petClock;bool lastLightSpent,bossSpawned;
-        public EmberWorld(int seed,int size=250)
+        float DifficultyEnemyScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Easy?.85f:1f;
+        float DifficultyDreadScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Normal?1.05f:1f;
+        public EmberWorld(int seed,int size=250,Difficulty difficulty=Difficulty.Easy)
         {
-            S.Seed=seed;S.Size=size;S.Phase=Phase.Sanctuary;S.Fuel=100;S.BeaconHP=0;S.Wave=90;rng=new Random(seed);
+            S.Seed=seed;S.Size=size;S.Phase=Phase.Sanctuary;S.Difficulty=difficulty;S.ChargeTarget=Catalog.BeaconChargeTarget(difficulty);S.Fuel=100;S.BeaconHP=0;S.Wave=90;rng=new Random(seed);
             Tiles=MakeTiles(seed,size);GenerateNodes();Publish();
         }
         public static byte[] MakeTiles(int seed,int size)
@@ -180,7 +219,7 @@ namespace Ember
             int partySlot=1;
             while(players.Any(member=>member.PartySlot==partySlot))partySlot++;
             var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=new V2(players.Count*1.5f,0)};
-            p.MaxHP=vessel==Vessel.RuneWarden?140:vessel==Vessel.MoonMender?90:vessel==Vessel.SpaceWraith?85:100;p.HP=p.MaxHP;
+            p.MaxHP=100;p.HP=p.MaxHP;
             p.CarriesLantern=players.Count==0;
             p.Ready=players.Count==0;
             p.Bag[(int)Resource.Dust]=12;
@@ -274,7 +313,7 @@ namespace Ember
         }
         public bool IsSafe(V2 pos)
         {
-            if(S.BeaconHP>0&&S.Charge>=100&&pos.Length<6)return true;
+            if(S.BeaconHP>0&&S.Charge>=S.ChargeTarget&&pos.Length<6)return true;
             foreach(var p in players)
             {
                 if(p.Ghost||p.Extracted)continue;
@@ -305,7 +344,7 @@ namespace Ember
                 for(int radius=0;radius<20&&!Walkable(position);radius++)position=new V2(12+slot*1.25f,radius*.5f);
                 p.Pos=position;p.Dread=p.Id==playerId?(scenario==1?65:scenario==2?95:scenario==3?35:0):0;p.Safe=IsSafe(p.Pos);p.MirageCD=0;slot++;
             }
-            DebugFreezeDread=true;S.Fuel=100;S.BeaconHP=S.Charge>=100?600:0;S.Blackout=0;
+            DebugFreezeDread=true;S.Fuel=100;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;S.Blackout=0;
             Announce("DEBUG scenario "+scenario);Publish();return true;
         }
         public bool DebugAction(string action,int playerId=1)
@@ -316,9 +355,9 @@ namespace Ember
                 case "supplies":for(int i=0;i<5;i++)p.Bag[i]=100;for(int i=0;i<4;i++)p.Items[i]=10;break;
                 case "heal":p.HP=p.MaxHP;p.Dread=0;p.Stamina=100;p.SkillCD=p.DashCD=0;break;
                 case "ghost":p.HP=0;break;
-                case "beacon":p.Pos=new V2();p.LampOn=true;S.BeaconHP=S.Charge>=100?600:0;break;
-                case "eclipse":S.Charge=100;S.BeaconHP=600;S.Wave=90;S.Phase=Phase.Eclipse;break;
-                case "portal":S.Charge=100;S.BeaconHP=600;S.Wave=0;S.Phase=Phase.Extraction;break;
+                case "beacon":p.Pos=new V2();p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
+                case "eclipse":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=90;S.Phase=Phase.Eclipse;break;
+                case "portal":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=0;S.Phase=Phase.Extraction;break;
                 case "blackout":DebugInfiniteFuel=false;S.Fuel=0;S.LastLight=0;S.BeaconHP=0;lastLightSpent=true;break;
                 case "enemy":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Shade,Pos=p.Pos+new V2(3,0),HP=42,MaxHP=42});break;
                 case "boss":enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Boss,Elite=true,Pos=p.Pos+new V2(5,0),HP=600,MaxHP=600});break;
@@ -354,32 +393,39 @@ namespace Ember
             if(S.Phase==Phase.Eclipse){S.Wave=Math.Max(0,S.Wave-dt);if(S.Wave<=0){S.Phase=Phase.Extraction;Announce("Cổng đã mở! Về hải đăng và nhấn E.");}}
             if(S.Fuel<=0&&S.LastLight<=0&&S.BeaconHP<=0){S.Blackout+=dt;if(S.Blackout>=10){S.Phase=Phase.Lost;Announce("Bóng tối nuốt chửng cả nhóm.");}}else S.Blackout=0;
             if(players.Count>0&&players.All(p=>p.Ghost||p.Extracted))S.Phase=S.TeamExtracted>0?Phase.Won:Phase.Lost;
-            foreach(var c in commands.Values){c.Attack=c.Skill=c.Dash=c.Interact=c.Refuel=c.Deposit=c.ToggleLamp=c.PassLamp=false;c.Craft=c.Use=-1;}
+            foreach(var c in commands.Values){c.Attack=c.Skill=c.Dash=c.Interact=c.Refuel=c.Deposit=c.ToggleLamp=c.PassLamp=c.Push=c.Revive=c.Reload=false;c.Craft=c.Use=-1;c.Equip=0;}
             Publish();
         }
         void UpdatePlayer(Player p,float dt)
         {
             p.PushCD=Math.Max(0,p.PushCD-dt);
+            if(p.ReloadTimer>0)
+            {
+                p.ReloadTimer=Math.Max(0,p.ReloadTimer-dt);
+                if(p.ReloadTimer<=0&&p.MaxAmmo>0){p.AmmoWeapon=p.ActiveWeapon;p.Ammo=p.MaxAmmo;}
+            }
             p.AttackCD=Math.Max(0,p.AttackCD-dt);p.SkillCD=Math.Max(0,p.SkillCD-dt);p.DashCD=Math.Max(0,p.DashCD-dt);p.CastTime=Math.Max(0,p.CastTime-dt);p.Invulnerable=Math.Max(0,p.Invulnerable-dt);p.ShieldTime=Math.Max(0,p.ShieldTime-dt);p.HarvestCD=Math.Max(0,p.HarvestCD-dt);
             if(p.ShieldTime<=0)p.Shield=0;
             if(p.Extracted)return;
             p.Safe=IsSafe(p.Pos);
             if(p.Safe)foreach(var key in retaliation.Keys.Where(k=>(int)(k>>32)==p.Id||(int)(uint)k==p.Id).ToArray())retaliation.Remove(key);
+            var stats=p.Stats;
             bool alone=!players.Any(q=>q.Id!=p.Id&&!q.Ghost&&V2.Distance(p.Pos,q.Pos)<12);
-            float dreadRate=p.Safe?-5:alone?3:1.5f;
+            float dreadRate=p.Safe?-5*stats.DreadCalmMultiplier:(alone?3:1.5f)*DifficultyDreadScale*stats.DreadGainMultiplier;
             if(p.Weapon==Weapon.ShadowBlades&&!p.Safe)dreadRate+=.5f;
             if(dreadRate>0&&p.Has(Perk.SteelNerves))dreadRate*=1-.25f*p.PerkStrength(Perk.SteelNerves);
             if(dreadRate>0&&p.Hat==(int)Hat.Candle)dreadRate*=.9f;
-            if(!DebugEnabled||!DebugFreezeDread)p.Dread=Clamp(p.Dread+dt*dreadRate,0,100);p.Stamina=Clamp(p.Stamina+dt*(p.Safe?24:12)*(p.Vessel==Vessel.MoonMender?1.2f:1)*(p.Hat==(int)Hat.Witch?1.08f:1),0,100);
+            if(!DebugEnabled||!DebugFreezeDread)p.Dread=Clamp(p.Dread+dt*dreadRate,0,100);
+            p.Stamina=Clamp(p.Stamina+dt*(p.Safe?24:12)*stats.StaminaRegenMultiplier*(p.Hat==(int)Hat.Witch?1.08f:1),0,100);
             if(!commands.TryGetValue(p.Id,out var movement))movement=new Command();
             if(inputAt.TryGetValue(p.Id,out var received)&&S.Time-received>.5f){movement.X=movement.Y=0;}
             Command c=new Command{X=movement.X,Y=movement.Y};
             if(actions.TryGetValue(p.Id,out var queue)&&queue.Count>0){c=queue.Dequeue();c.X=movement.X;c.Y=movement.Y;}
             p.Move=new V2(c.X,c.Y);if(p.Move.Length>1)p.Move=p.Move.Normal;
             if(Math.Abs(p.Move.X)>.01f)p.Right=p.Move.X>0;
-            float speed=p.Vessel==Vessel.RuneWarden?3.8f:p.Vessel==Vessel.SpaceWraith?4.6f:4;
+            float speed=stats.MoveSpeed;
             if(p.Load>p.Capacity)speed*=.55f;
-            if(p.Ghost){p.Pos=Move(p.Pos,p.Move*speed*dt);return;}
+            if(p.Ghost){p.Move=new V2();return;}
             if(c.ToggleLamp&&p.HeldSlot==2&&p.Items[0]>0)p.LampOn=!p.LampOn;
             if(c.PassLamp&&p.CarriesLantern)
             {
@@ -392,12 +438,13 @@ namespace Ember
             {
                 var position=p.Pos+new V2(p.Right?4:-4,2);if(Walkable(position)){p.MiragePos=position;p.MirageLife=14;}p.MirageCD=20;
             }
-            float dashCost=25*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1);
+            float dashCost=25*stats.StaminaCostMultiplier*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1);
             if(c.Dash&&p.DashCD<=0&&p.Stamina>=dashCost)
-            {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=1.2f;p.DashTime=.16f;p.Invulnerable=.16f;}
+            {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=stats.DashCooldown;p.DashTime=.16f;p.Invulnerable=.16f;}
             if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
             if(c.Refuel&&p.Bag[0]>0){int amount=Math.Min(p.Bag[0],(int)Math.Ceiling((100-S.Fuel)/2));p.Bag[0]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*2);}
-            if(c.Deposit&&p.Pos.Length<4&&S.Phase==Phase.Explore){int amount=Math.Min(p.Bag[1],(int)Math.Ceiling((100-S.Charge)/5));p.Bag[1]-=amount;S.Charge=Math.Min(100,S.Charge+amount*5);if(S.Charge>=100){S.BeaconHP=600;S.Phase=Phase.Eclipse;S.Wave=90;Announce("NHẬT THỰC — bảo vệ hải đăng 90 giây!");}}
+            if(c.Deposit&&p.Pos.Length<4&&S.Phase==Phase.Explore){int amount=Math.Min(p.Bag[1],(int)Math.Ceiling((S.ChargeTarget-S.Charge)/CoreChargeValue));p.Bag[1]-=amount;S.Charge=Math.Min(S.ChargeTarget,S.Charge+amount*CoreChargeValue);if(S.Charge>=S.ChargeTarget){S.BeaconHP=600;S.Phase=Phase.Eclipse;S.Wave=90;Announce("NHẬT THỰC — bảo vệ hải đăng 90 giây!");}}
+            if(c.Revive)ReviveAtBeacon(p);
             if(c.Interact)
             {
                 if(p.MirageLife>0&&V2.Distance(p.Pos,p.MiragePos)<2){p.MirageLife=0;Hurt(p,15);FX(p.Pos,p.Pos,3);Announce("Ảo ảnh vỡ tung.");}
@@ -410,10 +457,22 @@ namespace Ember
                 else Harvest(p,2.4f);
             }
             if(c.Craft>=0&&c.Craft<Catalog.Recipes.Length)Craft(p,(Recipe)c.Craft);
-            if(c.Equip>=1&&c.Equip<=6)p.HeldSlot=c.Equip;
+            if(c.Equip>=1&&c.Equip<=8)
+            {
+                if(p.HeldSlot!=c.Equip){p.HeldSlot=c.Equip;p.ReloadTimer=0;}
+            }
+            if(c.Reload&&p.HoldingWeapon&&p.MaxAmmo>0&&p.ReloadTimer<=0&&p.CurrentAmmo<p.MaxAmmo)
+            {
+                p.AmmoWeapon=p.ActiveWeapon;
+                p.ReloadTimer=Catalog.WeaponReloadTime(p.ActiveWeapon);
+            }
             if(c.Use>=0&&c.Use<4)Use(p,c.Use);
             if(c.Push)PushEnemy(p);
-            if(c.Attack&&p.HeldSlot==1&&p.AttackCD<=0&&p.CastTime<=0)Attack(p);
+            if(c.Attack&&p.HoldingWeapon&&p.AttackCD<=0&&p.CastTime<=0)
+            {
+                if(p.HeldSlot==8&&Harvest(p,2.4f))p.AttackCD=p.HarvestCD;
+                else Attack(p);
+            }
             if(c.Skill&&p.SkillCD<=0&&p.CastTime<=0)Skill(p);
             if(p.HasHeldTorch&&p.Lantern==Lantern.Inferno&&S.Fuel>0)foreach(var e in enemies)if(V2.Distance(e.Pos,p.Pos)<5)Damage(e,dt*8*DamageMultiplier(p));
             if(S.Fuel>0)foreach(var carrier in players.Where(q=>q.HasHeldTorch&&q.Lantern==Lantern.Relic))
@@ -421,12 +480,20 @@ namespace Ember
                 if(V2.Distance(carrier.Pos,p.Pos)>=8)continue;p.HP=Math.Min(p.MaxHP,p.HP+dt*3);p.Dread=Math.Max(0,p.Dread-dt*3);p.Shield=Math.Min(20,p.Shield+dt*2);p.ShieldTime=Math.Max(p.ShieldTime,.2f);
             }
         }
-        void Harvest(Player p,float range,bool dustOnly=false)
+        bool Harvest(Player p,float range,bool dustOnly=false)
         {
-            if(!dustOnly&&p.HarvestCD>0)return;
+            if(!dustOnly&&p.HarvestCD>0)return false;
             var node=nodes.Where(n=>(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
-            if(node==null)return;int n=Math.Min(node.Amount,p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
-            if(!dustOnly)p.HarvestCD=p.Hat==(int)Hat.Straw?.4f/1.05f:.4f;
+            if(node==null)return false;
+            int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8&&!dustOnly?1:0);
+            int n=Math.Min(node.Amount,yield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
+            if(!dustOnly)
+            {
+                if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
+                p.HarvestCD=p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f);
+                FX(p.Pos,node.Pos,7);
+            }
+            return true;
         }
         public bool Craft(Player p,Recipe recipe)
         {
@@ -439,6 +506,30 @@ namespace Ember
             else if(index<9){p.Lantern=index==7?Lantern.Inferno:Lantern.Relic;p.CarriesLantern=true;}
             else p.Weapon=(Weapon)(index-8);
             p.Crafted++;Announce("Đã chế tạo: "+Catalog.Recipes[index].Name);return true;
+        }
+        public bool CanReviveAtBeacon(Player p)
+        {
+            if(p==null||p.Ghost||p.Extracted||p.Pos.Length>5)return false;
+            if(!players.Any(q=>q.Ghost))return false;
+            if(S.Phase==Phase.Explore)return S.Charge>=ReviveChargeCost;
+            return (S.Phase==Phase.Eclipse||S.Phase==Phase.Extraction)&&S.BeaconHP>ReviveBeaconHpCost;
+        }
+        void ReviveAtBeacon(Player p)
+        {
+            if(!CanReviveAtBeacon(p))return;
+            var dead=players.Find(q=>q.Ghost);if(dead==null)return;
+            if(S.Phase==Phase.Explore)
+            {
+                S.Charge=Math.Max(0,S.Charge-ReviveChargeCost);
+                Announce(" được hồi sinh tại hải đăng (-100 năng lượng trụ).",dead.Name);
+            }
+            else
+            {
+                S.BeaconHP=Math.Max(1,S.BeaconHP-ReviveBeaconHpCost);
+                Announce(" được hồi sinh tại hải đăng (-150 HP trụ).",dead.Name);
+            }
+            dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=new V2(0,-1.2f);dead.Invulnerable=3;
+            FX(new V2(),dead.Pos,2);
         }
         void Use(Player p,int item)
         {
@@ -458,7 +549,7 @@ namespace Ember
         }
         void PushEnemy(Player p)
         {
-            const float staminaCost=15;
+            float staminaCost=15*p.Stats.StaminaCostMultiplier;
             if(p.PushCD>0||p.Stamina<staminaCost||p.CastTime>0)return;
             var enemy=enemies.Where(e=>e.HP>0&&e.Kind!=EnemyKind.Nest&&V2.Distance(e.Pos,p.Pos)<1.8f)
                 .OrderBy(e=>V2.Distance(e.Pos,p.Pos)).FirstOrDefault();
@@ -473,24 +564,65 @@ namespace Ember
             FX(p.Pos,dest,6);
         }
 
+        void Knockback(Enemy enemy,V2 direction,float distance)
+        {
+            if(enemy==null||enemy.HP<=0||enemy.Kind==EnemyKind.Nest)return;
+            V2 dir=direction.Normal;
+            if(dir.Length<.01f)return;
+            float scale=enemy.Kind==EnemyKind.Boss?.28f:enemy.Elite?.6f:1f;
+            enemy.Pos=Move(enemy.Pos,dir*(distance*scale),monster:enemy);
+            enemy.AttackCD=Math.Max(enemy.AttackCD,.12f);
+        }
+
+        void ConsumeAmmoAndShoot(Player p,V2 target,float damage)
+        {
+            var weapon=p.ActiveWeapon;
+            int mag=Catalog.WeaponMagSize(weapon);
+            if(mag>0)
+            {
+                if(p.ReloadTimer>0)return;
+                if(p.Ammo<0||p.AmmoWeapon!=weapon){p.AmmoWeapon=weapon;p.Ammo=mag;}
+                if(p.Ammo<=0){p.ReloadTimer=Catalog.WeaponReloadTime(weapon);return;}
+                p.Ammo--;
+                if(p.Ammo<=0)p.ReloadTimer=Catalog.WeaponReloadTime(weapon);
+            }
+            Shoot(p,target,damage);
+        }
+
         void Attack(Player p)
         {
-            bool heavy=p.Weapon==Weapon.CrystalAxe||p.Weapon==Weapon.Pickaxe||p.Weapon==Weapon.MirrorShield;if(heavy&&p.Stamina<8)return;if(heavy)p.Stamina-=8;
-            p.AttackCD=p.Weapon==Weapon.ShadowBlades?.2f:.5f;
-            float damage=(p.Weapon==Weapon.Stick?18:p.Weapon==Weapon.CrystalAxe?36:25)*DamageMultiplier(p);
+            var weapon=p.ActiveWeapon;
+            if(p.Ranged&&p.ReloadTimer>0)return;
+            bool heavy=weapon==Weapon.CrystalAxe||weapon==Weapon.Pickaxe||weapon==Weapon.MirrorShield;float heavyCost=8*p.Stats.StaminaCostMultiplier;if(heavy&&p.Stamina<heavyCost)return;if(heavy)p.Stamina-=heavyCost;
+            p.AttackCD=weapon==Weapon.ShadowBlades?.2f:weapon==Weapon.LumenGun?.32f:.5f;
+            float damage=(weapon==Weapon.Stick?18:weapon==Weapon.CrystalAxe?36:25)*DamageMultiplier(p);
             var target=Target(p,p.Range);
             var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(p.Pos,q.Pos)<p.Range).OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
             if(ally!=null&&(target==null||V2.Distance(ally.Pos,p.Pos)<V2.Distance(target.Pos,p.Pos)))
             {
-                if(p.Ranged){Shoot(p,ally.Pos,damage);return;}
+                if(p.Ranged){ConsumeAmmoAndShoot(p,ally.Pos,damage);return;}
                 Hurt(ally,FriendlyDamage(p,damage));retaliation[((long)ally.Id<<32)|(uint)p.Id]=S.Time;FX(p.Pos,ally.Pos,0);return;
             }
-            if(target==null){FX(p.Pos,p.Pos+new V2(p.Right?1.5f:-1.5f,0),0);return;}
-            if(p.Ranged){Shoot(p,target.Pos,damage);return;}
-            if(p.Weapon==Weapon.CrystalAxe||p.Weapon==Weapon.MirrorShield)
-            {foreach(var e in enemies.Where(e=>V2.Distance(e.Pos,target.Pos)<1.6f))Damage(e,damage);}
-            else Damage(target,damage);
-            FX(p.Pos,target.Pos,p.Ranged?1:0);
+            if(target==null)
+            {
+                if(p.Ranged){ConsumeAmmoAndShoot(p,p.Pos+new V2(p.Right?p.Range:-p.Range,0),damage);return;}
+                FX(p.Pos,p.Pos+new V2(p.Right?1.5f:-1.5f,0),0);return;
+            }
+            if(p.Ranged){ConsumeAmmoAndShoot(p,target.Pos,damage);return;}
+            if(weapon==Weapon.CrystalAxe||weapon==Weapon.MirrorShield)
+            {
+                foreach(var e in enemies.Where(e=>V2.Distance(e.Pos,target.Pos)<1.6f).ToArray())
+                {
+                    Damage(e,damage);
+                    Knockback(e,e.Pos-p.Pos,.85f);
+                }
+            }
+            else
+            {
+                Damage(target,damage);
+                Knockback(target,target.Pos-p.Pos,.55f);
+            }
+            FX(p.Pos,target.Pos,0);
         }
         void Skill(Player p)
         {
@@ -505,7 +637,7 @@ namespace Ember
             }
             if(p.Vessel==Vessel.BombTrapper)
             {
-                var e=Target(p,p.SkillRange);var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(p.Pos,q.Pos)<10).OrderBy(q=>V2.Distance(p.Pos,q.Pos)).FirstOrDefault();
+                var e=Target(p,p.SkillRange);var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(p.Pos,q.Pos)<p.SkillRange).OrderBy(q=>V2.Distance(p.Pos,q.Pos)).FirstOrDefault();
                 if(e==null&&ally==null){p.CastTime=0;return;}var center=ally!=null&&(e==null||V2.Distance(ally.Pos,p.Pos)<V2.Distance(e.Pos,p.Pos))?ally.Pos:e.Pos;
                 float bombDamage=65*DamageMultiplier(p);
                 foreach(var victim in enemies.Where(q=>V2.Distance(q.Pos,center)<3).ToArray()){Damage(victim,bombDamage);victim.Blind=3;}
@@ -528,7 +660,7 @@ namespace Ember
         {
             if(direction.Length<.001f)return new V2(1,0);double angle=Math.Round(Math.Atan2(direction.Y,direction.X)/(Math.PI/4))*Math.PI/4;return new V2((float)Math.Cos(angle),(float)Math.Sin(angle));
         }
-        void Shoot(Player owner,V2 target,float damage)=>projectiles.Add(new Projectile{Id=nextId++,Owner=owner.Id,Pos=owner.Pos,Velocity=(target-owner.Pos).Normal*16,Damage=damage,Life=owner.Range/16+.1f,Weapon=owner.Weapon});
+        void Shoot(Player owner,V2 target,float damage)=>projectiles.Add(new Projectile{Id=nextId++,Owner=owner.Id,Pos=owner.Pos,Velocity=(target-owner.Pos).Normal*16,Damage=damage,Life=owner.Range/16+.1f,Weapon=owner.ActiveWeapon});
         static float SegmentDistance(V2 point,V2 start,V2 end)
         {
             var d=end-start;float length=d.X*d.X+d.Y*d.Y;if(length<.00001f)return V2.Distance(point,start);float t=Clamp(((point.X-start.X)*d.X+(point.Y-start.Y)*d.Y)/length,0,1);return V2.Distance(point,start+d*t);
@@ -536,18 +668,23 @@ namespace Ember
         readonly List<(Player owner,V2 center,float delay)> meteors=new List<(Player,V2,float)>();
         void CastMeteors(Player p)
         {
-            var enemy=Target(p,p.SkillRange);
+            var nearbyEnemies=enemies.Where(e=>e.HP>0&&V2.Distance(e.Pos,p.Pos)<p.SkillRange)
+                .OrderBy(e=>V2.Distance(e.Pos,p.Pos)).Take(6).ToArray();
+            var enemy=nearbyEnemies.FirstOrDefault();
             var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(q.Pos,p.Pos)<p.SkillRange)
                 .OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
             if(enemy==null&&ally==null){p.CastTime=0;return;}
             V2 center=ally!=null&&(enemy==null||V2.Distance(ally.Pos,p.Pos)<V2.Distance(enemy.Pos,p.Pos))?ally.Pos:enemy.Pos;
             p.CastTime=8f/6;
             p.SkillCD=24;
-            for(int i=0;i<5;i++)
+            const int count=12;
+            for(int i=0;i<count;i++)
             {
-                float angle=i*1.57f;
-                V2 impact=i==0?center:center+new V2((float)Math.Cos(angle)*2,(float)Math.Sin(angle)*2);
-                float delay=.82f+i*.19f;
+                V2 anchor=i<nearbyEnemies.Length&&i%2==1?nearbyEnemies[i].Pos:center;
+                float angle=i*2.39996f;
+                float radius=i==0?0:(.8f+(i%4)*.78f);
+                V2 impact=anchor+new V2((float)Math.Cos(angle)*radius,(float)Math.Sin(angle)*radius);
+                float delay=.45f+i*.11f;
                 meteors.Add((p,impact,delay));
                 effects.Add(new Effect{From=impact,To=impact,Kind=4,Life=delay});
             }
@@ -560,14 +697,18 @@ namespace Ember
                 meteor.delay-=dt;
                 if(meteor.delay>0){meteors[i]=meteor;continue;}
                 meteors.RemoveAt(i);
-                float damage=28*DamageMultiplier(meteor.owner);
-                foreach(var enemy in enemies.Where(q=>V2.Distance(q.Pos,meteor.center)<2.2f).ToArray())Damage(enemy,damage);
+                float damage=18*DamageMultiplier(meteor.owner);
+                foreach(var enemy in enemies.Where(q=>V2.Distance(q.Pos,meteor.center)<2.2f).ToArray())
+                {
+                    Damage(enemy,damage);
+                    Knockback(enemy,enemy.Pos-meteor.center,.42f);
+                }
                 foreach(var ally in players.Where(q=>CanHarm(meteor.owner,q)&&V2.Distance(q.Pos,meteor.center)<2.2f))
                 {
                     Hurt(ally,FriendlyDamage(meteor.owner,damage));
                     retaliation[((long)ally.Id<<32)|(uint)meteor.owner.Id]=S.Time;
                 }
-                FX(meteor.center,meteor.center,5);
+                effects.Add(new Effect{From=meteor.center,To=meteor.center,Kind=5,Life=.48f});
             }
         }
         void UpdateProjectiles(float dt)
@@ -579,7 +720,7 @@ namespace Ember
                 var ally=players.Where(p=>CanHarm(owner,p)&&SegmentDistance(p.Pos,start,shot.Pos)<.45f).OrderBy(p=>V2.Distance(start,p.Pos)).FirstOrDefault();
                 if(ally!=null&&(enemy==null||V2.Distance(start,ally.Pos)<V2.Distance(start,enemy.Pos)))
                 {Hurt(ally,FriendlyDamage(owner,shot.Damage));retaliation[((long)ally.Id<<32)|(uint)owner.Id]=S.Time;shot.Life=0;FX(start,ally.Pos,1);}
-                else if(enemy!=null){Damage(enemy,shot.Damage);shot.Life=0;FX(start,enemy.Pos,1);}
+                else if(enemy!=null){Damage(enemy,shot.Damage);Knockback(enemy,shot.Velocity,.48f);shot.Life=0;FX(start,enemy.Pos,1);}
                 else if(!Walkable(shot.Pos))shot.Life=0;
             }
             projectiles.RemoveAll(p=>p.Life<=0);
@@ -593,18 +734,20 @@ namespace Ember
             }
         }
         static float FriendlyDamage(Player p,float damage)=>damage*(p.Has(Perk.ReluctantHealer)?1-.5f*p.PerkStrength(Perk.ReluctantHealer):1);
-        static float DamageMultiplier(Player p)=>p.Hat==(int)Hat.Jester&&p.Dread>=90?1.15f:1;
+        static float DamageMultiplier(Player p)=>p.Stats.PowerMultiplier*(p.Hat==(int)Hat.Jester&&p.Dread>=90?1.15f:1);
         void Hurt(Player p,float damage)
         {
             if(DebugEnabled&&DebugInvulnerable)return;
-            if(p.Invulnerable>0)return;float absorbed=Math.Min(p.Shield,damage);p.Shield-=absorbed;damage-=absorbed;p.HP=Math.Max(0,p.HP-damage);p.Invulnerable=.5f;
-            if(p.Ghost){Announce(" trở thành hồn ma. Hồi sinh tại hải đăng.",p.Name);if(p.Pet==(int)Pet.LittleGhost)structures.Add(new Structure{Id=nextId++,Kind=5,Pos=p.Pos,Life=999999});}
+            if(p.Invulnerable>0)return;
+            damage*=p.Stats.DamageTakenMultiplier;
+            float absorbed=Math.Min(p.Shield,damage);p.Shield-=absorbed;damage-=absorbed;p.HP=Math.Max(0,p.HP-damage);p.Invulnerable=.5f;
+            if(p.Ghost){Announce(" đã gục. Chờ hồi sinh tại hải đăng.",p.Name);if(p.Pet==(int)Pet.LittleGhost)structures.Add(new Structure{Id=nextId++,Kind=5,Pos=p.Pos,Life=999999});}
         }
         void SpawnEnemy()
         {
             var target=players.FirstOrDefault(p=>!p.Ghost&&!p.Extracted);if(target==null)return;
             double a=rng.NextDouble()*Math.PI*2;V2 origin=S.Phase==Phase.Eclipse?new V2():target.Pos;V2 pos=origin+new V2((float)Math.Cos(a),(float)Math.Sin(a))*18;
-            if(!Walkable(pos))return;bool elite=rng.NextDouble()<.12;float hp=elite?160:42;
+            if(!Walkable(pos))return;bool elite=rng.NextDouble()<.12;float hp=(elite?160:42)*DifficultyEnemyScale;
             var kind=elite?EnemyKind.Sentinel:pos.Length>S.Size*.35f?EnemyKind.VoidStalker:pos.Length>S.Size*.22f?EnemyKind.SwampLeech:EnemyKind.Shade;
             enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp});
         }
@@ -629,7 +772,7 @@ namespace Ember
             }
             if(e.AttackCD<=0)
             {
-                if(V2.Distance(target.Pos,e.Pos)<1.1f){Hurt(target,e.Elite?18:9);e.AttackCD=1;}
+                if(V2.Distance(target.Pos,e.Pos)<1.1f){Hurt(target,(e.Elite?18:9)*DifficultyEnemyScale);e.AttackCD=1;}
                 else if(goal.Length<.01f&&e.Pos.Length<2){S.BeaconHP=Math.Max(0,S.BeaconHP-(e.Elite?15:6));e.AttackCD=1;}
                 else {var wall=structures.Find(s=>s.Kind==2&&V2.Distance(s.Pos,e.Pos)<1.5f);if(wall!=null){wall.HP-=10;e.AttackCD=1;}}
             }
