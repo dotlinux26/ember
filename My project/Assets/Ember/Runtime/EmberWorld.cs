@@ -211,7 +211,7 @@ namespace Ember
             for(int i=0;i<12;i++)nodes.Add(new Node{Id=nextId++,Pos=new V2(6+i%4*3,4+i/4*3),Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5});
             for(int i=0;i<10;i++)
             {
-                double a=i*Math.PI*.2;V2 pos=new V2((float)Math.Cos(a),(float)Math.Sin(a))*(30+i*3);
+                double a=i*Math.PI*.2;V2 pos=new V2((float)Math.Cos(a),(float)Math.Sin(a))*(52+i*5);
                 if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Nest,Pos=pos,HP=180,MaxHP=180,AttackCD=5});
             }
         }
@@ -775,8 +775,20 @@ namespace Ember
         void SpawnEnemy()
         {
             var target=players.FirstOrDefault(p=>!p.Ghost&&!p.Extracted);if(target==null)return;
-            double a=rng.NextDouble()*Math.PI*2;V2 origin=S.Phase==Phase.Eclipse?new V2():target.Pos;V2 pos=origin+new V2((float)Math.Cos(a),(float)Math.Sin(a))*18;
-            if(!Walkable(pos))return;bool elite=S.Time>75f&&rng.NextDouble()<.08;float hp=(elite?160:42)*DifficultyEnemyScale;
+            bool eclipse=S.Phase==Phase.Eclipse;
+            V2 origin=eclipse?new V2():target.Pos;
+            float radius=eclipse?22f:26f;
+            V2 pos=new V2();bool found=false;
+            for(int attempt=0;attempt<6;attempt++)
+            {
+                double a=rng.NextDouble()*Math.PI*2;
+                V2 candidate=origin+new V2((float)Math.Cos(a),(float)Math.Sin(a))*radius;
+                if(!Walkable(candidate))continue;
+                if(!eclipse&&candidate.Length<26f)continue;
+                pos=candidate;found=true;break;
+            }
+            if(!found)return;
+            bool elite=S.Time>75f&&rng.NextDouble()<.08;float hp=(elite?160:42)*DifficultyEnemyScale;
             var kind=elite?EnemyKind.Sentinel:pos.Length>S.Size*.35f?EnemyKind.VoidStalker:pos.Length>S.Size*.22f?EnemyKind.SwampLeech:EnemyKind.Shade;
             enemies.Add(new Enemy{Id=nextId++,Pos=pos,Elite=elite,Kind=kind,HP=hp,MaxHP=hp});
         }
@@ -789,7 +801,18 @@ namespace Ember
                 if(S.Time>20f&&e.AttackCD<=0&&V2.Distance(target.Pos,e.Pos)<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale});e.AttackCD=16;}return;
             }
             bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
-            if(!defendingBeacon&&V2.Distance(target.Pos,e.Pos)>22f)return;
+            float distToPlayer=V2.Distance(target.Pos,e.Pos);
+            if(!defendingBeacon&&distToPlayer>18f)
+            {
+                // Gentle patrol outside aggro range so enemies never stand frozen like statues, while keeping away from home.
+                if(e.Blind<=0&&distToPlayer<42f)
+                {
+                    double wanderAngle=S.Time*.55+e.Id*1.9;
+                    V2 patrolDir=e.Pos.Length<22f?e.Pos.Normal:new V2((float)Math.Cos(wanderAngle),(float)Math.Sin(wanderAngle));
+                    e.Pos=Move(e.Pos,patrolDir*(.55f*DifficultyEnemySpeedScale*dt),monster:e);
+                }
+                return;
+            }
             V2 goal=defendingBeacon?new V2():target.Pos;
             if(e.Blind<=0)
             {
