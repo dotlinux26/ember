@@ -124,46 +124,47 @@ namespace Ember
                 energyText=$"{curCharge}/{targetCharge} NL";
 
             bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<3.8f;
-            float bw=154, bh=nearBeacon?64:36;
+            float bw=166f, bh=nearBeacon?74f:50f;
             Rect panelRect=new Rect(Mathf.Round(screen.x-bw/2),Mathf.Round(screen.y-bh),bw,bh);
 
-            PixelPanel(panelRect,new Color(.08f,.06f,.14f,.93f));
+            PixelPanel(panelRect,new Color(.08f,.06f,.14f,.94f));
 
             // Header title
-            UiLabel(new Rect(panelRect.x+4,panelRect.y+2,panelRect.width-8,16),tierTitle,small);
+            var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+            headerStyle.normal.textColor=new Color(.92f,.90f,1f);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+4,panelRect.width-8,16),tierTitle,headerStyle);
 
             // Energy meter
             float chargeRatio=Mathf.Clamp01(curCharge/(float)targetCharge);
             float mw=panelRect.width-20;
-            Rect barBg=new Rect(panelRect.x+10,panelRect.y+18,mw,6);
+            Rect barBg=new Rect(panelRect.x+10,panelRect.y+22,mw,6);
             Panel(barBg,new Color(.04f,.03f,.08f,.95f));
             Color meterCol=overcharged?new Color(.35f,1f,.85f):new Color(.28f,.85f,1f);
             Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,4),meterCol);
             Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,1),new Color(1f,1f,1f,.32f));
 
             // Energy text under meter
-            var oldCol=GUI.contentColor;
-            GUI.contentColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+24,panelRect.width-8,14),energyText,small);
-            GUI.contentColor=oldCol;
+            var energyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
+            energyStyle.normal.textColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+30,panelRect.width-8,16),energyText,energyStyle);
 
             // Interactive deposit prompt when player is nearby
             if(nearBeacon)
             {
                 int cores=p!=null?p.Bag[(int)Resource.Core]:0;
-                Rect btnRect=new Rect(panelRect.x+6,panelRect.y+40,panelRect.width-12,20);
+                Rect btnRect=new Rect(panelRect.x+8,panelRect.y+48,panelRect.width-16,22);
                 PixelPanel(btnRect,cores>0?new Color(.18f,.14f,.28f,.96f):new Color(.12f,.10f,.18f,.88f));
 
-                Rect keyBox=new Rect(btnRect.x+3,btnRect.y+2,16,16);
+                Rect keyBox=new Rect(btnRect.x+3,btnRect.y+2,18,18);
                 Panel(keyBox,Gold);
-                var oldContent=GUI.contentColor;
-                GUI.contentColor=Color.black;
-                GUI.Label(new Rect(keyBox.x+3,keyBox.y-1,12,18),"B",small);
+                var keyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+                keyStyle.normal.textColor=Color.black;
+                GUI.Label(keyBox,"B",keyStyle);
 
-                GUI.contentColor=cores>0?new Color(1f,.94f,.55f):new Color(.70f,.72f,.80f);
+                var promptStyle=new GUIStyle(small){alignment=TextAnchor.MiddleLeft};
+                promptStyle.normal.textColor=cores>0?new Color(1f,.94f,.55f):new Color(.70f,.72f,.80f);
                 string depositPrompt=L("Nạp năng lượng","Deposit Energy");
-                GUI.Label(new Rect(keyBox.xMax+5,btnRect.y+1,btnRect.width-26,18),depositPrompt,small);
-                GUI.contentColor=oldContent;
+                GUI.Label(new Rect(keyBox.xMax+6,btnRect.y+1,btnRect.width-28,20),depositPrompt,promptStyle);
 
                 if(GUI.Button(btnRect,GUIContent.none,GUIStyle.none))
                 {
