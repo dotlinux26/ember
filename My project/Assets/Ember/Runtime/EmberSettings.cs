@@ -23,7 +23,7 @@ namespace Ember
         void ReadCameraZoom()
         {
             var mouse=Mouse.current;
-            if(mouse==null||menu||inventoryOpen||craftOpen||debugOpen||IsMouseOverHud()||State==null||Local==null||
+            if(mouse==null||menu||inventoryOpen||craftOpen||beaconDepositOpen||debugOpen||IsMouseOverHud()||State==null||Local==null||
                 State.Phase==Phase.Sanctuary||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
             float wheel=mouse.scroll.ReadValue().y;
             if(wheel!=0)SetCameraZoom(zoomLevel+(wheel>0?1:-1));

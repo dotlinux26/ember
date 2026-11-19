@@ -9,7 +9,7 @@ namespace Ember
         bool inventoryOpen;
         int heldSlot=6,lastServerHeldSlot=6;
         int pendingQuickAssign;
-        readonly int[] quickSlots={1,7,8,2};
+        readonly int[] quickSlots={0,0,0,0};
         static readonly string[] InventoryWeaponArt={"stick","crystal_axe","shadow_blades","crossbow","lumen_gun","mirror_shield","pickaxe"};
         static bool IsHoldingWeaponSlot(int slot)=>slot==1||slot==7||slot==8;
         static Weapon WeaponForSlot(Player p,int slot)=>slot==7?p.SideWeapon:slot==8?Weapon.Pickaxe:p.Weapon;
@@ -40,6 +40,65 @@ namespace Ember
             quickSlots[quickIndex]=slot;
             pendingQuickAssign=0;
             SaveQuickSlots();
+        }
+
+        bool HasSlotItem(Player p, int slot)
+        {
+            if (p == null) return false;
+            if (slot == 1) return p.HasWeapon;
+            if (slot == 7) return p.HasSideWeapon;
+            if (slot == 8) return p.HasPickaxe;
+            if (slot >= 2 && slot <= 5) return p.Items != null && slot - 2 < p.Items.Length && p.Items[slot - 2] > 0;
+            return false;
+        }
+
+        void CheckAutoAssignQuickSlots(Player p)
+        {
+            if (p == null) return;
+
+            // 1. Unassign slots the player no longer owns
+            for (int i = 0; i < quickSlots.Length; i++)
+            {
+                if (quickSlots[i] > 0 && !HasSlotItem(p, quickSlots[i]))
+                {
+                    quickSlots[i] = 0;
+                    SaveQuickSlots();
+                }
+            }
+
+            // 2. Auto-assign any newly acquired item to first empty quickslot
+            void TryAssign(int slot)
+            {
+                if (!HasSlotItem(p, slot)) return;
+                for (int i = 0; i < quickSlots.Length; i++)
+                {
+                    if (quickSlots[i] == slot) return;
+                }
+                for (int i = 0; i < quickSlots.Length; i++)
+                {
+                    if (quickSlots[i] == 0)
+                    {
+                        quickSlots[i] = slot;
+                        SaveQuickSlots();
+                        if (i == 0 && heldSlot == 6)
+                        {
+                            EquipSlot(slot);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            if (p.HasPickaxe) TryAssign(8);
+            if (p.HasWeapon) TryAssign(1);
+            if (p.HasSideWeapon) TryAssign(7);
+            if (p.Items != null)
+            {
+                for (int c = 0; c < 4 && c < p.Items.Length; c++)
+                {
+                    if (p.Items[c] > 0) TryAssign(c + 2);
+                }
+            }
         }
 
         Sprite SlotIconSprite(Player p,int slot)
@@ -142,6 +201,7 @@ namespace Ember
 
         void EquipSlot(int slot,bool toggle=true)
         {
+            if(slot<=0)return;
             if(toggle&&heldSlot==slot)slot=6; // Toggle: pressing/clicking active held slot unequips to empty hands
             heldSlot=slot;
             lastServerHeldSlot=slot;
@@ -328,7 +388,16 @@ namespace Ember
         Sprite HeldItemSprite(int index)
         {
             if(index==0)return Primitive("torch");
-            return MaterialSprite(ActionIcons[index]);
+            if(index==1)return Primitive("flare");
+            if(index==2)return Primitive("sedative");
+            if(index==3)return Primitive("revival");
+            if(index==14)return Primitive("energy_drink");
+            if(index==15)return Primitive("apple");
+            if(index==16)return Primitive("mushroom");
+            if(index==17)return Primitive("roasted_apple");
+            if(index==18)return Primitive("mushroom_stew");
+            if(index<ActionIcons.Length)return MaterialSprite(ActionIcons[index]);
+            return Primitive("diamond");
         }
 
         Sprite MaterialSprite(string icon)
@@ -422,7 +491,7 @@ namespace Ember
             if(p.HasWeapon)needed[100+1]=1; // primary weapon
             if(p.HasSideWeapon)needed[100+7]=1; // side gun
             if(p.HasPickaxe)needed[100+8]=1; // pickaxe
-            for(int c=0;c<4;c++)if(p.Items!=null&&c<p.Items.Length&&p.Items[c]>0)needed[200+c]=p.Items[c];
+            for(int c=0;c<p.Items.Length;c++)if(p.Items!=null&&p.Items[c]>0)needed[200+c]=p.Items[c];
             for(int r=0;r<(int)Resource.Count;r++)if(p.Bag!=null&&r<p.Bag.Length&&p.Bag[r]>0)needed[300+r]=p.Bag[r];
 
             // 1. Clamp or remove cells that no longer exist or exceed live totals.
@@ -490,7 +559,7 @@ namespace Ember
             if(p.HasWeapon)AddSorted(1,1,1);
             if(p.HasSideWeapon)AddSorted(1,7,1);
             if(p.HasPickaxe)AddSorted(1,8,1);
-            for(int c=0;c<4;c++)if(p.Items!=null&&c<p.Items.Length&&p.Items[c]>0)AddSorted(2,c,p.Items[c]);
+            for(int c=0;c<p.Items.Length;c++)if(p.Items!=null&&p.Items[c]>0)AddSorted(2,c,p.Items[c]);
             for(int r=0;r<(int)Resource.Count;r++)if(p.Bag!=null&&r<p.Bag.Length&&p.Bag[r]>0)AddSorted(3,r,p.Bag[r]);
             inspectedCell=-1;
         }
@@ -502,7 +571,7 @@ namespace Ember
             return used;
         }
 
-        int EquipSlotForCell(BackpackCell cell)=>cell.Kind==1?cell.Id:cell.Kind==2?cell.Id+2:0;
+        int EquipSlotForCell(BackpackCell cell)=>cell.Kind==1?cell.Id:cell.Kind==2?(cell.Id<4?cell.Id+2:0):0;
 
         Sprite CellSprite(Player p,BackpackCell cell)
         {
@@ -517,7 +586,7 @@ namespace Ember
         {
             if(cell.Empty)return L("Trống","Empty");
             if(cell.Kind==1)return InventorySlotName(p,cell.Id);
-            if(cell.Kind==2)return (EmberLanguage.English?ItemNamesEn:ItemNamesVi)[cell.Id];
+            if(cell.Kind==2)return Catalog.GetItemDisplayName(cell.Id);
             string[] resEn={"Lumen Dust","Core","Umbra Shard","Wood","Ore"};
             return (EmberLanguage.English?resEn:Catalog.ResourceNames)[Mathf.Clamp(cell.Id,0,4)];
         }
@@ -549,12 +618,22 @@ namespace Ember
             }
             string name=CellTitle(p,cell);
             int limit=StackLimitFor(cell.Kind,cell.Id);
-            string desc=cell.Id==0?L("Nhiên liệu nạp đèn [Q] và nguyên liệu chế tạo cơ bản.","Refuels lantern [Q] and basic crafting.")
-                :cell.Id==1?L("Mang về Hải Đăng bấm [B] để nạp +25 năng lượng trụ.","Bring to Beacon and press [B] for +25 beacon energy.")
+            if(cell.Kind==2)
+            {
+                string desc=cell.Id==14?L("Tăng 35% tốc & vô hạn thể lực 30s","+35% speed & infinite stamina 30s")
+                    :cell.Id==15?L("Táo tươi hái từ cây · Hồi 25 HP","Fresh apple · Restores 25 HP")
+                    :cell.Id==16?L("Nấm rừng thu hái · Hồi 15 HP","Forest mushroom · Restores 15 HP")
+                    :cell.Id==17?L("Táo nướng giòn · Hồi 45 HP + No ấm","Crisp roasted apple · +45 HP & Well Fed")
+                    :cell.Id==18?L("Súp nấm ấm · Hồi 50 HP + Hồi phục","Warm mushroom stew · +50 HP & Regen")
+                    :Catalog.GetItemDisplayName(cell.Id);
+                return name+" ("+cell.Count+"/"+limit+") · "+L("Vật phẩm · ","Item · ")+desc;
+            }
+            string descRes=cell.Id==0?L("Nhiên liệu nạp đèn [Q], nạp Hải Đăng (+15 NL/10 bụi) và chế tạo.","Refuels lantern [Q], charges Beacon (+15 NL/10 dust), and crafting.")
+                :cell.Id==1?L("Mang về Hải Đăng bấm [B] để mở menu nạp năng lượng trụ (+50 NL/viên).","Bring to Beacon and press [B] to deposit energy (+50/core).")
                 :cell.Id==2?L("Nguyên liệu hiếm từ quái tinh anh/tổ/Boss để chế trang bị cao cấp.","Rare drop from Elites/Nests/Bosses for high-tier gear.")
-                :cell.Id==3?L("Dùng chế tạo Đuốc, Tường, Rương chung và Vũ khí.","Used to craft Torches, Walls, Chests, and Weapons.")
+                :cell.Id==3?L("Dùng chế tạo đồ, công trình hoặc nạp Hải Đăng (+12 NL/10 gỗ).","Used to craft items, structures, or charge Beacon (+12 NL/10 wood).")
                 :L("Dùng chế tạo Pháo sáng, Bẫy điện và Vũ khí tầm xa.","Used to craft Flares, Traps, and Ranged Weapons.");
-            return name+" ("+cell.Count+"/"+limit+") · "+L("Tài nguyên · ","Resource · ")+desc;
+            return name+" ("+cell.Count+"/"+limit+") · "+L("Tài nguyên · ","Resource · ")+descRes;
         }
 
         void MoveOrSwapBackpackCells(int from,int to)
@@ -789,7 +868,7 @@ namespace Ember
             var cell=backpackCells[contextMenuCell];
             if(cell.Empty){contextMenuOpen=false;return;}
             int eqSlot=EquipSlotForCell(cell);
-            float mw=256,mh=eqSlot>0?200:150;
+            float mw=256,mh=eqSlot>0?220:cell.Kind==2?80:55;
             float mx=Mathf.Clamp(contextMenuPos.x,parentBox.x+10,parentBox.xMax-mw-10);
             float my=Mathf.Clamp(contextMenuPos.y,parentBox.y+10,parentBox.yMax-mh-10);
             var menuRect=new Rect(mx,my,mw,mh);
@@ -806,6 +885,15 @@ namespace Ember
             };
 
             float curY=menuRect.y+36;
+            if(cell.Kind==2)
+            {
+                if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),L("Sử dụng","Use"),menuBtnStyle))
+                {
+                    intent.Use=cell.Id;
+                    contextMenuOpen=false;
+                }
+                curY+=30;
+            }
             if(eqSlot>0)
             {
                 UiLabel(new Rect(menuRect.x+8,curY,mw-16,18),L("Gán ô phím tắt:","Assign Quick Slot:"),small);
@@ -887,15 +975,16 @@ namespace Ember
             RegisterHudRect(panel);
 
             // Header
-            var headerRect = new Rect(panel.x + 12, panel.y + 8, panel.width - 24, 28);
-            UiLabel(new Rect(headerRect.x, headerRect.y, headerRect.width - 32, 26), L("Bàn Chế Tạo [Tab]", "Crafting Table [Tab]"), title);
-            if (GUI.Button(new Rect(headerRect.xMax - 26, headerRect.y, 26, 26), "✕", GUI.skin.button))
+            var craftTitleStyle = new GUIStyle(title) { fontSize = 20, alignment = TextAnchor.MiddleLeft };
+            float headerY = panel.y + 10f;
+            UiLabel(new Rect(panel.x + 14, headerY, panel.width - 50, 32), L("Bàn Chế Tạo [Tab]", "Crafting Table [Tab]"), craftTitleStyle);
+            if (GUI.Button(new Rect(panel.x + panel.width - 36, headerY + 2, 26, 26), "✕", GUI.skin.button))
             {
                 craftOpen = false;
             }
 
             // Categories bar
-            float catY = panel.y + 40f;
+            float catY = panel.y + 48f;
             string[] catNames = EmberLanguage.English
                 ? new[] { "All", "Survival", "Build", "Gear" }
                 : new[] { "Tất cả", "Dã ngoại", "Công trình", "Trang bị" };
@@ -912,7 +1001,7 @@ namespace Ember
             }
 
             // Scrollable cards list
-            float listY = catY + 28f;
+            float listY = catY + 30f;
             float listH = panel.height - (listY - panel.y) - 10f;
             bool prevCapture = hudCapturing;
             hudCapturing = false;
@@ -922,13 +1011,14 @@ namespace Ember
             for (int i = 0; i < Catalog.Recipes.Length; i++)
             {
                 // Filter by category
-                if (craftCategory == 1 && !(i < 4 || i >= 14)) continue;
+                if (craftCategory == 1 && !(i < 4 || (i >= 14 && i <= 18) || i >= 19)) continue;
                 if (craftCategory == 2 && !(i >= 4 && i <= 6)) continue;
-                if (craftCategory == 3 && !(i >= 7 && i <= 13)) continue;
+                if (craftCategory == 3 && !((i >= 7 && i <= 13) || i >= 19)) continue;
 
                 var recipe = Catalog.Recipes[i];
-                bool unlocked = p.Recipes == null || p.Recipes.Contains(i);
-                bool nearBeacon = i < 7 || i >= 14 || p.Pos.Length <= 5;
+                bool isSanctuaryGear = i >= 7 && i <= 13;
+                bool unlocked = !isSanctuaryGear || p.Recipes == null || p.Recipes.Contains(i);
+                bool nearBeacon = !isSanctuaryGear || p.Pos.Length <= 5;
                 bool supplied = true;
                 for (int j = 0; j < recipe.Cost.Length; j++) supplied &= p.Bag[j] >= recipe.Cost[j];
                 bool can = unlocked && nearBeacon && supplied && !p.Ghost && !p.Extracted;
@@ -941,7 +1031,8 @@ namespace Ember
                 DrawSpritePreview(new Rect(card.x + 8, card.y + 8, 36, 36), iconSp);
 
                 // Recipe name & desc
-                UiLabel(new Rect(card.x + 50, card.y + 6, card.width - 56, 22), recipe.Name, label);
+                string recipeTitle = RecipeTitle(i, recipe.Name);
+                UiLabel(new Rect(card.x + 50, card.y + 6, card.width - 56, 22), recipeTitle, label);
                 string desc = RecipeDescription(i);
                 if (!string.IsNullOrEmpty(desc))
                 {
@@ -973,6 +1064,8 @@ namespace Ember
                 if (UiButton(new Rect(card.x + 8, card.y + 75, card.width - 16, 26), action))
                 {
                     intent.Craft = i;
+                    if (audioSource != null && tone != null) audioSource.PlayOneShot(tone, 0.4f);
+                    notice = (EmberLanguage.English ? "Crafted: " : "Đã chế tạo: ") + RecipeTitle(i, recipe.Name);
                 }
                 GUI.enabled = true;
                 GUILayout.Space(6);
@@ -985,10 +1078,20 @@ namespace Ember
 
         Sprite RecipeSprite(int i)
         {
-            if (i < 4) return HeldItemSprite(i);
+            if (i == 0) return Primitive("torch");
+            if (i == 1) return Primitive("flare");
+            if (i == 2) return Primitive("sedative");
+            if (i == 3) return Primitive("revival");
+            if (i == 7) return Primitive("lantern_inferno");
+            if (i == 8) return Primitive("lantern_relic");
             if (i == 14) return Primitive("energy_drink");
-            if (i == 15 || i == 17) return Primitive("apple");
-            if (i == 16 || i == 18) return Primitive("mushroom");
+            if (i == 15) return Primitive("apple");
+            if (i == 16) return Primitive("mushroom");
+            if (i == 17) return Primitive("roasted_apple");
+            if (i == 18) return Primitive("mushroom_stew");
+            if (i == 19 || i == 20) return Primitive("pickaxe");
+            if (i == 21) return Primitive("axe");
+            if (i == 22) return Primitive("stick");
             if (CraftIcons != null && i < CraftIcons.Length) return Primitive(CraftIcons[i]);
             return Primitive("diamond");
         }
@@ -1016,7 +1119,43 @@ namespace Ember
                 case 16: return L("Nấm rừng thu hái · Nguyên liệu", "Forest mushroom · Ingredient");
                 case 17: return L("Táo nướng giòn · Hồi 45 HP + No ấm", "Crisp roasted apple · +45 HP & Well Fed");
                 case 18: return L("Súp nấm ấm · Hồi 50 HP + Hồi thể lực", "Warm mushroom stew · +50 HP & Stamina");
+                case 19: return L("Cuốc sắt · Khai thác quặng tối đa Cấp 1", "Iron Pickaxe · Mine Tier 1 ores & rocks");
+                case 20: return L("Cuốc đá · Công cụ khai thác sơ khai", "Stone Pickaxe · Basic primitive mining tool");
+                case 21: return L("Rìu đốn gỗ · Chặt cây lấy gỗ & cận chiến", "Woodcutter Axe · Chop trees & cleave melee");
+                case 22: return L("Gậy gỗ sinh tồn · Vũ khí tự vệ cơ bản", "Wooden Stick · Basic self-defense weapon");
                 default: return "";
+            }
+        }
+
+        static string RecipeTitle(int i, string fallback)
+        {
+            if (!EmberLanguage.English) return fallback;
+            switch (i)
+            {
+                case 0: return "Torch";
+                case 1: return "Flare";
+                case 2: return "Sedative";
+                case 3: return "Revival Stone";
+                case 4: return "Wall";
+                case 5: return "Electric Trap";
+                case 6: return "Team Chest";
+                case 7: return "Inferno Lantern";
+                case 8: return "Relic Lantern";
+                case 9: return "Crystal Axe";
+                case 10: return "Shadow Blades";
+                case 11: return "Crystal Crossbow";
+                case 12: return "Lumen Gun";
+                case 13: return "Mirror Shield";
+                case 14: return "Energy Drink";
+                case 15: return "Apple";
+                case 16: return "Forest Mushroom";
+                case 17: return "Roasted Apple";
+                case 18: return "Mushroom Stew";
+                case 19: return "Iron Pickaxe";
+                case 20: return "Stone Pickaxe";
+                case 21: return "Woodcutter Axe";
+                case 22: return "Wooden Stick";
+                default: return fallback;
             }
         }
     }

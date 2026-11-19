@@ -481,11 +481,14 @@ harvestWorld.Tiles[hTy*hSize+hTx]=3; // tree obstacle
 harvestWorld.Submit(1, new Command{Interact=true});
 harvestWorld.Tick();
 Check(harvestWorld.S.HarvestTargets.Any(h=>h.Tx==hTx&&h.Ty==hTy&&h.HP<h.MaxHP)&&harvestPlayer.Bag[(int)Resource.Wood]>0, "chopping tree tile damages it, reveals overhead health bar, and yields wood");
-harvestPlayer.HarvestCD=0;
-harvestPlayer.Stamina=100;
-harvestWorld.Submit(1, new Command{Interact=true});
-harvestWorld.Tick();
-Check(harvestWorld.Tiles[hTy*hSize+hTx]==0&&harvestPlayer.PickaxeDurability==48, "final chop clears tree collision, spawns stump, and depletes durability");
+while(harvestWorld.Tiles[hTy*hSize+hTx]!=0&&harvestPlayer.PickaxeDurability>40)
+{
+    harvestPlayer.HarvestCD=0;
+    harvestPlayer.Stamina=100;
+    harvestWorld.Submit(1, new Command{Interact=true});
+    harvestWorld.Tick();
+}
+Check(harvestWorld.Tiles[hTy*hSize+hTx]==0&&harvestPlayer.PickaxeDurability<=48, "final chop clears tree collision, spawns stump, and depletes durability");
 
 // Pickaxe break check
 harvestPlayer.PickaxeTier=0;
@@ -798,6 +801,304 @@ float monsterHpBefore = monster.HP;
 combatWorld.Submit(attacker.Id, new Command { Attack = true });
 combatWorld.Tick();
 Check(monster.HP < monsterHpBefore, "pickaxe attacks and damages enemy monster");
+
+// --- Test Batch 4: Expanded Crafting Tools, Weapons & Universal Item Naming ---
+var craftTestWorld = new EmberWorld(777);
+var crafterHero = craftTestWorld.AddPlayer(1, "Artisan", Vessel.Wanderer, recipes: new[] { 0 }); // only torch in sanctuary
+craftTestWorld.StartRun();
+crafterHero.HeldSlot = 6; // empty hands
+crafterHero.HasWeapon = false;
+crafterHero.HasPickaxe = false;
+
+// 1. Craft Iron Pickaxe: 6 Wood, 4 Ore
+crafterHero.Bag[(int)Resource.Wood] = 6;
+crafterHero.Bag[(int)Resource.Ore] = 4;
+Check(craftTestWorld.Craft(crafterHero, Recipe.IronPickaxe), "craft iron pickaxe succeeds with basic resources");
+Check(crafterHero.HasPickaxe && crafterHero.PickaxeTier == 1 && crafterHero.PickaxeDurability == 48, "iron pickaxe sets tier 1 and 48 durability");
+Check(crafterHero.HeldSlot == 8, "crafting pickaxe from empty hands auto-equips to slot 8");
+Check(crafterHero.Bag[(int)Resource.Wood] == 0 && crafterHero.Bag[(int)Resource.Ore] == 0, "crafting iron pickaxe spends exact 6 wood and 4 ore");
+
+// 2. Craft Stone Pickaxe: 4 Wood, 4 Ore
+crafterHero.HeldSlot = 6;
+crafterHero.Bag[(int)Resource.Wood] = 4;
+crafterHero.Bag[(int)Resource.Ore] = 4;
+Check(craftTestWorld.Craft(crafterHero, Recipe.StonePickaxe), "craft stone pickaxe succeeds");
+Check(crafterHero.PickaxeTier == 0 && crafterHero.PickaxeDurability == 30 && crafterHero.HeldSlot == 8, "stone pickaxe sets tier 0 and 30 durability and equips");
+
+// 3. Craft Wooden Stick: 3 Wood
+crafterHero.HeldSlot = 6;
+crafterHero.Bag[(int)Resource.Wood] = 3;
+Check(craftTestWorld.Craft(crafterHero, Recipe.WoodenStick), "craft wooden stick succeeds");
+Check(crafterHero.HasWeapon && crafterHero.Weapon == Weapon.Stick && crafterHero.HeldSlot == 1, "wooden stick equips to slot 1");
+
+// 4. Craft Woodcutter Axe: 5 Wood, 2 Ore
+crafterHero.HeldSlot = 6;
+crafterHero.Bag[(int)Resource.Wood] = 5;
+crafterHero.Bag[(int)Resource.Ore] = 2;
+Check(craftTestWorld.Craft(crafterHero, Recipe.WoodcutterAxe), "craft woodcutter axe succeeds");
+Check(crafterHero.HasWeapon && crafterHero.Weapon == Weapon.CrystalAxe && crafterHero.HeldSlot == 1, "woodcutter axe equips to slot 1 as crystal axe");
+
+// 5. Basic survival recipes can be crafted without Sanctuary unlock
+crafterHero.Bag[(int)Resource.Wood] = 10;
+crafterHero.Bag[(int)Resource.Ore] = 10;
+Check(craftTestWorld.Craft(crafterHero, Recipe.Apple), "craft apple succeeds without sanctuary unlock");
+Check(!craftTestWorld.Craft(crafterHero, Recipe.CrystalAxe), "sanctuary high-tier weapon is still locked");
+
+// 6. Field crafting: basic tools can be crafted outside beacon, while sanctuary gear requires beacon
+crafterHero.Pos = new V2(25f, 25f); // deep in the field > 5 tiles
+crafterHero.Bag[(int)Resource.Wood] = 6;
+crafterHero.Bag[(int)Resource.Ore] = 4;
+Check(craftTestWorld.Craft(crafterHero, Recipe.IronPickaxe), "basic tool craft succeeds in the field outside beacon");
+
+// 7. Universal Item Naming check
+Check(Catalog.GetDroppedDisplayName(1, (int)Weapon.Pickaxe, Resource.Ore, false) == "Cuốc Sắt", "dropped pickaxe resolves to Cuốc Sắt in Vietnamese");
+Check(Catalog.GetDroppedDisplayName(1, (int)Weapon.Stick, Resource.Wood, false) == "Gậy Gỗ", "dropped stick resolves to Gậy Gỗ in Vietnamese");
+Check(Catalog.GetDroppedDisplayName(2, 15, Resource.Wood, false) == "Quả Táo", "dropped apple resolves to Quả Táo in Vietnamese");
+Check(Catalog.GetDroppedDisplayName(0, 0, Resource.Wood, false) == "Gỗ", "dropped raw wood resolves to Gỗ in Vietnamese");
+Check(Catalog.GetDroppedDisplayName(2, 17, Resource.Wood, true) == "Roasted Apple", "dropped roasted apple resolves to Roasted Apple in English");
+
+// 8. Cây This Cây That & Mỏ Đá Đa Dạng Checks
+bool foundAncientTree = false, foundSmallTree = false, foundNormalTree = false;
+bool foundRichVein = false, foundSmallGravel = false, foundNormalRock = false;
+for (int tx = 0; tx < 50; tx++)
+{
+    for (int ty = 0; ty < 50; ty++)
+    {
+        var tDef = Catalog.GetTileHarvestDef(tx, ty, 3);
+        if (tDef.Tier == 2) { foundAncientTree = true; Check(tDef.MaxHP == 260f && tDef.MinDrop == 6 && tDef.MaxDrop == 10 && tDef.VisualScale >= 1.6f, "ancient tree has high HP 260 and large scale 1.7"); }
+        if (tDef.Tier == 0) { foundSmallTree = true; Check(tDef.MaxHP == 65f && tDef.MinDrop == 1 && tDef.MaxDrop == 2 && tDef.VisualScale <= 1.05f, "small tree has low HP 65 and compact scale"); }
+        if (tDef.Tier == 1) { foundNormalTree = true; Check(tDef.MaxHP == 130f && tDef.MinDrop == 3 && tDef.MaxDrop == 5, "normal tree has standard HP 130 and 3-5 drops"); }
+
+        var rDef = Catalog.GetTileHarvestDef(tx, ty, 2);
+        if (rDef.Tier == 2) { foundRichVein = true; Check(rDef.MaxHP == 230f && rDef.MinDrop == 5 && rDef.MaxDrop == 8 && rDef.VisualScale >= 1.4f, "rich vein has high HP 230 and 5-8 drops"); }
+        if (rDef.Tier == 0) { foundSmallGravel = true; Check(rDef.MaxHP == 55f && rDef.MinDrop == 1 && rDef.MaxDrop == 2, "small gravel has low HP 55 and 1-2 drops"); }
+        if (rDef.Tier == 1) { foundNormalRock = true; Check(rDef.MaxHP == 130f && rDef.MinDrop == 2 && rDef.MaxDrop == 4, "normal rock has standard HP 130 and 2-4 drops"); }
+
+        if (foundAncientTree && foundSmallTree && foundNormalTree && foundRichVein && foundSmallGravel && foundNormalRock)
+            break;
+    }
+    if (foundAncientTree && foundSmallTree && foundNormalTree && foundRichVein && foundSmallGravel && foundNormalRock)
+        break;
+}
+Check(foundAncientTree && foundSmallTree && foundNormalTree, "procedural generator spawns small, normal, and ancient giant trees");
+Check(foundRichVein && foundSmallGravel && foundNormalRock, "procedural generator spawns small gravel, normal rocks, and rich veins");
+
+// --- Test Abandoned Mystery Chests (Rương Bỏ Hoang Ngẫu Nhiên / Hộp Pandora) ---
+var chestWorld1 = new EmberWorld(42);
+var chests1 = chestWorld1.S.Structures.Where(s => s.Kind == EmberWorld.MysteryChestKind).ToList();
+Check(chests1.Count >= 4 && chests1.Count <= 8, "spawn 4 to 8 abandoned mystery chests on map creation");
+Check(chests1.All(c => c.Pos.Length >= 18f), "all mystery chests are far from beacon (>= 18 tiles)");
+Check(chests1.All(c => chestWorld1.Walkable(c.Pos)), "all mystery chests are on walkable terrain");
+
+// Verify no clustering (all chests are at least 15 tiles apart)
+bool allChestsSpreadOut = true;
+for (int i = 0; i < chests1.Count; i++)
+{
+    for (int j = i + 1; j < chests1.Count; j++)
+    {
+        if (V2.Distance(chests1[i].Pos, chests1[j].Pos) < 14.9f)
+        {
+            allChestsSpreadOut = false;
+            break;
+        }
+    }
+}
+Check(allChestsSpreadOut, "mystery chests are distributed and at least 15 tiles apart (no clustering)");
+
+// Check deterministic seed variation (seed 42 vs seed 99)
+var chestWorld2 = new EmberWorld(99);
+var chests2 = chestWorld2.S.Structures.Where(s => s.Kind == EmberWorld.MysteryChestKind).ToList();
+Check(V2.Distance(chests1[0].Pos, chests2[0].Pos) > 1f, "mystery chest locations vary randomly by seed");
+
+// Test Interaction: Press [E] when within interaction distance (< 2.2f) opens chest
+var chestPlayer = chestWorld1.AddPlayer(1, "Adventurer", Vessel.Wanderer);
+chestWorld1.StartRun();
+var targetChest = chests1[0];
+chestPlayer.Pos = targetChest.Pos + new V2(0.5f, 0.5f);
+Check(V2.Distance(chestPlayer.Pos, targetChest.Pos) < EmberWorld.MysteryChestInteractionDistance, "player is in mystery chest interaction range");
+
+// Test Scenario 1: Loot Drop (40%)
+var lootWorld = new EmberWorld(101);
+var lootPlayer = lootWorld.AddPlayer(1, "Looter", Vessel.Wanderer);
+lootWorld.StartRun();
+var lootChest = lootWorld.S.Structures.First(s => s.Kind == EmberWorld.MysteryChestKind);
+lootPlayer.Pos = lootChest.Pos;
+int sc1 = lootWorld.OpenMysteryChest(lootPlayer, lootChest, forcedScenario: 1);
+Check(sc1 == 1, "scenario 1 triggers loot drop");
+Check(lootChest.Kind == EmberWorld.MysteryChestOpenKind && lootChest.Life == 30f, "chest converts to open kind and sets 30s life");
+int droppedNodes = lootWorld.S.Nodes.Count(n => n.Dropped && V2.Distance(n.Pos, lootChest.Pos) <= 2.5f);
+Check(droppedNodes >= 2 && droppedNodes <= 3, "loot drop scatters 2-3 item nodes near chest");
+Check(lootWorld.S.Event.Contains("Rương báu nhả ra quà tặng quý giá"), "scenario 1 broadcasts lucky gift announcement");
+
+// Test Scenario 2: Monster Trap Ambush (25%)
+var ambushWorld = new EmberWorld(102);
+var ambushPlayer = ambushWorld.AddPlayer(1, "Scout", Vessel.Wanderer);
+ambushWorld.StartRun();
+var ambushChest = ambushWorld.S.Structures.First(s => s.Kind == EmberWorld.MysteryChestKind);
+ambushPlayer.Pos = ambushChest.Pos;
+int enemiesBefore = ambushWorld.S.Enemies.Length;
+int sc2 = ambushWorld.OpenMysteryChest(ambushPlayer, ambushChest, forcedScenario: 2);
+Check(sc2 == 2, "scenario 2 triggers monster ambush");
+int newEnemies = ambushWorld.S.Enemies.Length - enemiesBefore;
+Check(newEnemies >= 2 && newEnemies <= 3, "monster ambush spawns 2-3 shadow monsters");
+Check(ambushWorld.S.Event.Contains("Bẫy quái vật! Quái bóng tối phục kích"), "scenario 2 broadcasts ambush warning");
+
+// Test Scenario 3: Magical Projectile Burst (20%)
+var bulletWorld = new EmberWorld(103);
+var bulletPlayer = bulletWorld.AddPlayer(1, "Dodger", Vessel.Wanderer);
+bulletWorld.StartRun();
+var bulletChest = bulletWorld.S.Structures.First(s => s.Kind == EmberWorld.MysteryChestKind);
+bulletPlayer.Pos = bulletChest.Pos;
+int sc3 = bulletWorld.OpenMysteryChest(bulletPlayer, bulletChest, forcedScenario: 3);
+Check(sc3 == 3, "scenario 3 triggers projectile circle burst");
+int firedShots = bulletWorld.S.Projectiles.Count(p => p.Owner == bulletChest.Id && p.FromEnemy);
+Check(firedShots >= 12 && firedShots <= 16, "projectile burst fires 12-16 circular magic projectiles");
+Check(bulletWorld.S.Event.Contains("Rương bẫy phát nổ chùm đạn ma thuật"), "scenario 3 broadcasts projectile explosion announcement");
+
+// Test Scenario 4: Teleport Back to Beacon (15%)
+var tpWorld = new EmberWorld(104);
+var tpPlayer = tpWorld.AddPlayer(1, "Traveler", Vessel.Wanderer);
+tpWorld.StartRun();
+var tpChest = tpWorld.S.Structures.First(s => s.Kind == EmberWorld.MysteryChestKind);
+tpPlayer.Pos = tpChest.Pos;
+Check(tpPlayer.Pos.Length >= 18f, "player was deep in the dark before teleport");
+int sc4 = tpWorld.OpenMysteryChest(tpPlayer, tpChest, forcedScenario: 4);
+Check(sc4 == 4, "scenario 4 triggers beacon teleport");
+Check(tpPlayer.Pos.Length < 2.5f, "player teleported straight to Beacon safe zone");
+Check(tpWorld.S.Event.Contains("đá bay bạn về Trụ Khởi Sinh"), "scenario 4 broadcasts kick back to beacon announcement");
+
+// Test Opening via [E] Command (c.Interact)
+var interactWorld = new EmberWorld(105);
+var interactPlayer = interactWorld.AddPlayer(1, "Opener", Vessel.Wanderer);
+interactWorld.StartRun();
+var iChest = interactWorld.S.Structures.First(s => s.Kind == EmberWorld.MysteryChestKind);
+interactPlayer.Pos = iChest.Pos;
+interactWorld.Submit(1, new Command { Interact = true });
+interactWorld.Tick();
+Check(iChest.Kind == EmberWorld.MysteryChestOpenKind, "pressing E in range opens mystery chest via simulation command");
+
+// Test Despawn after 30s
+iChest.Life = 0.05f;
+interactWorld.Tick(0.1f);
+Check(!interactWorld.S.Structures.Any(s => s.Id == iChest.Id), "opened mystery chest disappears after 30s decay");
+
+// --- Test Batch 5: Beacon Energy Deposit Modal & Network Synchronization ---
+var depositWorld = new EmberWorld(888);
+var depPlayer = depositWorld.AddPlayer(1, "BeaconDepositor", Vessel.Wanderer);
+depositWorld.StartRun();
+depPlayer.Pos = new V2(1.5f, 1.0f); // near Beacon (< 4.5f)
+
+// 1. Crystal Core Deposit (+50 NL per Core)
+depositWorld.S.Charge = 0f;
+depPlayer.Bag[(int)Resource.Core] = 10;
+
+// Deposit 1 Core
+bool dep1Ok = depositWorld.DepositEnergy(depPlayer, (int)Resource.Core, 1);
+Check(dep1Ok && depPlayer.Bag[(int)Resource.Core] == 9 && depositWorld.S.Charge == 50f, "deposit 1 crystal core gives +50 Beacon energy");
+
+// Deposit 5 Cores
+bool dep5Ok = depositWorld.DepositEnergy(depPlayer, (int)Resource.Core, 5);
+Check(dep5Ok && depPlayer.Bag[(int)Resource.Core] == 4 && depositWorld.S.Charge == 300f, "deposit 5 crystal cores gives +250 Beacon energy");
+
+// Deposit All Remaining Cores (4 cores)
+bool depAllCoreOk = depositWorld.DepositEnergy(depPlayer, (int)Resource.Core, depPlayer.Bag[(int)Resource.Core]);
+Check(depAllCoreOk && depPlayer.Bag[(int)Resource.Core] == 0 && depositWorld.S.Charge == 500f, "deposit all remaining cores gives +200 Beacon energy");
+
+// Reject when empty
+Check(!depositWorld.DepositEnergy(depPlayer, (int)Resource.Core, 1), "deposit core rejected when player has 0 cores");
+
+// 2. Lumidust Deposit (+15 NL per 10 Dust)
+depositWorld.S.Charge = 0f;
+depPlayer.Bag[(int)Resource.Dust] = 25;
+
+// Reject if less than 10 requested
+Check(!depositWorld.DepositEnergy(depPlayer, (int)Resource.Dust, 5), "deposit lumidust rejected when requested amount < 10");
+
+// Deposit 10 Dust
+bool depDust10Ok = depositWorld.DepositEnergy(depPlayer, (int)Resource.Dust, 10);
+Check(depDust10Ok && depPlayer.Bag[(int)Resource.Dust] == 15 && depositWorld.S.Charge == 15f, "deposit 10 lumidust gives +15 Beacon energy");
+
+// Deposit All batches of 10 (from 15 dust -> deposits 10 dust, leaves 5)
+bool depDustAllOk = depositWorld.DepositEnergy(depPlayer, (int)Resource.Dust, (depPlayer.Bag[(int)Resource.Dust] / 10) * 10);
+Check(depDustAllOk && depPlayer.Bag[(int)Resource.Dust] == 5 && depositWorld.S.Charge == 30f, "deposit all batches of 10 lumidust leaves remainder and adds energy");
+
+// 3. Wood Deposit (+12 NL per 10 Wood)
+depositWorld.S.Charge = 0f;
+depPlayer.Bag[(int)Resource.Wood] = 34;
+
+// Reject if less than 10
+Check(!depositWorld.DepositEnergy(depPlayer, (int)Resource.Wood, 8), "deposit wood rejected when amount < 10");
+
+// Deposit 10 Wood
+bool depWood10Ok = depositWorld.DepositEnergy(depPlayer, (int)Resource.Wood, 10);
+Check(depWood10Ok && depPlayer.Bag[(int)Resource.Wood] == 24 && depositWorld.S.Charge == 12f, "deposit 10 wood gives +12 Beacon energy");
+
+// Deposit All batches of 10 (from 24 wood -> deposits 20 wood, leaves 4)
+bool depWoodAllOk = depositWorld.DepositEnergy(depPlayer, (int)Resource.Wood, (depPlayer.Bag[(int)Resource.Wood] / 10) * 10);
+Check(depWoodAllOk && depPlayer.Bag[(int)Resource.Wood] == 4 && depositWorld.S.Charge == 36f, "deposit all batches of 10 wood leaves remainder and adds +24 energy");
+
+// 4. Distance check: deposit rejected if player > 4.5 tiles away
+depPlayer.Pos = new V2(6.0f, 6.0f);
+depPlayer.Bag[(int)Resource.Core] = 5;
+float chargeBeforeDist = depositWorld.S.Charge;
+Check(!depositWorld.DepositEnergy(depPlayer, (int)Resource.Core, 1), "deposit rejected when player is far from beacon (> 4.5 tiles)");
+Check(depositWorld.S.Charge == chargeBeforeDist && depPlayer.Bag[(int)Resource.Core] == 5, "charge and bag remain untouched on distance rejection");
+depPlayer.Pos = new V2(0.5f, 0.5f);
+
+// 5. Network / Simulation Command synchronization (c.DepositRes & c.DepositAmt)
+depPlayer.Bag[(int)Resource.Core] = 3;
+float chargeBeforeCmd = depositWorld.S.Charge;
+depositWorld.Submit(depPlayer.Id, new Command { Deposit = true, DepositRes = (int)Resource.Core, DepositAmt = 2 });
+depositWorld.Tick();
+Check(depPlayer.Bag[(int)Resource.Core] == 1 && depositWorld.S.Charge == chargeBeforeCmd + 100f, "simulation Command with DepositRes=1 and DepositAmt=2 executes over tick");
+
+// Command Serialization check
+var testCmd = new Command { Deposit = true, DepositRes = (int)Resource.Wood, DepositAmt = 20 };
+Check(testCmd.HasActions, "Command with DepositRes has HasActions=true");
+var cmdOpts = new System.Text.Json.JsonSerializerOptions { IncludeFields = true };
+string cmdJson = System.Text.Json.JsonSerializer.Serialize(testCmd, cmdOpts);
+var deserializedCmd = System.Text.Json.JsonSerializer.Deserialize<Command>(cmdJson, cmdOpts);
+Check(deserializedCmd.Deposit && deserializedCmd.DepositRes == (int)Resource.Wood && deserializedCmd.DepositAmt == 20, "Command DepositRes and DepositAmt serialize/deserialize round-trip");
+
+// 6. Eclipse Transition when target charge reached via multi-resource deposit
+depositWorld.S.Phase = Phase.Explore;
+depositWorld.S.Charge = depositWorld.S.ChargeTarget - 50f;
+depPlayer.Bag[(int)Resource.Core] = 1;
+depositWorld.Submit(depPlayer.Id, new Command { Deposit = true, DepositRes = (int)Resource.Core, DepositAmt = 1 });
+depositWorld.Tick();
+Check(depositWorld.S.Phase == Phase.Eclipse && depositWorld.S.BeaconHP == 600f, "reaching Beacon charge target via deposit triggers Eclipse phase and restores Beacon HP to 600");
+
+// 7. Test Lantern vs Torch Craft separation
+Check(Catalog.Recipes[(int)Recipe.Torch].Name == "Đuốc", "recipe torch name is Đuốc");
+Check(Catalog.Recipes[(int)Recipe.InfernoLantern].Name == "Đèn Hỏa Ngục", "recipe inferno lantern name is Đèn Hỏa Ngục");
+Check(Catalog.Recipes[(int)Recipe.RelicLantern].Name == "Đèn Thánh Tích", "recipe relic lantern name is Đèn Thánh Tích");
+var lanternWorld = new EmberWorld(99);
+var lanternCrafter = lanternWorld.AddPlayer(1, "Crafter", Vessel.Wanderer);
+lanternWorld.StartRun();
+lanternCrafter.Bag = new[] { 100, 100, 100, 100, 100 };
+Check(lanternWorld.Craft(lanternCrafter, Recipe.InfernoLantern), "craft inferno lantern succeeds");
+Check(lanternCrafter.Lantern == Lantern.Inferno && lanternCrafter.CarriesLantern, "craft inferno lantern sets Lantern.Inferno and CarriesLantern");
+lanternCrafter.Bag = new[] { 100, 100, 100, 100, 100 };
+Check(lanternWorld.Craft(lanternCrafter, Recipe.RelicLantern), "craft relic lantern succeeds");
+Check(lanternCrafter.Lantern == Lantern.Relic && lanternCrafter.CarriesLantern, "craft relic lantern sets Lantern.Relic and CarriesLantern");
+
+// 8. Ground Torch Retrieval Mechanic
+var torchRetrWorld = new EmberWorld(88);
+var torchRetrPlayer = torchRetrWorld.AddPlayer(1, "TorchBearer", Vessel.Wanderer);
+torchRetrWorld.StartRun();
+torchRetrPlayer.Pos = new V2(10f, 10f);
+torchRetrPlayer.Items[0] = 1; // 1 Torch
+torchRetrPlayer.HeldSlot = 6; // Empty hands
+// Place ground torch via Use
+torchRetrWorld.Use(torchRetrPlayer, 0);
+Check(torchRetrWorld.S.Structures.Any(s => s.Kind == 0), "ground torch structure exists");
+Check(torchRetrPlayer.Items[0] == 0, "torch item consumed when placing on ground");
+// Press [E] interact within 2.0f
+torchRetrWorld.Submit(torchRetrPlayer.Id, new Command { Interact = true });
+torchRetrWorld.Tick();
+Check(!torchRetrWorld.S.Structures.Any(s => s.Kind == 0), "ground torch structure removed upon retrieval");
+Check(torchRetrPlayer.Items[0] == 1, "torch item restored to player inventory");
+Check(torchRetrPlayer.HeldSlot == 2, "torch auto-equipped to slot 2 from empty hands");
 
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 

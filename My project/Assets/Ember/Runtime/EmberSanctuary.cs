@@ -40,7 +40,7 @@ namespace Ember
             finally{GUI.skin=previousSkin;title=previousTitle;label=previousLabel;small=previousSmall;}
         }
 
-        static readonly string[] CraftIcons={"torch","torch","core","beacon","wall","trap","chest","torch","torch","crystal_axe","shadow_blades","crossbow","lumen_gun","mirror_shield"};
+        static readonly string[] CraftIcons={"torch","flare","sedative","revival","wall","trap","chest","lantern_inferno","lantern_relic","crystal_axe","shadow_blades","crossbow","lumen_gun","mirror_shield"};
         bool onlineExpanded;
 
         const float PlayActionHeight=40;

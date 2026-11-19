@@ -92,13 +92,16 @@ namespace Ember
                     if(V2.Distance(tPos,focus)>22f)continue;
                     float ratio=Mathf.Clamp01(ht.HP/ht.MaxHP);
                     if(ratio>=1f)continue;
-                    float yOff=ht.Tile==3?1.85f:.85f;
+                    var def=Catalog.GetTileHarvestDef(ht.Tx,ht.Ty,ht.Tile);
+                    bool isGiant=def.Tier==2;
+                    float yOff=ht.Tile==3?(isGiant?2.35f:1.85f):(isGiant?1.05f:.85f);
                     Vector2 anchor=ScreenPos(tPos+new V2(0,yOff));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
-                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
-                    Color fill=ratio<.3f?Coral:ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
-                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
-                    Panel(new Rect(x-19,y-6,38*ratio,1),new Color(1f,1f,1f,.25f));
+                    float barW=isGiant?54f:40f;
+                    Panel(new Rect(x-barW/2f,y-7,barW,7),new Color(.05f,.04f,.09f,.92f));
+                    Color fill=ratio<.3f?Coral:isGiant?new Color(1f,.82f,.25f):ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
+                    Panel(new Rect(x-barW/2f+1,y-6,(barW-2)*ratio,5),fill);
+                    Panel(new Rect(x-barW/2f+1,y-6,(barW-2)*ratio,1),new Color(1f,1f,1f,.25f));
                 }
             }
         }
@@ -125,6 +128,13 @@ namespace Ember
 
             float bw=156f, bh=48f;
             Rect panelRect=new Rect(Mathf.Round(screen.x-bw/2),Mathf.Round(screen.y-bh),bw,bh);
+            RegisterHudRect(panelRect);
+            if(Event.current.type==EventType.MouseDown&&panelRect.Contains(Event.current.mousePosition)&&p.Pos.Length<=4.5f)
+            {
+                beaconDepositOpen=!beaconDepositOpen;
+                if(beaconDepositOpen){craftOpen=false;inventoryOpen=false;}
+                Event.current.Use();
+            }
 
             PixelPanel(panelRect,new Color(.08f,.06f,.14f,.94f));
 
@@ -153,9 +163,16 @@ namespace Ember
             string caption;
             var merchant=State.Structures?.Where(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,p.Pos)<EmberMerchant.MerchantInteractionDistance)
                 .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
-            if(merchant!=null&&!EmberMerchant.DialogOpen)
+            var mysteryChest=State.Structures?.Where(s=>s.Kind==12&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.2f)
+                .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+            if(mysteryChest!=null)
             {
-                targetPos=merchant.Pos+new V2(0,.75f);
+                targetPos=mysteryChest.Pos+new V2(0,.65f);
+                caption=L("Mở Rương Bỏ Hoang","Open Mystery Chest");
+            }
+            else if(merchant!=null&&!EmberMerchant.DialogOpen)
+            {
+                targetPos=merchant.Pos+new V2(0,1.85f);
                 caption=L("Giao dịch Thương Nhân","Trade with Merchant");
             }
             else if(State.Phase==Phase.Extraction&&p.Pos.Length<3)
@@ -167,10 +184,17 @@ namespace Ember
             {
                 var chest=State.Structures.Where(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2)
                     .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+                var groundTorch=State.Structures.Where(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f)
+                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
                 if(chest!=null)
                 {
                     targetPos=chest.Pos+new V2(0,.65f);
                     caption=L("Rương chung","Shared chest");
+                }
+                else if(groundTorch!=null)
+                {
+                    targetPos=groundTorch.Pos+new V2(0,.65f);
+                    caption=L("Thu Hồi Đuốc","Retrieve Torch");
                 }
                 else
                 {
@@ -181,10 +205,13 @@ namespace Ember
                         // Undropped resource veins/bushes already have overhead health bars and direct Click/K harvest.
                         // Only show interact prompt for dropped loot on the ground!
                         if(!node.Dropped)return;
-                        string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
-                        string verb=node.Resource==Resource.Wood?L("Nhặt cành","Pick up branch"):L("Nhặt","Pick up");
+                        string itemName=Catalog.GetDroppedDisplayName(node.DropKind,node.DropId,node.Resource,EmberLanguage.English);
+                        string verb=(node.DropKind==0&&node.Resource==Resource.Wood)
+                            ?L("Nhặt cành","Pick up branch")
+                            :L("Nhặt","Pick up");
+                        string countStr=(node.DropKind==1&&node.Amount<=1)?"":$" ×{node.Amount}";
                         targetPos=node.Pos+new V2(0,.55f);
-                        caption=verb+" · "+resName+" ×"+node.Amount;
+                        caption=$"{verb} · {itemName}{countStr}";
                     }
                     else
                     {
@@ -502,7 +529,7 @@ namespace Ember
                 string diffName=(EmberLanguage.English?Catalog.DifficultyNamesEn:Catalog.DifficultyNamesVi)[Mathf.Clamp((int)State.Difficulty,0,2)];
                 float target=Mathf.Max(1,State.ChargeTarget);
                 heading=L("Nạp trụ","Beacon")+" ("+diffName+") · "+Mathf.RoundToInt(State.Charge)+"/"+Mathf.RoundToInt(target);
-                hint=L("Mang lõi về trụ · B để nạp (+25 NL/lõi)","Bring cores to beacon · B to deposit (+25/core)");
+                hint=L("Mang tài nguyên về trụ · B mở menu nạp năng lượng","Bring resources to beacon · B to open deposit menu");
                 progress=State.Charge/target;
                 icon="core";
             }
@@ -768,7 +795,7 @@ namespace Ember
 
         void DrawHeaderAnnouncements(Player p)
         {
-            if(State==null||Event.current.type!=EventType.Repaint)return;
+            if(State==null)return;
             float topY=64f;
             float centerX=Screen.width*0.5f;
 
@@ -776,24 +803,40 @@ namespace Ember
             bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<=4.5f;
             if(nearBeacon)
             {
-                float pulse=Mathf.PingPong(Time.time*3.6f,1f);
-                Color blinkCol=Color.Lerp(Gold,Cyan,pulse);
-                int cores=p.Bag[(int)Resource.Core];
-                string prompt=cores>0
-                    ?L($"[B] NẠP NĂNG LƯỢNG (+{cores*25} NL)","[B] DEPOSIT ENERGY (+{cores*25})")
-                    :L("[B] NẠP NĂNG LƯỢNG","[B] DEPOSIT ENERGY");
-
-                var beaconPromptStyle=new GUIStyle(small)
-                {
-                    alignment=TextAnchor.MiddleCenter,
-                    fontStyle=FontStyle.Bold,
-                    fontSize=15
-                };
                 float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
                 Rect textRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
-                DrawMarqueeOutlineLabel(textRect,prompt,beaconPromptStyle,blinkCol,new Color(0f,0f,0f,.95f),52f);
+                RegisterHudRect(textRect);
+
+                if(Event.current.type==EventType.MouseDown&&textRect.Contains(Event.current.mousePosition))
+                {
+                    beaconDepositOpen=!beaconDepositOpen;
+                    if(beaconDepositOpen){craftOpen=false;inventoryOpen=false;}
+                    Event.current.Use();
+                }
+
+                if(Event.current.type==EventType.Repaint)
+                {
+                    float pulse=Mathf.PingPong(Time.time*3.6f,1f);
+                    Color blinkCol=Color.Lerp(Gold,Cyan,pulse);
+                    int cores=p.Bag[(int)Resource.Core];
+                    string prompt=beaconDepositOpen
+                        ?L("[B] ĐÓNG MENU NẠP HẢI ĐĂNG","[B] CLOSE BEACON DEPOSIT")
+                        :cores>0
+                            ?L($"[B] NẠP NĂNG LƯỢNG (Đang có {cores} Lõi · Click mở menu)","[B] DEPOSIT ENERGY ({cores} Cores · Click to open)")
+                            :L("[B] NẠP NĂNG LƯỢNG HẢI ĐĂNG (Click mở menu)","[B] BEACON ENERGY DEPOSIT (Click to open)");
+
+                    var beaconPromptStyle=new GUIStyle(small)
+                    {
+                        alignment=TextAnchor.MiddleCenter,
+                        fontStyle=FontStyle.Bold,
+                        fontSize=15
+                    };
+                    DrawMarqueeOutlineLabel(textRect,prompt,beaconPromptStyle,blinkCol,new Color(0f,0f,0f,.95f),52f);
+                }
                 return;
             }
+
+            if(Event.current.type!=EventType.Repaint)return;
 
             // 2. Active World Event / Announcement text (large, pixel-style with outline, no background, reusable for wave/boss alerts)
             if(!string.IsNullOrEmpty(State.Event)&&State.Tick-State.EventTick<260)
@@ -852,7 +895,7 @@ namespace Ember
             }
             if(GUI.Button(rect,new GUIContent("",L("Tạm dừng [Esc]","Pause [Esc]")),GUIStyle.none))
             {
-                inventoryOpen=false;craftOpen=false;pendingQuickAssign=0;
+                inventoryOpen=false;craftOpen=false;beaconDepositOpen=false;pendingQuickAssign=0;
                 dragFromCell=-1;draggingItem=false;
                 pauseConfirm=false;pauseSettings=false;
                 path.Clear();
@@ -865,7 +908,7 @@ namespace Ember
         void DrawMinimap(Player p)
         {
             if(p==null||State==null||minimapTex==null)return;
-            if(craftOpen||inventoryOpen)return;
+            if(craftOpen||inventoryOpen||beaconDepositOpen)return;
 
             float mapSize=176f;
             float rightPad=12f;
@@ -1135,8 +1178,14 @@ namespace Ember
                 string stamText=stamCost>0?L($"Tốn {stamCost} thể lực",$"{stamCost} stamina"):L("Không tốn thể lực","0 stamina");
                 if(activeW==Weapon.Pickaxe)
                 {
-                    int mineYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+p.PickaxeTier;
-                    info+=" · "+p.PickaxeName+" ["+L("Độ bền ","Durability ")+p.PickaxeDurability+"/"+p.PickaxeMaxDurability+"] · "+L("Khai thác +"+mineYield+" tài nguyên · Tốn 8 thể lực","Mines +"+mineYield+" yield · 8 stamina");
+                    int bonus=(p.Has(Perk.Miner)?p.Rank(Perk.Miner):0)+p.PickaxeTier;
+                    int minYield=1+bonus;
+                    int maxYield=3+bonus;
+                    string perkStr=p.Has(Perk.Miner)?(EmberLanguage.English?" + Miner":" + Thợ mỏ"):"";
+                    string yieldDesc=EmberLanguage.English
+                        ?$"Harvest Yield: {minYield}~{maxYield} per strike (Pickaxe T{p.PickaxeTier}{perkStr}) · 8 stamina"
+                        :$"Sản lượng khai thác: {minYield}~{maxYield} tài nguyên/lần (Cuốc Cấp {p.PickaxeTier}{perkStr}) · Tốn 8 thể lực";
+                    info+=" · "+p.PickaxeName+" ["+L("Độ bền ","Durability ")+p.PickaxeDurability+"/"+p.PickaxeMaxDurability+"] · "+yieldDesc;
                 }
                 else if(activeW==Weapon.CrystalAxe)
                     info+=" · "+L("Đánh lan 1.6 ô & đẩy lùi mạnh · ","1.6-tile cleave & strong knockback · ")+stamText;
@@ -1361,7 +1410,7 @@ namespace Ember
             float btnGap=8f;
             float toolWidth=Mathf.Clamp((Screen.width-240)/3f,76,120);
             float craftX=langX-btnGap-toolWidth;
-            if(UiButton(new Rect(craftX,12,toolWidth,28),"Chế tạo [Tab]"))craftOpen=!craftOpen;
+            if(UiButton(new Rect(craftX,12,toolWidth,28),"Chế tạo [Tab]")){craftOpen=!craftOpen;if(craftOpen){beaconDepositOpen=false;inventoryOpen=false;}}
             float upperWidth=Mathf.Min(180,(Screen.width-40)/2f);
             float upperY=CompactFieldHud?45:12;
             DrawFieldMeter(16,upperY,upperWidth,L("Hoảng loạn","Dread"),p.Dread,100,new Color(.65f,.4f,.85f));
@@ -1370,7 +1419,7 @@ namespace Ember
             DrawActiveBuffs(p,16,upperY+36);
 
             float invX=craftX-btnGap-toolWidth;
-            if(UiButton(new Rect(invX,12,toolWidth,28),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
+            if(UiButton(new Rect(invX,12,toolWidth,28),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;beaconDepositOpen=false;}
             if(network)DrawPartyBubbles();
             DrawMinimap(p);
 
@@ -1467,6 +1516,231 @@ namespace Ember
                 }
                 GUI.enabled=true;
             }
+        }
+
+        public void DrawBeaconDepositModal(Player p)
+        {
+            if (State == null || p == null || p.Ghost)
+            {
+                beaconDepositOpen = false;
+                return;
+            }
+
+            // Close automatically if player walks away from Beacon (> 4.8f)
+            if (p.Pos.Length > 4.8f)
+            {
+                beaconDepositOpen = false;
+                return;
+            }
+
+            float width = Mathf.Min(500f, Screen.width - 20f);
+            float height = Mathf.Min(416f, Screen.height - 30f);
+            float modalX = Mathf.Max(10f, (Screen.width - width) * 0.5f);
+            float modalY = Mathf.Max(10f, (Screen.height - height) * 0.5f);
+            Rect modal = new Rect(modalX, modalY, width, height);
+            RegisterHudRect(modal);
+
+            // Dark midnight backdrop panel with gold/cyan double border
+            PixelPanel(modal, new Color(0.09f, 0.07f, 0.16f, 0.97f));
+            Panel(new Rect(modal.x, modal.y, modal.width, 2f), Gold);
+            Panel(new Rect(modal.x, modal.yMax - 2f, modal.width, 2f), Gold);
+
+            // 1. Header: Title & Close [✕] Button
+            float headerY = modal.y + 10f;
+            var modalTitleStyle = new GUIStyle(title) { fontSize = 19, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            modalTitleStyle.normal.textColor = Gold;
+            UiLabel(new Rect(modal.x + 16, headerY, modal.width - 60, 30), L("Nạp Năng Lượng Hải Đăng", "Beacon Energy Deposit"), modalTitleStyle);
+
+            if (GUI.Button(new Rect(modal.x + modal.width - 36, headerY + 2, 26, 26), "✕", GUI.skin.button))
+            {
+                beaconDepositOpen = false;
+                return;
+            }
+
+            // 2. Energy Meter & Safety Status
+            float meterY = headerY + 34f;
+            int curCharge = Mathf.RoundToInt(State.Charge);
+            int targetCharge = Mathf.Max(1, Mathf.RoundToInt(State.ChargeTarget));
+            float chargeRatio = Mathf.Clamp01(curCharge / (float)targetCharge);
+            int safePercent = Mathf.Clamp(Mathf.RoundToInt(chargeRatio * 100f), 0, 100);
+            bool overcharged = curCharge >= targetCharge;
+
+            string statusText = overcharged
+                ? (EmberLanguage.English ? $"{curCharge} / {targetCharge} Energy (OVERCHARGED · READY)" : $"{curCharge} / {targetCharge} NL (QUÁ TẢI · SẴN SÀNG)")
+                : (EmberLanguage.English ? $"{curCharge} / {targetCharge} Energy ({safePercent}% safety)" : $"{curCharge} / {targetCharge} NL ({safePercent}% an toàn)");
+
+            var statusStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
+            statusStyle.normal.textColor = overcharged ? Cyan : Color.Lerp(new Color(0.8f, 0.85f, 1f), Gold, chargeRatio);
+
+            var meterLabelStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            meterLabelStyle.normal.textColor = new Color(0.85f, 0.88f, 0.95f);
+
+            UiLabel(new Rect(modal.x + 16, meterY, 150, 20), L("Năng lượng trụ:", "Beacon Energy:"), meterLabelStyle);
+            UiLabel(new Rect(modal.x + 170, meterY, modal.width - 186, 20), statusText, statusStyle);
+
+            // Progress Bar
+            float barY = meterY + 22f;
+            float barW = modal.width - 32f;
+            Rect barBg = new Rect(modal.x + 16, barY, barW, 14f);
+            Panel(barBg, new Color(0.04f, 0.03f, 0.08f, 0.95f));
+            Color barFillCol = overcharged ? Cyan : Color.Lerp(new Color(0.25f, 0.75f, 1f), Gold, chargeRatio);
+            Panel(new Rect(barBg.x + 1, barBg.y + 1, (barW - 2) * chargeRatio, barBg.height - 2), barFillCol);
+
+            // Divider line
+            Panel(new Rect(modal.x + 14, barY + 20f, modal.width - 28, 1f), new Color(0.3f, 0.25f, 0.45f, 0.6f));
+
+            // 3. Resource Cards List
+            float listY = barY + 26f;
+            float cardH = 68f;
+            float cardGap = 8f;
+
+            // Card 1: Lõi Tinh Thể (Core = 1)
+            DrawDepositResourceRow(modal.x + 16, listY, modal.width - 32, cardH,
+                resId: 1,
+                name: L("Lõi Tinh Thể", "Crystal Core"),
+                rate: L("+50 NL / viên", "+50 Energy / core"),
+                owned: p.Bag[1],
+                btn1Text: L("Nạp 1", "Add 1"), btn1Amt: 1, btn1Enabled: p.Bag[1] >= 1,
+                btn2Text: L("Nạp 5", "Add 5"), btn2Amt: 5, btn2Enabled: p.Bag[1] >= 1,
+                btn3Text: L("Nạp Hết", "Add All"), btn3Amt: p.Bag[1], btn3Enabled: p.Bag[1] >= 1);
+
+            // Card 2: Bụi Quang (Lumidust = 0)
+            DrawDepositResourceRow(modal.x + 16, listY + (cardH + cardGap), modal.width - 32, cardH,
+                resId: 0,
+                name: L("Bụi Quang", "Lumidust"),
+                rate: L("+15 NL / 10 bụi", "+15 Energy / 10 dust"),
+                owned: p.Bag[0],
+                btn1Text: L("Nạp 10", "Add 10"), btn1Amt: 10, btn1Enabled: p.Bag[0] >= 10,
+                btn2Text: null, btn2Amt: 0, btn2Enabled: false,
+                btn3Text: L("Nạp Hết", "Add All"), btn3Amt: (p.Bag[0] / 10) * 10, btn3Enabled: p.Bag[0] >= 10);
+
+            // Card 3: Gỗ (Wood = 3)
+            DrawDepositResourceRow(modal.x + 16, listY + (cardH + cardGap) * 2, modal.width - 32, cardH,
+                resId: 3,
+                name: L("Gỗ", "Wood"),
+                rate: L("+12 NL / 10 gỗ", "+12 Energy / 10 wood"),
+                owned: p.Bag[3],
+                btn1Text: L("Nạp 10", "Add 10"), btn1Amt: 10, btn1Enabled: p.Bag[3] >= 10,
+                btn2Text: null, btn2Amt: 0, btn2Enabled: false,
+                btn3Text: L("Nạp Hết", "Add All"), btn3Amt: (p.Bag[3] / 10) * 10, btn3Enabled: p.Bag[3] >= 10);
+
+            // 4. Quick Deposit All Cores Button
+            float bottomY = listY + (cardH + cardGap) * 3 + 2f;
+            float quickW = modal.width - 32f;
+            bool canQuickDeposit = p.Bag[1] > 0;
+            GUI.enabled = canQuickDeposit;
+            var quickBtnStyle = new GUIStyle(GUI.skin.button) { fontStyle = FontStyle.Bold, fontSize = 13 };
+            if (canQuickDeposit) quickBtnStyle.normal.textColor = Gold;
+
+            string quickText = p.Bag[1] > 0
+                ? L($"⚡ Nạp Tất Cả Lõi Tinh Thể ({p.Bag[1]} viên · +{p.Bag[1] * 50} NL)",
+                    $"⚡ Quick Deposit All Cores ({p.Bag[1]} cores · +{p.Bag[1] * 50} Energy)")
+                : L("⚡ Nạp Tất Cả Lõi (Hết Lõi)", "⚡ Quick Deposit All Cores (Empty)");
+
+            if (GUI.Button(new Rect(modal.x + 16, bottomY, quickW, 32), quickText, quickBtnStyle))
+            {
+                TriggerDeposit(1, p.Bag[1]);
+            }
+            GUI.enabled = true;
+
+            // 5. Footnote
+            var footerStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
+            footerStyle.normal.textColor = new Color(0.7f, 0.7f, 0.8f);
+            UiLabel(new Rect(modal.x + 16, bottomY + 34f, quickW, 18),
+                L("Phím tắt: Bấm [B] hoặc [Esc] để đóng menu nạp", "Shortcut: Press [B] or [Esc] to close"),
+                footerStyle);
+        }
+
+        void DrawDepositResourceRow(float rx, float ry, float rw, float rh,
+            int resId, string name, string rate, int owned,
+            string btn1Text, int btn1Amt, bool btn1Enabled,
+            string btn2Text, int btn2Amt, bool btn2Enabled,
+            string btn3Text, int btn3Amt, bool btn3Enabled)
+        {
+            Rect cardRect = new Rect(rx, ry, rw, rh);
+            PixelPanel(cardRect, new Color(0.14f, 0.11f, 0.24f, 0.92f));
+
+            // Icon Frame
+            float iconSize = 34f;
+            Rect iconRect = new Rect(cardRect.x + 8, cardRect.y + (rh - iconSize) * 0.5f, iconSize, iconSize);
+            PixelPanel(new Rect(iconRect.x - 2, iconRect.y - 2, iconSize + 4, iconSize + 4), new Color(0.08f, 0.06f, 0.14f, 0.95f));
+            Sprite sp = MaterialSprite(ResourceIcons[resId]);
+            if (sp != null) DrawSpritePreview(iconRect, sp);
+
+            // Name & Owned
+            float textX = iconRect.xMax + 10f;
+            float textW = 112f;
+            var nameStyle = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 13 };
+            nameStyle.normal.textColor = owned > 0 ? Color.white : new Color(0.6f, 0.6f, 0.65f);
+            UiLabel(new Rect(textX, cardRect.y + 7, textW, 18), name, nameStyle);
+
+            var rateStyle = new GUIStyle(small) { fontSize = 11 };
+            rateStyle.normal.textColor = Cyan;
+            UiLabel(new Rect(textX, cardRect.y + 25, textW, 16), rate, rateStyle);
+
+            var ownedStyle = new GUIStyle(small) { fontSize = 11 };
+            ownedStyle.normal.textColor = owned > 0 ? Gold : new Color(0.55f, 0.55f, 0.60f);
+            UiLabel(new Rect(textX, cardRect.y + 43, textW, 16), L($"Đang có: {owned}", $"Owned: {owned}"), ownedStyle);
+
+            // Action Buttons
+            float btnH = 28f;
+            float btnY = cardRect.y + (rh - btnH) * 0.5f;
+            float btnAreaX = textX + textW + 4f;
+            float btnAreaW = cardRect.xMax - btnAreaX - 6f;
+
+            int btnCount = (btn1Text != null ? 1 : 0) + (btn2Text != null ? 1 : 0) + (btn3Text != null ? 1 : 0);
+            float singleBtnW = (btnAreaW - (btnCount - 1) * 4f) / btnCount;
+
+            var btnStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(1, 1, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0)
+            };
+
+            float curBtnX = btnAreaX;
+            if (btn1Text != null)
+            {
+                GUI.enabled = btn1Enabled;
+                if (GUI.Button(new Rect(curBtnX, btnY, singleBtnW, btnH), btn1Text, btnStyle))
+                {
+                    TriggerDeposit(resId, btn1Amt);
+                }
+                curBtnX += singleBtnW + 4f;
+            }
+
+            if (btn2Text != null)
+            {
+                GUI.enabled = btn2Enabled;
+                if (GUI.Button(new Rect(curBtnX, btnY, singleBtnW, btnH), btn2Text, btnStyle))
+                {
+                    TriggerDeposit(resId, Mathf.Min(btn2Amt, owned));
+                }
+                curBtnX += singleBtnW + 4f;
+            }
+
+            if (btn3Text != null)
+            {
+                GUI.enabled = btn3Enabled;
+                if (GUI.Button(new Rect(curBtnX, btnY, singleBtnW, btnH), btn3Text, btnStyle))
+                {
+                    TriggerDeposit(resId, btn3Amt);
+                }
+            }
+            GUI.enabled = true;
+        }
+
+        void TriggerDeposit(int resId, int amount)
+        {
+            if (amount <= 0 || Local == null) return;
+            intent.Deposit = true;
+            intent.DepositRes = resId;
+            intent.DepositAmt = amount;
+            if (audioSource != null && tone != null) audioSource.PlayOneShot(tone, 0.45f);
+            string resName = resId == 1 ? L("Lõi Tinh Thể", "Crystal Core") : resId == 0 ? L("Bụi Quang", "Lumidust") : L("Gỗ", "Wood");
+            notice = L($"Đã nạp {amount} {resName} vào Hải Đăng!", $"Deposited {amount} {resName} to the Beacon!");
         }
     }
 }

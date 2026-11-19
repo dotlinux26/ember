@@ -11,7 +11,7 @@ namespace Ember
     public sealed partial class EmberGame:MonoBehaviour
     {
         [NonSerialized]public EmberWorld World;public Snapshot State;public Profile Profile;
-        EmberLan lan;bool network,host=true,craftOpen,ranges=true,menu=true,rewarded,moba,saveBlocked;int localId=1;
+        EmberLan lan;bool network,host=true,craftOpen,ranges=true,menu=true,rewarded,moba,saveBlocked,beaconDepositOpen;int localId=1;
         Camera cam;GameObject mapRoot,entityRoot;float accumulator,sendClock,joinClock;int renderedSeed=int.MinValue;byte[] currentTiles;
         bool[] exploredTiles;int exploredSize;Texture2D minimapTex;Color32[] minimapColors;float minimapUpdateTimer;bool minimapDirty;
         Texture2D fogTexture;Color32[] fogColors;SpriteRenderer fogRenderer;float fogUpdateTimer;bool fogDirty;
@@ -133,7 +133,7 @@ namespace Ember
         {
             World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId,awake:Profile.IsAwake(selected));
             World.S.Charge=50; // Starter beacon energy for responsive visual fill and safe zone from match start
-            heldSlot=6;lastServerHeldSlot=6;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
+            heldSlot=6;lastServerHeldSlot=6;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;for(int qi=0;qi<quickSlots.Length;qi++)quickSlots[qi]=0;
             var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=6;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();enemyFacingLeft.Clear();ClearActions();
         }
@@ -190,6 +190,7 @@ namespace Ember
             SampleFrameRate();
             if(Local!=null)
             {
+                CheckAutoAssignQuickSlots(Local);
                 if(Local.HeldSlot!=lastServerHeldSlot)
                 {
                     lastServerHeldSlot=Local.HeldSlot;
@@ -312,6 +313,7 @@ namespace Ember
                     if(pendingQuickAssign>0)pendingQuickAssign=0;
                     else {inventoryOpen=false;dragFromCell=-1;draggingItem=false;}
                 }
+                else if(beaconDepositOpen)beaconDepositOpen=false;
                 else if(craftOpen)craftOpen=false;
                 else if(pauseConfirm||pauseSettings){pauseConfirm=false;pauseSettings=false;}
                 else {menu=!menu;pauseConfirm=false;pauseSettings=false;if(menu)SaveActiveRun(false,asyncWrite:true);}
@@ -320,18 +322,19 @@ namespace Ember
             if(menu||debugOpen||State==null||State.Phase==Phase.Sanctuary||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))){intent.X=intent.Y=0;return;}
             if(Local!=null&&Local.Ghost)
             {
-                intent.X=intent.Y=0;inventoryOpen=false;craftOpen=false;path.Clear();
+                intent.X=intent.Y=0;inventoryOpen=false;craftOpen=false;beaconDepositOpen=false;path.Clear();
                 if(Press(Key.A)||Press(Key.LeftArrow)||Press(Key.Q))CycleSpectate(-1);
                 if(Press(Key.D)||Press(Key.RightArrow)||Press(Key.E)||Press(Key.Space))CycleSpectate(1);
                 return;
             }
-            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}craftOpen=false;path.Clear();}
-            if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;pendingQuickAssign=0;}
+            if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}craftOpen=false;beaconDepositOpen=false;path.Clear();}
+            if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;beaconDepositOpen=false;pendingQuickAssign=0;}
             if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
             if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}
             if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else EquipSlot(quickSlots[2]);}
             if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else EquipSlot(quickSlots[3]);}
-            if(inventoryOpen){intent.X=intent.Y=0;return;}
+            if(Press(Key.B)&&beaconDepositOpen){beaconDepositOpen=false;}
+            if(inventoryOpen||beaconDepositOpen){intent.X=intent.Y=0;return;}
             if(Press(Key.R))ranges=!ranges;
             if(Press(Key.M))
             {
@@ -401,6 +404,7 @@ namespace Ember
                         EmberMerchant.DialogOpen=true;
                         inventoryOpen=false;
                         craftOpen=false;
+                        beaconDepositOpen=false;
                         pressedInteract=false;
                     }
                     else if(ShouldAutoEquipPickaxe(Local))
@@ -429,12 +433,21 @@ namespace Ember
             intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);
             if(Press(Key.B))
             {
-                if(Local!=null&&Local.Pos.Length<4.5f)
+                if(beaconDepositOpen)
                 {
-                    if(Local.Bag[(int)Resource.Core]>0)intent.Deposit=true;
-                    else notice=L("Không có vật phẩm nạp!","No items to deposit!");
+                    beaconDepositOpen=false;
                 }
-                else intent.Deposit=true;
+                else if(Local!=null&&Local.Pos.Length<4.5f)
+                {
+                    beaconDepositOpen=true;
+                    craftOpen=false;
+                    inventoryOpen=false;
+                    if(EmberMerchant.DialogOpen)EmberMerchant.DialogOpen=false;
+                }
+                else
+                {
+                    notice=L("Hãy lại gần Hải Đăng để nạp năng lượng!","Approach the Beacon to deposit energy!");
+                }
             }
             intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);intent.Revive|=Press(Key.H);intent.Reload|=Press(Key.X);
             if(Local!=null&&Local.Pos.Length<4.5f)
@@ -444,7 +457,7 @@ namespace Ember
             }
             ApplyTouchInput();
         }
-        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
+        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;intent.DepositRes=-1;intent.DepositAmt=0;}
         bool IsNearTree(Player p)
         {
             if(p==null||currentTiles==null||State==null)return false;
@@ -637,9 +650,9 @@ namespace Ember
                 switch(n.DropId)
                 {
                     case 0: return Primitive("torch");
-                    case 1: return MaterialSprite("flare");
-                    case 2: return MaterialSprite("sedative");
-                    case 3: return MaterialSprite("revival");
+                    case 1: return Primitive("flare");
+                    case 2: return Primitive("sedative");
+                    case 3: return Primitive("revival");
                     case 8: return Primitive("pickaxe");
                     case 14: return Primitive("energy_drink");
                     case 15: return Primitive("apple");
@@ -661,7 +674,7 @@ namespace Ember
             if(authored!=null)
             {
                 authored.filterMode=FilterMode.Point;
-                bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="merchant";
+                bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="merchant"||name.StartsWith("abandoned_chest");
                 int frameW=(authored.width>authored.height&&(rooted||name=="merchant"))?authored.height:authored.width;
                 cached=Sprite.Create(authored,new Rect(0,0,frameW,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);
                 primitives[name]=cached;
@@ -716,29 +729,135 @@ namespace Ember
                         else if(y>=6&&y<=8&&x>=4&&x<=11){draw=true;color=(x==6||x==8)?new Color(1f,.95f,.8f):new Color(.92f,.65f,.25f);}
                         else if(y>=9&&y<=12&&(x==9||x==10)){draw=true;color=new Color(.65f,.45f,.3f);}
                         break;
-                    case "pickaxe":
-                        if(y>=11&&y<=13&&x>=4&&x<=12&&!(y==13&&(x<=5||x>=11)))
+                    case "abandoned_chest":
+                        draw = x>=3 && x<=12 && y>=2 && y<=13;
+                        bool isLock = (x==7 || x==8) && (y==6 || y==7);
+                        bool isIronBand = x==4 || x==11 || y==2 || y==3 || y==12;
+                        color = isLock ? new Color(.47f,.84f,.91f) : isIronBand ? new Color(.32f,.38f,.48f) : new Color(.42f,.26f,.18f);
+                        break;
+                    case "abandoned_chest_open":
+                        draw = (x>=3 && x<=12 && y>=2 && y<=10) || (x>=4 && x<=11 && y>=11 && y<=14);
+                        bool isOpenInner = x>=5 && x<=10 && y>=6 && y<=9;
+                        color = isOpenInner ? new Color(.08f,.07f,.12f) : (x==4||x==11||y==2) ? new Color(.32f,.38f,.48f) : new Color(.42f,.26f,.18f);
+                        break;
+                    case "lantern_inferno":
+                        draw = (x>=4 && x<=11 && y>=2 && y<=12) || (x>=6 && x<=9 && y>=13 && y<=14);
+                        if(draw)
                         {
-                            draw=true;
-                            bool isTip=x==4||x==12;
-                            bool isHighlight=y==12&&(x>=7&&x<=9);
-                            color=isHighlight?new Color(.92f,.94f,1f):isTip?new Color(.55f,.58f,.68f):new Color(.75f,.78f,.85f);
+                            bool isFrame = x==4 || x==11 || y==2 || y==3 || y==11 || y>=12;
+                            bool isCoreFire = x>=6 && x<=9 && y>=5 && y<=8;
+                            color = isFrame ? new Color(.16f, .14f, .22f) : isCoreFire ? new Color(1f, .92f, .45f) : new Color(1f, .38f, .15f);
                         }
-                        else if(y==10&&(x==3||x==13))
+                        break;
+                    case "lantern_relic":
+                        draw = (x>=4 && x<=11 && y>=2 && y<=12) || (x>=6 && x<=9 && y>=13 && y<=15);
+                        if(draw)
+                        {
+                            bool isFrame = x==4 || x==11 || y==2 || y==3 || y==11 || y>=12;
+                            bool isCrystalCore = (x==7 || x==8) && (y>=5 && y<=8);
+                            color = isFrame ? new Color(.82f, .65f, .28f) : isCrystalCore ? Color.white : new Color(.35f, .85f, .95f);
+                        }
+                        break;
+                    case "axe":
+                        if(y>=10&&y<=14&&x>=9&&x<=14)
                         {
                             draw=true;
-                            color=new Color(.50f,.53f,.62f);
+                            bool isEdge=x==13||x==14;
+                            bool isHi=y>=11&&y<=13&&x>=12;
+                            color=isHi?Color.white:isEdge?new Color(.42f,.49f,.60f):new Color(.23f,.27f,.35f);
+                        }
+                        else if(y>=9&&y<=13&&x>=6&&x<=8)
+                        {
+                            draw=true;
+                            color=new Color(.15f,.18f,.24f);
+                        }
+                        else if(y>=2&&y<=12&&(x==7||x==8))
+                        {
+                            draw=true;
+                            color=x==7?new Color(.42f,.28f,.22f):new Color(.60f,.41f,.31f);
+                        }
+                        break;
+                    case "pickaxe":
+                        if(y>=10&&y<=14&&x>=3&&x<=13)
+                        {
+                            bool inArch=(y==12&&x>=4&&x<=12)||(y==11&&(x==3||x==4||x==12||x==13))||(y==13&&x>=7&&x<=9);
+                            if(inArch)
+                            {
+                                draw=true;
+                                bool isTip=x==3||x==13;
+                                bool isHi=(x>=7&&x<=9)&&y==12;
+                                color=isHi?Color.white:isTip?new Color(.42f,.49f,.60f):new Color(.23f,.27f,.35f);
+                            }
                         }
                         else if(y>=2&&y<=11&&(x==7||x==8))
                         {
                             draw=true;
-                            color=x==7?new Color(.42f,.26f,.16f):new Color(.65f,.42f,.25f);
+                            color=x==7?new Color(.42f,.28f,.22f):new Color(.60f,.41f,.31f);
                         }
-                        else if(y==10&&(x==6||x==9))
+                        break;
+                    case "torch":
+                        if(y>=10&&y<=14&&x>=5&&x<=11)
                         {
                             draw=true;
-                            color=new Color(.60f,.64f,.72f);
+                            bool isCore=(x==7||x==8)&&(y==11||y==12);
+                            bool isHi=x==8&&y==12;
+                            bool isCyan=x==10&&y==14;
+                            color=isHi?Color.white:isCore?new Color(1f,.94f,.70f):isCyan?new Color(.47f,.84f,.91f):x<8?new Color(.97f,.71f,.22f):new Color(.85f,.48f,.14f);
                         }
+                        else if(y>=8&&y<=10&&x>=6&&x<=9)
+                        {
+                            draw=true;
+                            color=new Color(.24f,.16f,.13f);
+                        }
+                        else if(y>=2&&y<=8&&(x==7||x==8))
+                        {
+                            draw=true;
+                            color=x==7?new Color(.42f,.28f,.22f):new Color(.60f,.41f,.31f);
+                        }
+                        break;
+                    case "flare":
+                        if(y>=11&&y<=15&&x>=5&&x<=11)
+                        {
+                            draw=true;
+                            bool isSpark=Math.Abs(x-8)+Math.Abs(y-13)<=2;
+                            color=isSpark?Color.white:x>8?new Color(.47f,.84f,.91f):new Color(1f,.94f,.70f);
+                        }
+                        else if(y>=3&&y<=10&&(x==7||x==8))
+                        {
+                            draw=true;
+                            color=x==7?new Color(.85f,.48f,.14f):new Color(.97f,.71f,.22f);
+                        }
+                        break;
+                    case "sedative":
+                        if(y>=12&&y<=14&&x>=7&&x<=8)
+                        {
+                            draw=true;
+                            color=new Color(.42f,.49f,.60f);
+                        }
+                        else if(Vector2.Distance(new Vector2(x,y),new Vector2(7.5f,6.5f))<4.8f)
+                        {
+                            draw=true;
+                            bool isSpec=x==5&&(y==7||y==8);
+                            bool isBubble=(x==8&&y==5)||(x==9&&y==7);
+                            color=isSpec?Color.white:isBubble?new Color(.47f,.84f,.91f):x<8?new Color(.55f,.17f,.24f):new Color(.35f,.11f,.17f);
+                        }
+                        break;
+                    case "revival":
+                        int manhattan=Math.Abs(x-8)+Math.Abs(y-8);
+                        if(manhattan<=6)
+                        {
+                            draw=true;
+                            bool isCore=manhattan<=2;
+                            color=isCore?new Color(1f,.94f,.70f):x<8?new Color(.47f,.84f,.91f):new Color(.32f,.37f,.48f);
+                        }
+                        break;
+                    case "torch_ground":
+                        if(y>=2&&y<=12&&(x==7||x==8)){draw=true;color=x==7?new Color(.42f,.28f,.22f):new Color(.60f,.41f,.31f);}
+                        else if(y>=10&&y<=13&&x>=6&&x<=9){draw=true;color=new Color(.15f,.18f,.24f);}
+                        break;
+                    case "torch_fire":
+                        float fDist=Vector2.Distance(new Vector2(x,y),new Vector2(7.5f,7.5f));
+                        if(fDist<5.2f){draw=true;color=fDist<2.2f?Color.white:fDist<3.8f?new Color(1f,.94f,.45f):new Color(.95f,.52f,.18f);}
                         break;
                     default:draw=x>=2&&x<14&&y>=2&&y<14;break;
                 }
@@ -1061,10 +1180,21 @@ namespace Ember
                     }
                     else if(t==2) // Rock/cliff
                     {
-                        var rockSprite=Primitive("rock_large");
+                        var def=Catalog.GetTileHarvestDef(tx,ty,2);
+                        string rockSpriteName=def.Tier==0?"rock_small":"rock_large";
+                        var rockSprite=Primitive(rockSpriteName);
                         V2 rPos=new V2(tx-size/2f+.5f,ty-size/2f+.2f);
-                        var outlineR=Put("rockGlow_"+tx+"_"+ty,rockSprite,rPos,glowCol,1.15f,baseTreeOrder-1);
+                        float rScale=def.VisualScale;
+                        Color rGlowCol=def.Tier==2?(isTarget?new Color(.35f,1f,.95f,pulse):new Color(.35f,1f,.95f,pulse*.8f)):glowCol;
+                        var outlineR=Put("rockGlow_"+tx+"_"+ty,rockSprite,rPos,rGlowCol,rScale,baseTreeOrder-1);
                         Outline(outlineR,rockSprite);
+                        Put("rockBody_"+tx+"_"+ty,rockSprite,rPos,Color.white,rScale,baseTreeOrder);
+                        if(def.Tier==2) // Rich Vein crystal sparkle
+                        {
+                            float cPulse=.8f+.2f*Mathf.Sin(clock*5f+tx*3f);
+                            var coreSpark=Put("richVeinSpark_"+tx+"_"+ty,Primitive("diamond"),rPos+new V2(0,.25f),new Color(.4f,1f,.95f,cPulse),.42f,baseTreeOrder+1);
+                            if(emissionMaterial!=null)coreSpark.sharedMaterial=emissionMaterial;
+                        }
                     }
 
                     if(isTarget)
@@ -1086,16 +1216,44 @@ namespace Ember
                 if(Mathf.Abs(s.Pos.X-center.X)>viewHalfW||Mathf.Abs(s.Pos.Y-center.Y)>viewHalfH)continue;
                 if(!IsExplored(s.Pos)&&s.Kind!=1)continue;
                 bool isMerchant=s.Kind==5||s.Kind==10;
-                string structArt=s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":isMerchant?"merchant":s.Kind==11?"chest":"diamond";
-                float structScale=s.Kind==2?1.4f:s.Kind==4?1.35f:isMerchant?1.25f:s.Kind==11?1.4f:1f;
+                string structArt=s.Kind==0?"torch_ground":s.Kind==1?"flare":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":isMerchant?"merchant":s.Kind==11?"chest":s.Kind==12?"abandoned_chest":s.Kind==13?"abandoned_chest_open":"diamond";
+                float structScale=s.Kind==2?1.4f:s.Kind==4?1.35f:isMerchant?1.25f:s.Kind==11?1.4f:(s.Kind==12||s.Kind==13)?1.35f:s.Kind==0?1.2f:1f;
                 int mFrame=(int)(clock*3.5f+s.Id)%4;
                 Sprite sSprite=isMerchant?EnemyFrame("merchant",mFrame):Primitive(structArt);
-                Put("structure"+s.Id,sSprite,s.Pos,Color.white,structScale);
+                int sOrder=5000-Mathf.RoundToInt(s.Pos.Y*10);
+                Put("structure"+s.Id,sSprite,s.Pos,Color.white,structScale,sOrder);
+                if(s.Kind==0) // Ground torch: animated flickering flame
+                {
+                    int flameFrame=(int)(clock*8f+s.Id)%4;
+                    Sprite flameSprite=EnemyFrame("torch_fire",flameFrame);
+                    var flameR=Put("torchFlame"+s.Id,flameSprite,s.Pos+new V2(0,.45f),Color.white,1.1f,sOrder+1);
+                    if(emissionMaterial!=null)flameR.sharedMaterial=emissionMaterial;
+
+                    float fPulse=.82f+.18f*Mathf.Sin(clock*10f+s.Id*2.3f);
+                    Color flameGlow=new Color(1f,.65f,.2f,.35f*fPulse);
+                    var halo=Put("torchHalo"+s.Id,Primitive("circle"),s.Pos+new V2(0,.45f),flameGlow,1.15f,sOrder-1);
+                    if(emissionMaterial!=null)halo.sharedMaterial=emissionMaterial;
+                }
+                if(s.Kind==12)
+                {
+                    float pulse=.8f+.2f*Mathf.Sin(clock*3.2f+s.Id);
+                    Color cyanGlow=new Color(.47f,.84f,.91f,.32f*pulse);
+                    var chestHalo=Put("chestGlow"+s.Id,Primitive("circle"),s.Pos+new V2(0,.25f),cyanGlow,.85f,-1);
+                    if(emissionMaterial!=null)chestHalo.sharedMaterial=emissionMaterial;
+                }
+                else if(s.Kind==13)
+                {
+                    float fade=Mathf.Clamp01(s.Life/30f);
+                    float pulse=.7f+.3f*Mathf.Sin(clock*4.5f+s.Id);
+                    Color mistGlow=new Color(.55f,.4f,.9f,.28f*fade*pulse);
+                    var openHalo=Put("chestGlow"+s.Id,Primitive("circle"),s.Pos+new V2(0,.35f),mistGlow,1.1f,-1);
+                    if(emissionMaterial!=null)openHalo.sharedMaterial=emissionMaterial;
+                }
                 if(isMerchant)
                 {
                     float mPulse=.85f+.15f*Mathf.Sin(clock*4f+s.Id);
                     Color mGlow=new Color(1f,.82f,.35f,.45f*mPulse);
-                    var lanternHalo=Put("merchantGlow"+s.Id,Primitive("circle"),s.Pos+new V2(0.25f,0.3f),mGlow,1.1f,-1);
+                    var lanternHalo=Put("merchantGlow"+s.Id,Primitive("circle"),s.Pos+new V2(-0.55f,1.15f),mGlow,1.1f,-1);
                     if(emissionMaterial!=null)lanternHalo.sharedMaterial=emissionMaterial;
                 }
             }
@@ -1517,7 +1675,8 @@ namespace Ember
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
-                float scale=treeArt=="rock_large"?1.2f:treeArt=="rock_small"?1.0f:(treeArt=="tree_stump"||treeArt=="log_fallen")?1.0f:treeArt.StartsWith("bush")?1.1f:1.35f;
+                var treeDef=Catalog.GetTileHarvestDef(x,y,3);
+                float scale=treeDef.VisualScale;
                 Vector3 basePos=new Vector3(x-size/2+.5f,y-size/2+.1f,0);
                 bool outsideSanctuary=r>14f;
                 if(outsideSanctuary&&!treeSpawnClock.ContainsKey(key))
@@ -1691,7 +1850,7 @@ namespace Ember
                 if(q.Extracted||q.Ghost||(!p.Ghost&&p.Mad&&q.Id!=p.Id))continue;
                 DrawOverheadStatus(q);
             }
-            if(!p.Ghost&&!inventoryOpen&&!craftOpen)DrawInteractPrompt(p);
+            if(!p.Ghost&&!inventoryOpen&&!craftOpen&&!beaconDepositOpen)DrawInteractPrompt(p);
             if(!p.Ghost&&inventoryOpen){DrawInventory(p);return;}
             if(Event.current.type==EventType.Repaint){hudBlockingRects.Clear();hudCapturing=true;}
             DrawFieldHud(p);
@@ -1702,6 +1861,7 @@ namespace Ember
             DrawObjectiveCard(p,objectiveY);
             DrawFieldNotices(p,QuestCollapsed?objectiveY+54:objectiveY+80);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
+            if(!p.Ghost&&beaconDepositOpen)DrawBeaconDepositModal(p);
             hudCapturing=false;
             float fadeAlpha=GetTeleportFadeAlpha();
             if(fadeAlpha>0.001f&&Event.current.type==EventType.Repaint)

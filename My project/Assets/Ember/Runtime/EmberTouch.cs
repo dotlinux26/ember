@@ -17,7 +17,7 @@ namespace Ember
         Rect InteractTouch=>new Rect(Screen.width-330,Screen.height-205,65,65);
         void ApplyTouchInput()
         {
-            if(!TouchEnabled||craftOpen||inventoryOpen)return;bool joystickHeld=false;
+            if(!TouchEnabled||craftOpen||inventoryOpen||beaconDepositOpen)return;bool joystickHeld=false;
             foreach(var touch in Touchscreen.current.touches)
             {
                 if(!touch.press.isPressed)continue;int id=touch.touchId.ReadValue();var pos=touch.position.ReadValue();var start=touch.startPosition.ReadValue();var gui=new Vector2(pos.x,Screen.height-pos.y);
@@ -38,14 +38,30 @@ namespace Ember
                 }
                 if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
                 if(InteractTouch.Contains(gui))intent.Interact=true;
-                if(DepositTouch.Contains(gui))intent.Deposit=true;
+                if(DepositTouch.Contains(gui))
+                {
+                    if(beaconDepositOpen)
+                    {
+                        beaconDepositOpen=false;
+                    }
+                    else if(Local!=null&&Local.Pos.Length<4.5f)
+                    {
+                        beaconDepositOpen=true;
+                        craftOpen=false;
+                        inventoryOpen=false;
+                    }
+                    else
+                    {
+                        notice=L("Hãy lại gần Hải Đăng để nạp năng lượng!","Approach the Beacon to deposit energy!");
+                    }
+                }
                 if(RefuelTouch.Contains(gui))intent.Refuel=true;
             }
             if(!joystickHeld){joystickFinger=-1;joystickDelta=Vector2.zero;}
         }
         void DrawTouchControls()
         {
-            if(!TouchEnabled||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))||menu||inventoryOpen||craftOpen||debugOpen||State==null||State.Phase==Phase.Sanctuary||Local==null||Local.Ghost||Local.Extracted||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
+            if(!TouchEnabled||(network&&!host&&!string.IsNullOrEmpty(lan?.Error))||menu||inventoryOpen||craftOpen||beaconDepositOpen||debugOpen||State==null||State.Phase==Phase.Sanctuary||Local==null||Local.Ghost||Local.Extracted||State.Phase==Phase.Won||State.Phase==Phase.Lost)return;
             if(touchDisc==null)
             {
                 touchDisc=new Texture2D(64,64,TextureFormat.RGBA32,false){filterMode=FilterMode.Point};var pixels=new Color[4096];for(int y=0;y<64;y++)for(int x=0;x<64;x++){float r=Vector2.Distance(new Vector2(x,y),new Vector2(31.5f,31.5f));pixels[y*64+x]=r<31?new Color(.4f,.8f,.85f,r>28?.6f:.13f):Color.clear;}touchDisc.SetPixels(pixels);touchDisc.Apply();

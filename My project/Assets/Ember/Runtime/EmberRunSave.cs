@@ -134,7 +134,7 @@ namespace Ember
                     local.HeldSlot=heldSlot;
                 }
                 else heldSlot=1;
-                selectedItem=0;inventoryOpen=false;craftOpen=false;pauseConfirm=false;pauseSettings=false;
+                selectedItem=0;inventoryOpen=false;craftOpen=false;beaconDepositOpen=false;pauseConfirm=false;pauseSettings=false;
                 rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;
                 path.Clear();animationState.Clear();ClearActions();
                 runAutoSaveClock=RunAutoSaveInterval;

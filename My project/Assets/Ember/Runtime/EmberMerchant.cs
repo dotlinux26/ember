@@ -661,6 +661,7 @@ namespace Ember
                         {
                             EmberMerchant.ExecuteTrade(World, p, i, Profile);
                         }
+                        intent.Trade = i;
                     }
                     GUI.enabled = true;
                 }

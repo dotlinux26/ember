@@ -18,7 +18,7 @@ namespace Ember
     public enum Perk { SteelNerves, StrongBack, GhostStep, Prepared, Miner, LastLight, ReluctantHealer }
     public enum Hat { Straw, Witch, Candle, Jester }
     public enum Pet { Firefly, Bat, CrystalCat, LittleGhost }
-    public enum Recipe { Torch, Flare, Sedative, RevivalStone, Wall, Trap, Chest, InfernoLantern, RelicLantern, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield, EnergyDrink, Apple, Mushroom, RoastedApple, MushroomStew }
+    public enum Recipe { Torch, Flare, Sedative, RevivalStone, Wall, Trap, Chest, InfernoLantern, RelicLantern, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield, EnergyDrink, Apple, Mushroom, RoastedApple, MushroomStew, IronPickaxe, StonePickaxe, WoodcutterAxe, WoodenStick }
     public enum BuffKind { None, Swiftness, AttackPower, IronSkin, Regen, StaminaSurge, LightAura, DreadWard }
 
     [Serializable]
@@ -50,7 +50,8 @@ namespace Ember
     {
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
         public int Craft=-1,Use=-1,Equip,Trade=-1; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive, 14 energy drink...
-        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0;
+        public int DepositRes=-1,DepositAmt=0;
+        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0||DepositRes>=0;
     }
     [Serializable] public sealed class Player
     {
@@ -445,10 +446,35 @@ namespace Ember
             new RecipeData("Quả Táo",wood:2),
             new RecipeData("Nấm Rừng",dust:3),
             new RecipeData("Táo Nướng",dust:2,wood:2),
-            new RecipeData("Súp Nấm Ấm",dust:4,wood:3)};
-        public static string GetItemDisplayName(int id)
+            new RecipeData("Súp Nấm Ấm",dust:4,wood:3),
+            new RecipeData("Cuốc Sắt",wood:6,ore:4),
+            new RecipeData("Cuốc Đá",wood:4,ore:4),
+            new RecipeData("Rìu Đốn Gỗ",wood:5,ore:2),
+            new RecipeData("Gậy Gỗ",wood:3)};
+        public static readonly string[] ResourceNamesEn={"Lumen Dust","Core","Umbra Shard","Wood","Ore"};
+        public static string GetDroppedDisplayName(int dropKind, int dropId, Resource resource, bool english = false)
         {
-            if(EmberLanguage.English)
+            if (dropKind == 1)
+            {
+                var w = (Weapon)Math.Max(0, Math.Min((int)Weapon.Pickaxe, dropId));
+                if (w == Weapon.Pickaxe)
+                    return english ? "Iron Pickaxe" : "Cuốc Sắt";
+                var def = Catalog.GetWeaponDef(w);
+                return english ? def.NameEn : def.NameVi;
+            }
+            if (dropKind == 2)
+            {
+                return GetItemDisplayName(dropId, english);
+            }
+            int r = (int)resource;
+            if (r >= 0 && r < ResourceNames.Length)
+                return english ? ResourceNamesEn[r] : ResourceNames[r];
+            return english ? "Item" : "Vật phẩm";
+        }
+        public static string GetItemDisplayName(int id, bool? english = null)
+        {
+            bool isEn = english ?? EmberLanguage.English;
+            if(isEn)
             {
                 switch(id)
                 {
@@ -466,6 +492,10 @@ namespace Ember
                     case 17: return "Roasted Apple";
                     case 8:
                     case 18: return "Mushroom Stew";
+                    case 19: return "Iron Pickaxe";
+                    case 20: return "Stone Pickaxe";
+                    case 21: return "Woodcutter Axe";
+                    case 22: return "Wooden Stick";
                     default: return "Item";
                 }
             }
@@ -485,14 +515,125 @@ namespace Ember
                 case 17: return "Táo Nướng";
                 case 8:
                 case 18: return "Súp Nấm";
+                case 19: return "Cuốc Sắt";
+                case 20: return "Cuốc Đá";
+                case 21: return "Rìu Đốn Gỗ";
+                case 22: return "Gậy Gỗ";
                 default: return "Vật phẩm";
             }
         }
+        public static TileHarvestDef GetTileHarvestDef(int tx, int ty, byte tile)
+        {
+            int hash = ((tx * 374761393) ^ (ty * 668265263)) & 0x7FFFFFFF;
+            int roll = hash % 100;
+            if (tile == 3) // Tree
+            {
+                if (roll < 15) // Ancient Giant Tree (~15%)
+                {
+                    return new TileHarvestDef
+                    {
+                        IsTree = true,
+                        Tier = 2,
+                        MaxHP = 260f,
+                        MinDrop = 6,
+                        MaxDrop = 10,
+                        VisualScale = 1.70f,
+                        NameVi = "Cây Cổ Thụ",
+                        NameEn = "Giant Ancient Tree"
+                    };
+                }
+                if (roll < 40) // Small Tree / Sapling (~25%)
+                {
+                    return new TileHarvestDef
+                    {
+                        IsTree = true,
+                        Tier = 0,
+                        MaxHP = 65f,
+                        MinDrop = 1,
+                        MaxDrop = 2,
+                        VisualScale = 1.02f,
+                        NameVi = "Cây Con",
+                        NameEn = "Sapling"
+                    };
+                }
+                // Normal Tree (~60%)
+                return new TileHarvestDef
+                {
+                    IsTree = true,
+                    Tier = 1,
+                    MaxHP = 130f,
+                    MinDrop = 3,
+                    MaxDrop = 5,
+                    VisualScale = 1.38f,
+                    NameVi = "Cây Rừng",
+                    NameEn = "Forest Tree"
+                };
+            }
+            else // Rock / Highland / Ore (tile == 2)
+            {
+                if (roll < 15) // Rich Vein (~15%)
+                {
+                    return new TileHarvestDef
+                    {
+                        IsTree = false,
+                        Tier = 2,
+                        MaxHP = 230f,
+                        MinDrop = 5,
+                        MaxDrop = 8,
+                        VisualScale = 1.45f,
+                        NameVi = "Mỏ Quặng Giàu",
+                        NameEn = "Rich Vein"
+                    };
+                }
+                if (roll < 45) // Small Gravel (~30%)
+                {
+                    return new TileHarvestDef
+                    {
+                        IsTree = false,
+                        Tier = 0,
+                        MaxHP = 55f,
+                        MinDrop = 1,
+                        MaxDrop = 2,
+                        VisualScale = 0.95f,
+                        NameVi = "Mỏ Sỏi Nhỏ",
+                        NameEn = "Gravel Rock"
+                    };
+                }
+                // Normal Ore (~55%)
+                return new TileHarvestDef
+                {
+                    IsTree = false,
+                    Tier = 1,
+                    MaxHP = 130f,
+                    MinDrop = 2,
+                    MaxDrop = 4,
+                    VisualScale = 1.18f,
+                    NameVi = "Tảng Quặng",
+                    NameEn = "Ore Rock"
+                };
+            }
+        }
+    }
+
+    [Serializable]
+    public struct TileHarvestDef
+    {
+        public bool IsTree;
+        public int Tier; // 0=Small, 1=Normal, 2=Giant / RichVein
+        public float MaxHP;
+        public int MinDrop;
+        public int MaxDrop;
+        public float VisualScale;
+        public string NameVi;
+        public string NameEn;
     }
 
     // The host alone advances simulation. Clients send intent, never HP/inventory.
     public sealed partial class EmberWorld
     {
+        public const int MysteryChestKind = 12;
+        public const int MysteryChestOpenKind = 13;
+        public const float MysteryChestInteractionDistance = 2.2f;
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
         public static float GetBossEventInterval(Difficulty d)=>d==Difficulty.Hard?120f:d==Difficulty.Normal?300f:600f;
@@ -527,7 +668,7 @@ namespace Ember
         public EmberWorld(int seed,int size=250,Difficulty difficulty=Difficulty.Easy)
         {
             S.Seed=seed;S.Size=size;S.Phase=Phase.Sanctuary;S.Difficulty=difficulty;S.ChargeTarget=Catalog.BeaconChargeTarget(difficulty);S.Fuel=100;S.BeaconHP=0;S.Wave=90;rng=new Random(seed);
-            Tiles=MakeTiles(seed,size);GenerateNodes();Publish();
+            Tiles=MakeTiles(seed,size);GenerateNodes();SpawnAbandonedChests();Publish();
         }
         public RunSaveData ExportRun(int heldSlot=1)
         {
@@ -773,12 +914,234 @@ namespace Ember
         public void SpawnStarterGroundLoot()
         {
             if(nodes.Any(n=>n.Dropped&&(n.DropKind==1||n.DropKind==2)&&(n.DropId==(int)Weapon.Stick||n.DropId==0||n.DropId==(int)Weapon.Pickaxe)))return;
-            // 1 Wooden Stick (~2.2 tiles west of beacon)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(-2.2f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Stick});
-            // 1 Starter Torch (~2.2 tiles east of beacon)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.2f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
-            // 1 Iron Pickaxe (~2.4 tiles south of beacon - moved to avoid label overlap)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(0f,-2.4f),Resource=Resource.Ore,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
+            // 1 Wooden Stick (~2.5 tiles northwest of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(-2.5f,1.0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Stick});
+            // 1 Starter Torch (~2.5 tiles northeast of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.5f,1.0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
+            // 1 Iron Pickaxe (~2.2 tiles southeast of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.2f,-1.2f),Resource=Resource.Ore,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
+        }
+        public void SpawnAbandonedChests(int count = -1)
+        {
+            if (count <= 0) count = rng.Next(4, 9);
+            float minRadius = 18f;
+            float maxRadius = Math.Max(minRadius + 5f, Math.Min(45f, (S.Size * 0.5f) - 10f));
+
+            for (int i = 0; i < count; i++)
+            {
+                double sectorBase = (i * (2.0 * Math.PI / count));
+                bool placed = false;
+
+                for (int attempt = 0; attempt < 30 && !placed; attempt++)
+                {
+                    double angle = sectorBase + (rng.NextDouble() - 0.5) * (2.0 * Math.PI / count * 0.85);
+                    float radius = minRadius + (float)rng.NextDouble() * (maxRadius - minRadius);
+                    float x = (float)(Math.Cos(angle) * radius);
+                    float y = (float)(Math.Sin(angle) * radius);
+                    V2 candidate = new V2(x, y);
+
+                    if (candidate.Length < minRadius) continue;
+                    if (Math.Abs(candidate.X) > S.Size * 0.5f - 6f || Math.Abs(candidate.Y) > S.Size * 0.5f - 6f) continue;
+                    if (structures.Any(s => (s.Kind == MysteryChestKind || s.Kind == MysteryChestOpenKind) && V2.Distance(s.Pos, candidate) < 15f))
+                        continue;
+
+                    V2 walkPos = candidate;
+                    bool walkFound = false;
+                    for (int r = 0; r <= 5 && !walkFound; r++)
+                    {
+                        for (int dy = -r; dy <= r && !walkFound; dy++)
+                        {
+                            for (int dx = -r; dx <= r && !walkFound; dx++)
+                            {
+                                V2 testP = candidate + new V2(dx * 0.75f, dy * 0.75f);
+                                if (testP.Length >= minRadius && Walkable(testP) &&
+                                    !structures.Any(s => (s.Kind == MysteryChestKind || s.Kind == MysteryChestOpenKind) && V2.Distance(s.Pos, testP) < 15f))
+                                {
+                                    walkPos = testP;
+                                    walkFound = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (walkFound)
+                    {
+                        structures.Add(new Structure
+                        {
+                            Id = nextId++,
+                            Kind = MysteryChestKind,
+                            Pos = walkPos,
+                            HP = 100f,
+                            Life = 999999f,
+                            MaxLife = 999999f
+                        });
+                        placed = true;
+                    }
+                }
+            }
+        }
+
+        public int OpenMysteryChest(Player p, Structure chest, int forcedScenario = -1)
+        {
+            if (p == null || p.Ghost || p.Extracted || chest == null || chest.Kind != MysteryChestKind || chest.HP <= 0) return 0;
+            if (V2.Distance(chest.Pos, p.Pos) > 3.0f) return 0;
+
+            chest.Kind = MysteryChestOpenKind;
+            chest.Life = 30f;
+            chest.MaxLife = 30f;
+
+            int scenario = forcedScenario;
+            if (scenario < 1 || scenario > 4)
+            {
+                double roll = rng.NextDouble();
+                if (roll < 0.40) scenario = 1;
+                else if (roll < 0.65) scenario = 2;
+                else if (roll < 0.85) scenario = 3;
+                else scenario = 4;
+            }
+
+            switch (scenario)
+            {
+                case 1:
+                {
+                    int dropCount = rng.Next(2, 4);
+                    for (int i = 0; i < dropCount; i++)
+                    {
+                        double lootRoll = rng.NextDouble();
+                        int dKind = 0;
+                        int dId = 0;
+                        Resource res = Resource.Wood;
+                        int amt = 1;
+
+                        if (lootRoll < 0.28)
+                        {
+                            dKind = 2; dId = 15; amt = 1; res = Resource.Wood;
+                        }
+                        else if (lootRoll < 0.52)
+                        {
+                            dKind = 0; res = Resource.Wood; amt = rng.Next(2, 5);
+                        }
+                        else if (lootRoll < 0.72)
+                        {
+                            dKind = 0; res = Resource.Ore; amt = rng.Next(2, 4);
+                        }
+                        else if (lootRoll < 0.86)
+                        {
+                            dKind = 0; res = Resource.Dust; amt = rng.Next(3, 6);
+                        }
+                        else if (lootRoll < 0.92)
+                        {
+                            dKind = 2; dId = 14; amt = 1; res = Resource.Dust;
+                        }
+                        else if (lootRoll < 0.96)
+                        {
+                            dKind = 1; dId = 8; amt = 1; res = Resource.Ore;
+                        }
+                        else
+                        {
+                            dKind = 2; dId = 0; amt = 1; res = Resource.Wood;
+                        }
+
+                        double angle = rng.NextDouble() * Math.PI * 2.0;
+                        float dist = 0.8f + (float)rng.NextDouble() * 1.2f;
+                        V2 dropPos = chest.Pos + new V2((float)Math.Cos(angle) * dist, (float)Math.Sin(angle) * dist);
+                        nodes.Add(new Node
+                        {
+                            Id = nextId++,
+                            Pos = dropPos,
+                            Resource = res,
+                            Amount = amt,
+                            MaxAmount = amt,
+                            Dropped = true,
+                            DropKind = dKind,
+                            DropId = dId
+                        });
+                        FX(chest.Pos, dropPos, 1);
+                    }
+                    EmitPopup(chest.Pos, 2, 0);
+                    string msgVi = "✦ Rương báu nhả ra quà tặng quý giá!";
+                    string msgEn = "✦ The ancient chest yields precious treasures!";
+                    Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
+                    S.Event = msgVi + "|" + msgEn;
+                    S.EventActor = p.Name;
+                    S.EventTick = S.Tick;
+                    break;
+                }
+                case 2:
+                {
+                    int mCount = rng.Next(2, 4);
+                    for (int i = 0; i < mCount; i++)
+                    {
+                        double a = i * (2.0 * Math.PI / mCount) + (rng.NextDouble() - 0.5) * 0.5;
+                        V2 ePos = p.Pos + new V2((float)Math.Cos(a) * 2.0f, (float)Math.Sin(a) * 2.0f);
+                        if (!Walkable(ePos)) ePos = chest.Pos + new V2((float)Math.Cos(a) * 1.5f, (float)Math.Sin(a) * 1.5f);
+                        EnemyKind eKind = rng.NextDouble() < 0.65 ? EnemyKind.Shade : EnemyKind.VoidStalker;
+                        float hp = (eKind == EnemyKind.Shade ? 35f : 45f) * DifficultyEnemyScale;
+                        enemies.Add(new Enemy
+                        {
+                            Id = nextId++,
+                            Pos = ePos,
+                            Kind = eKind,
+                            HP = hp,
+                            MaxHP = hp,
+                            SkillCD = 1.0f + (float)rng.NextDouble() * 1.2f
+                        });
+                        FX(ePos, ePos, 3);
+                    }
+                    EmitPopup(p.Pos, 1, 0);
+                    string msgVi = "⚠️ Bẫy quái vật! Quái bóng tối phục kích!";
+                    string msgEn = "⚠️ Monster trap! Shadow beasts ambush!";
+                    Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
+                    S.Event = msgVi + "|" + msgEn;
+                    S.EventActor = p.Name;
+                    S.EventTick = S.Tick;
+                    break;
+                }
+                case 3:
+                {
+                    int pCount = rng.Next(12, 17);
+                    for (int i = 0; i < pCount; i++)
+                    {
+                        double angle = i * (2.0 * Math.PI / pCount);
+                        V2 dir = new V2((float)Math.Cos(angle), (float)Math.Sin(angle));
+                        projectiles.Add(new Projectile
+                        {
+                            Id = nextId++,
+                            Owner = chest.Id,
+                            Pos = chest.Pos + dir * 0.5f,
+                            Velocity = dir * 3.6f,
+                            Damage = 18f,
+                            Life = 2.5f,
+                            FromEnemy = true,
+                            ColorKind = 3
+                        });
+                    }
+                    FX(chest.Pos, chest.Pos, 3);
+                    string msgVi = "💥 Rương bẫy phát nổ chùm đạn ma thuật!";
+                    string msgEn = "💥 Trap chest explodes with magical projectiles!";
+                    Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
+                    S.Event = msgVi + "|" + msgEn;
+                    S.EventActor = p.Name;
+                    S.EventTick = S.Tick;
+                    break;
+                }
+                case 4:
+                {
+                    FX(p.Pos, p.Pos, 3);
+                    p.Pos = new V2(0f, -1.8f);
+                    FX(p.Pos, p.Pos, 1);
+                    string msgVi = "🌀 Ma thuật cổ xưa đá bay bạn về Trụ Khởi Sinh!";
+                    string msgEn = "🌀 Ancient magic kicks you back to the Beacon!";
+                    Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
+                    S.Event = msgVi + "|" + msgEn;
+                    S.EventActor = p.Name;
+                    S.EventTick = S.Tick;
+                    break;
+                }
+            }
+
+            Publish();
+            return scenario;
         }
         V2 BeaconSpawnSpot(int slotIndex,float radius=2.4f)
         {
@@ -1203,7 +1566,7 @@ namespace Ember
             if(S.BossArenaActive&&!enemies.Any(e=>e.Id==S.BossId&&e.HP>0))EndBossArena();
             foreach(var s in structures)
             {
-                if(s.Kind<=1||s.Kind==10)s.Life-=dt;
+                if(s.Kind<=1||s.Kind==10||s.Kind==MysteryChestOpenKind)s.Life-=dt;
                 if(s.Kind==3)foreach(var e in enemies)if(V2.Distance(e.Pos,s.Pos)<2){Damage(e,dt*15);e.Blind=Math.Max(e.Blind,.3f);s.Life-=dt;}
             }
             var departingMerchant=structures.Find(s=>s.Kind==10&&s.Life<=0f);
@@ -1261,7 +1624,7 @@ namespace Ember
             if(S.Phase==Phase.Eclipse){S.Wave=Math.Max(0,S.Wave-dt);if(S.Wave<=0){S.Phase=Phase.Extraction;Announce("Cổng đã mở! Về hải đăng và nhấn E.");}}
             if(S.Fuel<=0&&S.LastLight<=0&&S.BeaconHP<=0){S.Blackout+=dt;if(S.Blackout>=10){S.Phase=Phase.Lost;Announce("Bóng tối nuốt chửng cả nhóm.");}}else S.Blackout=0;
             if(players.Count>0&&players.All(p=>p.Ghost||p.Extracted))S.Phase=S.TeamExtracted>0?Phase.Won:Phase.Lost;
-            foreach(var c in commands.Values){c.Attack=c.Skill=c.Dash=c.Interact=c.Refuel=c.Deposit=c.ToggleLamp=c.PassLamp=c.Push=c.Revive=c.Reload=false;c.Craft=c.Use=-1;c.Equip=0;}
+            foreach(var c in commands.Values){c.Attack=c.Skill=c.Dash=c.Interact=c.Refuel=c.Deposit=c.ToggleLamp=c.PassLamp=c.Push=c.Revive=c.Reload=false;c.Craft=c.Use=-1;c.Equip=0;c.DepositRes=-1;c.DepositAmt=0;}
             Publish();
         }
         void UpdatePlayer(Player p,float dt)
@@ -1340,7 +1703,7 @@ namespace Ember
             if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
             for(int ni=nodes.Count-1;ni>=0;ni--)
             {
-                if(ni<nodes.Count&&nodes[ni].Dropped&&V2.Distance(nodes[ni].Pos,p.Pos)<0.65f)
+                if(ni<nodes.Count&&nodes[ni].Dropped&&V2.Distance(nodes[ni].Pos,p.Pos)<0.45f)
                     PickupNode(p,nodes[ni]);
             }
             if(c.Refuel)
@@ -1349,32 +1712,21 @@ namespace Ember
                 if(p.Bag[3]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[3],(int)Math.Ceiling((100-S.Fuel)/12f));p.Bag[3]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*12f);}
                 if(p.Bag[1]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[1],(int)Math.Ceiling((100-S.Fuel)/50f));p.Bag[1]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*50f);}
             }
-            if(c.Deposit&&p.Pos.Length<4&&(S.Phase==Phase.Explore||S.Phase==Phase.Eclipse||S.Phase==Phase.Extraction))
+            if((c.Deposit||c.DepositRes>=0)&&p.Pos.Length<4.5f&&(S.Phase==Phase.Explore||S.Phase==Phase.Eclipse||S.Phase==Phase.Extraction))
             {
-                int amount=p.Bag[1];
-                if(amount>0)
+                if(c.DepositRes>=0)
                 {
-                    int prevMilestone=(int)(S.Charge/100f);
-                    p.Bag[1]-=amount;
-                    S.Charge+=amount*CoreChargeValue;
-                    int newMilestone=(int)(S.Charge/100f);
-                    if(newMilestone>prevMilestone)
+                    DepositEnergy(p,c.DepositRes,c.DepositAmt);
+                }
+                else if(c.Deposit)
+                {
+                    int amount=p.Bag[1];
+                    if(amount>0)
                     {
-                        Announce(EmberLanguage.English
-                            ?$"⚡ Beacon reached {newMilestone*100} Energy! Safe light expanded, attracting more shadow creatures!"
-                            :$"⚡ Hải đăng đạt mốc {newMilestone*100} NL! Vùng sáng mở rộng, thu hút thêm quái vật bóng tối!");
-                        FX(new V2(),new V2(),2);
-                    }
-                    if(S.Phase==Phase.Explore&&S.Charge>=S.ChargeTarget)
-                    {
-                        S.BeaconHP=600;
-                        S.Phase=Phase.Eclipse;
-                        S.Wave=90;
-                        Announce("NHẬT THỰC — bảo vệ hải đăng 90 giây!");
-                    }
-                    else if(S.Charge>S.ChargeTarget)
-                    {
-                        Announce((EmberLanguage.English?"Crystal Overcharged: ":"Quá tải tinh thể: ")+S.Charge+" NL! Cổng trở về sẵn sàng!");
+                        p.Bag[1]-=amount;
+                        float energyAdded=amount*CoreChargeValue;
+                        AddBeaconCharge(p,energyAdded);
+                        FX(p.Pos,new V2(),2);
                     }
                 }
             }
@@ -1410,6 +1762,28 @@ namespace Ember
                 {
                     if(p.Load>0)for(int r=0;r<5;r++){Chest[r]+=p.Bag[r];p.Bag[r]=0;}
                     else for(int r=0;r<5;r++){int count=Math.Min(Chest[r],Math.Max(0,(int)p.Capacity-p.Load));Chest[r]-=count;p.Bag[r]+=count;}
+                }
+                else if(structures.Any(s=>s.Kind==MysteryChestKind&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<MysteryChestInteractionDistance))
+                {
+                    var mChest=structures.First(s=>s.Kind==MysteryChestKind&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<MysteryChestInteractionDistance);
+                    OpenMysteryChest(p,mChest);
+                }
+                else if(structures.Any(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f))
+                {
+                    var torch=structures.OrderBy(s=>V2.Distance(s.Pos,p.Pos)).First(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f);
+                    structures.Remove(torch);
+                    if(p.Items[0]<99)
+                    {
+                        p.Items[0]++;
+                        if(p.HeldSlot==6)p.HeldSlot=2;
+                    }
+                    else
+                    {
+                        nodes.Add(new Node{Id=nextId++,Pos=torch.Pos,Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
+                    }
+                    FX(torch.Pos,p.Pos,1);
+                    Announce(EmberLanguage.English?"Retrieved Torch!":"Đã thu hồi Đuốc!",p.Name);
+                    Publish();
                 }
                 else
                 {
@@ -1538,6 +1912,85 @@ namespace Ember
             }
             Publish();
         }
+        public bool DepositEnergy(Player p, int resId, int amount)
+        {
+            if(p==null||p.Ghost||p.Pos.Length>=4.5f)return false;
+            if(S.Phase!=Phase.Explore&&S.Phase!=Phase.Eclipse&&S.Phase!=Phase.Extraction)return false;
+
+            if(resId==(int)Resource.Core)
+            {
+                int count=Math.Min(amount>0?amount:p.Bag[1],p.Bag[1]);
+                if(count<=0)return false;
+                p.Bag[1]-=count;
+                float energyAdded=count*50f;
+                AddBeaconCharge(p,energyAdded);
+                FX(p.Pos,new V2(),2);
+                Announce(EmberLanguage.English
+                    ?$"⚡ Deposited {count} Crystal Cores (+{energyAdded} Energy)!"
+                    :$"⚡ Đã nạp {count} Lõi Tinh Thể (+{energyAdded} NL)!");
+                return true;
+            }
+            if(resId==(int)Resource.Dust)
+            {
+                int req=amount>0?amount:p.Bag[0];
+                int batches=req/10;
+                int count=batches*10;
+                if(count<10||p.Bag[0]<count)return false;
+                p.Bag[0]-=count;
+                float energyAdded=batches*15f;
+                AddBeaconCharge(p,energyAdded);
+                FX(p.Pos,new V2(),2);
+                Announce(EmberLanguage.English
+                    ?$"⚡ Deposited {count} Lumidust (+{energyAdded} Energy)!"
+                    :$"⚡ Đã nạp {count} Bụi Quang (+{energyAdded} NL)!");
+                return true;
+            }
+            if(resId==(int)Resource.Wood)
+            {
+                int req=amount>0?amount:p.Bag[3];
+                int batches=req/10;
+                int count=batches*10;
+                if(count<10||p.Bag[3]<count)return false;
+                p.Bag[3]-=count;
+                float energyAdded=batches*12f;
+                AddBeaconCharge(p,energyAdded);
+                FX(p.Pos,new V2(),2);
+                Announce(EmberLanguage.English
+                    ?$"⚡ Deposited {count} Wood (+{energyAdded} Energy)!"
+                    :$"⚡ Đã nạp {count} Gỗ (+{energyAdded} NL)!");
+                return true;
+            }
+            return false;
+        }
+
+        public void AddBeaconCharge(Player p, float energyAdded)
+        {
+            int prevMilestone=(int)(S.Charge/100f);
+            S.Charge+=energyAdded;
+            int newMilestone=(int)(S.Charge/100f);
+            if(newMilestone>prevMilestone)
+            {
+                Announce(EmberLanguage.English
+                    ?$"⚡ Beacon reached {newMilestone*100} Energy! Safe light expanded, attracting more shadow creatures!"
+                    :$"⚡ Hải đăng đạt mốc {newMilestone*100} NL! Vùng sáng mở rộng, thu hút thêm quái vật bóng tối!");
+                FX(new V2(),new V2(),2);
+            }
+            if(S.Phase==Phase.Explore&&S.Charge>=S.ChargeTarget)
+            {
+                S.BeaconHP=600;
+                S.Phase=Phase.Eclipse;
+                S.Wave=90;
+                Announce(EmberLanguage.English
+                    ?"ECLIPSE — Defend the Beacon for 90 seconds!"
+                    :"NHẬT THỰC — bảo vệ hải đăng 90 giây!");
+            }
+            else if(S.Charge>S.ChargeTarget)
+            {
+                Announce((EmberLanguage.English?"Crystal Overcharged: ":"Quá tải tinh thể: ")+S.Charge+" NL! "+
+                    (EmberLanguage.English?"Escape portal ready!":"Cổng trở về sẵn sàng!"));
+            }
+        }
+
         public bool PickupNode(Player p,Node n)
         {
             if(p==null||p.Ghost||n==null)return false;
@@ -1549,14 +2002,14 @@ namespace Ember
                     p.HasPickaxe=true;
                     p.PickaxeTier=1;
                     p.PickaxeDurability=48;
-                    if(p.HeldSlot==6||p.HeldSlot==2)p.HeldSlot=8;
+                    if(p.HeldSlot==6)p.HeldSlot=8;
                     Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+p.PickaxeName,p.Name);
                 }
                 else
                 {
                     p.HasWeapon=true;
                     p.Weapon=w;
-                    if(p.HeldSlot==6||p.HeldSlot==2)p.HeldSlot=1;
+                    if(p.HeldSlot==6)p.HeldSlot=1;
                     Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+(EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi),p.Name);
                 }
                 FX(n.Pos,p.Pos,1);
@@ -1592,37 +2045,7 @@ namespace Ember
         public bool ExecuteTrade(Player p,int tradeIndex)
         {
             if(p==null||p.Ghost)return false;
-            switch(tradeIndex)
-            {
-                case 0: // 8 Dust -> 1 Torch
-                    if(p.Bag[0]<8)return false;
-                    p.Bag[0]-=8;p.Items[0]++;
-                    Announce((EmberLanguage.English?"Traded 8 Lumidust for 1 Torch!":"Đã đổi 8 Bụi quang lấy 1 Đuốc!"),p.Name);
-                    break;
-                case 1: // 6 Ore -> 1 Energy Drink
-                    if(p.Bag[4]<6)return false;
-                    p.Bag[4]-=6;p.Items[14]++;
-                    p.StaminaBuffTimer=30f;p.Stamina=100f;
-                    p.ApplyBuff(BuffKind.Swiftness,30f,0.35f);
-                    p.ApplyBuff(BuffKind.StaminaSurge,30f,1.0f);
-                    Announce((EmberLanguage.English?"Traded 6 Ore for 1 Energy Drink!":"Đã đổi 6 Quặng lấy 1 Nước Tăng Lực!"),p.Name);
-                    break;
-                case 2: // 8 Wood -> 2 Apples
-                    if(p.Bag[3]<8)return false;
-                    p.Bag[3]-=8;p.Items[15]+=2;
-                    Announce((EmberLanguage.English?"Traded 8 Wood for 2 Apples!":"Đã đổi 8 Gỗ lấy 2 Quả Táo!"),p.Name);
-                    break;
-                case 3: // 1 Core -> 2 Revival Stones
-                    if(p.Bag[1]<1)return false;
-                    p.Bag[1]-=1;p.Items[3]+=2;
-                    Announce((EmberLanguage.English?"Traded 1 Core for 2 Revival Stones!":"Đã đổi 1 Lõi lấy 2 Đá Hồi Sinh!"),p.Name);
-                    break;
-                default:
-                    return false;
-            }
-            FX(p.Pos,p.Pos,2);
-            Publish();
-            return true;
+            return EmberMerchant.ExecuteTrade(this,p,tradeIndex,null);
         }
         bool Harvest(Player p,float range,bool dustOnly=false)
         {
@@ -1696,25 +2119,37 @@ namespace Ember
                     p.HarvestCD=Math.Max(0.75f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
                     FX(p.Pos,blockPos,7);
                     Resource res=targetTile==3?Resource.Wood:Resource.Ore;
-                    int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8?p.PickaxeTier:0);
-                    p.Bag[(int)res]+=yield;p.Gathered+=yield;
-                    EmitPopup(blockPos,3,yield,(int)res,.95f);
-                    if(targetTile==3)
+                    var def=Catalog.GetTileHarvestDef(bestTx,bestTy,targetTile);
+
+                    // 15% Critical Harvest Chance
+                    bool isCrit=rng.NextDouble()<0.15;
+                    float baseDmg=30f+p.PickaxeTier*30f+(p.Has(Perk.Miner)?10f*p.Rank(Perk.Miner):0f);
+                    if(p.Weapon==Weapon.CrystalAxe||p.SideWeapon==Weapon.CrystalAxe)baseDmg=Math.Max(baseDmg,60f);
+                    float dmg=isCrit?(baseDmg*2f):baseDmg;
+
+                    // Variable Drop Formula with Perk & Tool Bonus
+                    int bonus=(p.Has(Perk.Miner)?p.Rank(Perk.Miner):0)+(p.HeldSlot==8?p.PickaxeTier:0);
+                    int minStrike=def.Tier==0?1:def.Tier==1?1:2;
+                    int maxStrike=def.Tier==0?1:def.Tier==1?2:3;
+                    int baseYield=rng.Next(minStrike,maxStrike+1);
+                    int strikeYield=baseYield+bonus;
+                    if(isCrit)strikeYield=Math.Max(1,(int)Math.Round(strikeYield*1.5f));
+
+                    p.Bag[(int)res]+=strikeYield;p.Gathered+=strikeYield;
+
+                    if(isCrit)
                     {
-                        int hash=((bestTx*374761393)^(bestTy*668265263))&0x7FFFFFFF;
-                        float tdx=bestTx-size/2f,tdy=bestTy-size/2f;
-                        float tr=(float)Math.Sqrt(tdx*tdx+tdy*tdy);
-                        bool isAppleTree=tr<size*.22f&&((hash%10)>=3&&(hash%10)<=5);
-                        if(isAppleTree||rng.NextDouble()<0.20)
-                        {
-                            int appleCount=rng.Next(1,3);
-                            for(int a=0;a<appleCount;a++)
-                            {
-                                V2 aScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
-                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+aScatter,Resource=Resource.Wood,Amount=1,MaxAmount=1,DropKind=2,DropId=15,Dropped=true});
-                            }
-                            Announce(EmberLanguage.English?"Fresh apples fell to the ground!":"Táo rừng chín mọng rơi xuống đất!");
-                        }
+                        FX(p.Pos,blockPos,1);
+                        EmitPopup(blockPos,3,strikeYield,(int)res,1.45f);
+                        Announce(EmberLanguage.English?"⚡ Critical Harvest! Weak spot struck!":"⚡ Khai thác chí mạng! Bổ trúng điểm yếu!",p.Name);
+                        // Flings an extra loose resource item onto the ground with sparkling effect
+                        V2 cScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+                        nodes.Add(new Node{Id=nextId++,Pos=blockPos+cScatter,Resource=res,Amount=Math.Max(1,strikeYield/2),MaxAmount=Math.Max(1,strikeYield/2),Dropped=true});
+                    }
+                    else
+                    {
+                        FX(p.Pos,blockPos,7);
+                        EmitPopup(blockPos,3,strikeYield,(int)res,.95f);
                     }
                     if(p.HasPickaxe)
                     {
@@ -1734,9 +2169,7 @@ namespace Ember
                         }
                     }
                     int htIdx=harvestTargets.FindIndex(h=>h.Tx==bestTx&&h.Ty==bestTy);
-                    HarvestTarget ht=htIdx>=0?harvestTargets[htIdx]:new HarvestTarget{Tx=bestTx,Ty=bestTy,MaxHP=targetTile==3?120f:160f,HP=targetTile==3?120f:160f,Tile=targetTile,LastHitTime=S.Time};
-                    float dmg=30f+p.PickaxeTier*30f+(p.Has(Perk.Miner)?10f*p.Rank(Perk.Miner):0f);
-                    if(p.Weapon==Weapon.CrystalAxe||p.SideWeapon==Weapon.CrystalAxe)dmg=Math.Max(dmg,60f);
+                    HarvestTarget ht=htIdx>=0?harvestTargets[htIdx]:new HarvestTarget{Tx=bestTx,Ty=bestTy,MaxHP=def.MaxHP,HP=def.MaxHP,Tile=targetTile,LastHitTime=S.Time};
                     ht.HP=Math.Max(0f,ht.HP-dmg);
                     ht.LastHitTime=S.Time;
                     if(ht.HP<=0)
@@ -1745,6 +2178,76 @@ namespace Ember
                         Tiles[bestTy*size+bestTx]=0;
                         treeRespawns.Add(new TreeRespawn{Tx=bestTx,Ty=bestTy,RespawnAt=S.Time+45f,Tile=targetTile});
                         FX(blockPos,blockPos,7);
+
+                        if(targetTile==3) // Tree felled
+                        {
+                            if(def.Tier==2) // Giant Ancient Tree (~15%)
+                            {
+                                int appleCount=rng.Next(2,5);
+                                for(int a=0;a<appleCount;a++)
+                                {
+                                    V2 aScatter=new V2((float)(rng.NextDouble()*1.6-0.8),(float)(rng.NextDouble()*1.6-0.8));
+                                    nodes.Add(new Node{Id=nextId++,Pos=blockPos+aScatter,Resource=Resource.Wood,Amount=1,MaxAmount=1,DropKind=2,DropId=15,Dropped=true});
+                                }
+                                int dustCount=rng.Next(1,3);
+                                V2 dScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+dScatter,Resource=Resource.Dust,Amount=dustCount,MaxAmount=dustCount,Dropped=true});
+                                int woodBurst=rng.Next(2,5);
+                                V2 wScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+wScatter,Resource=Resource.Wood,Amount=woodBurst,MaxAmount=woodBurst,Dropped=true});
+                                Announce(EmberLanguage.English?"🌲 Ancient Giant Tree felled! Rare Sap and Fresh Apples burst forth!":"🌲 Đã đốn hạ Cây Cổ Thụ! Rơi nhiều Táo rừng và Nhựa quang!",p.Name);
+                            }
+                            else if(def.Tier==0) // Small Tree / Sapling
+                            {
+                                V2 stickScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+stickScatter,Resource=Resource.Wood,Amount=1,MaxAmount=1,DropKind=2,DropId=22,Dropped=true});
+                                Announce(EmberLanguage.English?"Twig snapped! Found a small wooden stick.":"Bụi cây gãy! Rơi cành cây nhỏ.",p.Name);
+                            }
+                            else // Normal Tree
+                            {
+                                int hash=((bestTx*374761393)^(bestTy*668265263))&0x7FFFFFFF;
+                                float tdx=bestTx-size/2f,tdy=bestTy-size/2f;
+                                float tr=(float)Math.Sqrt(tdx*tdx+tdy*tdy);
+                                bool isAppleTree=tr<size*.22f&&((hash%10)>=3&&(hash%10)<=5);
+                                if(isAppleTree||rng.NextDouble()<0.25)
+                                {
+                                    int appleCount=rng.Next(1,3);
+                                    for(int a=0;a<appleCount;a++)
+                                    {
+                                        V2 aScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+                                        nodes.Add(new Node{Id=nextId++,Pos=blockPos+aScatter,Resource=Resource.Wood,Amount=1,MaxAmount=1,DropKind=2,DropId=15,Dropped=true});
+                                    }
+                                    Announce(EmberLanguage.English?"Fresh apples fell to the ground!":"Táo rừng chín mọng rơi xuống đất!",p.Name);
+                                }
+                            }
+                        }
+                        else if(targetTile==2) // Rock broken
+                        {
+                            if(def.Tier==2) // Rich Vein (~15%)
+                            {
+                                int oreBurst=rng.Next(2,5);
+                                V2 oScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+oScatter,Resource=Resource.Ore,Amount=oreBurst,MaxAmount=oreBurst,Dropped=true});
+                                if(rng.NextDouble()<0.35)
+                                {
+                                    V2 cScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
+                                    nodes.Add(new Node{Id=nextId++,Pos=blockPos+cScatter,Resource=Resource.Core,Amount=1,MaxAmount=1,Dropped=true});
+                                    Announce(EmberLanguage.English?"💎 Rich Vein shattered! Extracted a pure Energy Core!":"💎 Mỏ Quặng Giàu vỡ vụn! Khai thác được Lõi Tinh Thể quý giá!",p.Name);
+                                }
+                                else
+                                {
+                                    Announce(EmberLanguage.English?"⛏️ Rich Ore Vein depleted!":"⛏️ Đã khai thác cạn Mỏ Quặng Giàu!",p.Name);
+                                }
+                            }
+                            else if(def.Tier==0) // Small Gravel
+                            {
+                                Announce(EmberLanguage.English?"Small gravel cleared.":"Đã dọn xong mỏ sỏi nhỏ.",p.Name);
+                            }
+                            else // Normal Ore
+                            {
+                                Announce(EmberLanguage.English?"Ore rock shattered!":"Tảng quặng đã vỡ vụn!",p.Name);
+                            }
+                        }
                     }
                     else
                     {
@@ -1778,9 +2281,25 @@ namespace Ember
             }
             if(node.MaxAmount<=0)node.MaxAmount=Math.Max(node.Amount,5);
             node.LastHitTime=S.Time;
-            int nodeYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?p.PickaxeTier:0);
+            int nBonus=(p.Has(Perk.Miner)?p.Rank(Perk.Miner):0)+(!dustOnly&&!node.Dropped&&p.HeldSlot==8?p.PickaxeTier:0);
+            int nBaseYield=rng.Next(1,3);
+            int nodeYield=nBaseYield+nBonus;
+            bool isNodeCrit=!dustOnly&&!node.Dropped&&rng.NextDouble()<0.15;
+            if(isNodeCrit)nodeYield=Math.Max(1,(int)Math.Round(nodeYield*1.5f));
             int n=Math.Min(node.Amount,nodeYield);p.Bag[(int)node.Resource]+=n;p.Gathered+=n;node.Amount-=n;if(node.Amount<=0)nodes.Remove(node);
-            if(n>0)EmitPopup(node.Pos,3,n,(int)node.Resource,.95f);
+            if(n>0)
+            {
+                if(isNodeCrit)
+                {
+                    FX(p.Pos,node.Pos,1);
+                    EmitPopup(node.Pos,3,n,(int)node.Resource,1.45f);
+                    Announce(EmberLanguage.English?"⚡ Critical Harvest!":"⚡ Khai thác chí mạng!",p.Name);
+                }
+                else
+                {
+                    EmitPopup(node.Pos,3,n,(int)node.Resource,.95f);
+                }
+            }
             if(!dustOnly)
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
@@ -1812,15 +2331,40 @@ namespace Ember
         }
         public bool Craft(Player p,Recipe recipe)
         {
-            int index=(int)recipe;if(index<0||index>=Catalog.Recipes.Length||p.Ghost||(p.Recipes!=null&&!p.Recipes.Contains(index)))return false;
-            var cost=Catalog.Recipes[index].Cost;if(p.Pos.Length>5&&index>=7)return false;
+            int index=(int)recipe;if(index<0||index>=Catalog.Recipes.Length||p.Ghost)return false;
+            bool isSanctuaryGear=index>=7&&index<=13;
+            if(isSanctuaryGear&&p.Recipes!=null&&!p.Recipes.Contains(index))return false;
+            var cost=Catalog.Recipes[index].Cost;if(p.Pos.Length>5&&isSanctuaryGear)return false;
             for(int i=0;i<5;i++)if(p.Bag[i]<cost[i])return false;
             for(int i=0;i<5;i++)p.Bag[i]-=cost[i];
             if(index<4)p.Items[index]++;
             else if(index<7){float life=index==5?90f:999999f;float hp=index==4?150f:100f;structures.Add(new Structure{Id=nextId++,Kind=index-2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=life,MaxLife=life,HP=hp});}
             else if(index<9){p.Lantern=index==7?Lantern.Inferno:Lantern.Relic;p.CarriesLantern=true;}
-            else if(index<14)p.Weapon=(Weapon)(index-8);
-            else if(index<p.Items.Length)p.Items[index]++;
+            else if(index<14){p.HasWeapon=true;p.Weapon=(Weapon)(index-8);if(p.HeldSlot==6)p.HeldSlot=1;}
+            else if(index<19)
+            {
+                if(index<p.Items.Length)p.Items[index]++;
+            }
+            else if(recipe==Recipe.IronPickaxe)
+            {
+                p.HasPickaxe=true;p.PickaxeTier=1;p.PickaxeDurability=48;
+                if(p.HeldSlot==6)p.HeldSlot=8;
+            }
+            else if(recipe==Recipe.StonePickaxe)
+            {
+                p.HasPickaxe=true;p.PickaxeTier=0;p.PickaxeDurability=30;
+                if(p.HeldSlot==6)p.HeldSlot=8;
+            }
+            else if(recipe==Recipe.WoodcutterAxe)
+            {
+                p.HasWeapon=true;p.Weapon=Weapon.CrystalAxe;
+                p.HeldSlot=1;
+            }
+            else if(recipe==Recipe.WoodenStick)
+            {
+                p.HasWeapon=true;p.Weapon=Weapon.Stick;
+                p.HeldSlot=1;
+            }
             p.Crafted++;Announce("Đã chế tạo: "+Catalog.Recipes[index].Name);return true;
         }
         public bool CanReviveAtBeacon(Player p)
@@ -1847,7 +2391,7 @@ namespace Ember
             dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=BeaconSpawnSpot(dead.PartySlot,2.6f);dead.Invulnerable=3;
             FX(new V2(),dead.Pos,2);
         }
-        void Use(Player p,int item)
+        public void Use(Player p,int item)
         {
             if(p==null||p.Ghost)return;
             int effectiveItem=item;
@@ -1918,6 +2462,7 @@ namespace Ember
             }
             p.Items[effectiveItem]--;
             if(p.Items[effectiveItem]<=0&&(p.HeldSlot==effectiveItem+2||(item>=2&&item<=5&&p.HeldSlot==item)))p.HeldSlot=6;
+            Publish();
         }
         public Enemy Target(Player p,float range)
         {
