@@ -183,6 +183,7 @@ namespace Ember
         void Update()
         {
             EnsureAudio();
+            teleportFadeTimer=Mathf.Max(0f,teleportFadeTimer-Time.deltaTime);
             clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
             TickCoopAutoReconnect(Time.deltaTime);
             if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet,Awake=Profile.IsAwake(selected)}));joinClock=1;}}
@@ -208,6 +209,12 @@ namespace Ember
                 sendClock-=Time.deltaTime;if(sendClock<=0){if(intent.HasActions&&State?.Phase!=Phase.Sanctuary)lan.SendAction(JsonUtility.ToJson(intent));lan.SendInput(JsonUtility.ToJson(new Command{X=intent.X,Y=intent.Y}));sendClock=1f/30;ClearActions();}
             }
             else renderInterp=1f;
+            if(Local!=null&&prevPlayerPos.TryGetValue(localId,out var prevPos)&&V2.Distance(prevPos,Local.Pos)>=4.5f)
+            {
+                path.Clear();
+                intent.X=intent.Y=0;
+                if(teleportFadeTimer<=.1f)TriggerTeleportFade();
+            }
             if(State==null)return;
             if(renderedSeed!=State.Seed)BuildMap();
             EnsureFogOfWar();
@@ -254,11 +261,28 @@ namespace Ember
             int count=(int)(22050*seconds);var samples=new float[count];for(int i=0;i<count;i++)samples[i]=Mathf.Sin(i*hz*Mathf.PI*2/22050)*(1-(float)i/count)*.2f;
             var clip=AudioClip.Create("Ember tone",count,1,22050,false);clip.SetData(samples,0);return clip;
         }
+        AudioClip warpTone;
+        float teleportFadeTimer;
+        void TriggerTeleportFade()
+        {
+            teleportFadeTimer=.55f;
+            path.Clear();
+            intent.X=intent.Y=0;
+            if(audioSource!=null&&warpTone!=null)audioSource.PlayOneShot(warpTone,.35f);
+        }
+        float GetTeleportFadeAlpha()
+        {
+            if(teleportFadeTimer<=0f)return 0f;
+            if(teleportFadeTimer>.38f)return Mathf.Clamp01((.55f-teleportFadeTimer)/.17f)*.95f;
+            if(teleportFadeTimer>.30f)return .95f;
+            return Mathf.Clamp01(teleportFadeTimer/.30f)*.95f;
+        }
         void EnsureAudio()
         {
             if(audioSource==null)audioSource=GetComponent<AudioSource>()??gameObject.AddComponent<AudioSource>();
             if(tone==null)tone=MakeTone(440,.12f);
             if(footstep==null)footstep=MakeTone(90,.08f);
+            if(warpTone==null)warpTone=MakeTone(180,.28f);
         }
         bool Press(Key key)=>Keyboard.current!=null&&Keyboard.current[key].wasPressedThisFrame;
         bool Held(Key key)=>Keyboard.current!=null&&Keyboard.current[key].isPressed;
@@ -303,7 +327,7 @@ namespace Ember
             Vector2 move=new Vector2((Held(Key.D)||Held(Key.RightArrow)?1:0)-(Held(Key.A)||Held(Key.LeftArrow)?1:0),(Held(Key.W)||Held(Key.UpArrow)?1:0)-(Held(Key.S)||Held(Key.DownArrow)?1:0));
             if(move.sqrMagnitude>0)path.Clear();
             bool overUI=IsMouseOverHud();
-            if(moba&&Mouse.current!=null&&!overUI&&Local!=null)
+            if(moba&&Mouse.current!=null&&!overUI&&Local!=null&&teleportFadeTimer<=.25f)
             {
                 bool rDown=Mouse.current.rightButton.wasPressedThisFrame;
                 bool rHeld=Mouse.current.rightButton.isPressed;
@@ -358,7 +382,16 @@ namespace Ember
                         :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
                 }
             }
-            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);
+            bool pressedSkill=Press(Key.J);
+            if(pressedSkill)
+            {
+                intent.Skill=true;
+                path.Clear();
+                intent.X=intent.Y=0;
+                if(Local!=null&&Local.Vessel==Vessel.SpaceWraith&&Local.SkillCD<=0)
+                    TriggerTeleportFade();
+            }
+            intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);
             if(Press(Key.B))
             {
                 if(Local!=null&&Local.Pos.Length<4.5f)
@@ -1521,6 +1554,9 @@ namespace Ember
             DrawFieldNotices(p,QuestCollapsed?objectiveY+54:objectiveY+80);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
             hudCapturing=false;
+            float fadeAlpha=GetTeleportFadeAlpha();
+            if(fadeAlpha>0.001f&&Event.current.type==EventType.Repaint)
+                Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.04f,.02f,.08f,fadeAlpha));
 
         }
         void DrawDarkness()

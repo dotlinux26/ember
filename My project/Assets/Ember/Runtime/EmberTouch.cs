@@ -29,7 +29,14 @@ namespace Ember
                 }
                 if(AttackTouch.Contains(gui)&&Local!=null&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0)intent.Attack=true;
                 if(!touch.press.wasPressedThisFrame)continue;
-                if(SkillTouch.Contains(gui)&&Local!=null&&(Local.Vessel!=Vessel.Wanderer||Local.Awake))intent.Skill=true;if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
+                if(SkillTouch.Contains(gui)&&Local!=null&&(Local.Vessel!=Vessel.Wanderer||Local.Awake))
+                {
+                    intent.Skill=true;
+                    path.Clear();
+                    intent.X=intent.Y=0;
+                    if(Local.Vessel==Vessel.SpaceWraith&&Local.SkillCD<=0)TriggerTeleportFade();
+                }
+                if(PushTouch.Contains(gui))intent.Push=true;if(DashTouch.Contains(gui))intent.Dash=true;if(RangesTouch.Contains(gui))ranges=!ranges;
                 if(InteractTouch.Contains(gui))intent.Interact=true;
                 if(DepositTouch.Contains(gui))intent.Deposit=true;
                 if(RefuelTouch.Contains(gui))intent.Refuel=true;
