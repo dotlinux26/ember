@@ -694,15 +694,16 @@ namespace Ember
                 :State.Phase==Phase.Explore?L("Thời gian trận · Boss tiếp theo sau ","Match time · Next Boss in ")+(bossRem/60).ToString("00")+":"+(bossRem%60).ToString("00")
                 :L("Thời gian trong trận","In-game match time");
             GUI.Label(box,new GUIContent("",tip),GUIStyle.none);
-            if(State.Phase==Phase.Explore)
+            if(State.Phase==Phase.Explore||State.Phase==Phase.Eclipse)
             {
-                var waveBox=new Rect(Mathf.Round((Screen.width-90)*.5f),43f,90f,18f);
-                PixelPanel(waveBox,new Color(.18f,.12f,.26f,.9f));
+                var waveBox=new Rect(Mathf.Round((Screen.width-104)*.5f),43f,104f,19f);
+                PixelPanel(waveBox,new Color(.16f,.10f,.24f,.95f));
                 if(Event.current.type==EventType.Repaint)
                 {
                     var waveStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,fontStyle=FontStyle.Bold};
-                    waveStyle.normal.textColor=new Color(1f,.88f,.45f);
-                    GUI.Label(waveBox,L("ĐỢT ","WAVE ")+State.PeriodicWave,waveStyle);
+                    waveStyle.normal.textColor=eclipse?Coral:new Color(1f,.88f,.45f);
+                    string text=eclipse?L($"NGUYỆT THỰC {Mathf.CeilToInt(State.Wave)}s",$"ECLIPSE {Mathf.CeilToInt(State.Wave)}s"):L("ĐỢT ","WAVE ")+State.PeriodicWave;
+                    GUI.Label(waveBox,text,waveStyle);
                 }
             }
         }
@@ -726,6 +727,141 @@ namespace Ember
                 path.Clear();
                 menu=true;
                 SaveActiveRun(false,asyncWrite:true);
+            }
+        }
+
+        bool minimapCollapsed;
+        void DrawMinimap(Player p)
+        {
+            if(p==null||State==null||minimapTex==null)return;
+            if(craftOpen||inventoryOpen)return;
+
+            float mapSize=136f;
+            float mapX=Screen.width-mapSize-14f;
+            float mapY=48f;
+
+            if(minimapCollapsed)
+            {
+                Rect collRect=new Rect(Screen.width-44,mapY,32,32);
+                RegisterHudRect(collRect);
+                PixelPanel(collRect,new Color(.14f,.10f,.22f,.95f));
+                var oldContent=GUI.contentColor;
+                GUI.contentColor=Cyan;
+                GUI.Label(new Rect(collRect.x+2,collRect.y+2,28,28),"🗺️",small);
+                GUI.contentColor=oldContent;
+                if(GUI.Button(collRect,new GUIContent("",L("Mở bản đồ","Open minimap")),GUIStyle.none))
+                    minimapCollapsed=false;
+                return;
+            }
+
+            Rect frameRect=new Rect(mapX-3,mapY-3,mapSize+6,mapSize+22);
+            RegisterHudRect(frameRect);
+
+            // Dread / Hallucination impact
+            float dreadRatio=Mathf.Clamp01((p.Dread-50f)/50f);
+            bool hallucinating=p.Mad||p.Dread>=60f;
+            float jx=0f, jy=0f;
+            Color borderTint=new Color(.20f,.15f,.32f,.95f);
+            if(hallucinating)
+            {
+                float speed=p.Mad?32f:22f;
+                float amt=dreadRatio*(p.Mad?3.2f:2.0f);
+                jx=Mathf.Sin(Time.time*speed)*amt;
+                jy=Mathf.Cos(Time.time*(speed*0.9f))*amt;
+                float crimsonPulse=Mathf.PingPong(Time.time*3.5f,1f);
+                borderTint=Color.Lerp(new Color(.22f,.16f,.34f,.95f),new Color(.82f,.14f,.24f,.95f),crimsonPulse*dreadRatio);
+            }
+
+            PixelPanel(new Rect(frameRect.x+jx,frameRect.y+jy,frameRect.width,frameRect.height),borderTint);
+
+            // Header label & collapse button
+            UiLabel(new Rect(mapX+jx+2,mapY+jy-2,mapSize-20,16),L("Bản đồ","Minimap"),small);
+            Rect collBtn=new Rect(mapX+jx+mapSize-16,mapY+jy-2,16,14);
+            var oldCol=GUI.contentColor;
+            GUI.contentColor=new Color(.75f,.72f,.85f);
+            GUI.Label(collBtn,"-",small);
+            GUI.contentColor=oldCol;
+            if(GUI.Button(collBtn,new GUIContent("",L("Thu gọn bản đồ","Collapse minimap")),GUIStyle.none))
+            {
+                minimapCollapsed=true;
+                return;
+            }
+
+            // Explored terrain texture
+            Rect texRect=new Rect(mapX+jx,mapY+jy+16,mapSize,mapSize);
+            if(Event.current.type==EventType.Repaint)
+            {
+                GUI.DrawTexture(texRect,minimapTex,ScaleMode.StretchToFill,false);
+            }
+
+            int size=State.Size;
+
+            // Beacon pip at center (0, 0)
+            float bNormX=(0f+size/2f)/size;
+            float bNormY=1f-(0f+size/2f)/size;
+            float bPipX=texRect.x+bNormX*mapSize;
+            float bPipY=texRect.y+bNormY*mapSize;
+            float beaconPulse=1f+Mathf.Sin(Time.time*4f)*.15f;
+            Panel(new Rect(bPipX-3*beaconPulse,bPipY-3*beaconPulse,6*beaconPulse,6*beaconPulse),Cyan);
+
+            // Teammates & Local Player pips
+            var players=State.Players;
+            if(players!=null)
+            {
+                for(int pi=0;pi<players.Length;pi++)
+                {
+                    var p2=players[pi];
+                    if(p2.Extracted)continue;
+                    float normX=(p2.Pos.X+size/2f)/size;
+                    float normY=1f-(p2.Pos.Y+size/2f)/size;
+                    if(normX<0||normX>1||normY<0||normY>1)continue;
+                    float pipX=texRect.x+normX*mapSize;
+                    float pipY=texRect.y+normY*mapSize;
+                    if(p2.Id==p.Id)
+                    {
+                        // Local player: gold/white glowing indicator
+                        Panel(new Rect(pipX-3,pipY-3,6,6),Color.white);
+                        Panel(new Rect(pipX-2,pipY-2,4,4),Gold);
+                    }
+                    else if(p2.Ghost)
+                    {
+                        // Ghost teammate: pulsing pale gray
+                        float gA=Mathf.PingPong(Time.time*3f,1f);
+                        Panel(new Rect(pipX-2,pipY-2,4,4),new Color(.7f,.75f,.85f,gA));
+                    }
+                    else
+                    {
+                        // Active teammate: cyan pip
+                        Panel(new Rect(pipX-2,pipY-2,4,4),Cyan);
+                    }
+                }
+            }
+
+            // Phantom hallucination blips when dread is high!
+            if(hallucinating)
+            {
+                int phantomCount=p.Mad?4:2;
+                float normX=(p.Pos.X+size/2f)/size;
+                float normY=1f-(p.Pos.Y+size/2f)/size;
+                float playerPipX=texRect.x+normX*mapSize;
+                float playerPipY=texRect.y+normY*mapSize;
+                for(int fi=0;fi<phantomCount;fi++)
+                {
+                    float pt=Time.time*2.2f+fi*3.7f;
+                    if(Mathf.Sin(pt*2.3f)>-0.2f)
+                    {
+                        float phDist=(14f+fi*11f)*dreadRatio;
+                        float px=playerPipX+Mathf.Sin(pt)*phDist;
+                        float py=playerPipY+Mathf.Cos(pt*1.3f)*phDist;
+                        if(px>=texRect.x&&px<=texRect.xMax-3&&py>=texRect.y&&py<=texRect.yMax-3)
+                        {
+                            Panel(new Rect(px-2,py-2,4,4),Coral);
+                        }
+                    }
+                }
+                // Crimson noise scanline
+                float scanY=texRect.y+Mathf.Repeat(Time.time*45f,mapSize);
+                Panel(new Rect(texRect.x,scanY,mapSize,1),new Color(.9f,.2f,.3f,.25f));
             }
         }
 
@@ -978,6 +1114,7 @@ namespace Ember
 
             if(UiButton(new Rect(toolX-toolWidth-8,12,toolWidth,29),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
             if(network)DrawPartyBubbles();
+            DrawMinimap(p);
 
             bool anyDowned=State.Players.Any(q=>q.Ghost);
             if(anyDowned&&p.Pos.Length<=5)

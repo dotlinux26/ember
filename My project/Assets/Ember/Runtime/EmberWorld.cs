@@ -1003,6 +1003,8 @@ namespace Ember
             if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Explore&&S.Time>=S.PeriodicWave*60f)
             {
                 S.PeriodicWave++;
+                Announce(EmberLanguage.English?$"⚔️ WAVE {S.PeriodicWave}: Shadow swarm rises!":$"⚔️ ĐỢT {S.PeriodicWave}: Bầy quái bóng tối trỗi dậy!");
+                FX(new V2(),new V2(0,1),2);
                 foreach(var lp in players.Where(p=>!p.Ghost&&!p.Extracted))
                 {
                     for(int wi=0;wi<2;wi++)
@@ -1795,8 +1797,19 @@ namespace Ember
                     Announce("ĐÃ HẠ GỤC BOSS: "+spec.NameVi+"! Viền phong ấn đã tan biến.");
                     return;
                 }
-                bool umbra=e.Elite||e.Kind==EnemyKind.Nest;nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2,Dropped=true});
-                if(e.Kind==EnemyKind.Boss){S.BossesDefeated++;Announce("Thực thể đã gục — nhận mảnh ký ức khi kết thúc trận.");}else if(umbra)Announce("Thu được mảnh bóng tối.");
+                if(e.Kind==EnemyKind.Sentinel)
+                {
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=Resource.Core,Amount=2,Dropped=true});
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(.35f,-.25f),Resource=Resource.Dust,Amount=3,Dropped=true});
+                    Announce(EmberLanguage.English?"💎 Crystal Sentinel shattered! Dropped 2 Cores.":"💎 Hộ Vệ Tinh Thể vỡ tan! Rơi 2 Lõi Tinh Thể.");
+                    FX(e.Pos,new V2(0,1),3);
+                }
+                else
+                {
+                    bool umbra=e.Elite||e.Kind==EnemyKind.Nest;
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2,Dropped=true});
+                    if(e.Kind==EnemyKind.Boss){S.BossesDefeated++;Announce("Thực thể đã gục — nhận mảnh ký ức khi kết thúc trận.");}else if(umbra)Announce("Thu được mảnh bóng tối.");
+                }
             }
         }
         static float FriendlyDamage(Player p,float damage)=>damage*(p.Has(Perk.ReluctantHealer)?1-.5f*p.PerkStrength(Perk.ReluctantHealer):1);

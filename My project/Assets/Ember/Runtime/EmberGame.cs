@@ -13,6 +13,7 @@ namespace Ember
         [NonSerialized]public EmberWorld World;public Snapshot State;public Profile Profile;
         EmberLan lan;bool network,host=true,craftOpen,ranges=true,menu=true,rewarded,moba,saveBlocked;int localId=1;
         Camera cam;GameObject mapRoot,entityRoot;float accumulator,sendClock,joinClock;int renderedSeed=int.MinValue;byte[] currentTiles;
+        bool[] exploredTiles;int exploredSize;Texture2D minimapTex;Color32[] minimapColors;float minimapUpdateTimer;bool minimapDirty;
         readonly Dictionary<int,SpriteRenderer> visibleTrees=new Dictionary<int,SpriteRenderer>();
         readonly Stack<SpriteRenderer> treePool=new Stack<SpriteRenderer>();
         readonly Dictionary<int,V2> prevPlayerPos=new Dictionary<int,V2>(),prevEnemyPos=new Dictionary<int,V2>(),prevProjPos=new Dictionary<int,V2>();
@@ -201,6 +202,7 @@ namespace Ember
             RenderLighting();
             UpdateAmbientAudio();
             StreamTrees();
+            UpdateExploration(Time.deltaTime);
             if(netSmoke&&!netSmokeValidated&&State.Tick>120&&State.Players.Length==netExpected&&State.Players.All(p=>p.Id==1||p.Pos.X>(p.Id-1)*1.5f+1))NetSmokeCheck();
             if(Local!=null&&Local.Dread>=30&&!Local.Safe){phantomClock-=Time.deltaTime;if(phantomClock<=0){audioSource.panStereo=Mathf.Sin(clock*2)*.8f;audioSource.PlayOneShot(footstep,.12f);phantomClock=3.5f;}}
             if((Local?.Extracted==true||(Local?.Ghost==true&&State.TeamExtracted>0)||State.Phase==Phase.Won||State.Phase==Phase.Lost)&&!rewarded)
@@ -890,9 +892,9 @@ namespace Ember
                 var e=enemiesArr[ei];
                 V2 ePos=VisualEnemyPos(e);
                 if(Mathf.Abs(ePos.X-center.X)>viewHalfW+1.5f||Mathf.Abs(ePos.Y-center.Y)>viewHalfH+1.5f)continue;
-                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite?"enemy_sentinel":"enemy_shade";
-                float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite?1.4f:1;
-                Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):Coral;
+                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite||e.Kind==EnemyKind.Sentinel?"enemy_sentinel":"enemy_shade";
+                float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite||e.Kind==EnemyKind.Sentinel?1.4f:1;
+                Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):e.Kind==EnemyKind.Sentinel?new Color(.35f,.92f,1f):Coral;
                 Color bodyTint=e.Blind>0?new Color(.6f,.7f,.8f):e.IsWorldBoss?BossTintColor(e.BossType):Color.white;
                 bool moving=false;
                 if(prevEnemyPos.TryGetValue(e.Id,out var prevEPos))
@@ -904,10 +906,16 @@ namespace Ember
                 float animFps=e.Kind==EnemyKind.Nest?0f:moving?7.5f:3.2f;
                 int animFrame=animFps<=0?0:Mathf.FloorToInt(clock*animFps+(e.Id*1.37f))%4;
                 var artSprite=EnemyFrame(art,animFrame);
-                float bob=e.Kind==EnemyKind.Nest?0f:moving?Mathf.Sin(clock*13f+e.Id)*.035f:Mathf.Sin(clock*3.2f+e.Id)*.018f;
+                float bob=e.Kind==EnemyKind.Nest?0f:e.Kind==EnemyKind.Sentinel?Mathf.Sin(clock*4.2f+e.Id)*.08f:moving?Mathf.Sin(clock*13f+e.Id)*.035f:Mathf.Sin(clock*3.2f+e.Id)*.018f;
                 V2 renderPos=ePos+new V2(0,bob);
                 Outline(Put("enemyGlow"+e.Id,artSprite,renderPos,glowColor,scale,5000-Mathf.RoundToInt(ePos.Y*10)-1,flip),artSprite);
                 Put("enemy"+e.Id,artSprite,renderPos,bodyTint,scale,flip:flip);
+                if(e.Kind==EnemyKind.Sentinel)
+                {
+                    float rot=clock*130f+e.Id*45f;
+                    V2 ringOff=new V2(Mathf.Cos(rot*Mathf.Deg2Rad)*.45f,Mathf.Sin(rot*Mathf.Deg2Rad)*.22f);
+                    Put("sentinelRing"+e.Id,Primitive("diamond"),renderPos+ringOff,new Color(.4f,.95f,1f,.85f),.42f,5002-Mathf.RoundToInt(ePos.Y*10));
+                }
             }
             var playersArr=State.Players;
             for(int pi=0;pi<playersArr.Length;pi++)
@@ -1125,6 +1133,30 @@ namespace Ember
                 var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
             }
             byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
+            exploredSize=size;
+            exploredTiles=new bool[size*size];
+            int initR=14;
+            int cx=size/2,cy=size/2;
+            for(int dy=-initR;dy<=initR;dy++)
+            {
+                for(int dx=-initR;dx<=initR;dx++)
+                {
+                    if(dx*dx+dy*dy<=initR*initR)
+                    {
+                        int tx=cx+dx,ty=cy+dy;
+                        if(tx>=0&&tx<size&&ty>=0&&ty<size)exploredTiles[ty*size+tx]=true;
+                    }
+                }
+            }
+            if(minimapTex==null||minimapTex.width!=size||minimapTex.height!=size)
+            {
+                minimapTex=new Texture2D(size,size,TextureFormat.RGBA32,false);
+                minimapTex.filterMode=FilterMode.Point;
+                minimapTex.wrapMode=TextureWrapMode.Clamp;
+            }
+            minimapColors=new Color32[size*size];
+            minimapDirty=true;
+            UpdateMinimapTexture();
             int px=size*16;
             mapTexture=new Texture2D(px,px,TextureFormat.RGBA32,false);
             mapTexture.filterMode=FilterMode.Point;
@@ -1448,8 +1480,95 @@ namespace Ember
                 foreach(var p in State.Players.Where(q=>!q.Ghost&&!q.Extracted&&q.Hat==(int)Hat.Candle))light=Mathf.Max(light,1-V2.Distance(world,p.Pos)/2);
                 foreach(var s in State.Structures.Where(q=>q.Kind<=1))light=Mathf.Max(light,1-V2.Distance(world,s.Pos)/(s.Kind==1?9:5));
                 float border=State.Size/2-3-Mathf.Max(Mathf.Abs(world.X),Mathf.Abs(world.Y));float alpha=Mathf.Lerp(.87f,.08f,Mathf.Clamp01(light*1.5f));if(border<5)alpha=Mathf.Max(alpha,1-Mathf.Clamp01(border/5));
-                Panel(new Rect(x,y,cell,cell),new Color(.01f,.015f,.04f,alpha));
+                int sz=State.Size;
+                int tx=(int)Mathf.Floor(world.X+sz/2f);
+                int ty=(int)Mathf.Floor(world.Y+sz/2f);
+                bool explored=exploredTiles==null||(tx>=0&&tx<sz&&ty>=0&&ty<sz&&exploredTiles[ty*sz+tx]);
+                if(!explored)
+                {
+                    alpha=Mathf.Max(alpha,.96f);
+                    Panel(new Rect(x,y,cell,cell),new Color(.015f,.02f,.045f,alpha));
+                }
+                else
+                {
+                    Panel(new Rect(x,y,cell,cell),new Color(.01f,.015f,.04f,alpha));
+                }
             }
+        }
+        void UpdateExploration(float dt)
+        {
+            if(State==null||exploredTiles==null||State.Players==null)return;
+            int size=State.Size;
+            if(exploredTiles.Length!=size*size)return;
+            bool newlyExplored=false;
+            var players=State.Players;
+            for(int i=0;i<players.Length;i++)
+            {
+                var p=players[i];
+                if(p.Ghost||p.Extracted)continue;
+                float r=p.HasHeldTorch?11.5f:p.LampOn?9.5f:6.5f;
+                int px=(int)Mathf.Floor(p.Pos.X+size/2f);
+                int py=(int)Mathf.Floor(p.Pos.Y+size/2f);
+                int ri=Mathf.CeilToInt(r);
+                int rSq=ri*ri;
+                for(int dy=-ri;dy<=ri;dy++)
+                {
+                    int ty=py+dy;
+                    if(ty<0||ty>=size)continue;
+                    int row=ty*size;
+                    for(int dx=-ri;dx<=ri;dx++)
+                    {
+                        if(dx*dx+dy*dy>rSq)continue;
+                        int tx=px+dx;
+                        if(tx<0||tx>=size)continue;
+                        int idx=row+tx;
+                        if(!exploredTiles[idx])
+                        {
+                            exploredTiles[idx]=true;
+                            newlyExplored=true;
+                        }
+                    }
+                }
+            }
+            if(newlyExplored)minimapDirty=true;
+            minimapUpdateTimer+=dt;
+            if(minimapDirty&&minimapUpdateTimer>=0.2f)
+            {
+                minimapUpdateTimer=0f;
+                UpdateMinimapTexture();
+            }
+        }
+        void UpdateMinimapTexture()
+        {
+            if(minimapTex==null||minimapColors==null||exploredTiles==null||currentTiles==null)return;
+            int size=State!=null?State.Size:exploredSize;
+            if(minimapColors.Length!=size*size||currentTiles.Length!=size*size)return;
+            for(int i=0;i<minimapColors.Length;i++)
+            {
+                if(!exploredTiles[i])
+                {
+                    minimapColors[i]=new Color32(11,8,20,255);
+                }
+                else
+                {
+                    byte t=currentTiles[i];
+                    switch(t)
+                    {
+                        case 0: minimapColors[i]=new Color32(28,58,36,255); break;
+                        case 1: minimapColors[i]=new Color32(15,30,56,255); break;
+                        case 2: minimapColors[i]=new Color32(60,56,76,255); break;
+                        case 3: minimapColors[i]=new Color32(18,72,36,255); break;
+                        case 4: minimapColors[i]=new Color32(6,5,12,255); break;
+                        case 5: minimapColors[i]=new Color32(98,70,44,255); break;
+                        case 6: minimapColors[i]=new Color32(72,62,52,255); break;
+                        case 7: minimapColors[i]=new Color32(130,62,32,255); break;
+                        default: minimapColors[i]=new Color32(24,20,32,255); break;
+                    }
+                }
+            }
+            minimapTex.SetPixels32(minimapColors);
+            minimapTex.Apply(false);
+            minimapDirty=false;
         }
         void DrawCraft(Player p)
         {
