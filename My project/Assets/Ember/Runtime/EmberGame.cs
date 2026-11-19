@@ -208,6 +208,7 @@ namespace Ember
             else renderInterp=1f;
             if(State==null)return;
             if(renderedSeed!=State.Seed)BuildMap();
+            EnsureFogOfWar();
             Render();
             RenderLighting();
             UpdateAmbientAudio();
@@ -656,6 +657,7 @@ namespace Ember
         }
         void Render()
         {
+            EnsureFogOfWar();
             touched.Clear();var local=Local;var focus=CameraTarget();V2 center=focus!=null?VisualPlayerPos(focus):new V2();
             if(fogRenderer!=null)
             {
@@ -1188,32 +1190,7 @@ namespace Ember
             minimapColors=new Color32[size*size];
             minimapDirty=true;
             UpdateMinimapTexture();
-            if(fogTexture==null||fogTexture.width!=size||fogTexture.height!=size)
-            {
-                fogTexture=new Texture2D(size,size,TextureFormat.RGBA32,false);
-                fogTexture.filterMode=FilterMode.Bilinear;
-                fogTexture.wrapMode=TextureWrapMode.Clamp;
-            }
-            fogColors=new Color32[size*size];
-            for(int i=0;i<fogColors.Length;i++)
-            {
-                fogColors[i]=exploredTiles[i]?new Color32(0,0,0,0):new Color32(9,7,18,248);
-            }
-            fogTexture.SetPixels32(fogColors);
-            fogTexture.Apply(false);
-            if(fogRenderer==null&&mapRoot!=null)
-            {
-                var fogGo=new GameObject("World Fog Layer");
-                fogGo.transform.SetParent(mapRoot.transform);
-                fogRenderer=fogGo.AddComponent<SpriteRenderer>();
-                if(emissionMaterial!=null)fogRenderer.sharedMaterial=emissionMaterial;
-            }
-            if(fogRenderer!=null)
-            {
-                fogRenderer.sprite=Sprite.Create(fogTexture,new Rect(0,0,size,size),new Vector2(.5f,.5f),1);
-                fogRenderer.sortingOrder=9000;
-            }
-            fogDirty=false;
+            EnsureFogOfWar();
             int px=size*16;
             mapTexture=new Texture2D(px,px,TextureFormat.RGBA32,false);
             mapTexture.filterMode=FilterMode.Point;
@@ -1634,12 +1611,88 @@ namespace Ember
                 UpdateMinimapTexture();
             }
             fogUpdateTimer+=dt;
-            if(fogDirty&&fogUpdateTimer>=0.1f&&fogTexture!=null&&fogColors!=null)
+            if(fogDirty&&fogUpdateTimer>=0.1f)
             {
-                fogUpdateTimer=0f;
+                EnsureFogOfWar();
+                if(fogTexture!=null&&fogColors!=null)
+                {
+                    fogUpdateTimer=0f;
+                    fogTexture.SetPixels32(fogColors);
+                    fogTexture.Apply(false);
+                    fogDirty=false;
+                }
+            }
+        }
+        public void EnsureFogOfWar()
+        {
+            if(State==null)return;
+            int size=State.Size;
+            if(size<=0)return;
+
+            if(emissionMaterial==null)
+                emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
+
+            if(mapRoot==null)
+            {
+                mapRoot=GameObject.Find("Ember map");
+                if(mapRoot==null)mapRoot=new GameObject("Ember map");
+            }
+
+            if(exploredTiles==null||exploredTiles.Length!=size*size)
+            {
+                exploredTiles=new bool[size*size];
+                exploredSize=size;
+                int centerTile=size/2,sanR=8;
+                for(int dy=-sanR;dy<=sanR;dy++)
+                    for(int dx=-sanR;dx<=sanR;dx++)
+                        if(dx*dx+dy*dy<=sanR*sanR)
+                        {
+                            int tx=centerTile+dx,ty=centerTile+dy;
+                            if(tx>=0&&tx<size&&ty>=0&&ty<size)exploredTiles[ty*size+tx]=true;
+                        }
+            }
+
+            if(fogRenderer==null)
+            {
+                if(mapRoot!=null)
+                {
+                    var existingFog=mapRoot.transform.Find("World Fog Layer");
+                    if(existingFog!=null)fogRenderer=existingFog.GetComponent<SpriteRenderer>();
+                }
+                if(fogRenderer==null)
+                {
+                    var found=GameObject.Find("World Fog Layer");
+                    if(found!=null)fogRenderer=found.GetComponent<SpriteRenderer>();
+                }
+                if(fogRenderer==null&&mapRoot!=null)
+                {
+                    var fogGo=new GameObject("World Fog Layer");
+                    fogGo.transform.SetParent(mapRoot.transform);
+                    fogRenderer=fogGo.AddComponent<SpriteRenderer>();
+                }
+            }
+
+            bool needRebuildTex=fogTexture==null||fogTexture.width!=size||fogTexture.height!=size||fogColors==null||fogColors.Length!=size*size;
+            if(needRebuildTex)
+            {
+                fogTexture=new Texture2D(size,size,TextureFormat.RGBA32,false);
+                fogTexture.filterMode=FilterMode.Bilinear;
+                fogTexture.wrapMode=TextureWrapMode.Clamp;
+                fogColors=new Color32[size*size];
+                for(int i=0;i<fogColors.Length;i++)
+                    fogColors[i]=(exploredTiles!=null&&exploredTiles[i])?new Color32(0,0,0,0):new Color32(9,7,18,248);
                 fogTexture.SetPixels32(fogColors);
                 fogTexture.Apply(false);
                 fogDirty=false;
+            }
+
+            if(fogRenderer!=null)
+            {
+                if(fogRenderer.sprite==null||fogRenderer.sprite.texture!=fogTexture)
+                    fogRenderer.sprite=Sprite.Create(fogTexture,new Rect(0,0,size,size),new Vector2(.5f,.5f),1);
+                fogRenderer.sortingOrder=9000;
+                if(emissionMaterial!=null&&fogRenderer.sharedMaterial!=emissionMaterial)
+                    fogRenderer.sharedMaterial=emissionMaterial;
             }
         }
         void UpdateMinimapTexture()

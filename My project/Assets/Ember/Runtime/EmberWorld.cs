@@ -303,8 +303,39 @@ namespace Ember
             }
         }
     }
+    [Serializable]
+    public sealed class WeaponDef
+    {
+        public Weapon Weapon;
+        public string NameVi, NameEn;
+        public int StaminaCost;
+        public float BaseDamage;
+        public float AttackCooldown;
+        public float Range;
+        public int MagSize;
+        public float ReloadTime;
+        public bool Ranged;
+    }
     public static class Catalog
     {
+        public static readonly Dictionary<Weapon, WeaponDef> WeaponRegistry = new Dictionary<Weapon, WeaponDef>
+        {
+            [Weapon.Stick] = new WeaponDef { Weapon = Weapon.Stick, NameVi = "Gậy Gỗ", NameEn = "Wooden Stick", StaminaCost = 0, BaseDamage = 18f, AttackCooldown = .5f, Range = 2f },
+            [Weapon.ShadowBlades] = new WeaponDef { Weapon = Weapon.ShadowBlades, NameVi = "Song Đoản Kiếm", NameEn = "Shadow Blades", StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .2f, Range = 2f },
+            [Weapon.CrystalAxe] = new WeaponDef { Weapon = Weapon.CrystalAxe, NameVi = "Rìu Tinh Thể", NameEn = "Crystal Axe", StaminaCost = 0, BaseDamage = 36f, AttackCooldown = .5f, Range = 2.6f },
+            [Weapon.Pickaxe] = new WeaponDef { Weapon = Weapon.Pickaxe, NameVi = "Cuốc Khai Khoáng", NameEn = "Pickaxe", StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .5f, Range = 2.4f },
+            [Weapon.Crossbow] = new WeaponDef { Weapon = Weapon.Crossbow, NameVi = "Nỏ Săn", NameEn = "Crossbow", StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .5f, Range = 7f, MagSize = 5, ReloadTime = 1.4f, Ranged = true },
+            [Weapon.LumenGun] = new WeaponDef { Weapon = Weapon.LumenGun, NameVi = "Súng Quang Năng", NameEn = "Lumen Gun", StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .32f, Range = 7f, MagSize = 8, ReloadTime = 1.6f, Ranged = true },
+            [Weapon.MirrorShield] = new WeaponDef { Weapon = Weapon.MirrorShield, NameVi = "Khiên Phản Chiếu", NameEn = "Mirror Shield", StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .5f, Range = 7f, MagSize = 4, ReloadTime = 1.8f, Ranged = true }
+        };
+        public static WeaponDef GetWeaponDef(Weapon w)
+        {
+            if (WeaponRegistry.TryGetValue(w, out var def)) return def;
+            return new WeaponDef { Weapon = w, StaminaCost = 0, BaseDamage = 25f, AttackCooldown = .5f, Range = 2f };
+        }
+        public static WeaponDef WeaponFor(Weapon w) => GetWeaponDef(w);
+        public static int WeaponStaminaCost(Weapon w) => GetWeaponDef(w).StaminaCost;
+
         public static readonly Dictionary<BuffKind, BuffDefinition> BuffRegistry = new Dictionary<BuffKind, BuffDefinition>
         {
             [BuffKind.Swiftness] = new BuffDefinition{Kind=BuffKind.Swiftness, NameVi="Gia Tốc", NameEn="Swiftness", Icon="speed", MaxStacks=1},
@@ -853,12 +884,12 @@ namespace Ember
             commands[id]=new Command{X=c.X,Y=c.Y};inputAt[id]=S.Time;
             if(c.HasActions){if(!actions.TryGetValue(id,out var queue)){queue=new Queue<Command>();actions[id]=queue;}if(queue.Count<32)queue.Enqueue(c);}
         }
-        public bool Walkable(V2 p)
+        public bool Walkable(V2 p, bool allowWater = false)
         {
             int x=(int)Math.Floor(p.X+S.Size/2f),y=(int)Math.Floor(p.Y+S.Size/2f);
             if(x<3||y<3||x>=S.Size-3||y>=S.Size-3)return false;
             byte tile=Tiles[y*S.Size+x];
-            if(tile==1||tile==3||tile==4||tile==7)return false;
+            if((tile==1&&!allowWater)||tile==3||tile==4||tile==7)return false;
             return !structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f);
         }
         V2 Move(V2 from,V2 delta,Player body=null,Enemy monster=null,bool ignoreEnemies=false)
@@ -874,11 +905,12 @@ namespace Ember
         }
         bool CanStep(V2 from,V2 to,Player body,Enemy monster,bool ignoreEnemies)
         {
-            if(!Walkable(to))return false;
+            bool allowWater = monster != null && monster.Kind == EnemyKind.Sentinel;
+            if(!Walkable(to, allowWater))return false;
             if(body==null&&monster==null)return true;
             const float radius=.24f;
-            if(!Walkable(to+new V2(radius,0))||!Walkable(to-new V2(radius,0))||
-               !Walkable(to+new V2(0,radius))||!Walkable(to-new V2(0,radius)))return false;
+            if(!Walkable(to+new V2(radius,0), allowWater)||!Walkable(to-new V2(radius,0), allowWater)||
+               !Walkable(to+new V2(0,radius), allowWater)||!Walkable(to-new V2(0,radius), allowWater))return false;
             if(ApproachesBody(from,to,BeaconColliderPos,BeaconColliderRadius))return false;
             if(S.BossArenaActive)
             {
@@ -1022,7 +1054,7 @@ namespace Ember
                     {
                         double sa=rng.NextDouble()*Math.PI*2;
                         V2 spos=sentinelTarget.Pos+new V2((float)Math.Cos(sa)*12f,(float)Math.Sin(sa)*12f);
-                        if(Walkable(spos))
+                        if(Walkable(spos, allowWater: true))
                         {
                             enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Sentinel,Elite=true,Pos=spos,HP=140,MaxHP=140,AttackCD=2f,SkillCD=0f});
                             Announce(EmberLanguage.English?"💠 An Elite Crystal Sentinel has descended! Slay it to claim its Energy Core!":"💠 Hộ Vệ Tinh Thể đã giáng lâm! Hãy tiêu diệt để đoạt Lõi Năng Lượng!");
@@ -1566,10 +1598,10 @@ namespace Ember
         {
             var weapon=p.ActiveWeapon;
             if(p.Ranged&&p.ReloadTimer>0)return;
-            bool heavy=weapon==Weapon.CrystalAxe||weapon==Weapon.Pickaxe||weapon==Weapon.MirrorShield;
-            float atkStaminaCost=(heavy?22f:12f)*p.Stats.StaminaCostMultiplier;
-            if(!p.Ranged)
+            int baseStamCost=Catalog.WeaponStaminaCost(weapon);
+            if(baseStamCost>0)
             {
+                float atkStaminaCost=baseStamCost*p.Stats.StaminaCostMultiplier;
                 if(p.Stamina<atkStaminaCost)return;
                 p.Stamina=Math.Max(0,p.Stamina-atkStaminaCost);
             }
@@ -1775,7 +1807,7 @@ namespace Ember
                 {
                     var victim=players.Where(p=>!p.Ghost&&!p.Extracted&&SegmentDistance(p.Pos,start,shot.Pos)<.48f).OrderBy(p=>V2.Distance(start,p.Pos)).FirstOrDefault();
                     if(victim!=null){Hurt(victim,shot.Damage);shot.Life=0;FX(start,victim.Pos,3);}
-                    else if(!Walkable(shot.Pos)||(S.BossArenaActive&&V2.Distance(shot.Pos,S.BossArenaCenter)>S.BossArenaRadius+.5f))shot.Life=0;
+                    else if(!Walkable(shot.Pos, allowWater: true)||(S.BossArenaActive&&V2.Distance(shot.Pos,S.BossArenaCenter)>S.BossArenaRadius+.5f))shot.Life=0;
                     continue;
                 }
                 var owner=PlayerById(shot.Owner);if(owner==null){shot.Life=0;continue;}
@@ -1784,7 +1816,7 @@ namespace Ember
                 if(ally!=null&&(enemy==null||V2.Distance(start,ally.Pos)<V2.Distance(start,enemy.Pos)))
                 {Hurt(ally,FriendlyDamage(owner,shot.Damage));retaliation[((long)ally.Id<<32)|(uint)owner.Id]=S.Time;shot.Life=0;FX(start,ally.Pos,1);}
                 else if(enemy!=null){Damage(enemy,shot.Damage);Knockback(enemy,shot.Velocity,.48f);shot.Life=0;FX(start,enemy.Pos,1);}
-                else if(!Walkable(shot.Pos))shot.Life=0;
+                else if(!Walkable(shot.Pos, allowWater: true))shot.Life=0;
             }
             projectiles.RemoveAll(p=>p.Life<=0);
         }
@@ -2134,6 +2166,7 @@ namespace Ember
             bool defendingBeacon=S.Phase==Phase.Eclipse&&S.BeaconHP>0;
             bool beaconLit=S.Fuel>0||S.BeaconHP>0;
             bool targetBeacon=defendingBeacon||(beaconLit&&distToPlayer>9f&&e.Pos.Length<45f);
+            if(e.Kind==EnemyKind.Sentinel)targetBeacon=false;
             // Minecraft-style Simulation Distance & Despawn Sphere:
             // Distant normal mobs beyond DespawnRadius despawn cleanly to free CPU & mob cap;
             // Nests/Bosses never despawn, and anything outside SimActiveRadius hibernates at 0 CPU.
@@ -2148,7 +2181,7 @@ namespace Ember
             {
                 if(S.Time>20f&&e.AttackCD<=0&&distToPlayer<16&&enemies.Count(x=>x.Kind!=EnemyKind.Nest)<MaxActiveEnemies){var pos=e.Pos+new V2(2,0);if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Pos=pos,Kind=EnemyKind.VoidStalker,HP=42*DifficultyEnemyScale,MaxHP=42*DifficultyEnemyScale,SkillCD=2.8f+(float)rng.NextDouble()*2f});e.AttackCD=16;}return;
             }
-            if(!defendingBeacon&&!targetBeacon&&distToPlayer>18f)
+            if(e.Kind!=EnemyKind.Sentinel&&!defendingBeacon&&!targetBeacon&&distToPlayer>18f)
             {
                 if(e.SkillCD>1.2f)e.SkillCD=Math.Max(1.2f,e.SkillCD-dt);
                 // Gentle patrol within simulation distance while staying away from home.
@@ -2164,22 +2197,54 @@ namespace Ember
             V2 goal=targetBeacon?new V2(0,.35f):target.Pos;
             if(e.Blind<=0)
             {
-                var direction=Navigate(e.Pos,goal,targetBeacon?-1:target.Id);
-                float baseSpeed=e.Kind==EnemyKind.Boss?1.55f:e.Elite?1.65f:1.35f;
-                float speed=baseSpeed*DifficultyEnemySpeedScale*dt;
-                var next=Move(e.Pos,direction*speed,monster:e);
-                if(V2.Distance(next,e.Pos)<speed*.2f)
+                if(e.Kind==EnemyKind.Sentinel)
                 {
-                    V2 left=new V2(-direction.Y,direction.X),right=new V2(direction.Y,-direction.X);
-                    next=Move(e.Pos,((e.Id%2==0)?left:right)*speed,monster:e);
+                    V2 toTarget=target.Pos-e.Pos;
+                    float d=toTarget.Length;
+                    V2 dir;
+                    if(d>5.0f)
+                    {
+                        dir=toTarget.Normal;
+                    }
+                    else if(d<4.0f)
+                    {
+                        dir=d>.001f?new V2(-toTarget.X,-toTarget.Y).Normal:new V2(1,0);
+                    }
+                    else
+                    {
+                        V2 tangent=new V2(-toTarget.Y,toTarget.X).Normal*((e.Id%2==0)?1f:-1f);
+                        float radial=d-4.5f;
+                        dir=(tangent*0.8f+toTarget.Normal*(radial*0.5f)).Normal;
+                    }
+                    float baseSpeed=e.Elite?1.65f:1.35f;
+                    float speed=baseSpeed*DifficultyEnemySpeedScale*dt;
+                    var next=Move(e.Pos,dir*speed,monster:e);
+                    if(V2.Distance(next,e.Pos)<speed*.2f)
+                    {
+                        V2 left=new V2(-dir.Y,dir.X),right=new V2(dir.Y,-dir.X);
+                        next=Move(e.Pos,((e.Id%2==0)?left:right)*speed,monster:e);
+                    }
+                    e.Pos=next;
                 }
-                e.Pos=next;
+                else
+                {
+                    var direction=Navigate(e.Pos,goal,targetBeacon?-1:target.Id);
+                    float baseSpeed=e.Kind==EnemyKind.Boss?1.55f:e.Elite?1.65f:1.35f;
+                    float speed=baseSpeed*DifficultyEnemySpeedScale*dt;
+                    var next=Move(e.Pos,direction*speed,monster:e);
+                    if(V2.Distance(next,e.Pos)<speed*.2f)
+                    {
+                        V2 left=new V2(-direction.Y,direction.X),right=new V2(direction.Y,-direction.X);
+                        next=Move(e.Pos,((e.Id%2==0)?left:right)*speed,monster:e);
+                    }
+                    e.Pos=next;
+                }
             }
             float curDist=V2.Distance(target.Pos,e.Pos);
             if(e.AttackCD<=0)
             {
                 if(curDist<1.1f){Hurt(target,(e.Elite?18:9)*DifficultyEnemyScale);e.AttackCD=1;}
-                else if(e.Pos.Length<2.2f)
+                else if(e.Kind!=EnemyKind.Sentinel&&e.Pos.Length<2.2f)
                 {
                     float drain=e.Elite?4f:2f;
                     if(S.Fuel>0)

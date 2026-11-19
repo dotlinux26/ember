@@ -123,8 +123,7 @@ namespace Ember
             else
                 energyText=$"{curCharge}/{targetCharge} NL";
 
-            bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<3.8f;
-            float bw=176f, bh=nearBeacon?84f:52f;
+            float bw=156f, bh=48f;
             Rect panelRect=new Rect(Mathf.Round(screen.x-bw/2),Mathf.Round(screen.y-bh),bw,bh);
 
             PixelPanel(panelRect,new Color(.08f,.06f,.14f,.94f));
@@ -132,46 +131,20 @@ namespace Ember
             // Header title
             var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
             headerStyle.normal.textColor=new Color(.92f,.90f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+5,panelRect.width-8,16),tierTitle,headerStyle);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+4,panelRect.width-8,16),tierTitle,headerStyle);
 
             // Energy meter
             float chargeRatio=Mathf.Clamp01(curCharge/(float)targetCharge);
             float mw=panelRect.width-20;
-            Rect barBg=new Rect(panelRect.x+10,panelRect.y+23,mw,6);
+            Rect barBg=new Rect(panelRect.x+10,panelRect.y+22,mw,5);
             Panel(barBg,new Color(.04f,.03f,.08f,.95f));
             Color meterCol=overcharged?new Color(.35f,1f,.85f):new Color(.28f,.85f,1f);
-            Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,4),meterCol);
-            Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,1),new Color(1f,1f,1f,.32f));
+            Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,3),meterCol);
 
             // Energy text under meter
             var energyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
             energyStyle.normal.textColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+33,panelRect.width-8,16),energyText,energyStyle);
-
-            // Interactive deposit prompt when player is nearby
-            if(nearBeacon)
-            {
-                int cores=p!=null?p.Bag[(int)Resource.Core]:0;
-                Rect btnRect=new Rect(panelRect.x+8,panelRect.y+54,panelRect.width-16,22);
-                PixelPanel(btnRect,cores>0?new Color(.18f,.14f,.28f,.96f):new Color(.12f,.10f,.18f,.88f));
-
-                Rect keyBox=new Rect(btnRect.x+3,btnRect.y+2,18,18);
-                Panel(keyBox,Gold);
-                var keyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
-                keyStyle.normal.textColor=Color.black;
-                GUI.Label(keyBox,"B",keyStyle);
-
-                var promptStyle=new GUIStyle(small){alignment=TextAnchor.MiddleLeft};
-                promptStyle.normal.textColor=cores>0?new Color(1f,.94f,.55f):new Color(.70f,.72f,.80f);
-                string depositPrompt=L("Nạp năng lượng","Deposit Energy");
-                GUI.Label(new Rect(keyBox.xMax+6,btnRect.y+1,btnRect.width-28,20),depositPrompt,promptStyle);
-
-                if(GUI.Button(btnRect,GUIContent.none,GUIStyle.none))
-                {
-                    if(cores>0)intent.Deposit=true;
-                    else notice=L("Không có vật phẩm nạp!","No items to deposit!");
-                }
-            }
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+28,panelRect.width-8,16),energyText,energyStyle);
         }
 
         void DrawInteractPrompt(Player p)
@@ -523,31 +496,32 @@ namespace Ember
 
             if(QuestCollapsed)
             {
-                // Compact circular quest bubble (enlarged & snug docked expand badge)
-                Vector2 center=new Vector2(50,y+34);
-                float rad=28f;
+                // Compact circular quest bubble (enlarged & with separated expand button)
+                Vector2 center=new Vector2(46,y+34);
+                float rad=26f;
                 Rect bubbleRect=new Rect(center.x-rad,center.y-rad,rad*2,rad*2);
-                Rect clickArea=new Rect(center.x-rad,center.y-rad,rad*2+24,rad*2+24);
+                float arrowX=center.x+rad+10f;
+                Rect arrowBadge=new Rect(arrowX,center.y-11,22,22);
+                Rect clickArea=new Rect(center.x-rad,center.y-rad,(arrowX+22)-(center.x-rad),rad*2+20);
                 RegisterHudRect(clickArea);
 
                 bool hoverBubble=clickArea.Contains(Event.current.mousePosition);
 
                 // Dark circular background
                 GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):hoverBubble?new Color(.24f,.16f,.38f,.98f):new Color(.11f,.08f,.18f,.95f);
-                DrawSpritePreview(new Rect(center.x-24,center.y-24,48,48),Primitive("circle"));
+                DrawSpritePreview(new Rect(center.x-22,center.y-22,44,44),Primitive("circle"));
                 GUI.color=Color.white;
 
                 // Circular progress ring
                 Color ringColor=blackout?Coral:progress>=1f?Cyan:Gold;
-                DrawCircularProgress(center,27,progress,ringColor);
+                DrawCircularProgress(center,25,progress,ringColor);
 
                 // Quest icon in center
-                Rect iconRect=new Rect(center.x-14,center.y-14,28,28);
+                Rect iconRect=new Rect(center.x-13,center.y-13,26,26);
                 if(icon=="torch")DrawSpritePreview(iconRect,Primitive("torch"));
                 else PixelArt(iconRect,icon);
 
-                // Snugly docked expand badge [ > ] right on perimeter
-                Rect arrowBadge=new Rect(center.x+17,center.y-10,20,20);
+                // Square expand button [ > ] separated by a clean 10px gap from bubble
                 PixelPanel(arrowBadge,hoverBubble?new Color(.52f,.32f,.78f,.98f):new Color(.26f,.18f,.42f,.95f));
                 var oldContent=GUI.contentColor;
                 GUI.contentColor=hoverBubble?Gold:new Color(1f,.92f,.55f);
@@ -559,7 +533,7 @@ namespace Ember
                 string pctText=Mathf.RoundToInt(Mathf.Clamp01(progress)*100)+"%";
                 var pctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
                 pctStyle.normal.textColor=hoverBubble?Gold:new Color(.90f,.92f,1f);
-                GUI.Label(new Rect(center.x-28,center.y+26,56,16),pctText,pctStyle);
+                GUI.Label(new Rect(center.x-26,center.y+26,52,16),pctText,pctStyle);
 
                 // Click to expand
                 if(GUI.Button(clickArea,new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
@@ -713,6 +687,119 @@ namespace Ember
             }
         }
 
+        void DrawMarqueeOutlineLabel(Rect rect,string text,GUIStyle baseStyle,Color textColor,Color shadowColor,float speed=52f)
+        {
+            if(string.IsNullOrEmpty(text))return;
+            var style=new GUIStyle(baseStyle)
+            {
+                wordWrap=false,
+                clipping=TextClipping.Clip,
+                alignment=TextAnchor.MiddleCenter
+            };
+            float textW=style.CalcSize(new GUIContent(text)).x;
+            if(textW<=rect.width-6f)
+            {
+                // Fits without overflow: Draw centered with 8-way pixel outline & drop shadow
+                style.normal.textColor=shadowColor;
+                for(int ox=-1;ox<=1;ox++)
+                for(int oy=-1;oy<=1;oy++)
+                {
+                    if(ox!=0||oy!=0)
+                        GUI.Label(new Rect(rect.x+ox,rect.y+oy,rect.width,rect.height),text,style);
+                }
+                GUI.Label(new Rect(rect.x+1,rect.y+2,rect.width,rect.height),text,style);
+                GUI.Label(new Rect(rect.x+2,rect.y+2,rect.width,rect.height),text,style);
+
+                style.normal.textColor=textColor;
+                GUI.Label(rect,text,style);
+                return;
+            }
+
+            // Exceeds banner width: Smooth marquee horizontal scrolling
+            string loop=text+"       ✦       ";
+            style.alignment=TextAnchor.MiddleLeft;
+            float cycleW=style.CalcSize(new GUIContent(loop)).x;
+            if(cycleW<1f)cycleW=textW+48f;
+            float offset=(clock*speed)%cycleW;
+
+            GUI.BeginClip(rect);
+            // 8-way outline & shadow in clipped space
+            style.normal.textColor=shadowColor;
+            for(int ox=-1;ox<=1;ox++)
+            for(int oy=-1;oy<=1;oy++)
+            {
+                if(ox!=0||oy!=0)
+                {
+                    GUI.Label(new Rect(-offset+ox,oy,cycleW+16f,rect.height),loop,style);
+                    GUI.Label(new Rect(cycleW-offset+ox,oy,cycleW+16f,rect.height),loop,style);
+                    if(cycleW<rect.width)
+                        GUI.Label(new Rect(cycleW*2f-offset+ox,oy,cycleW+16f,rect.height),loop,style);
+                }
+            }
+            GUI.Label(new Rect(-offset+1,2,cycleW+16f,rect.height),loop,style);
+            GUI.Label(new Rect(cycleW-offset+1,2,cycleW+16f,rect.height),loop,style);
+            if(cycleW<rect.width)
+                GUI.Label(new Rect(cycleW*2f-offset+1,2,cycleW+16f,rect.height),loop,style);
+
+            // Front colored text in clipped space
+            style.normal.textColor=textColor;
+            GUI.Label(new Rect(-offset,0,cycleW+16f,rect.height),loop,style);
+            GUI.Label(new Rect(cycleW-offset,0,cycleW+16f,rect.height),loop,style);
+            if(cycleW<rect.width)
+                GUI.Label(new Rect(cycleW*2f-offset,0,cycleW+16f,rect.height),loop,style);
+            GUI.EndClip();
+        }
+
+        void DrawHeaderAnnouncements(Player p)
+        {
+            if(State==null||Event.current.type!=EventType.Repaint)return;
+            float topY=64f;
+            float centerX=Screen.width*0.5f;
+
+            // 1. When near the beacon (within 4.5 tiles): pulsing / blinking [B] NẠP NĂNG LƯỢNG
+            bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<=4.5f;
+            if(nearBeacon)
+            {
+                float pulse=Mathf.PingPong(Time.time*3.6f,1f);
+                Color blinkCol=Color.Lerp(Gold,Cyan,pulse);
+                int cores=p.Bag[(int)Resource.Core];
+                string prompt=cores>0
+                    ?L($"[B] NẠP NĂNG LƯỢNG (+{cores*25} NL)","[B] DEPOSIT ENERGY (+{cores*25})")
+                    :L("[B] NẠP NĂNG LƯỢNG","[B] DEPOSIT ENERGY");
+
+                var beaconPromptStyle=new GUIStyle(small)
+                {
+                    alignment=TextAnchor.MiddleCenter,
+                    fontStyle=FontStyle.Bold,
+                    fontSize=15
+                };
+                float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
+                Rect textRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
+                DrawMarqueeOutlineLabel(textRect,prompt,beaconPromptStyle,blinkCol,new Color(0f,0f,0f,.95f),52f);
+                return;
+            }
+
+            // 2. Active World Event / Announcement text (large, pixel-style with outline, no background, reusable for wave/boss alerts)
+            if(!string.IsNullOrEmpty(State.Event)&&State.Tick-State.EventTick<260)
+            {
+                string evt=State.Event;
+                Color evtColor=Gold;
+                if(evt.Contains("Boss")||evt.Contains("BOSS")||evt.Contains("Thực thể"))evtColor=Coral;
+                else if(evt.Contains("Hộ Vệ")||evt.Contains("Sentinel")||evt.Contains("Lõi")||evt.Contains("Core"))evtColor=Cyan;
+                else if(evt.Contains("Đợt")||evt.Contains("Wave"))evtColor=new Color(1f,.85f,.35f);
+
+                var evtStyle=new GUIStyle(small)
+                {
+                    alignment=TextAnchor.MiddleCenter,
+                    fontStyle=FontStyle.Bold,
+                    fontSize=15
+                };
+                float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
+                Rect evtRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
+                DrawMarqueeOutlineLabel(evtRect,evt,evtStyle,evtColor,new Color(0f,0f,0f,.95f),52f);
+            }
+        }
+
         void DrawCornerPauseButton()
         {
             var rect=new Rect(Screen.width-48,Screen.height-48,36,36);
@@ -741,7 +828,7 @@ namespace Ember
             if(p==null||State==null||minimapTex==null)return;
             if(craftOpen||inventoryOpen)return;
 
-            float mapSize=136f;
+            float mapSize=176f;
             float mapX=Screen.width-mapSize-14f;
             float mapY=48f;
 
@@ -758,7 +845,8 @@ namespace Ember
                 return;
             }
 
-            Rect frameRect=new Rect(mapX-3,mapY-3,mapSize+6,mapSize+22);
+            float headerH=26f;
+            Rect frameRect=new Rect(mapX-4,mapY-4,mapSize+8,mapSize+headerH+8);
             RegisterHudRect(frameRect);
 
             // Dread / Hallucination impact
@@ -778,14 +866,31 @@ namespace Ember
 
             PixelPanel(new Rect(frameRect.x+jx,frameRect.y+jy,frameRect.width,frameRect.height),borderTint);
 
-            // Header label & collapse button
-            UiLabel(new Rect(mapX+jx+4,mapY+jy-2,mapSize-30,18),L("Bản đồ","Minimap"),small);
-            Rect collBtn=new Rect(mapX+jx+mapSize-22,mapY+jy-2,22,20);
+            // Count visible / explored monsters
+            int visibleMonsters=0;
+            if(State.Enemies!=null)
+            {
+                for(int ei=0;ei<State.Enemies.Length;ei++)
+                {
+                    var e=State.Enemies[ei];
+                    if(e!=null&&e.HP>0&&IsExplored(e.Pos))visibleMonsters++;
+                }
+            }
+
+            // Header label & crisp 18x18 square collapse button (flat 2px minus bar)
+            string mapTitle=L($"Bản đồ · {visibleMonsters} quái",$"Minimap · {visibleMonsters} mobs");
+            var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleLeft,fontStyle=FontStyle.Bold,clipping=TextClipping.Overflow};
+            headerStyle.normal.textColor=new Color(.92f,.90f,1f);
+            GUI.Label(new Rect(mapX+jx+6,mapY+jy+2,mapSize-30,22),mapTitle,headerStyle);
+
+            Rect collBtn=new Rect(mapX+jx+mapSize-20,mapY+jy+4,18,18);
             bool hoverMinimapColl=collBtn.Contains(Event.current.mousePosition);
-            PixelPanel(collBtn,hoverMinimapColl?new Color(.48f,.28f,.70f,.98f):new Color(.24f,.18f,.38f,.92f));
-            var collStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=14};
-            collStyle.normal.textColor=hoverMinimapColl?Gold:new Color(.90f,.88f,1f);
-            GUI.Label(collBtn,"—",collStyle);
+            Panel(collBtn,hoverMinimapColl?new Color(.48f,.28f,.70f,.98f):new Color(.20f,.14f,.32f,.92f));
+            Panel(new Rect(collBtn.x,collBtn.y,collBtn.width,1),new Color(.55f,.40f,.78f,.90f));
+            Panel(new Rect(collBtn.x,collBtn.yMax-1,collBtn.width,1),new Color(.10f,.08f,.16f,.90f));
+            Panel(new Rect(collBtn.x,collBtn.y,1,collBtn.height),new Color(.55f,.40f,.78f,.90f));
+            Panel(new Rect(collBtn.xMax-1,collBtn.y,1,collBtn.height),new Color(.10f,.08f,.16f,.90f));
+            Panel(new Rect(collBtn.x+4,collBtn.y+8,10,2),hoverMinimapColl?Gold:new Color(.92f,.90f,1f));
             if(GUI.Button(collBtn,new GUIContent("",L("Thu gọn bản đồ","Collapse minimap")),GUIStyle.none))
             {
                 minimapCollapsed=true;
@@ -793,7 +898,7 @@ namespace Ember
             }
 
             // Explored terrain texture
-            Rect texRect=new Rect(mapX+jx,mapY+jy+16,mapSize,mapSize);
+            Rect texRect=new Rect(mapX+jx,mapY+jy+headerH,mapSize,mapSize);
             if(Event.current.type==EventType.Repaint)
             {
                 GUI.DrawTexture(texRect,minimapTex,ScaleMode.StretchToFill,false);
@@ -842,6 +947,34 @@ namespace Ember
                 }
             }
 
+            // Enemies (red pips for explored / visible enemies)
+            if(State.Enemies!=null)
+            {
+                for(int ei=0;ei<State.Enemies.Length;ei++)
+                {
+                    var e=State.Enemies[ei];
+                    if(e==null||e.HP<=0||!IsExplored(e.Pos))continue;
+                    float normX=(e.Pos.X+size/2f)/size;
+                    float normY=1f-(e.Pos.Y+size/2f)/size;
+                    if(normX<0||normX>1||normY<0||normY>1)continue;
+                    float pipX=texRect.x+normX*mapSize;
+                    float pipY=texRect.y+normY*mapSize;
+                    if(e.IsWorldBoss||e.Kind==EnemyKind.Boss)
+                    {
+                        Panel(new Rect(pipX-3,pipY-3,6,6),new Color(.4f,0f,0f,.95f));
+                        Panel(new Rect(pipX-2,pipY-2,4,4),Coral);
+                    }
+                    else if(e.Elite||e.Kind==EnemyKind.Sentinel)
+                    {
+                        Panel(new Rect(pipX-2,pipY-2,4,4),Coral);
+                    }
+                    else
+                    {
+                        Panel(new Rect(pipX-1.5f,pipY-1.5f,3,3),Coral);
+                    }
+                }
+            }
+
             // Phantom hallucination blips when dread is high!
             if(hallucinating)
             {
@@ -874,6 +1007,7 @@ namespace Ember
         {
             if(network)DrawPartyBubbles();
             DrawMatchClock();
+            DrawHeaderAnnouncements(null);
             DrawCornerPauseButton();
             float width=Mathf.Min(Screen.width-28,460);
             var panel=new Rect((Screen.width-width)/2,Screen.height-96,width,78);
@@ -956,21 +1090,23 @@ namespace Ember
                         ?" · "+L("Đang nạp ","Reloading ")+p.ReloadTimer.ToString("0.0")+"s"
                         :" · "+L("Đạn ","Ammo ")+curAmmo+"/"+mag+" ("+L("nạp ","reload ")+reloadSec.ToString("0.#")+"s)";
                 }
+                int stamCost=Catalog.WeaponStaminaCost(activeW);
+                string stamText=stamCost>0?L($"Tốn {stamCost} thể lực",$"{stamCost} stamina"):L("Không tốn thể lực","0 stamina");
                 if(activeW==Weapon.Pickaxe)
                 {
                     int mineYield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+p.PickaxeTier;
                     info+=" · "+p.PickaxeName+" ["+L("Độ bền ","Durability ")+p.PickaxeDurability+"/"+p.PickaxeMaxDurability+"] · "+L("Khai thác +"+mineYield+" tài nguyên · Tốn 8 thể lực","Mines +"+mineYield+" yield · 8 stamina");
                 }
                 else if(activeW==Weapon.CrystalAxe)
-                    info+=" · "+L("Đánh lan 1.6 ô & đẩy lùi mạnh · Tốn 8 thể lực","1.6-tile cleave & strong knockback · 8 stamina");
+                    info+=" · "+L("Đánh lan 1.6 ô & đẩy lùi mạnh · ","1.6-tile cleave & strong knockback · ")+stamText;
                 else if(activeW==Weapon.ShadowBlades)
-                    info+=" · "+L("Tốc đánh siêu nhanh · +0.5 Hoảng loạn/s trong tối","Ultra-fast strikes · +0.5 Dread/s in darkness");
+                    info+=" · "+L("Tốc đánh siêu nhanh · ","Ultra-fast strikes · ")+stamText;
                 else if(activeW==Weapon.MirrorShield)
-                    info+=" · "+L("Bắn tia phản xạ · Tốn 8 thể lực","Reflective bolt · 8 stamina");
+                    info+=" · "+L("Bắn tia phản xạ · ","Reflective bolt · ")+stamText;
                 else if(ranged)
-                    info+=" · "+L("Tự ngắm mục tiêu gần nhất & đẩy lùi","Auto-aims nearest target & knockback");
+                    info+=" · "+L("Tự ngắm mục tiêu gần nhất · ","Auto-aims nearest target · ")+stamText;
                 else
-                    info+=" · "+L("Đẩy lùi nhẹ · Không tốn thể lực","Light knockback · 0 stamina");
+                    info+=" · "+L("Đẩy lùi nhẹ · ","Light knockback · ")+stamText;
                 return info;
             }
             if(heldSlot==6)
@@ -1118,9 +1254,10 @@ namespace Ember
         {
             if(p.Ghost){DrawSpectateHud();return;}
             DrawMatchClock();
+            DrawHeaderAnnouncements(p);
             DrawCornerPauseButton();
             float toolWidth=Mathf.Clamp((Screen.width-120)/2f,72,130);
-            float toolX=Screen.width-116-toolWidth;
+            float toolX=Screen.width-112-toolWidth;
             if(UiButton(new Rect(toolX,12,toolWidth,29),"Chế tạo [Tab]"))craftOpen=!craftOpen;
             float upperWidth=Mathf.Min(180,(Screen.width-40)/2f);
             float upperY=CompactFieldHud?45:12;
@@ -1167,13 +1304,6 @@ namespace Ember
 
             var itemChip=new Rect(x,y-36,width,32);
             PixelPanel(itemChip,FieldPaper);
-            if(p.Pos.Length<4.5f&&!p.Ghost)
-            {
-                var hearthChip=new Rect(x,itemChip.y-32,width,28);
-                PixelPanel(hearthChip,new Color(.16f,.14f,.25f,.92f));
-                string hearthText=L("[Z] Pha trà Bụi quang (2 Bụi)   [C] Mài cuốc đá (2 Quặng)","[Z] Lumidust Tea (2 Dust)   [C] Sharpen Pickaxe (2 Ore)");
-                UiLabel(new Rect(hearthChip.x+8,hearthChip.y+4,hearthChip.width-16,20),hearthText,small);
-            }
             int activeMag=IsHoldingWeaponSlot(heldSlot)?Catalog.WeaponMagSize(WeaponForSlot(p,heldSlot)):0;
             bool showReloadBtn=IsHoldingWeaponSlot(heldSlot)&&activeMag>0&&!p.Reloading&&p.CurrentAmmo<activeMag;
             bool showUseBtn=!showReloadBtn&&heldSlot>=2&&heldSlot<=5;
