@@ -1847,14 +1847,18 @@ namespace Ember
             DrawVesselPicker();
             if(selected==(int)Vessel.LittleMoone)
             {
-                if(!Profile.Vessels.Contains(selected))UiText("Tỷ lệ triệu hồi: 1%",small);
+                if(!Profile.Vessels.Contains(selected))UiText(L("Bản Ngã Đặc Biệt · Tỷ lệ triệu hồi: 1%","Special Vessel · Summon rate: 1%"),small);
                 else if(!Profile.LittleMooneAwake)
                 {
-                    UiText("Ngủ đông",small);
+                    UiText(L("🌙 Ngủ sâu · Cần Đánh Thức để xuất trận","🌙 Deep Sleep · Requires Awakening to deploy"),small);
                     UiText(EmberLanguage.Text("Đá Ký Ức Thức Tỉnh")+": "+Profile.AwakeningStones,small);
                     GUI.enabled=Profile.AwakeningStones>0;
-                    if(UiButton("Thức tỉnh Little Moone")&&Profile.AwakenLittleMoone())SaveProfile();
+                    if(UiButton(L("Đánh thức Little Moone (1 Đá)","Awaken Little Moone (1 Stone)"))&&Profile.AwakenLittleMoone())SaveProfile();
                     GUI.enabled=true;
+                }
+                else
+                {
+                    UiText(L("⭐ Đã Thức Tỉnh: Mưa Sao Băng Trắng [J] (12 thiên thạch tự ngắm, 24s)","⭐ Awakened: Starlight Meteors [J] (12 auto-aimed meteors, 24s)"),small);
                 }
             }
             if(selected==(int)Vessel.Wanderer)

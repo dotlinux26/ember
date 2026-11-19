@@ -182,6 +182,25 @@ namespace Ember
             return page;
         }
 
+        string GetVesselStatusLabel(int v)
+        {
+            bool owned=Profile.Vessels.Contains(v);
+            if(!owned)return L("Chưa sở hữu","Unowned");
+            if(v==(int)Vessel.LittleMoone)
+            {
+                return Profile.LittleMooneAwake
+                    ?L("Đặc biệt · ⭐ Đã thức tỉnh","Special · ⭐ Awakened")
+                    :L("Đặc biệt · 🌙 Ngủ sâu","Special · 🌙 Deep Sleep");
+            }
+            if(v==(int)Vessel.Wanderer)
+            {
+                return Profile.WandererAwake
+                    ?L("Phổ thông · ⭐ Đã thức tỉnh","Common · ⭐ Awakened")
+                    :L("Phổ thông · Chưa thức tỉnh","Common · Unawakened");
+            }
+            return EmberLanguage.Text(Catalog.VesselRarities[v]);
+        }
+
         void DrawVesselPicker()
         {
             var names=Catalog.VesselNames;
@@ -191,15 +210,19 @@ namespace Ember
                 const float edge=48;
                 if(GUI.Button(new Rect(row.x+4,row.center.y-22,36,44),"‹")){selected=(selected+names.Length-1)%names.Length;if(Profile.CanPlay(selected))SaveProfile();}
                 if(GUI.Button(new Rect(row.xMax-40,row.center.y-22,36,44),"›")){selected=(selected+1)%names.Length;if(Profile.CanPlay(selected))SaveProfile();}
+                bool mooneSleeping=selected==(int)Vessel.LittleMoone&&!Profile.LittleMooneAwake;
+                bool isSleeping=mooneSleeping||!Profile.Vessels.Contains(selected);
                 var card=new Rect(row.x+edge,row.y,row.width-2*edge,row.height);
                 PixelPanel(card,Lilac);
                 PixelArt(new Rect(card.x+7,card.y+7,card.width-14,112),"sanctuary",ScaleMode.ScaleAndCrop);
-                DrawSpritePreview(new Rect(card.center.x-50,card.y+10,100,100),Frame((Vessel)selected,"idle",(int)(Time.unscaledTime*6)));
+                if(isSleeping)
+                    Panel(new Rect(card.x+7,card.y+7,card.width-14,112),new Color(.04f,.06f,.14f,.35f));
+                DrawSpritePreview(new Rect(card.center.x-50,card.y+10,100,100),Frame((Vessel)selected,"idle",(int)(Time.unscaledTime*6)),sleeping:isSleeping);
+                if(mooneSleeping&&Profile.Vessels.Contains(selected))
+                    PixelArt(new Rect(card.xMax-32,card.y+12,20,20),"awakening");
                 UiLabel(new Rect(card.x+10,card.y+120,card.width-20,27),names[selected],label);
-                string status=Profile.CanPlay(selected)?Catalog.VesselRarities[selected]:
-                    Profile.Vessels.Contains(selected)?"Ngủ đông":L("Chưa sở hữu","Unowned");
                 UiLabel(new Rect(card.x+10,card.y+150,card.width-20,27),
-                    EmberLanguage.Text(status)+"   ·   "+(selected+1)+"/"+names.Length,small);
+                    GetVesselStatusLabel(selected)+"   ·   "+(selected+1)+"/"+names.Length,small);
             }
 
             GUILayout.Space(8);
@@ -220,6 +243,19 @@ namespace Ember
                 else
                 {
                     UiText(Catalog.VesselDescriptions[selected],label);
+                }
+            }
+            else if(selected==(int)Vessel.LittleMoone)
+            {
+                if(Profile.LittleMooneAwake)
+                {
+                    UiText(L("100 HP • 100 thể lực • ⭐ Mưa Sao Băng: 12 thiên thạch ánh sáng tự ngắm diện rộng. Hồi chiêu 24 giây.","100 HP • 100 Stamina • ⭐ Starlight Meteors: 12 auto-aimed light meteors. Cooldown 24s."),label);
+                    UiText(SkillRangeText((Vessel)selected),small);
+                }
+                else
+                {
+                    UiText(L("100 HP • 100 thể lực • 🌙 Ngủ sâu: Cần dùng 1 Đá Ký Ức Thức Tỉnh để đánh thức Bản Ngã này xuất trận.","100 HP • 100 Stamina • 🌙 Deep Sleep: Requires 1 Awakening Stone to awaken this Vessel for battle."),label);
+                    UiText(L("Bản ngã đặc biệt đang ngủ say, màu sắc chìm vào màn đêm cho đến khi được đánh thức.","Special Vessel is in deep slumber, shrouded in night veil until awakened."),small);
                 }
             }
             else
@@ -420,13 +456,16 @@ namespace Ember
                     var card=new Rect(row.x+margin+col*(cellW+gap),row.y,cellW,row.height);
                     PixelPanel(card,isSelected?Plum:owned?Lilac:Paper);
                     if(owned)
-                        DrawSpritePreview(new Rect(card.center.x-28,card.y+6,56,56),Frame((Vessel)vessel,"idle",0));
+                    {
+                        bool vesselSleeping=(vessel==(int)Vessel.LittleMoone&&!Profile.LittleMooneAwake);
+                        DrawSpritePreview(new Rect(card.center.x-28,card.y+6,56,56),Frame((Vessel)vessel,"idle",0),sleeping:vesselSleeping);
+                    }
                     else
                         PixelArt(new Rect(card.center.x-22,card.y+12,44,44),"token");
                     if(owned&&!playable)PixelArt(new Rect(card.xMax-20,card.y+6,15,15),"awakening");
                     var nameStyle=isSelected?activeTabText:inactiveTabText;
                     GUI.Label(new Rect(card.x+4,card.y+64,card.width-8,26),EmberLanguage.Text(Catalog.VesselNames[vessel]),nameStyle);
-                    string state=isSelected?L("Đang chọn","Selected"):playable?EmberLanguage.Text(Catalog.VesselRarities[vessel]):owned?L("Ngủ đông","Dormant"):L("Chưa mở","Locked");
+                    string state=isSelected?L("Đang chọn","Selected"):playable?(Profile.IsAwake(vessel)?L("⭐ Đã thức tỉnh","⭐ Awakened"):EmberLanguage.Text(Catalog.VesselRarities[vessel])):owned?L("Ngủ sâu","Deep Sleep"):L("Chưa mở","Locked");
                     GUI.Label(new Rect(card.x+4,card.y+88,card.width-8,18),state,nameStyle);
                     if(owned&&GUI.Button(card,GUIContent.none,GUIStyle.none)){selected=vessel;SaveProfile();}
                 }
@@ -493,6 +532,15 @@ namespace Ember
                 Trace("debug.grant_currencies_saved",notice);
             }
             GUILayout.EndHorizontal();
+            if(selected==(int)Vessel.LittleMoone&&Profile.Vessels.Contains((int)Vessel.LittleMoone))
+            {
+                GUILayout.Space(4);
+                if(UiButton(Profile.LittleMooneAwake?L("Test · Đặt Moone vào Ngủ Sâu (Lưu)","Test · Put Moone to Deep Sleep (Save)"):L("Test · Thức Tỉnh Moone (Lưu)","Test · Awaken Moone (Save)")))
+                {
+                    Profile.LittleMooneAwake=!Profile.LittleMooneAwake;
+                    SaveProfile();
+                }
+            }
             GUILayout.Space(4);
         }
 
@@ -507,15 +555,24 @@ namespace Ember
         void DrawSanctuaryStage(Rect area)
         {
             PixelArt(area,"sanctuary",ScaleMode.ScaleAndCrop);
+            bool mooneSleeping=selected==(int)Vessel.LittleMoone&&!Profile.LittleMooneAwake;
+            bool isSleeping=mooneSleeping||!Profile.Vessels.Contains(selected);
+            if(isSleeping)
+                Panel(area,new Color(.04f,.06f,.14f,.30f));
             float horizon=area.y+area.height*.65f;
 
             float cx=area.center.x;
             PixelPanel(new Rect(area.x,area.y,area.width,49),Paper);
             PixelPanel(new Rect(area.x,area.yMax-66,area.width,66),Paper);
-            UiLabel(new Rect(area.x+18,area.y+15,area.width-36,30),Catalog.VesselRarities[selected],small);
+            UiLabel(new Rect(area.x+18,area.y+15,area.width-36,30),GetVesselStatusLabel(selected),small);
             float size=Mathf.Min(area.width*.62f,area.height*.56f);
-            DrawSpritePreview(new Rect(cx-size/2,horizon-size*.80f+Mathf.Sin(Time.unscaledTime*2)*3,size,size),Frame((Vessel)selected,"idle",(int)(Time.unscaledTime*6)));
-            UiLabel(new Rect(area.x+18,area.yMax-65,area.width-36,45),Catalog.VesselNames[selected],label);
+            DrawSpritePreview(new Rect(cx-size/2,horizon-size*.80f+Mathf.Sin(Time.unscaledTime*2)*3,size,size),
+                Frame((Vessel)selected,"idle",(int)(Time.unscaledTime*6)),
+                sleeping:isSleeping);
+            string stageName=Catalog.VesselNames[selected];
+            if(mooneSleeping&&Profile.Vessels.Contains(selected))
+                stageName+="   ·   "+L("🌙 Ngủ sâu","🌙 Deep Sleep");
+            UiLabel(new Rect(area.x+18,area.yMax-65,area.width-36,45),stageName,label);
         }
 
         static Rect FitPixelRect(Rect box,float sourceWidth,float sourceHeight)
@@ -528,13 +585,27 @@ namespace Ember
             return new Rect(Mathf.Round(box.center.x-width/2),Mathf.Round(box.center.y-height/2),width,height);
         }
 
-        void DrawSpritePreview(Rect rect,Sprite sprite)
+        void DrawSpritePreview(Rect rect,Sprite sprite,bool sleeping=false)
         {
             if(sprite==null||Event.current.type!=EventType.Repaint)return;
             var uv=sprite.rect;
             var texture=sprite.texture;
             rect=FitPixelRect(rect,uv.width,uv.height);
-            GUI.DrawTextureWithTexCoords(rect,texture,new Rect(uv.x/texture.width,uv.y/texture.height,uv.width/texture.width,uv.height/texture.height));
+            Color prevColor=GUI.color;
+            if(sleeping)
+            {
+                // Pass 1: Mất màu sắc, hóa thành tông đen/xám tối (desaturated dark grayscale)
+                GUI.color=new Color(.30f,.32f,.40f,.90f);
+                GUI.DrawTextureWithTexCoords(rect,texture,new Rect(uv.x/texture.width,uv.y/texture.height,uv.width/texture.width,uv.height/texture.height));
+                // Pass 2: Áp thêm lớp filter xanh mờ ánh trăng đêm bao phủ hình thể (translucent night sleep filter overlay)
+                GUI.color=new Color(.08f,.16f,.34f,.55f);
+                GUI.DrawTextureWithTexCoords(rect,texture,new Rect(uv.x/texture.width,uv.y/texture.height,uv.width/texture.width,uv.height/texture.height));
+            }
+            else
+            {
+                GUI.DrawTextureWithTexCoords(rect,texture,new Rect(uv.x/texture.width,uv.y/texture.height,uv.width/texture.width,uv.height/texture.height));
+            }
+            GUI.color=prevColor;
         }
 
         string[] SummonNames(int pool)=>pool==0?Catalog.VesselNames:pool==1?Catalog.HatNames:Catalog.PetNames;
