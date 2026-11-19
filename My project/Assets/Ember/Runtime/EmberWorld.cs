@@ -324,7 +324,7 @@ namespace Ember
         {
             if(kind==EnemyKind.Nest)return default;
             if(kind==EnemyKind.Boss)return new EnemyShotSpec(true,3.5f,15f,5.4f,4.2f,14f,3,18f,3);
-            if(elite||kind==EnemyKind.Sentinel)return new EnemyShotSpec(true,3.6f,14f,5.0f,4.6f,12f,3,16f,1);
+            if(elite||kind==EnemyKind.Sentinel)return new EnemyShotSpec(true,3.4f,14f,5.2f,3.6f,12f,3,18f,1);
             if(kind==EnemyKind.VoidStalker)return new EnemyShotSpec(true,4.0f,13f,5.1f,5.2f,11f,1,0f,4);
             if(kind==EnemyKind.SwampLeech)return new EnemyShotSpec(true,3.8f,11.5f,4.6f,5.8f,9f,1,0f,5);
             return new EnemyShotSpec(true,4.2f,10.5f,4.2f,6.8f,7f,1,0f,4);
@@ -659,9 +659,9 @@ namespace Ember
                     if(Tiles[(ty+ny)*S.Size+(tx+nx)]==5){nearBridge=true;break;}
                 }
                 if(nearBridge)continue;
-                float radius=pos.Length;Resource resource=new[]{Resource.Dust,Resource.Core,Resource.Wood,Resource.Ore}[rng.Next(4)];
-                if(radius<15)resource=i%3==0?Resource.Core:Resource.Dust;
-                int amt=resource==Resource.Core?(radius>S.Size*.35f?5:2):resource==Resource.Wood?6:4;
+                float radius=pos.Length;Resource resource=new[]{Resource.Dust,Resource.Wood,Resource.Ore}[rng.Next(3)];
+                if(radius<15)resource=Resource.Dust;
+                int amt=resource==Resource.Wood?6:4;
                 nodes.Add(new Node{Id=nextId++,Pos=pos,Resource=resource,Amount=amt,MaxAmount=amt});
             }
             // Guaranteed accessible starter resources, regardless of seed.
@@ -670,7 +670,7 @@ namespace Ember
                 var sp=new V2(6+i%4*3,4+i/4*3);
                 int stx=(int)Math.Floor(sp.X+S.Size/2f),sty=(int)Math.Floor(sp.Y+S.Size/2f);
                 if(stx>=0&&sty>=0&&stx<S.Size&&sty<S.Size&&(Tiles[sty*S.Size+stx]==5||Tiles[sty*S.Size+stx]==6))continue;
-                nodes.Add(new Node{Id=nextId++,Pos=sp,Resource=i%3==0?Resource.Core:Resource.Dust,Amount=5,MaxAmount=5});
+                nodes.Add(new Node{Id=nextId++,Pos=sp,Resource=i%2==0?Resource.Ore:Resource.Dust,Amount=5,MaxAmount=5});
             }
             for(int i=0;i<10;i++)
             {
@@ -1012,6 +1012,22 @@ namespace Ember
                         double wa=rng.NextDouble()*Math.PI*2;
                         V2 wpos=lp.Pos+new V2((float)Math.Cos(wa)*10f,(float)Math.Sin(wa)*10f);
                         if(Walkable(wpos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.VoidStalker,Pos=wpos,HP=85,MaxHP=85,AttackCD=1.5f});
+                    }
+                }
+                // Every 2 waves, an elite Crystal Sentinel descends carrying energy cores!
+                if(S.PeriodicWave%2==0)
+                {
+                    var sentinelTarget=players.FirstOrDefault(p=>!p.Ghost&&!p.Extracted);
+                    if(sentinelTarget!=null)
+                    {
+                        double sa=rng.NextDouble()*Math.PI*2;
+                        V2 spos=sentinelTarget.Pos+new V2((float)Math.Cos(sa)*12f,(float)Math.Sin(sa)*12f);
+                        if(Walkable(spos))
+                        {
+                            enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Sentinel,Elite=true,Pos=spos,HP=140,MaxHP=140,AttackCD=2f,SkillCD=0f});
+                            Announce(EmberLanguage.English?"💠 An Elite Crystal Sentinel has descended! Slay it to claim its Energy Core!":"💠 Hộ Vệ Tinh Thể đã giáng lâm! Hãy tiêu diệt để đoạt Lõi Năng Lượng!");
+                            FX(spos,new V2(0,1),3);
+                        }
                     }
                 }
             }
@@ -1739,7 +1755,7 @@ namespace Ember
                 float damage=18*DamageMultiplier(meteor.owner);
                 foreach(var enemy in enemies.Where(q=>V2.Distance(q.Pos,meteor.center)<2.2f).ToArray())
                 {
-                    Damage(enemy,damage);
+                    Damage(enemy,damage,1);
                     Knockback(enemy,enemy.Pos-meteor.center,.42f);
                 }
                 foreach(var ally in players.Where(q=>CanHarm(meteor.owner,q)&&V2.Distance(q.Pos,meteor.center)<2.2f))
@@ -1780,10 +1796,10 @@ namespace Ember
             float jy=.55f+(float)rng.NextDouble()*.22f;
             combatPopups.Add(new CombatPopup{Id=nextId++,Kind=kind,Amount=amount,SubKind=subKind,Pos=pos+new V2(jx,jy),Life=duration,MaxLife=duration});
         }
-        void Damage(Enemy e,float damage)
+        void Damage(Enemy e,float damage,int subKind=0)
         {
             if(e.HP<=0)return;
-            if(damage>=1f)EmitPopup(e.Pos,0,Math.Max(1,(int)Math.Round(damage)));
+            if(damage>=1f)EmitPopup(e.Pos,0,Math.Max(1,(int)Math.Round(damage)),subKind,subKind==1?1.15f:.88f);
             e.HP-=damage;if(e.HP<=0)
             {
                 if(e.IsWorldBoss)
@@ -1792,6 +1808,7 @@ namespace Ember
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(-1.1f,.4f),Resource=Resource.Core,Amount=6,Dropped=true});
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(1.1f,.4f),Resource=Resource.Umbra,Amount=8,Dropped=true});
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(0,-1.0f),Resource=Resource.Dust,Amount=15,Dropped=true});
+                    EmitPopup(e.Pos+new V2(0,.75f),3,6,(int)Resource.Core,1.6f);
                     S.BossesDefeated++;
                     if(S.BossId==e.Id)EndBossArena();
                     Announce("ĐÃ HẠ GỤC BOSS: "+spec.NameVi+"! Viền phong ấn đã tan biến.");
@@ -1801,13 +1818,19 @@ namespace Ember
                 {
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=Resource.Core,Amount=2,Dropped=true});
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(.35f,-.25f),Resource=Resource.Dust,Amount=3,Dropped=true});
-                    Announce(EmberLanguage.English?"💎 Crystal Sentinel shattered! Dropped 2 Cores.":"💎 Hộ Vệ Tinh Thể vỡ tan! Rơi 2 Lõi Tinh Thể.");
+                    EmitPopup(e.Pos+new V2(0,.75f),3,2,(int)Resource.Core,1.5f);
+                    EmitPopup(e.Pos+new V2(.35f,.3f),3,3,(int)Resource.Dust,1.4f);
+                    Announce(EmberLanguage.English?"💎 Crystal Sentinel shattered! Dropped 2 Energy Cores.":"💎 Hộ Vệ Tinh Thể vỡ tan! Rơi 2 Lõi Năng Lượng.");
                     FX(e.Pos,new V2(0,1),3);
                 }
                 else
                 {
                     bool umbra=e.Elite||e.Kind==EnemyKind.Nest;
-                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=umbra?Resource.Umbra:Resource.Dust,Amount=e.Kind==EnemyKind.Nest?8:e.Elite?4:2,Dropped=true});
+                    int dropAmt=e.Kind==EnemyKind.Nest?8:e.Elite?4:2;
+                    Resource dropRes=umbra?Resource.Umbra:Resource.Dust;
+                    nodes.Add(new Node{Id=nextId++,Pos=e.Pos,Resource=dropRes,Amount=dropAmt,Dropped=true});
+                    EmitPopup(e.Pos+new V2(0,.65f),3,dropAmt,(int)dropRes,1.35f);
+                    FX(e.Pos,e.Pos,3);
                     if(e.Kind==EnemyKind.Boss){S.BossesDefeated++;Announce("Thực thể đã gục — nhận mảnh ký ức khi kết thúc trận.");}else if(umbra)Announce("Thu được mảnh bóng tối.");
                 }
             }

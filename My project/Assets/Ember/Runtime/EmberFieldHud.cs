@@ -124,7 +124,7 @@ namespace Ember
                 energyText=$"{curCharge}/{targetCharge} NL";
 
             bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<3.8f;
-            float bw=166f, bh=nearBeacon?74f:50f;
+            float bw=176f, bh=nearBeacon?84f:52f;
             Rect panelRect=new Rect(Mathf.Round(screen.x-bw/2),Mathf.Round(screen.y-bh),bw,bh);
 
             PixelPanel(panelRect,new Color(.08f,.06f,.14f,.94f));
@@ -132,12 +132,12 @@ namespace Ember
             // Header title
             var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
             headerStyle.normal.textColor=new Color(.92f,.90f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+4,panelRect.width-8,16),tierTitle,headerStyle);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+5,panelRect.width-8,16),tierTitle,headerStyle);
 
             // Energy meter
             float chargeRatio=Mathf.Clamp01(curCharge/(float)targetCharge);
             float mw=panelRect.width-20;
-            Rect barBg=new Rect(panelRect.x+10,panelRect.y+22,mw,6);
+            Rect barBg=new Rect(panelRect.x+10,panelRect.y+23,mw,6);
             Panel(barBg,new Color(.04f,.03f,.08f,.95f));
             Color meterCol=overcharged?new Color(.35f,1f,.85f):new Color(.28f,.85f,1f);
             Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,4),meterCol);
@@ -146,13 +146,13 @@ namespace Ember
             // Energy text under meter
             var energyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
             energyStyle.normal.textColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+30,panelRect.width-8,16),energyText,energyStyle);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+33,panelRect.width-8,16),energyText,energyStyle);
 
             // Interactive deposit prompt when player is nearby
             if(nearBeacon)
             {
                 int cores=p!=null?p.Bag[(int)Resource.Core]:0;
-                Rect btnRect=new Rect(panelRect.x+8,panelRect.y+48,panelRect.width-16,22);
+                Rect btnRect=new Rect(panelRect.x+8,panelRect.y+54,panelRect.width-16,22);
                 PixelPanel(btnRect,cores>0?new Color(.18f,.14f,.28f,.96f):new Color(.12f,.10f,.18f,.88f));
 
                 Rect keyBox=new Rect(btnRect.x+3,btnRect.y+2,18,18);
@@ -524,18 +524,20 @@ namespace Ember
             if(QuestCollapsed)
             {
                 // Compact circular quest bubble
-                Vector2 center=new Vector2(38,y+24);
+                Vector2 center=new Vector2(40,y+24);
                 Rect bubbleRect=new Rect(center.x-24,center.y-24,48,48);
-                RegisterHudRect(bubbleRect);
+                RegisterHudRect(new Rect(center.x-24,center.y-24,56,60));
+
+                bool hoverBubble=bubbleRect.Contains(Event.current.mousePosition);
 
                 // Dark circular background
-                GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):new Color(.11f,.08f,.18f,.95f);
-                DrawSpritePreview(new Rect(center.x-19,center.y-19,38,38),Primitive("circle"));
+                GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):hoverBubble?new Color(.20f,.14f,.32f,.98f):new Color(.11f,.08f,.18f,.95f);
+                DrawSpritePreview(new Rect(center.x-20,center.y-20,40,40),Primitive("circle"));
                 GUI.color=Color.white;
 
                 // Circular progress ring
                 Color ringColor=blackout?Coral:progress>=1f?Cyan:Gold;
-                DrawCircularProgress(center,20,progress,ringColor);
+                DrawCircularProgress(center,21,progress,ringColor);
 
                 // Quest icon in center
                 Rect iconRect=new Rect(center.x-12,center.y-12,24,24);
@@ -543,22 +545,22 @@ namespace Ember
                 else PixelArt(iconRect,icon);
 
                 // Expand badge with arrow >
-                Rect arrowBadge=new Rect(center.x+13,center.y-8,16,16);
-                PixelPanel(arrowBadge,new Color(.22f,.16f,.35f,.95f));
+                Rect arrowBadge=new Rect(center.x+12,center.y-8,16,16);
+                PixelPanel(arrowBadge,hoverBubble?new Color(.42f,.28f,.62f,.98f):new Color(.22f,.16f,.35f,.95f));
                 var oldContent=GUI.contentColor;
-                GUI.contentColor=new Color(1f,.92f,.55f);
-                GUI.Label(new Rect(arrowBadge.x+4,arrowBadge.y-2,12,16),">",small);
+                GUI.contentColor=hoverBubble?Gold:new Color(1f,.92f,.55f);
+                var arrowStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+                GUI.Label(arrowBadge,">",arrowStyle);
                 GUI.contentColor=oldContent;
 
                 // Percentage text under the bubble
                 string pctText=Mathf.RoundToInt(Mathf.Clamp01(progress)*100)+"%";
-                var oldAlign=small.alignment;
-                small.alignment=TextAnchor.MiddleCenter;
-                GUI.Label(new Rect(center.x-24,center.y+19,48,14),pctText,small);
-                small.alignment=oldAlign;
+                var pctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+                pctStyle.normal.textColor=new Color(.90f,.92f,1f);
+                GUI.Label(new Rect(center.x-24,center.y+20,48,14),pctText,pctStyle);
 
                 // Click to expand
-                if(GUI.Button(new Rect(center.x-24,center.y-24,56,56),new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
+                if(GUI.Button(new Rect(center.x-24,center.y-24,56,60),new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
                 {
                     QuestCollapsed=false;
                 }
@@ -576,11 +578,13 @@ namespace Ember
             UiLabel(new Rect(card.x+54,card.y+31,card.width-90,28),hint,small);
 
             // Collapse button [ < ] in upper right of card
-            Rect collapseBtn=new Rect(card.xMax-26,card.y+6,20,20);
-            PixelPanel(collapseBtn,new Color(.24f,.18f,.38f,.92f));
+            Rect collapseBtn=new Rect(card.xMax-28,card.y+6,22,22);
+            bool hoverCollapse=collapseBtn.Contains(Event.current.mousePosition);
+            PixelPanel(collapseBtn,hoverCollapse?new Color(.38f,.26f,.58f,.98f):new Color(.24f,.18f,.38f,.92f));
             var oldCol=GUI.contentColor;
-            GUI.contentColor=new Color(.88f,.91f,.98f);
-            GUI.Label(new Rect(collapseBtn.x+5,collapseBtn.y-2,14,20),"<",small);
+            GUI.contentColor=hoverCollapse?Gold:new Color(.88f,.91f,.98f);
+            var btnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+            GUI.Label(collapseBtn,"<",btnStyle);
             GUI.contentColor=oldCol;
             if(GUI.Button(collapseBtn,new GUIContent("",L("Thu gọn hiển thị nhiệm vụ","Collapse quest display")),GUIStyle.none))
             {
@@ -890,7 +894,7 @@ namespace Ember
             UiLabel(new Rect(panel.x+16,panel.y+44,panel.width-32,26),detail,small);
         }
 
-        GUIStyle marqueeStyle,popupStyle,popupBigStyle;
+        GUIStyle marqueeStyle,popupStyle,popupBigStyle,popupHugeStyle;
 
         void DrawMarqueeLabel(Rect rect,string text,GUIStyle baseStyle,float speed=44f)
         {
@@ -1016,11 +1020,12 @@ namespace Ember
                 {
                     alignment=TextAnchor.MiddleCenter,
                     fontStyle=FontStyle.Bold,
-                    fontSize=13,
+                    fontSize=18,
                     wordWrap=false,
                     clipping=TextClipping.Overflow
                 };
-                popupBigStyle=new GUIStyle(popupStyle){fontSize=16};
+                popupBigStyle=new GUIStyle(popupStyle){fontSize=24};
+                popupHugeStyle=new GUIStyle(popupStyle){fontSize=30};
             }
             string[] resVi=Catalog.ResourceNames;
             string[] resEn={"Dust","Core","Umbra","Wood","Ore"};
@@ -1034,22 +1039,33 @@ namespace Ember
 
                 string text;
                 Color tint;
-                bool big=false;
+                GUIStyle style=popupStyle;
                 if(pop.Kind==0)
                 {
-                    text="-"+pop.Amount;
-                    big=pop.Amount>=30;
-                    tint=big?new Color(1f,.66f,.18f,alpha):new Color(1f,.94f,.62f,alpha);
+                    bool isSkillHit=pop.SubKind==1;
+                    if(isSkillHit||pop.Amount>=32)
+                    {
+                        text=isSkillHit?$"💥 -{pop.Amount}":$"-{pop.Amount}";
+                        style=isSkillHit?popupHugeStyle:popupBigStyle;
+                        tint=isSkillHit?new Color(1f,.86f,.25f,alpha):new Color(1f,.66f,.18f,alpha);
+                    }
+                    else
+                    {
+                        text="-"+pop.Amount;
+                        style=pop.Amount>=18?popupBigStyle:popupStyle;
+                        tint=new Color(1f,.94f,.62f,alpha);
+                    }
                 }
                 else if(pop.Kind==1)
                 {
                     text="-"+pop.Amount;
-                    big=pop.Amount>=22;
+                    style=pop.Amount>=22?popupBigStyle:popupStyle;
                     tint=new Color(1f,.26f,.32f,alpha);
                 }
                 else if(pop.Kind==2)
                 {
                     text="+"+pop.Amount+" HP";
+                    style=popupBigStyle;
                     tint=new Color(.34f,1f,.66f,alpha);
                 }
                 else
@@ -1057,16 +1073,16 @@ namespace Ember
                     int rIdx=Mathf.Clamp(pop.SubKind,0,resVi.Length-1);
                     string resName=(EmberLanguage.English?resEn:resVi)[rIdx];
                     text="+"+pop.Amount+" "+resName;
+                    style=pop.Amount>=4?popupBigStyle:popupStyle;
                     tint=rIdx==1?new Color(.42f,.96f,1f,alpha):rIdx==2?new Color(.82f,.58f,1f,alpha):new Color(1f,.86f,.34f,alpha);
                 }
 
-                var style=big?popupBigStyle:popupStyle;
-                var box=new Rect(Mathf.Round(pt.x-72f),Mathf.Round(pt.y-12f),144f,24f);
-                style.normal.textColor=new Color(0,0,0,.85f*alpha);
-                GUI.Label(new Rect(box.x-1,box.y,box.width,box.height),text,style);
-                GUI.Label(new Rect(box.x+1,box.y,box.width,box.height),text,style);
-                GUI.Label(new Rect(box.x,box.y-1,box.width,box.height),text,style);
-                GUI.Label(new Rect(box.x,box.y+1,box.width,box.height),text,style);
+                var box=new Rect(Mathf.Round(pt.x-105f),Mathf.Round(pt.y-16f),210f,32f);
+                style.normal.textColor=new Color(0,0,0,.92f*alpha);
+                GUI.Label(new Rect(box.x-2,box.y,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x+2,box.y,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x,box.y-2,box.width,box.height),text,style);
+                GUI.Label(new Rect(box.x,box.y+2,box.width,box.height),text,style);
                 style.normal.textColor=tint;
                 GUI.Label(box,text,style);
             }

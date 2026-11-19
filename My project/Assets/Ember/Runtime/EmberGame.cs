@@ -321,10 +321,6 @@ namespace Ember
             }
             intent.X=move.x;intent.Y=move.y;
             bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
-            if(wantAttack&&heldSlot!=8&&ShouldAutoEquipPickaxe(Local))
-            {
-                AutoEquipHarvestTool(Local);
-            }
             bool attack=wantAttack&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
             bool pressedInteract=Press(Key.E);
@@ -776,11 +772,14 @@ namespace Ember
                         Outline(Put("nodeGlow"+n.Id,sprite,drawPos,glowColor,scale,order-1),sprite);
                     }
                     Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
-                    if(n.Dropped&&n.Resource==Resource.Dust)
+                    if(n.Dropped)
                     {
                         float dPulse=.85f+.15f*Mathf.Sin(clock*4f+n.Id);
-                        var dropAura=Put("dropDustAura"+n.Id,Primitive("circle"),n.Pos,new Color(.2f,1f,.9f,.28f*dPulse),.85f,order-1);
+                        Color auraCol=n.Resource==Resource.Core?new Color(.35f,1f,.95f,.42f*dPulse):n.Resource==Resource.Umbra?new Color(.8f,.5f,1f,.42f*dPulse):new Color(.2f,1f,.9f,.32f*dPulse);
+                        var dropAura=Put("dropAura"+n.Id,Primitive("circle"),n.Pos,auraCol,.95f,order-1);
                         if(emissionMaterial!=null)dropAura.sharedMaterial=emissionMaterial;
+                        var dropBeam=Put("dropBeam"+n.Id,Primitive("diamond"),n.Pos+new V2(0,.38f+Mathf.Sin(clock*3f+n.Id)*.05f),auraCol,.48f,order+1);
+                        if(emissionMaterial!=null)dropBeam.sharedMaterial=emissionMaterial;
                     }
                 }
             }
@@ -921,9 +920,14 @@ namespace Ember
                 Put("enemy"+e.Id,artSprite,renderPos,bodyTint,scale,flip:flip);
                 if(e.Kind==EnemyKind.Sentinel)
                 {
-                    float rot=clock*130f+e.Id*45f;
-                    V2 ringOff=new V2(Mathf.Cos(rot*Mathf.Deg2Rad)*.45f,Mathf.Sin(rot*Mathf.Deg2Rad)*.22f);
-                    Put("sentinelRing"+e.Id,Primitive("diamond"),renderPos+ringOff,new Color(.4f,.95f,1f,.85f),.42f,5002-Mathf.RoundToInt(ePos.Y*10));
+                    float rot=clock*140f+e.Id*45f;
+                    for(int o=0;o<3;o++)
+                    {
+                        float a=(rot+o*120f)*Mathf.Deg2Rad;
+                        V2 ringOff=new V2(Mathf.Cos(a)*.52f,Mathf.Sin(a)*.26f);
+                        var shard=Put("sentinelRing"+e.Id+"_"+o,Primitive("diamond"),renderPos+ringOff,new Color(.45f,1f,.95f,.9f),.44f,5002-Mathf.RoundToInt(ePos.Y*10));
+                        if(emissionMaterial!=null)shard.sharedMaterial=emissionMaterial;
+                    }
                 }
             }
             var playersArr=State.Players;
