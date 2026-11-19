@@ -24,8 +24,8 @@ namespace Ember
 
         bool CanUseSelectedItem(Player p)
         {
-            return heldSlot>=2&&heldSlot<=5&&p!=null&&!p.Ghost&&!p.Extracted&&p.Items[selectedItem]>0&&
-                (selectedItem!=3||(p.Pos.Length<=5&&System.Array.Exists(State.Players,q=>q.Ghost)));
+            return heldSlot>=2&&heldSlot<=5&&p!=null&&!p.Ghost&&!p.Extracted&&p.Items!=null&&selectedItem>=0&&selectedItem<p.Items.Length&&p.Items[selectedItem]>0&&
+                (selectedItem!=3||(p.Pos.Length<=5&&State?.Players!=null&&System.Array.Exists(State.Players,q=>q.Ghost)));
         }
 
         GUIStyle overheadName,overheadGlow;

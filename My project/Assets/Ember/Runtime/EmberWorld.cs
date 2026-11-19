@@ -77,7 +77,7 @@ namespace Ember
         public float BaseCapacity=>30f+Stats.Gathering*5f;
         public int Load=>Bag.Sum(); public float Capacity=>BaseCapacity*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1);
         public bool HasHeldTorch=>(HeldSlot==2||(HeldSlot==8&&PrevHeldSlot==2&&HarvestCD>0))&&Items[0]>0&&LampOn&&!Ghost&&!Extracted;
-        public bool HoldingWeapon=>(HeldSlot==1&&(HasWeapon||Weapon==Weapon.Stick))||(HeldSlot==7&&HasSideWeapon)||(HeldSlot==8&&HasPickaxe);
+        public bool HoldingWeapon=>(HeldSlot==1&&HasWeapon)||(HeldSlot==7&&HasSideWeapon)||(HeldSlot==8&&HasPickaxe);
         public Weapon ActiveWeapon=>HeldSlot==7?SideWeapon:HeldSlot==8?Weapon.Pickaxe:Weapon;
         public bool Ranged=>ActiveWeapon==Weapon.Crossbow||ActiveWeapon==Weapon.LumenGun||ActiveWeapon==Weapon.MirrorShield;
         public float Range=>Ranged?7:ActiveWeapon==Weapon.CrystalAxe?2.6f:ActiveWeapon==Weapon.Pickaxe?2.4f:2;
@@ -514,7 +514,7 @@ namespace Ember
         readonly Dictionary<long,float> retaliation=new Dictionary<long,float>();
         readonly Dictionary<int,FlowField> navigation=new Dictionary<int,FlowField>();
         sealed class FlowField{public int[] Distance;public int Goal=-1;public float Built=-100;}
-        Random rng;int nextId=10,lastBossType=-1;float spawnClock,petClock;bool lastLightSpent,bossSpawned;
+        Random rng;int nextId=10,lastBossType=-1;float spawnClock,petClock;bool lastLightSpent,bossSpawned;public float MerchantSpawnTimer=75f;
         float DifficultyEnemyScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Easy?.85f:1f;
         float DifficultyDreadScale=>S.Difficulty==Difficulty.Hard?1.25f:S.Difficulty==Difficulty.Normal?1.05f:1f;
         float DifficultyEnemySpeedScale=>S.Difficulty==Difficulty.Hard?1.12f:S.Difficulty==Difficulty.Easy?.9f:1f;
@@ -769,17 +769,16 @@ namespace Ember
                     nodes.Add(new Node{Id=nextId++,Pos=mpos,Resource=Resource.Dust,Amount=1,MaxAmount=1,Dropped=false,DropKind=2,DropId=16});
                 }
             }
-            structures.Add(new Structure{Id=nextId++,Kind=10,Pos=BeaconColliderPos+new V2(3.8f,0f),Life=999999f,MaxLife=999999f,HP=1000f});
         }
         public void SpawnStarterGroundLoot()
         {
             if(nodes.Any(n=>n.Dropped&&(n.DropKind==1||n.DropKind==2)&&(n.DropId==(int)Weapon.Stick||n.DropId==0||n.DropId==(int)Weapon.Pickaxe)))return;
-            // 1 Wooden Stick (~2.0 tiles west of beacon)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(-2.0f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Stick});
-            // 1 Starter Torch (~2.0 tiles east of beacon)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.0f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
-            // 1 Iron Pickaxe (~2.0 tiles north of beacon)
-            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(0f,2.0f),Resource=Resource.Ore,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
+            // 1 Wooden Stick (~2.2 tiles west of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(-2.2f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Stick});
+            // 1 Starter Torch (~2.2 tiles east of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.2f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
+            // 1 Iron Pickaxe (~2.4 tiles south of beacon - moved to avoid label overlap)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(0f,-2.4f),Resource=Resource.Ore,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
         }
         V2 BeaconSpawnSpot(int slotIndex,float radius=2.4f)
         {
@@ -962,12 +961,11 @@ namespace Ember
                     p.HasSideWeapon=false;
                     p.Items=new int[24];
                     p.Bag=new int[(int)Resource.Count];
-                    if(p.Has(Perk.Prepared)){p.Items[1]=1+p.Rank(Perk.Prepared);p.Items[2]=p.Rank(Perk.Prepared)==3?2:1;}
-                    if(p.Has(Perk.Miner)){p.HasPickaxe=true;p.Weapon=Weapon.Pickaxe;p.PickaxeTier=1;p.PickaxeDurability=48;}
                 }
                 SpawnStarterGroundLoot();
             }
             spawnClock=18f;
+            MerchantSpawnTimer=(float)(rng.NextDouble()*30.0+60.0);
             S.NextBossEventTime=S.Time+GetBossEventInterval(S.Difficulty);
             S.Phase=Phase.Explore;
             Publish();
@@ -1205,10 +1203,28 @@ namespace Ember
             if(S.BossArenaActive&&!enemies.Any(e=>e.Id==S.BossId&&e.HP>0))EndBossArena();
             foreach(var s in structures)
             {
-                if(s.Kind<=1)s.Life-=dt;
+                if(s.Kind<=1||s.Kind==10)s.Life-=dt;
                 if(s.Kind==3)foreach(var e in enemies)if(V2.Distance(e.Pos,s.Pos)<2){Damage(e,dt*15);e.Blind=Math.Max(e.Blind,.3f);s.Life-=dt;}
             }
+            var departingMerchant=structures.Find(s=>s.Kind==10&&s.Life<=0f);
+            if(departingMerchant!=null)
+            {
+                MerchantSpawnTimer=(float)(rng.NextDouble()*60.0+120.0);
+                FX(departingMerchant.Pos,departingMerchant.Pos,1);
+                Announce(EmberLanguage.English?"The Wandering Merchant has packed up and departed.":"Thương Nhân Lang Thang đã thu dọn hàng quán và rời đi.");
+            }
             structures.RemoveAll(s=>s.HP<=0||s.Life<=0);
+            if(!structures.Any(s=>s.Kind==10)&&(S.Phase==Phase.Explore||S.Phase==Phase.Eclipse))
+            {
+                MerchantSpawnTimer-=dt;
+                if(MerchantSpawnTimer<=0f)
+                {
+                    var mPos=BeaconColliderPos+new V2(3.2f,-2.4f);
+                    structures.Add(new Structure{Id=nextId++,Kind=10,Pos=mPos,Life=60f,MaxLife=60f,HP=1000f});
+                    FX(mPos,mPos,1);
+                    Announce(EmberLanguage.English?"A Wandering Merchant has arrived near the Beacon!":"Thương Nhân Lang Thang đã ghé thăm bên cạnh Trụ Khởi Sinh!");
+                }
+            }
             foreach(var e in effects)e.Life-=dt;effects.RemoveAll(e=>e.Life<=0);
             bool beaconActive=S.Fuel>0||S.BeaconHP>0||S.Charge>0;
             if((S.Phase==Phase.Explore||S.Phase==Phase.Extraction)&&S.Charge>0&&S.Time>=15f)
@@ -1419,15 +1435,38 @@ namespace Ember
             }
             if(c.Use>=0&&c.Use<24)Use(p,c.Use);
             if(c.Push)PushEnemy(p);
-            if(c.Attack&&p.HoldingWeapon&&p.AttackCD<=0&&p.CastTime<=0)
+            if(c.Attack&&p.AttackCD<=0&&p.CastTime<=0)
             {
-                bool isHarvestTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
-                if(isHarvestTool)
+                if(!p.HoldingWeapon&&p.HeldSlot==6)
                 {
-                    if(Harvest(p,2.8f))p.AttackCD=p.HarvestCD;
-                    else if(!IsNearHarvestTarget(p,2.8f))Attack(p);
+                    if(p.HasWeapon)p.HeldSlot=1;
+                    else if(p.HasPickaxe)p.HeldSlot=8;
+                    else if(p.HasSideWeapon)p.HeldSlot=7;
                 }
-                else Attack(p);
+                if(p.HoldingWeapon)
+                {
+                    bool isHarvestTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
+                    if(isHarvestTool)
+                    {
+                        var enemyTarget=Target(p,p.Range);
+                        if(enemyTarget!=null)
+                        {
+                            Attack(p);
+                        }
+                        else if(Harvest(p,2.8f))
+                        {
+                            p.AttackCD=p.HarvestCD;
+                        }
+                        else
+                        {
+                            Attack(p);
+                        }
+                    }
+                    else
+                    {
+                        Attack(p);
+                    }
+                }
             }
             if(c.Skill&&p.SkillCD<=0&&p.CastTime<=0)Skill(p);
             if(p.HasHeldTorch&&p.Lantern==Lantern.Inferno&&S.Fuel>0)foreach(var e in enemies)if(V2.Distance(e.Pos,p.Pos)<5)Damage(e,dt*8*DamageMultiplier(p));
@@ -1460,14 +1499,41 @@ namespace Ember
                 string itemName=Catalog.GetItemDisplayName(c);
                 Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+actual+" "+itemName);
             }
-            else if(kind==1&&id==8)
+            else if(kind==1)
             {
-                if(p.HasPickaxe)
+                if(id==8||id==(int)Weapon.Pickaxe)
                 {
-                    p.HasPickaxe=false;
-                    if(p.HeldSlot==8)p.HeldSlot=6;
-                    nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
-                    Announce(EmberLanguage.English?"Dropped Pickaxe":"Đã vứt Cuốc đào");
+                    if(p.HasPickaxe)
+                    {
+                        p.HasPickaxe=false;
+                        if(p.HeldSlot==8)p.HeldSlot=6;
+                        nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
+                        Announce(EmberLanguage.English?"Dropped Pickaxe":"Đã vứt Cuốc đào");
+                    }
+                }
+                else if(id==1||(id>=0&&id<=(int)Weapon.MirrorShield))
+                {
+                    if(p.HasWeapon)
+                    {
+                        var w=p.Weapon;
+                        p.HasWeapon=false;
+                        if(p.HeldSlot==1)p.HeldSlot=6;
+                        nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Wood,Amount=1,Dropped=true,DropKind=1,DropId=(int)w});
+                        string wName=EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi;
+                        Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+wName);
+                    }
+                }
+                else if(id==7)
+                {
+                    if(p.HasSideWeapon)
+                    {
+                        var w=p.SideWeapon;
+                        p.HasSideWeapon=false;
+                        if(p.HeldSlot==7)p.HeldSlot=6;
+                        nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=1,Dropped=true,DropKind=1,DropId=(int)w});
+                        string wName=EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi;
+                        Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+wName);
+                    }
                 }
             }
             Publish();
@@ -1483,14 +1549,14 @@ namespace Ember
                     p.HasPickaxe=true;
                     p.PickaxeTier=1;
                     p.PickaxeDurability=48;
-                    if(p.HeldSlot==6)p.HeldSlot=8;
+                    if(p.HeldSlot==6||p.HeldSlot==2)p.HeldSlot=8;
                     Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+p.PickaxeName,p.Name);
                 }
                 else
                 {
                     p.HasWeapon=true;
                     p.Weapon=w;
-                    if(p.HeldSlot==6)p.HeldSlot=1;
+                    if(p.HeldSlot==6||p.HeldSlot==2)p.HeldSlot=1;
                     Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+(EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi),p.Name);
                 }
                 FX(n.Pos,p.Pos,1);
@@ -1571,7 +1637,7 @@ namespace Ember
                 Publish();
                 return true;
             }
-            var node=nodes.Where(n=>(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+            var node=nodes.Where(n=>!n.Dropped&&(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
             if(node==null&&!dustOnly)
             {
                 // Chopping obstacle tree tiles directly on the map
@@ -1783,6 +1849,7 @@ namespace Ember
         }
         void Use(Player p,int item)
         {
+            if(p==null||p.Ghost)return;
             int effectiveItem=item;
             if(item==4)effectiveItem=14;
             else if(item==5)effectiveItem=15;
@@ -1790,7 +1857,14 @@ namespace Ember
             else if(item==7)effectiveItem=17;
             else if(item==8)effectiveItem=18;
 
-            if(effectiveItem<0||effectiveItem>=p.Items.Length||p.Items[effectiveItem]<=0)return;
+            int targetItem=-1;
+            if(effectiveItem>=0&&effectiveItem<p.Items.Length&&p.Items[effectiveItem]>0)
+                targetItem=effectiveItem;
+            else if(item>=0&&item<p.Items.Length&&p.Items[item]>0)
+                targetItem=item;
+
+            if(targetItem<0)return;
+            effectiveItem=targetItem;
 
             if(effectiveItem==3)
             {
@@ -1812,12 +1886,14 @@ namespace Ember
             {
                 p.HP=Math.Min(p.MaxHP,p.HP+25f);
                 FX(p.Pos,p.Pos,2);
+                EmitPopup(p.Pos,2,25);
                 Announce(EmberLanguage.English?"Ate Crisp Apple: +25 HP!":"Ăn Táo Rừng: +25 HP!",p.Name);
             }
             else if(effectiveItem==16)
             {
                 p.HP=Math.Min(p.MaxHP,p.HP+15f);
                 FX(p.Pos,p.Pos,2);
+                EmitPopup(p.Pos,2,15);
                 Announce(EmberLanguage.English?"Ate Wild Mushroom: +15 HP!":"Ăn Nấm Rừng: +15 HP!",p.Name);
             }
             else if(effectiveItem==17)
@@ -1826,6 +1902,7 @@ namespace Ember
                 p.WarmthBuffTimer=45f;
                 p.ApplyBuff(BuffKind.DreadWard,45f,0.50f);
                 FX(p.Pos,p.Pos,2);
+                EmitPopup(p.Pos,2,45);
                 Announce(EmberLanguage.English?"Ate Roasted Apple: +45 HP, Well Fed (+50% Dread Resist) [45s]!":"Ăn Táo Nướng: +45 HP, No Ấm (+50% Kháng sợ hãi) [45s]!",p.Name);
             }
             else if(effectiveItem==18)
@@ -1836,10 +1913,11 @@ namespace Ember
                 p.ApplyBuff(BuffKind.Regen,45f,1.5f);
                 p.ApplyBuff(BuffKind.DreadWard,45f,0.50f);
                 FX(p.Pos,p.Pos,2);
+                EmitPopup(p.Pos,2,50);
                 Announce(EmberLanguage.English?"Ate Mushroom Stew: +50 HP, Well Fed & Regen [45s]!":"Ăn Súp Nấm: +50 HP, No Ấm & Hồi phục [45s]!",p.Name);
             }
             p.Items[effectiveItem]--;
-            if(p.Items[effectiveItem]<=0&&p.HeldSlot==effectiveItem+2)p.HeldSlot=6;
+            if(p.Items[effectiveItem]<=0&&(p.HeldSlot==effectiveItem+2||(item>=2&&item<=5&&p.HeldSlot==item)))p.HeldSlot=6;
         }
         public Enemy Target(Player p,float range)
         {
@@ -1889,7 +1967,7 @@ namespace Ember
 
         bool IsNearHarvestTarget(Player p,float range)
         {
-            if(nodes.Any(n=>V2.Distance(n.Pos,p.Pos)<range))return true;
+            if(nodes.Any(n=>!n.Dropped&&V2.Distance(n.Pos,p.Pos)<range))return true;
             int size=S.Size;
             int px=(int)Math.Floor(p.Pos.X+size/2f);
             int py=(int)Math.Floor(p.Pos.Y+size/2f);

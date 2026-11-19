@@ -133,8 +133,8 @@ namespace Ember
         {
             World=new EmberWorld(seed,250,selectedDifficulty){DebugEnabled=debugSession};World.S.Capacity=roomCapacity;World.S.RoomName=roomName;World.AddPlayer(1,nameText,(Vessel)selected,Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Profile.SelectedHat,Profile.SelectedPet,Profile.PerkRanks,Profile.Recipes,installationId,awake:Profile.IsAwake(selected));
             World.S.Charge=50; // Starter beacon energy for responsive visual fill and safe zone from match start
-            heldSlot=1;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
-            var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
+            heldSlot=6;lastServerHeldSlot=6;selectedItem=0;inventoryOpen=false;pauseConfirm=false;pauseSettings=false;
+            var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=6;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();enemyFacingLeft.Clear();ClearActions();
         }
         void StartSolo(){lan?.Leave();network=false;host=true;localId=1;ClearSavedRun();NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun(false,liveMatch:true);runAutoSaveClock=RunAutoSaveInterval;menu=false;SaveActiveRun(false,asyncWrite:true);}
@@ -188,7 +188,20 @@ namespace Ember
             TickCoopAutoReconnect(Time.deltaTime);
             if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet,Awake=Profile.IsAwake(selected)}));joinClock=1;}}
             SampleFrameRate();
-            if(Local!=null&&heldSlot>=2&&heldSlot<=5&&Local.Items[heldSlot-2]<=0)heldSlot=6;
+            if(Local!=null)
+            {
+                if(Local.HeldSlot!=lastServerHeldSlot)
+                {
+                    lastServerHeldSlot=Local.HeldSlot;
+                    heldSlot=Local.HeldSlot;
+                    if(heldSlot>=2&&heldSlot<=5)selectedItem=heldSlot-2;
+                }
+                if(heldSlot>=2&&heldSlot<=5&&(Local.Items==null||heldSlot-2>=Local.Items.Length||Local.Items[heldSlot-2]<=0))
+                {
+                    heldSlot=6;
+                    intent.Equip=6;
+                }
+            }
             ReadInput();
             ReadCameraZoom();
             // Map Editor moved to web-based tool
@@ -290,7 +303,11 @@ namespace Ember
         {
             if(Press(Key.Escape))
             {
-                if(inventoryOpen)
+                if(EmberMerchant.DialogOpen)
+                {
+                    EmberMerchant.DialogOpen=false;
+                }
+                else if(inventoryOpen)
                 {
                     if(pendingQuickAssign>0)pendingQuickAssign=0;
                     else {inventoryOpen=false;dragFromCell=-1;draggingItem=false;}
@@ -366,20 +383,38 @@ namespace Ember
             bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
             bool attack=wantAttack&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
+            bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
+            if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=selectedItem;
             bool pressedInteract=Press(Key.E);
             if(pressedInteract&&Local!=null&&!Local.Ghost)
             {
-                if(ShouldAutoEquipPickaxe(Local))
+                if(EmberMerchant.DialogOpen)
                 {
-                    AutoEquipHarvestTool(Local);
+                    EmberMerchant.DialogOpen=false;
+                    pressedInteract=false;
                 }
-                else if(IsNearTreeOrRock(Local)&&!HasHarvestTool(Local))
+                else
                 {
-                    pressedInteract=false; // Block interaction when missing tool
-                    bool isTree=IsNearTree(Local);
-                    notice=isTree
-                        ?(EmberLanguage.English?"Need an Axe or Pickaxe to chop trees!":"Không có Rìu hoặc Cuốc để chặt cây!")
-                        :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
+                    var merchant=State?.Structures?.FirstOrDefault(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,Local.Pos)<=EmberMerchant.MerchantInteractionDistance);
+                    if(merchant!=null)
+                    {
+                        EmberMerchant.DialogOpen=true;
+                        inventoryOpen=false;
+                        craftOpen=false;
+                        pressedInteract=false;
+                    }
+                    else if(ShouldAutoEquipPickaxe(Local))
+                    {
+                        AutoEquipHarvestTool(Local);
+                    }
+                    else if(IsNearTreeOrRock(Local)&&!HasHarvestTool(Local))
+                    {
+                        pressedInteract=false; // Block interaction when missing tool
+                        bool isTree=IsNearTree(Local);
+                        notice=isTree
+                            ?(EmberLanguage.English?"Need an Axe or Pickaxe to chop trees!":"Không có Rìu hoặc Cuốc để chặt cây!")
+                            :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
+                    }
                 }
             }
             bool pressedSkill=Press(Key.J);
@@ -407,7 +442,6 @@ namespace Ember
                 if(Press(Key.Z))intent.Use=10; // Brew Lumidust Tea
                 else if(Press(Key.C))intent.Use=11; // Polish Pickaxe
             }
-            if(Press(Key.U)&&CanUseSelectedItem(Local))intent.Use=selectedItem;
             ApplyTouchInput();
         }
         void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;}
@@ -594,6 +628,7 @@ namespace Ember
             if(n.DropKind==1)
             {
                 int wid=n.DropId;
+                if(wid==(int)Weapon.Pickaxe||wid==8)return Primitive("pickaxe");
                 if(wid>=0&&wid<InventoryWeaponArt.Length)return Primitive(InventoryWeaponArt[wid]);
                 return Primitive("stick");
             }
@@ -605,6 +640,7 @@ namespace Ember
                     case 1: return MaterialSprite("flare");
                     case 2: return MaterialSprite("sedative");
                     case 3: return MaterialSprite("revival");
+                    case 8: return Primitive("pickaxe");
                     case 14: return Primitive("energy_drink");
                     case 15: return Primitive("apple");
                     case 16: return Primitive("mushroom");
@@ -615,6 +651,7 @@ namespace Ember
                         return Primitive("diamond");
                 }
             }
+            if(n.Dropped&&n.DropId==(int)Weapon.Pickaxe)return Primitive("pickaxe");
             return n.Resource==Resource.Wood?Primitive("wood"):n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
         }
         Sprite Primitive(string name)
@@ -678,6 +715,30 @@ namespace Ember
                         if(y>=2&&y<=5&&x>=3&&x<=12){draw=true;color=new Color(.45f,.28f,.18f);}
                         else if(y>=6&&y<=8&&x>=4&&x<=11){draw=true;color=(x==6||x==8)?new Color(1f,.95f,.8f):new Color(.92f,.65f,.25f);}
                         else if(y>=9&&y<=12&&(x==9||x==10)){draw=true;color=new Color(.65f,.45f,.3f);}
+                        break;
+                    case "pickaxe":
+                        if(y>=11&&y<=13&&x>=4&&x<=12&&!(y==13&&(x<=5||x>=11)))
+                        {
+                            draw=true;
+                            bool isTip=x==4||x==12;
+                            bool isHighlight=y==12&&(x>=7&&x<=9);
+                            color=isHighlight?new Color(.92f,.94f,1f):isTip?new Color(.55f,.58f,.68f):new Color(.75f,.78f,.85f);
+                        }
+                        else if(y==10&&(x==3||x==13))
+                        {
+                            draw=true;
+                            color=new Color(.50f,.53f,.62f);
+                        }
+                        else if(y>=2&&y<=11&&(x==7||x==8))
+                        {
+                            draw=true;
+                            color=x==7?new Color(.42f,.26f,.16f):new Color(.65f,.42f,.25f);
+                        }
+                        else if(y==10&&(x==6||x==9))
+                        {
+                            draw=true;
+                            color=new Color(.60f,.64f,.72f);
+                        }
                         break;
                     default:draw=x>=2&&x<14&&y>=2&&y<14;break;
                 }

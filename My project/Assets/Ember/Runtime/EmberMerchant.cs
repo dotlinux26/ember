@@ -239,22 +239,12 @@ namespace Ember
                         ShadowVeilTimers[k] = next;
                 }
             }
-
-            // Ensure merchant exists near the Beacon if Explore phase is active
-            if (world.S.Phase == Phase.Explore || world.S.Phase == Phase.Eclipse)
-            {
-                bool hasMerchant = world.S.Structures != null && world.S.Structures.Any(IsMerchant);
-                if (!hasMerchant)
-                {
-                    SpawnMerchantNearBeacon(world);
-                }
-            }
         }
 
         /// <summary>
         /// Spawns a Wandering Merchant NPC structure safely near the Beacon.
         /// </summary>
-        public static void SpawnMerchantNearBeacon(EmberWorld world)
+        public static void SpawnMerchantNearBeacon(EmberWorld world, float life = 60f)
         {
             if (world?.S == null) return;
             int nextId = world.S.Structures != null && world.S.Structures.Length > 0
@@ -268,9 +258,9 @@ namespace Ember
                 Id = nextId,
                 Kind = MerchantKind,
                 Pos = pos,
-                Life = 999999f,
-                MaxLife = 999999f,
-                HP = 500f
+                Life = life,
+                MaxLife = life,
+                HP = 1000f
             };
 
             var list = world.S.Structures != null ? world.S.Structures.ToList() : new List<Structure>();
@@ -520,28 +510,27 @@ namespace Ember
 
             float dist = V2.Distance(p.Pos, merchant.Pos);
 
-            // 1. Overhead Prompt when near Merchant
-            if (dist <= EmberMerchant.MerchantInteractionDistance && !EmberMerchant.DialogOpen && !inventoryOpen && !craftOpen)
+            // 1. Overhead Countdown Timer on Merchant head (thời gian còn lại trước khi biến mất)
+            if (merchant.Life > 0)
             {
-                Vector2 sp = ScreenPos(merchant.Pos);
-                var promptRect = new Rect(sp.x - 120f, sp.y - 50f, 240f, 26f);
-                float pulse = 0.82f + 0.18f * Mathf.Sin(clock * 8f);
+                Vector2 sp = ScreenPos(merchant.Pos + new V2(0f, 1.35f));
+                float pulse = 0.85f + 0.15f * Mathf.Sin(clock * 5f);
+                string text = EmberLanguage.English ? $"⏳ Depart: {merchant.Life:0}s" : $"⏳ Còn lại: {merchant.Life:0}s";
+                float tw = Mathf.Clamp(small.CalcSize(new GUIContent(text)).x + 18, 96, 160);
+                var tRect = new Rect(sp.x - tw * 0.5f, sp.y - 12f, tw, 22f);
 
-                Panel(promptRect, new Color(0.12f, 0.10f, 0.20f, 0.92f));
-                Panel(new Rect(promptRect.x, promptRect.y, promptRect.width, 2f), new Color(1f, 0.80f, 0.25f, pulse));
-                Panel(new Rect(promptRect.x, promptRect.yMax - 2f, promptRect.width, 2f), new Color(1f, 0.80f, 0.25f, pulse));
+                Panel(tRect, new Color(0.10f, 0.08f, 0.18f, 0.92f));
+                Panel(new Rect(tRect.x, tRect.y, tRect.width, 1.5f), new Color(1f, 0.82f, 0.28f, pulse));
+                Panel(new Rect(tRect.x, tRect.yMax - 1.5f, tRect.width, 1.5f), new Color(1f, 0.82f, 0.28f, pulse));
 
-                string prompt = EmberLanguage.English
-                    ? "[E] Trade with Wandering Merchant"
-                    : "[E] Giao Dịch Thương Nhân Lang Thang";
-                GUI.Label(promptRect, "💰  " + prompt + "  💰", merchantRepStyle);
+                float maxLife = merchant.MaxLife > 0 ? merchant.MaxLife : 60f;
+                float ratio = Mathf.Clamp01(merchant.Life / maxLife);
+                Panel(new Rect(tRect.x + 2, tRect.yMax - 3, (tRect.width - 4) * ratio, 2f), new Color(1f, 0.85f, 0.35f, 0.95f));
 
-                // Toggle dialog with E key
-                if (Input.GetKeyDown(KeyCode.E) || (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.E))
-                {
-                    EmberMerchant.DialogOpen = !EmberMerchant.DialogOpen;
-                    Event.current.Use();
-                }
+                var oldCol = GUI.contentColor;
+                GUI.contentColor = new Color(1f, 0.90f, 0.40f);
+                GUI.Label(new Rect(tRect.x + 2, tRect.y + 1, tRect.width - 4, 18), text, small);
+                GUI.contentColor = oldCol;
             }
 
             // Close dialog if player walks away
@@ -589,10 +578,19 @@ namespace Ember
             GUI.Label(new Rect(box.x + 12, box.y + 8, box.width - 24, 24), EmberLanguage.English ? titleEn : titleVi, merchantTitleStyle);
 
             // Close button [X]
-            if (GUI.Button(new Rect(box.xMax - 32, box.y + 8, 24, 24), "✕", merchantBtnStyle))
+            var closeBtnRect = new Rect(box.xMax - 38f, box.y + 7f, 30f, 26f);
+            bool closeHover = closeBtnRect.Contains(Event.current.mousePosition);
+            Panel(closeBtnRect, closeHover ? new Color(0.85f, 0.22f, 0.25f, 0.95f) : new Color(0.28f, 0.12f, 0.20f, 0.90f));
+            Panel(new Rect(closeBtnRect.x, closeBtnRect.y, closeBtnRect.width, 1.5f), new Color(1f, 0.45f, 0.45f, 0.85f));
+            Panel(new Rect(closeBtnRect.x, closeBtnRect.yMax - 1.5f, closeBtnRect.width, 1.5f), new Color(1f, 0.45f, 0.45f, 0.85f));
+            var prevContentCol = GUI.contentColor;
+            GUI.contentColor = Color.white;
+            if (GUI.Button(closeBtnRect, "[X]", merchantBtnStyle))
             {
                 EmberMerchant.DialogOpen = false;
+                Event.current?.Use();
             }
+            GUI.contentColor = prevContentCol;
 
             // Reputation Meter
             int rep = EmberMerchant.Reputation;

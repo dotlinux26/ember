@@ -749,6 +749,56 @@ tester2.Dread = 0f;
 dreadTestWorld.Tick(0.1f);
 Check(tester2.Dread < tester1.Dread, "Well Fed buff provides 50% dread resistance in dark");
 
+// --- Test Batch 3: Survival Starter Fixes, Ore Drop Bug Fix, Merchant Timed Event ---
+// 1. Starter item positions
+Check(pickNode.Pos.Y < 0f, "starter pickaxe is positioned south of beacon (avoiding label overlap)");
+Check(stickNode.Pos.X < -1.5f, "starter stick is positioned west of beacon");
+Check(torchNode.Pos.X > 1.5f, "starter torch is positioned east of beacon");
+
+// 2. No merchant at tick 0
+Check(!liveWorld.S.Structures.Any(s => s.Kind == 10), "no merchant spawned at Tick 0 in live match");
+
+// 3. DropItem & Attack does not confuse Pickaxe with Ore
+liveWorld.DropItem(hero, 1, 8, 1);
+var droppedPickaxeNode = liveWorld.S.Nodes.FirstOrDefault(n => n.Dropped && n.DropKind == 1 && n.DropId == (int)Weapon.Pickaxe);
+Check(droppedPickaxeNode != null, "dropped pickaxe node spawned on ground");
+hero.Pos = droppedPickaxeNode.Pos + new V2(1.0f, 0f); // within 2.8f
+liveWorld.Submit(hero.Id, new Command { Attack = true });
+liveWorld.Tick();
+Check(hero.Bag[(int)Resource.Ore] == 0, "attacking near dropped pickaxe does not harvest it as ore");
+hero.Pos = droppedPickaxeNode.Pos; // walk onto it
+liveWorld.Tick();
+Check(hero.HasPickaxe && hero.Bag[(int)Resource.Ore] == 0, "picking up dropped pickaxe restores pickaxe without adding ore");
+
+// 4. Merchant Timed Event Lifecycle
+var merchantEventWorld = new EmberWorld(777);
+merchantEventWorld.AddPlayer(1, "EventHero", Vessel.Wanderer);
+merchantEventWorld.StartRun(liveMatch: true);
+Check(!merchantEventWorld.S.Structures.Any(s => s.Kind == 10), "merchant absent at start of match");
+merchantEventWorld.MerchantSpawnTimer = 0.05f;
+merchantEventWorld.Tick(0.1f);
+var timedMerchant = merchantEventWorld.S.Structures.FirstOrDefault(s => s.Kind == 10);
+Check(timedMerchant != null && timedMerchant.Life == 60f && timedMerchant.MaxLife == 60f, "merchant spawns with 60s life and maxlife");
+timedMerchant.Life = 0.1f;
+merchantEventWorld.Tick(0.15f);
+Check(!merchantEventWorld.S.Structures.Any(s => s.Kind == 10), "merchant despawns after life expires");
+Check(merchantEventWorld.MerchantSpawnTimer >= 120f, "merchant schedules next visit after 120-180s");
+
+// 5. Combat attack with Pickaxe against monsters
+var combatWorld = new EmberWorld(333);
+var attacker = combatWorld.AddPlayer(1, "Attacker", Vessel.Wanderer);
+combatWorld.StartRun();
+attacker.HasPickaxe = true;
+attacker.HeldSlot = 8;
+combatWorld.DebugAction("enemy", 1);
+combatWorld.Tick();
+var monster = combatWorld.S.Enemies.First();
+monster.Pos = attacker.Pos + new V2(1.2f, 0f);
+float monsterHpBefore = monster.HP;
+combatWorld.Submit(attacker.Id, new Command { Attack = true });
+combatWorld.Tick();
+Check(monster.HP < monsterHpBefore, "pickaxe attacks and damages enemy monster");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

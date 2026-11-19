@@ -7,7 +7,7 @@ namespace Ember
     public sealed partial class EmberGame
     {
         bool inventoryOpen;
-        int heldSlot=1;
+        int heldSlot=6,lastServerHeldSlot=6;
         int pendingQuickAssign;
         readonly int[] quickSlots={1,7,8,2};
         static readonly string[] InventoryWeaponArt={"stick","crystal_axe","shadow_blades","crossbow","lumen_gun","mirror_shield","pickaxe"};
@@ -44,15 +44,20 @@ namespace Ember
 
         Sprite SlotIconSprite(Player p,int slot)
         {
-            if(IsHoldingWeaponSlot(slot))return Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]);
-            if(slot>=2&&slot<=5)return p.Items[slot-2]>0?HeldItemSprite(slot-2):null;
+            if(p==null)return null;
+            if(slot==1)return p.HasWeapon?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
+            if(slot==7)return p.HasSideWeapon?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
+            if(slot==8)return p.HasPickaxe?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
+            if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?HeldItemSprite(slot-2):null;
             return null;
         }
 
         string SlotShortValue(Player p,int slot)
         {
-            if(IsHoldingWeaponSlot(slot))
+            if(p==null)return "—";
+            if(slot==1)
             {
+                if(!p.HasWeapon)return "—";
                 Weapon w=WeaponForSlot(p,slot);
                 int mag=Catalog.WeaponMagSize(w);
                 if(mag>0)
@@ -61,9 +66,27 @@ namespace Ember
                     int cur=p.Ammo<0||p.AmmoWeapon!=w?mag:Mathf.Clamp(p.Ammo,0,mag);
                     return cur+"/"+mag;
                 }
-                return slot==8?(p.PickaxeDurability+"/"+p.PickaxeMaxDurability):"∞";
+                return "∞";
             }
-            if(slot>=2&&slot<=5)return p.Items[slot-2]>0?p.Items[slot-2].ToString():"—";
+            if(slot==7)
+            {
+                if(!p.HasSideWeapon)return "—";
+                Weapon w=WeaponForSlot(p,slot);
+                int mag=Catalog.WeaponMagSize(w);
+                if(mag>0)
+                {
+                    if(p.Reloading&&p.ActiveWeapon==w)return L("Nạp","Rld");
+                    int cur=p.Ammo<0||p.AmmoWeapon!=w?mag:Mathf.Clamp(p.Ammo,0,mag);
+                    return cur+"/"+mag;
+                }
+                return "∞";
+            }
+            if(slot==8)
+            {
+                if(!p.HasPickaxe)return "—";
+                return p.PickaxeDurability+"/"+p.PickaxeMaxDurability;
+            }
+            if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?p.Items[slot-2].ToString():"—";
             return "—";
         }
 
@@ -121,6 +144,7 @@ namespace Ember
         {
             if(toggle&&heldSlot==slot)slot=6; // Toggle: pressing/clicking active held slot unequips to empty hands
             heldSlot=slot;
+            lastServerHeldSlot=slot;
             if(slot>=2&&slot<=5)selectedItem=slot-2;
             intent.Equip=slot;
         }
@@ -129,8 +153,9 @@ namespace Ember
         {
             int slot=player.Id==localId?heldSlot:player.HeldSlot;
             bool harvesting=player.HarvestCD>0&&slot==8;
-            bool weapon=IsHoldingWeaponSlot(slot);
-            bool consumable=!weapon&&slot>=2&&slot<=5&&player.Items[slot-2]>0;
+            bool hasWeaponItem=(slot==1&&player.HasWeapon)||(slot==7&&player.HasSideWeapon)||(slot==8&&player.HasPickaxe);
+            bool weapon=IsHoldingWeaponSlot(slot)&&(harvesting||hasWeaponItem);
+            bool consumable=!weapon&&slot>=2&&slot<=5&&player.Items!=null&&slot-2<player.Items.Length&&player.Items[slot-2]>0;
             float sign=player.Right?1:-1;
             int handOrder=body.sortingOrder+4;
             int heldOrder=handOrder-1;
@@ -323,11 +348,13 @@ namespace Ember
 
         string InventorySlotName(Player p,int slot)
         {
-            if(slot==1)return (EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.Weapon];
-            if(slot==7)return (EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.SideWeapon];
-            if(slot==8)return p.PickaxeName;
+            if(p==null)return L("Trống","Empty");
+            if(slot==1)return p.HasWeapon?(EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.Weapon]:L("Ô 1 (Trống)","Slot 1 (Empty)");
+            if(slot==7)return p.HasSideWeapon?(EmberLanguage.English?WeaponNamesEn:WeaponNamesVi)[(int)p.SideWeapon]:L("Ô 7 (Trống)","Slot 7 (Empty)");
+            if(slot==8)return p.HasPickaxe?p.PickaxeName:L("Ô Cuốc (Trống)","Pickaxe (Empty)");
             if(slot==6)return L("Tay không","Empty hands");
-            return (EmberLanguage.English?ItemNamesEn:ItemNamesVi)[slot-2];
+            if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[slot-2]:L("Trống","Empty");
+            return L("Trống","Empty");
         }
 
         const int BackpackCapacity=30;
@@ -349,7 +376,7 @@ namespace Ember
 
         void DropBackpackItem(Player p,int cellIdx,int amount)
         {
-            if(cellIdx<0||cellIdx>=BackpackCapacity||backpackCells[cellIdx].Empty||amount<=0)return;
+            if(p==null||cellIdx<0||cellIdx>=BackpackCapacity||backpackCells[cellIdx].Empty||amount<=0)return;
             var cell=backpackCells[cellIdx];
             if(host&&World!=null)
             {
@@ -369,10 +396,11 @@ namespace Ember
                     int actual=Mathf.Min(amount,p.Items[c]);
                     p.Items[c]-=actual;
                 }
-                else if(cell.Kind==1&&cell.Id==8)
+                else if(cell.Kind==1)
                 {
-                    p.HasPickaxe=false;
-                    if(heldSlot==8)heldSlot=6;
+                    if(cell.Id==1){p.HasWeapon=false;if(heldSlot==1)heldSlot=6;}
+                    else if(cell.Id==7){p.HasSideWeapon=false;if(heldSlot==7)heldSlot=6;}
+                    else if(cell.Id==8){p.HasPickaxe=false;if(heldSlot==8)heldSlot=6;}
                 }
             }
             SyncBackpack(p);
@@ -388,13 +416,14 @@ namespace Ember
 
         void SyncBackpack(Player p)
         {
+            if(p==null)return;
             // Required counts per (kind, id).
             var needed=new Dictionary<int,int>();
-            needed[100+1]=1; // primary weapon
-            needed[100+7]=1; // side gun
-            if(p.HasPickaxe||p.Weapon==Weapon.Pickaxe)needed[100+8]=1;
-            for(int c=0;c<4;c++)if(p.Items[c]>0)needed[200+c]=p.Items[c];
-            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag[r]>0)needed[300+r]=p.Bag[r];
+            if(p.HasWeapon)needed[100+1]=1; // primary weapon
+            if(p.HasSideWeapon)needed[100+7]=1; // side gun
+            if(p.HasPickaxe)needed[100+8]=1; // pickaxe
+            for(int c=0;c<4;c++)if(p.Items!=null&&c<p.Items.Length&&p.Items[c]>0)needed[200+c]=p.Items[c];
+            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag!=null&&r<p.Bag.Length&&p.Bag[r]>0)needed[300+r]=p.Bag[r];
 
             // 1. Clamp or remove cells that no longer exist or exceed live totals.
             var remaining=new Dictionary<int,int>(needed);
@@ -445,6 +474,7 @@ namespace Ember
 
         void SortBackpack(Player p)
         {
+            if(p==null)return;
             for(int i=0;i<BackpackCapacity;i++)backpackCells[i]=default;
             int cursor=0;
             void AddSorted(int kind,int id,int total)
@@ -457,11 +487,11 @@ namespace Ember
                     total-=put;
                 }
             }
-            AddSorted(1,1,1);
-            AddSorted(1,7,1);
-            if(p.HasPickaxe||p.Weapon==Weapon.Pickaxe)AddSorted(1,8,1);
-            for(int c=0;c<4;c++)if(p.Items[c]>0)AddSorted(2,c,p.Items[c]);
-            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag[r]>0)AddSorted(3,r,p.Bag[r]);
+            if(p.HasWeapon)AddSorted(1,1,1);
+            if(p.HasSideWeapon)AddSorted(1,7,1);
+            if(p.HasPickaxe)AddSorted(1,8,1);
+            for(int c=0;c<4;c++)if(p.Items!=null&&c<p.Items.Length&&p.Items[c]>0)AddSorted(2,c,p.Items[c]);
+            for(int r=0;r<(int)Resource.Count;r++)if(p.Bag!=null&&r<p.Bag.Length&&p.Bag[r]>0)AddSorted(3,r,p.Bag[r]);
             inspectedCell=-1;
         }
 
