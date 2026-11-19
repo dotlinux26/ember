@@ -523,44 +523,46 @@ namespace Ember
 
             if(QuestCollapsed)
             {
-                // Compact circular quest bubble
-                Vector2 center=new Vector2(40,y+24);
-                Rect bubbleRect=new Rect(center.x-24,center.y-24,48,48);
-                RegisterHudRect(new Rect(center.x-24,center.y-24,56,60));
+                // Compact circular quest bubble (enlarged & snug docked expand badge)
+                Vector2 center=new Vector2(50,y+34);
+                float rad=28f;
+                Rect bubbleRect=new Rect(center.x-rad,center.y-rad,rad*2,rad*2);
+                Rect clickArea=new Rect(center.x-rad,center.y-rad,rad*2+24,rad*2+24);
+                RegisterHudRect(clickArea);
 
-                bool hoverBubble=bubbleRect.Contains(Event.current.mousePosition);
+                bool hoverBubble=clickArea.Contains(Event.current.mousePosition);
 
                 // Dark circular background
-                GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):hoverBubble?new Color(.20f,.14f,.32f,.98f):new Color(.11f,.08f,.18f,.95f);
-                DrawSpritePreview(new Rect(center.x-20,center.y-20,40,40),Primitive("circle"));
+                GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):hoverBubble?new Color(.24f,.16f,.38f,.98f):new Color(.11f,.08f,.18f,.95f);
+                DrawSpritePreview(new Rect(center.x-24,center.y-24,48,48),Primitive("circle"));
                 GUI.color=Color.white;
 
                 // Circular progress ring
                 Color ringColor=blackout?Coral:progress>=1f?Cyan:Gold;
-                DrawCircularProgress(center,21,progress,ringColor);
+                DrawCircularProgress(center,27,progress,ringColor);
 
                 // Quest icon in center
-                Rect iconRect=new Rect(center.x-12,center.y-12,24,24);
+                Rect iconRect=new Rect(center.x-14,center.y-14,28,28);
                 if(icon=="torch")DrawSpritePreview(iconRect,Primitive("torch"));
                 else PixelArt(iconRect,icon);
 
-                // Expand badge with arrow >
-                Rect arrowBadge=new Rect(center.x+12,center.y-8,16,16);
-                PixelPanel(arrowBadge,hoverBubble?new Color(.42f,.28f,.62f,.98f):new Color(.22f,.16f,.35f,.95f));
+                // Snugly docked expand badge [ > ] right on perimeter
+                Rect arrowBadge=new Rect(center.x+17,center.y-10,20,20);
+                PixelPanel(arrowBadge,hoverBubble?new Color(.52f,.32f,.78f,.98f):new Color(.26f,.18f,.42f,.95f));
                 var oldContent=GUI.contentColor;
                 GUI.contentColor=hoverBubble?Gold:new Color(1f,.92f,.55f);
-                var arrowStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+                var arrowStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
                 GUI.Label(arrowBadge,">",arrowStyle);
                 GUI.contentColor=oldContent;
 
                 // Percentage text under the bubble
                 string pctText=Mathf.RoundToInt(Mathf.Clamp01(progress)*100)+"%";
-                var pctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
-                pctStyle.normal.textColor=new Color(.90f,.92f,1f);
-                GUI.Label(new Rect(center.x-24,center.y+20,48,14),pctText,pctStyle);
+                var pctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
+                pctStyle.normal.textColor=hoverBubble?Gold:new Color(.90f,.92f,1f);
+                GUI.Label(new Rect(center.x-28,center.y+26,56,16),pctText,pctStyle);
 
                 // Click to expand
-                if(GUI.Button(new Rect(center.x-24,center.y-24,56,60),new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
+                if(GUI.Button(clickArea,new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
                 {
                     QuestCollapsed=false;
                 }
@@ -574,17 +576,17 @@ namespace Ember
             var cIconRect=new Rect(card.x+12,card.y+12,32,32);
             if(icon=="torch")DrawSpritePreview(cIconRect,Primitive("torch"));
             else PixelArt(cIconRect,icon);
-            UiLabel(new Rect(card.x+54,card.y+6,card.width-90,25),heading,label);
-            UiLabel(new Rect(card.x+54,card.y+31,card.width-90,28),hint,small);
+            UiLabel(new Rect(card.x+54,card.y+6,card.width-96,25),heading,label);
+            UiLabel(new Rect(card.x+54,card.y+31,card.width-96,28),hint,small);
 
-            // Collapse button [ < ] in upper right of card
-            Rect collapseBtn=new Rect(card.xMax-28,card.y+6,22,22);
+            // Large, clear collapse button in upper right of card
+            Rect collapseBtn=new Rect(card.xMax-34,card.y+6,28,28);
             bool hoverCollapse=collapseBtn.Contains(Event.current.mousePosition);
-            PixelPanel(collapseBtn,hoverCollapse?new Color(.38f,.26f,.58f,.98f):new Color(.24f,.18f,.38f,.92f));
+            PixelPanel(collapseBtn,hoverCollapse?new Color(.48f,.30f,.72f,.98f):new Color(.26f,.19f,.42f,.95f));
             var oldCol=GUI.contentColor;
-            GUI.contentColor=hoverCollapse?Gold:new Color(.88f,.91f,.98f);
-            var btnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
-            GUI.Label(collapseBtn,"<",btnStyle);
+            GUI.contentColor=hoverCollapse?Gold:new Color(.90f,.92f,1f);
+            var btnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=16};
+            GUI.Label(collapseBtn,"—",btnStyle);
             GUI.contentColor=oldCol;
             if(GUI.Button(collapseBtn,new GUIContent("",L("Thu gọn hiển thị nhiệm vụ","Collapse quest display")),GUIStyle.none))
             {
@@ -745,13 +747,12 @@ namespace Ember
 
             if(minimapCollapsed)
             {
-                Rect collRect=new Rect(Screen.width-44,mapY,32,32);
+                Rect collRect=new Rect(Screen.width-48,mapY,38,38);
                 RegisterHudRect(collRect);
-                PixelPanel(collRect,new Color(.14f,.10f,.22f,.95f));
-                var oldContent=GUI.contentColor;
-                GUI.contentColor=Cyan;
-                GUI.Label(new Rect(collRect.x+2,collRect.y+2,28,28),"🗺️",small);
-                GUI.contentColor=oldContent;
+                bool hoverMap=collRect.Contains(Event.current.mousePosition);
+                PixelPanel(collRect,hoverMap?new Color(.38f,.26f,.58f,.98f):new Color(.16f,.12f,.25f,.95f));
+                var mapIconStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=22};
+                GUI.Label(collRect,"🗺️",mapIconStyle);
                 if(GUI.Button(collRect,new GUIContent("",L("Mở bản đồ","Open minimap")),GUIStyle.none))
                     minimapCollapsed=false;
                 return;
@@ -778,12 +779,13 @@ namespace Ember
             PixelPanel(new Rect(frameRect.x+jx,frameRect.y+jy,frameRect.width,frameRect.height),borderTint);
 
             // Header label & collapse button
-            UiLabel(new Rect(mapX+jx+2,mapY+jy-2,mapSize-20,16),L("Bản đồ","Minimap"),small);
-            Rect collBtn=new Rect(mapX+jx+mapSize-16,mapY+jy-2,16,14);
-            var oldCol=GUI.contentColor;
-            GUI.contentColor=new Color(.75f,.72f,.85f);
-            GUI.Label(collBtn,"-",small);
-            GUI.contentColor=oldCol;
+            UiLabel(new Rect(mapX+jx+4,mapY+jy-2,mapSize-30,18),L("Bản đồ","Minimap"),small);
+            Rect collBtn=new Rect(mapX+jx+mapSize-22,mapY+jy-2,22,20);
+            bool hoverMinimapColl=collBtn.Contains(Event.current.mousePosition);
+            PixelPanel(collBtn,hoverMinimapColl?new Color(.48f,.28f,.70f,.98f):new Color(.24f,.18f,.38f,.92f));
+            var collStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=14};
+            collStyle.normal.textColor=hoverMinimapColl?Gold:new Color(.90f,.88f,1f);
+            GUI.Label(collBtn,"—",collStyle);
             if(GUI.Button(collBtn,new GUIContent("",L("Thu gọn bản đồ","Collapse minimap")),GUIStyle.none))
             {
                 minimapCollapsed=true;

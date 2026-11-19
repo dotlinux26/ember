@@ -14,6 +14,16 @@ namespace Ember
         EmberLan lan;bool network,host=true,craftOpen,ranges=true,menu=true,rewarded,moba,saveBlocked;int localId=1;
         Camera cam;GameObject mapRoot,entityRoot;float accumulator,sendClock,joinClock;int renderedSeed=int.MinValue;byte[] currentTiles;
         bool[] exploredTiles;int exploredSize;Texture2D minimapTex;Color32[] minimapColors;float minimapUpdateTimer;bool minimapDirty;
+        Texture2D fogTexture;Color32[] fogColors;SpriteRenderer fogRenderer;float fogUpdateTimer;bool fogDirty;
+        bool IsExplored(V2 pos)
+        {
+            if(exploredTiles==null||State==null)return true;
+            int sz=State.Size;
+            int tx=(int)Mathf.Floor(pos.X+sz/2f);
+            int ty=(int)Mathf.Floor(pos.Y+sz/2f);
+            if(tx<0||tx>=sz||ty<0||ty>=sz)return false;
+            return exploredTiles[ty*sz+tx];
+        }
         readonly Dictionary<int,SpriteRenderer> visibleTrees=new Dictionary<int,SpriteRenderer>();
         readonly Stack<SpriteRenderer> treePool=new Stack<SpriteRenderer>();
         readonly Dictionary<int,V2> prevPlayerPos=new Dictionary<int,V2>(),prevEnemyPos=new Dictionary<int,V2>(),prevProjPos=new Dictionary<int,V2>();
@@ -647,6 +657,11 @@ namespace Ember
         void Render()
         {
             touched.Clear();var local=Local;var focus=CameraTarget();V2 center=focus!=null?VisualPlayerPos(focus):new V2();
+            if(fogRenderer!=null)
+            {
+                float fogPulse=.94f+.04f*Mathf.Sin(clock*1.6f);
+                fogRenderer.color=new Color(1f,1f,1f,fogPulse);
+            }
             int pixels=CameraZoomPixels[zoomLevel];
             cam.orthographicSize=Screen.height/(2f*pixels);
             cam.transform.position=new Vector3(center.X,center.Y,-10);
@@ -727,6 +742,7 @@ namespace Ember
             {
                 var n=nodesArr[ni];
                 if(Mathf.Abs(n.Pos.X-center.X)>viewHalfW||Mathf.Abs(n.Pos.Y-center.Y)>viewHalfH)continue;
+                if(!IsExplored(n.Pos))continue;
                 bool isWoodTree=!n.Dropped&&n.Resource==Resource.Wood;
                 bool isDustBush=!n.Dropped&&n.Resource==Resource.Dust;
                 Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Cyan:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
@@ -892,6 +908,7 @@ namespace Ember
             {
                 var s=structsArr[si];
                 if(Mathf.Abs(s.Pos.X-center.X)>viewHalfW||Mathf.Abs(s.Pos.Y-center.Y)>viewHalfH)continue;
+                if(!IsExplored(s.Pos)&&s.Kind!=1)continue;
                 Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:s.Kind==4?1.35f:1);
             }
             var enemiesArr=State.Enemies;
@@ -900,6 +917,7 @@ namespace Ember
                 var e=enemiesArr[ei];
                 V2 ePos=VisualEnemyPos(e);
                 if(Mathf.Abs(ePos.X-center.X)>viewHalfW+1.5f||Mathf.Abs(ePos.Y-center.Y)>viewHalfH+1.5f)continue;
+                if(!IsExplored(ePos)&&!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss)continue;
                 string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite||e.Kind==EnemyKind.Sentinel?"enemy_sentinel":"enemy_shade";
                 float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite||e.Kind==EnemyKind.Sentinel?1.4f:1;
                 Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):e.Kind==EnemyKind.Sentinel?new Color(.35f,.92f,1f):Coral;
@@ -1170,6 +1188,32 @@ namespace Ember
             minimapColors=new Color32[size*size];
             minimapDirty=true;
             UpdateMinimapTexture();
+            if(fogTexture==null||fogTexture.width!=size||fogTexture.height!=size)
+            {
+                fogTexture=new Texture2D(size,size,TextureFormat.RGBA32,false);
+                fogTexture.filterMode=FilterMode.Bilinear;
+                fogTexture.wrapMode=TextureWrapMode.Clamp;
+            }
+            fogColors=new Color32[size*size];
+            for(int i=0;i<fogColors.Length;i++)
+            {
+                fogColors[i]=exploredTiles[i]?new Color32(0,0,0,0):new Color32(9,7,18,248);
+            }
+            fogTexture.SetPixels32(fogColors);
+            fogTexture.Apply(false);
+            if(fogRenderer==null&&mapRoot!=null)
+            {
+                var fogGo=new GameObject("World Fog Layer");
+                fogGo.transform.SetParent(mapRoot.transform);
+                fogRenderer=fogGo.AddComponent<SpriteRenderer>();
+                if(emissionMaterial!=null)fogRenderer.sharedMaterial=emissionMaterial;
+            }
+            if(fogRenderer!=null)
+            {
+                fogRenderer.sprite=Sprite.Create(fogTexture,new Rect(0,0,size,size),new Vector2(.5f,.5f),1);
+                fogRenderer.sortingOrder=9000;
+            }
+            fogDirty=false;
             int px=size*16;
             mapTexture=new Texture2D(px,px,TextureFormat.RGBA32,false);
             mapTexture.filterMode=FilterMode.Point;
@@ -1538,17 +1582,64 @@ namespace Ember
                         if(!exploredTiles[idx])
                         {
                             exploredTiles[idx]=true;
+                            if(fogColors!=null&&idx<fogColors.Length)fogColors[idx]=new Color32(0,0,0,0);
                             newlyExplored=true;
                         }
                     }
                 }
             }
-            if(newlyExplored)minimapDirty=true;
+            if(State.Structures!=null)
+            {
+                for(int si=0;si<State.Structures.Length;si++)
+                {
+                    var s=State.Structures[si];
+                    if(s.Kind<=1)
+                    {
+                        float r=s.Kind==1?9f:5.5f;
+                        int px=(int)Mathf.Floor(s.Pos.X+size/2f);
+                        int py=(int)Mathf.Floor(s.Pos.Y+size/2f);
+                        int ri=Mathf.CeilToInt(r);
+                        int rSq=ri*ri;
+                        for(int dy=-ri;dy<=ri;dy++)
+                        {
+                            int ty=py+dy;
+                            if(ty<0||ty>=size)continue;
+                            int row=ty*size;
+                            for(int dx=-ri;dx<=ri;dx++)
+                            {
+                                if(dx*dx+dy*dy>rSq)continue;
+                                int tx=px+dx;
+                                if(tx<0||tx>=size)continue;
+                                int idx=row+tx;
+                                if(!exploredTiles[idx])
+                                {
+                                    exploredTiles[idx]=true;
+                                    if(fogColors!=null&&idx<fogColors.Length)fogColors[idx]=new Color32(0,0,0,0);
+                                    newlyExplored=true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(newlyExplored)
+            {
+                minimapDirty=true;
+                fogDirty=true;
+            }
             minimapUpdateTimer+=dt;
-            if(minimapDirty&&minimapUpdateTimer>=0.2f)
+            if(minimapDirty&&minimapUpdateTimer>=0.15f)
             {
                 minimapUpdateTimer=0f;
                 UpdateMinimapTexture();
+            }
+            fogUpdateTimer+=dt;
+            if(fogDirty&&fogUpdateTimer>=0.1f&&fogTexture!=null&&fogColors!=null)
+            {
+                fogUpdateTimer=0f;
+                fogTexture.SetPixels32(fogColors);
+                fogTexture.Apply(false);
+                fogDirty=false;
             }
         }
         void UpdateMinimapTexture()
