@@ -845,5 +845,149 @@ namespace Ember
                 contextMenuOpen=false;
             }
         }
+
+        int craftCategory = 0; // 0 All, 1 Survival & Foraging, 2 Structures, 3 Gear & Weapons
+
+        void DrawCraftingMenu(Player p)
+        {
+            float width = Mathf.Min(380f, Screen.width - 28f);
+            float height = Mathf.Min(540f, Screen.height - 140f);
+            Rect panel = new Rect(Screen.width - width - 14f, 85f, width, height);
+            PixelPanel(panel, FieldPaper);
+            RegisterHudRect(panel);
+
+            // Header
+            var headerRect = new Rect(panel.x + 12, panel.y + 8, panel.width - 24, 28);
+            UiLabel(new Rect(headerRect.x, headerRect.y, headerRect.width - 32, 26), L("Bàn Chế Tạo [Tab]", "Crafting Table [Tab]"), title);
+            if (GUI.Button(new Rect(headerRect.xMax - 26, headerRect.y, 26, 26), "✕", GUI.skin.button))
+            {
+                craftOpen = false;
+            }
+
+            // Categories bar
+            float catY = panel.y + 40f;
+            string[] catNames = EmberLanguage.English
+                ? new[] { "All", "Survival", "Build", "Gear" }
+                : new[] { "Tất cả", "Dã ngoại", "Công trình", "Trang bị" };
+            float tabW = (panel.width - 24f) / 4f;
+            for (int c = 0; c < 4; c++)
+            {
+                var tabRect = new Rect(panel.x + 12 + c * tabW, catY, tabW - 2, 24);
+                bool active = craftCategory == c;
+                Panel(tabRect, active ? new Color(.48f, .32f, .72f, .95f) : new Color(.18f, .14f, .28f, .85f));
+                var tabStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontStyle = active ? FontStyle.Bold : FontStyle.Normal };
+                tabStyle.normal.textColor = active ? Gold : new Color(.85f, .85f, .95f);
+                GUI.Label(tabRect, catNames[c], tabStyle);
+                if (GUI.Button(tabRect, GUIContent.none, GUIStyle.none)) craftCategory = c;
+            }
+
+            // Scrollable cards list
+            float listY = catY + 28f;
+            float listH = panel.height - (listY - panel.y) - 10f;
+            bool prevCapture = hudCapturing;
+            hudCapturing = false;
+            GUILayout.BeginArea(new Rect(panel.x + 10, listY, panel.width - 20, listH));
+            scroll = GUILayout.BeginScrollView(scroll);
+
+            for (int i = 0; i < Catalog.Recipes.Length; i++)
+            {
+                // Filter by category
+                if (craftCategory == 1 && !(i < 4 || i >= 14)) continue;
+                if (craftCategory == 2 && !(i >= 4 && i <= 6)) continue;
+                if (craftCategory == 3 && !(i >= 7 && i <= 13)) continue;
+
+                var recipe = Catalog.Recipes[i];
+                bool unlocked = p.Recipes == null || p.Recipes.Contains(i);
+                bool nearBeacon = i < 7 || i >= 14 || p.Pos.Length <= 5;
+                bool supplied = true;
+                for (int j = 0; j < recipe.Cost.Length; j++) supplied &= p.Bag[j] >= recipe.Cost[j];
+                bool can = unlocked && nearBeacon && supplied && !p.Ghost && !p.Extracted;
+
+                Rect card = GUILayoutUtility.GetRect(190, 108, GUILayout.ExpandWidth(true));
+                PixelPanel(card, can ? new Color(.24f, .18f, .38f, .95f) : new Color(.13f, .10f, .20f, .92f));
+
+                // Icon
+                Sprite iconSp = RecipeSprite(i);
+                DrawSpritePreview(new Rect(card.x + 8, card.y + 8, 36, 36), iconSp);
+
+                // Recipe name & desc
+                UiLabel(new Rect(card.x + 50, card.y + 6, card.width - 56, 22), recipe.Name, label);
+                string desc = RecipeDescription(i);
+                if (!string.IsNullOrEmpty(desc))
+                {
+                    var descStyle = new GUIStyle(small) { fontSize = 10 };
+                    descStyle.normal.textColor = new Color(.82f, .85f, .95f, .85f);
+                    GUI.Label(new Rect(card.x + 50, card.y + 26, card.width - 56, 18), desc, descStyle);
+                }
+
+                // Cost chips
+                float chipX = card.x + 10, chipY = card.y + 47;
+                for (int j = 0; j < recipe.Cost.Length; j++)
+                {
+                    int cost = recipe.Cost[j];
+                    if (cost <= 0) continue;
+                    PixelArt(new Rect(chipX, chipY, 17, 17), ResourceIcons[j]);
+                    var count = new Rect(chipX + 19, chipY - 2, 46, 22);
+                    var previous = GUI.contentColor;
+                    if (p.Bag[j] < cost) GUI.contentColor = new Color(1, .60f, .64f);
+                    UiLabel(count, p.Bag[j] + "/" + cost, small);
+                    GUI.contentColor = previous;
+                    chipX += 62;
+                }
+
+                // Action button
+                string action = !unlocked ? L("Mở công thức ở sảnh", "Unlock in Sanctuary") :
+                    !nearBeacon ? L("Cần đến gần hải đăng", "Move closer to beacon") :
+                    !supplied ? L("Thiếu nguyên liệu", "Missing ingredients") : L("Chế tạo", "Craft");
+                GUI.enabled = can;
+                if (UiButton(new Rect(card.x + 8, card.y + 75, card.width - 16, 26), action))
+                {
+                    intent.Craft = i;
+                }
+                GUI.enabled = true;
+                GUILayout.Space(6);
+            }
+
+            GUILayout.EndScrollView();
+            GUILayout.EndArea();
+            hudCapturing = prevCapture;
+        }
+
+        Sprite RecipeSprite(int i)
+        {
+            if (i < 4) return HeldItemSprite(i);
+            if (i == 14) return Primitive("energy_drink");
+            if (i == 15 || i == 17) return Primitive("apple");
+            if (i == 16 || i == 18) return Primitive("mushroom");
+            if (CraftIcons != null && i < CraftIcons.Length) return Primitive(CraftIcons[i]);
+            return Primitive("diamond");
+        }
+
+        string RecipeDescription(int i)
+        {
+            switch (i)
+            {
+                case 0: return L("Soi sáng & xua bóng tối", "Illuminates dark areas");
+                case 1: return L("Bắn pháo sáng soi rộng 8 ô", "Deploys 8-tile bright flare");
+                case 2: return L("Uống giảm 40% Hoảng loạn", "Reduces Dread by 40%");
+                case 3: return L("Hồi sinh đồng đội tại Hải Đăng", "Revives fallen ally at Beacon");
+                case 4: return L("Chắn đường di chuyển của quái", "Blocks enemy movement");
+                case 5: return L("Gây 45 sát thương điện & choáng", "Electrocutes & stuns enemies");
+                case 6: return L("Kho lưu trữ đồ dùng chung", "Shared team chest storage");
+                case 7: return L("Đèn soi sáng bán kính lớn", "Large radius illumination");
+                case 8: return L("Đèn giảm tốc độ tăng hoảng loạn", "Reduces dread gain rate");
+                case 9: return L("Rìu cận chiến đánh lan 1.6 ô", "Cleaving melee crystal axe");
+                case 10: return L("Song kiếm tốc đánh siêu nhanh", "Ultra-fast dual shadow blades");
+                case 11: return L("Nỏ bắn tia tinh thể xuyên thấu", "Piercing crystal bolt crossbow");
+                case 12: return L("Súng bắn đạn năng lượng tầm xa", "Ranged rapid energy shooter");
+                case 13: return L("Khiên phản xạ đạn & bắn tia", "Reflective bolt shield");
+                case 14: return L("Tăng 35% tốc & vô hạn thể lực 30s", "+35% speed & infinite stamina 30s");
+                case 15: return L("Táo tươi hái từ cây · Hồi 25 HP", "Fresh apple · Restores 25 HP");
+                case 16: return L("Nấm rừng thu hái · Nguyên liệu", "Forest mushroom · Ingredient");
+                case 17: return L("Táo nướng giòn · Hồi 45 HP + No ấm", "Crisp roasted apple · +45 HP & Well Fed");
+                case 18: return L("Súp nấm ấm · Hồi 50 HP + Hồi thể lực", "Warm mushroom stew · +50 HP & Stamina");
+                default: return "";
+            }
+        }
     }
 }

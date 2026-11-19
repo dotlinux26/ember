@@ -576,6 +576,179 @@ harvestCombatWorld.Submit(1, new Command{Attack=true});
 harvestCombatWorld.Tick();
 Check(!harvestCombatWorld.S.Projectiles.Any(p => p.Owner == minerAttacker.Id), "pickaxe attack is melee and never spawns projectiles");
 
+// --- Test Ancient Relic Drop (Hộp Cổ Thất Lạc) ---
+var relicWorld = new EmberWorld(77);
+var relicExplorer = relicWorld.AddPlayer(1, "Explorer", Vessel.Wanderer);
+relicWorld.StartRun();
+Check(EmberEvents.SpawnAncientRelic(relicWorld, new V2(60, 40)), "spawn ancient relic at boundary");
+Check(EmberEvents.HasActiveRelic, "has active relic event flag");
+var relicChest = relicWorld.S.Structures.FirstOrDefault(s => s.Kind == EmberEvents.RelicChestKind);
+Check(relicChest != null && relicChest.HP > 0, "relic chest structure spawned");
+Check(relicWorld.S.Enemies.Count(e => e.Elite && (e.Kind == EnemyKind.VoidStalker || e.Kind == EnemyKind.Sentinel || e.Kind == EnemyKind.Shade)) >= 3, "relic chest guarded by elite shadow monsters");
+Check(relicWorld.S.Lights.Any(l => l.GrantsSafety && l.ColorKind == LightColorKind.RuneGold), "cosmic beacon light emitted at relic drop");
+
+// Test opening Ancient Relic Chest
+relicExplorer.Pos = relicChest.Pos;
+var testProfile = new Profile();
+int initialTokens = testProfile.Tokens;
+int initialDust = relicExplorer.Bag[(int)Resource.Dust];
+int initialCore = relicExplorer.Bag[(int)Resource.Core];
+Check(EmberEvents.OpenRelicChest(relicWorld, relicExplorer, relicChest, testProfile), "open ancient relic chest");
+Check(testProfile.Tokens == initialTokens + 3, "relic chest grants 3 void tokens");
+Check(relicExplorer.Bag[(int)Resource.Dust] == initialDust + 30 && relicExplorer.Bag[(int)Resource.Core] == initialCore + 4, "relic chest grants dust and core rewards");
+Check(relicExplorer.Lantern == Lantern.Relic, "relic chest grants high-tier relic lantern");
+Check(!relicWorld.S.Structures.Any(s => s.Kind == EmberEvents.RelicChestKind), "relic chest cleared after open");
+
+// --- Test Merchant Reputation & Secret Stash ---
+var merchantWorld = new EmberWorld(88);
+var trader = merchantWorld.AddPlayer(1, "Trader", Vessel.Wanderer);
+merchantWorld.StartRun();
+EmberMerchant.Reputation = 0;
+Check(EmberMerchant.Catalog.Length >= 6, "merchant has standard and secret stash wares");
+
+trader.Bag = new int[] { 100, 100, 100, 100, 100 };
+int repBefore = EmberMerchant.Reputation;
+Check(EmberMerchant.CanTrade(trader, 0), "can afford standard trade");
+Check(EmberMerchant.ExecuteTrade(merchantWorld, trader, 0), "execute standard trade");
+Check(EmberMerchant.Reputation == repBefore + 15, "trade builds reputation points (+15)");
+
+// Secret wares should be locked when reputation < 50
+Check(!EmberMerchant.CanTrade(trader, 4), "secret ware locked when reputation < 50");
+
+// Trade 3 more times to raise reputation past 50
+EmberMerchant.ExecuteTrade(merchantWorld, trader, 1);
+EmberMerchant.ExecuteTrade(merchantWorld, trader, 2);
+EmberMerchant.ExecuteTrade(merchantWorld, trader, 3);
+Check(EmberMerchant.Reputation >= 50, "reputation reaches 50+ threshold");
+
+// Secret ware 4 (Invisibility Cloak / Shadow Veil) unlocked
+Check(EmberMerchant.CanTrade(trader, 4), "secret ware 4 (shadow veil) unlocked at 50 rep");
+Check(EmberMerchant.ExecuteTrade(merchantWorld, trader, 4), "execute secret trade 4");
+Check(EmberMerchant.IsInvisible(trader) && EmberMerchant.GetInvisibilityDuration(trader.Id) > 10f, "shadow veil grants 15s invisibility");
+
+// Secret ware 5 (Treasure Compass)
+Check(EmberMerchant.CanTrade(trader, 5), "secret ware 5 (treasure compass) unlocked");
+Check(EmberMerchant.ExecuteTrade(merchantWorld, trader, 5), "execute secret trade 5");
+Check(EmberMerchant.HasTreasureCompass(trader.Id), "treasure compass activated for player");
+
+// Test Treasure Compass tracking
+relicWorld.S.Structures = new Structure[] { new Structure { Id = 999, Kind = EmberEvents.RelicChestKind, Pos = new V2(50, 50), HP = 100 } };
+var target = EmberMerchant.FindNearestTreasure(relicWorld.S, new V2(0, 0));
+Check(target.HasValue && target.Value.distance > 0, "treasure compass locates nearest relic chest");
+
+// --- Test Batch 2 Features: Starter Ground Loot, Pickup Mechanics, Pickaxe Nerf, Forageables, Energy Drink, Campfire Cooking ---
+var liveWorld = new EmberWorld(999);
+var hero = liveWorld.AddPlayer(1, "LiveHero", Vessel.Wanderer);
+liveWorld.StartRun(liveMatch: true);
+
+Check(hero.HeldSlot == 6 && !hero.HasPickaxe && !hero.HasWeapon && !hero.HasSideWeapon, "live match starts with empty equipment hands");
+Check(hero.Bag.All(b => b == 0) && hero.Items.All(i => i == 0), "live match starts with completely empty bag and quickslots");
+
+var groundStarters = liveWorld.S.Nodes.Where(n => n.Dropped && (n.DropKind == 1 || n.DropKind == 2) && (n.DropId == (int)Weapon.Stick || n.DropId == 0 || n.DropId == (int)Weapon.Pickaxe)).ToList();
+Check(groundStarters.Count == 3, "exactly 3 starter items spawn around Beacon");
+Check(groundStarters.Any(n => n.DropKind == 1 && n.DropId == (int)Weapon.Stick), "starter stick on ground");
+Check(groundStarters.Any(n => n.DropKind == 2 && n.DropId == 0), "starter torch on ground");
+Check(groundStarters.Any(n => n.DropKind == 1 && n.DropId == (int)Weapon.Pickaxe), "starter pickaxe on ground");
+
+// Test Pickup: Proximity (< 0.65f)
+var stickNode = groundStarters.First(n => n.DropKind == 1 && n.DropId == (int)Weapon.Stick);
+hero.Pos = stickNode.Pos;
+liveWorld.Tick();
+Check(hero.HasWeapon && hero.Weapon == Weapon.Stick && hero.HeldSlot == 1, "proximity pickup (< 0.65f) equips stick");
+
+// Test Pickup: No auto-vacuum outside 0.65f without interact
+var torchNode = groundStarters.First(n => n.DropKind == 2 && n.DropId == 0);
+hero.Pos = torchNode.Pos + new V2(1.5f, 0f); // 1.5 tiles away (> 0.65f, <= 2.2f)
+liveWorld.Tick();
+Check(hero.Items[0] == 0, "no auto-vacuum from 1.5 tiles away");
+
+// Test Pickup: Pressing [E] within 2.2f picks up
+liveWorld.Submit(1, new Command { Interact = true });
+liveWorld.Tick();
+Check(hero.Items[0] == 1, "interact [E] within 2.2f picks up torch");
+
+// Test Pickaxe Nerf
+var pickNode = groundStarters.First(n => n.DropKind == 1 && n.DropId == (int)Weapon.Pickaxe);
+hero.Pos = pickNode.Pos;
+liveWorld.Tick();
+Check(hero.HasPickaxe && hero.PickaxeDurability == 48 && hero.PickaxeMaxDurability == 48, "pickaxe durability nerfed to 48");
+
+// Test Forageable Wild Mushrooms
+var wildMushrooms = liveWorld.S.Nodes.Where(n => !n.Dropped && n.DropKind == 2 && n.DropId == 16).ToList();
+Check(wildMushrooms.Count > 0, "wild mushrooms spawned outside sanctuary");
+var targetMushroom = wildMushrooms.First();
+hero.Pos = targetMushroom.Pos - new V2(1.0f, 0f);
+liveWorld.Submit(1, new Command { Attack = true });
+liveWorld.Tick();
+Check(targetMushroom.Dropped, "attacking wild mushroom pops it to the ground");
+
+// Test Energy Drink Buffs
+hero.Items[14] = 1;
+liveWorld.Submit(1, new Command { Use = 14 });
+liveWorld.Tick();
+Check(hero.Items[14] == 0 && hero.StaminaBuffTimer > 28f && hero.Stamina == 100f, "energy drink grants stamina buff timer and max stamina");
+
+// Test Campfire Cooking (Apple -> Roasted Apple)
+hero.Items[15] = 1;
+hero.Pos = new V2(1.5f, 0f);
+liveWorld.DropItem(hero, 2, 15, 1);
+var droppedRawApple = liveWorld.S.Nodes.FirstOrDefault(n => n.Dropped && n.DropKind == 2 && (n.DropId == 15 || n.DropId == 17));
+Check(droppedRawApple != null && droppedRawApple.DropId == 15, "dropped raw apple near Beacon");
+
+hero.Pos = new V2(0f, -2.8f); // step away to prevent premature proximity pickup
+for (int t = 0; t < 140; t++) liveWorld.Tick(); // ~4.66s of cooking
+var cookedApple = liveWorld.S.Nodes.FirstOrDefault(n => n.Dropped && n.DropKind == 2 && n.DropId == 17);
+Check(cookedApple != null, "raw apple cooked into roasted apple near campfire");
+
+// Test Consuming Roasted Apple (Heals +45 HP & Well Fed buff)
+hero.Pos = cookedApple.Pos;
+liveWorld.Tick(); // proximity pickup
+Check(hero.Items[17] == 1, "picked up cooked roasted apple");
+hero.HP = 40f;
+liveWorld.Submit(1, new Command { Use = 17 });
+liveWorld.Tick();
+Check(hero.HP == 85f && hero.WarmthBuffTimer > 40f, "roasted apple heals 45 HP and grants Well Fed buff");
+
+// Test EmberCooking API & Mushroom Cooking -> Mushroom Stew
+Check(EmberCooking.IsRawFood(2, 15) && EmberCooking.IsRawFood(2, 16), "EmberCooking recognizes raw food");
+Check(EmberCooking.GetCookedTransformId(15) == 17 && EmberCooking.GetCookedTransformId(16) == 18, "EmberCooking cooked transforms match RoastedApple and MushroomStew");
+Check(EmberCooking.IsNearHeatSource(liveWorld.S, new V2(1.5f, 0f)), "beacon center within 3 tiles is active heat source");
+Check(!EmberCooking.IsNearHeatSource(liveWorld.S, new V2(15f, 15f)), "distant location outside 3 tiles is not heat source");
+
+// Test Cooking Mushroom near Campfire Torch structure
+var torchStructure = liveWorld.S.Structures.FirstOrDefault(s => s.Kind == 0 && s.Life > 0);
+V2 heatSpot = torchStructure != null ? torchStructure.Pos + new V2(1.0f, 0f) : new V2(1.2f, 0.5f);
+var groundMushroom = liveWorld.SpawnGroundFood(16, heatSpot, 1);
+Check(groundMushroom != null && groundMushroom.DropId == 16, "dropped raw mushroom near campfire heat");
+
+hero.Pos = new V2(0f, -3.5f);
+for (int t = 0; t < 140; t++) liveWorld.Tick(); // ~4.66s cooking
+var cookedStew = liveWorld.S.Nodes.FirstOrDefault(n => n.Dropped && n.DropKind == 2 && n.DropId == 18);
+Check(cookedStew != null, "raw mushroom simmered into mushroom stew near campfire");
+
+// Test Consuming Mushroom Stew
+hero.Pos = cookedStew.Pos;
+liveWorld.Tick(); // proximity pickup
+Check(hero.Items[18] == 1, "picked up cooked mushroom stew");
+hero.HP = 30f;
+liveWorld.Submit(1, new Command { Use = 18 });
+liveWorld.Tick();
+Check(hero.HP >= 75f && hero.WarmthBuffTimer > 40f, "mushroom stew heals and refreshes Well Fed buff");
+
+// Test Well Fed 50% Dread Resistance
+var dreadTestWorld = new EmberWorld(444);
+var tester1 = dreadTestWorld.AddPlayer(1, "NoBuffTester", Vessel.Wanderer);
+var tester2 = dreadTestWorld.AddPlayer(2, "WellFedTester", Vessel.Wanderer);
+dreadTestWorld.StartRun();
+tester1.Pos = new V2(25f, 25f); // in the dark
+tester2.Pos = new V2(25f, 25f);
+tester1.WarmthBuffTimer = 0f;
+tester2.WarmthBuffTimer = 45f;
+tester1.Dread = 0f;
+tester2.Dread = 0f;
+dreadTestWorld.Tick(0.1f);
+Check(tester2.Dread < tester1.Dread, "Well Fed buff provides 50% dread resistance in dark");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

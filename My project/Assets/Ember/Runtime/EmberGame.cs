@@ -137,7 +137,7 @@ namespace Ember
             var hostPlayer=World.PlayerById(1);if(hostPlayer!=null)hostPlayer.HeldSlot=1;
             State=World.S;State.Sandbox=debugSession;rewarded=false;accumulator=0;renderedSeed=int.MinValue;snapshotSequence=0;path.Clear();animationState.Clear();prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();enemyFacingLeft.Clear();ClearActions();
         }
-        void StartSolo(){lan?.Leave();network=false;host=true;localId=1;ClearSavedRun();NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun();runAutoSaveClock=RunAutoSaveInterval;menu=false;SaveActiveRun(false,asyncWrite:true);}
+        void StartSolo(){lan?.Leave();network=false;host=true;localId=1;ClearSavedRun();NewWorld(Environment.TickCount);World.S.Capacity=1;World.StartRun(false,liveMatch:true);runAutoSaveClock=RunAutoSaveInterval;menu=false;SaveActiveRun(false,asyncWrite:true);}
         void HostGame()
         {
             try{lan?.Leave();lan=new EmberLan{Capacity=roomCapacity,Mode=routeMode,Trace=Trace};
@@ -254,7 +254,7 @@ namespace Ember
             if(index<0)index=0;
             spectateId=alive[(index+delta+alive.Length)%alive.Length].Id;
         }
-        void BeginRoomRun(){if(World.StartRun(true)){lan.AcceptingJoins=false;ClearActions();}}
+        void BeginRoomRun(){if(World.StartRun(true,liveMatch:true)){lan.AcceptingJoins=false;ClearActions();}}
         void LeaveRoom(){coopReconnectArmed=false;try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
         static AudioClip MakeTone(float hz,float seconds)
         {
@@ -589,11 +589,47 @@ namespace Ember
                 cursor=furthest+1;
             }
         }
+        Sprite DroppedItemSprite(Node n)
+        {
+            if(n.DropKind==1)
+            {
+                int wid=n.DropId;
+                if(wid>=0&&wid<InventoryWeaponArt.Length)return Primitive(InventoryWeaponArt[wid]);
+                return Primitive("stick");
+            }
+            if(n.DropKind==2)
+            {
+                switch(n.DropId)
+                {
+                    case 0: return Primitive("torch");
+                    case 1: return MaterialSprite("flare");
+                    case 2: return MaterialSprite("sedative");
+                    case 3: return MaterialSprite("revival");
+                    case 14: return Primitive("energy_drink");
+                    case 15: return Primitive("apple");
+                    case 16: return Primitive("mushroom");
+                    case 17: return Primitive("roasted_apple");
+                    case 18: return Primitive("mushroom_stew");
+                    default:
+                        if(n.DropId==8)return Primitive("pickaxe");
+                        return Primitive("diamond");
+                }
+            }
+            return n.Resource==Resource.Wood?Primitive("wood"):n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+        }
         Sprite Primitive(string name)
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
-            if(authored!=null){authored.filterMode=FilterMode.Point;bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch";cached=Sprite.Create(authored,new Rect(0,0,authored.width,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);primitives[name]=cached;return cached;}
+            if(authored!=null)
+            {
+                authored.filterMode=FilterMode.Point;
+                bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="merchant";
+                int frameW=(authored.width>authored.height&&(rooted||name=="merchant"))?authored.height:authored.width;
+                cached=Sprite.Create(authored,new Rect(0,0,frameW,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);
+                primitives[name]=cached;
+                return cached;
+            }
             int size=16;Texture2D t=new Texture2D(size,size,TextureFormat.RGBA32,false);t.filterMode=FilterMode.Point;var c=new Color32[size*size];
             for(int y=0;y<size;y++)for(int x=0;x<size;x++)
             {
@@ -608,6 +644,41 @@ namespace Ember
                     case "hand":draw=x>=4&&x<=11&&y>=5&&y<=11;color=x==4||x==11||y==5||y==11?new Color(.12f,.13f,.2f):Color.white;break;
                     case "stick":draw=x>=7&&x<=9&&y>=2&&y<=14;color=x==7?new Color(.35f,.19f,.12f):new Color(.75f,.48f,.24f);break;
                     case "beacon":draw=y<3?x>2&&x<14:y<10?x>5&&x<11:r<5;color=y<3?new Color(.25f,.29f,.39f):y<10?new Color(.5f,.54f,.6f):Cyan;break;
+                    case "apple":
+                        if(y>=12&&((x>=9&&x<=11&&y==12)||(x>=10&&x<=12&&y==13))){draw=true;color=(x==11&&y==13)?new Color(.5f,.9f,.5f):new Color(.18f,.5f,.22f);}
+                        else if(y>=11&&y<=13&&(x==7||x==8)){draw=true;color=new Color(.42f,.26f,.18f);}
+                        else if(r<5.4f&&y<=11){draw=true;bool isSpec=(x==5||x==6)&&(y==8||y==9);bool isBounce=y<=3&&x>=8;color=isSpec?Color.white:isBounce?new Color(.92f,.65f,.25f):x<7?new Color(.88f,.22f,.32f):new Color(.58f,.12f,.22f);}
+                        break;
+                    case "mushroom": case "mushrooms":
+                        float elip=(x-7.5f)*(x-7.5f)/(6.2f*6.2f)+(y-8.5f)*(y-8.5f)/(4.8f*4.8f);
+                        if(elip<1f&&y>=7){draw=true;bool isDot=(x==5&&y==11)||(x==9&&y==11)||(x==7&&y==12)||(x==8&&y==9)||(x==4&&y==8);color=isDot?new Color(1f,.95f,.8f):y==7?new Color(.25f,.2f,.35f):x<7?new Color(.85f,.2f,.32f):new Color(.55f,.12f,.22f);}
+                        else if(x>=6&&x<=9&&y>=2&&y<7){draw=true;color=x==6?new Color(.95f,.92f,.88f):x<=8?new Color(.82f,.78f,.72f):new Color(.52f,.46f,.4f);}
+                        else if(x>=5&&x<=10&&y<2){draw=true;color=new Color(.15f,.35f,.2f);}
+                        break;
+                    case "energy_drink":
+                        if(y>=12&&y<=14&&x>=7&&x<=8){draw=true;color=new Color(.55f,.35f,.22f);}
+                        else if(y==11&&x>=6&&x<=9){draw=true;color=new Color(.95f,.72f,.22f);}
+                        else if(y>=9&&y<=10&&x>=7&&x<=8){draw=true;color=new Color(.45f,.8f,.92f);}
+                        else if(Vector2.Distance(new Vector2(x,y),new Vector2(7.5f,4.5f))<4.8f){draw=true;bool isSpec=x==4||(x==5&&y>=6);bool isCore=(x==7&&y==4)||(x==8&&y==5);color=isSpec?Color.white:isCore?new Color(1f,.92f,.35f):x<7?new Color(.45f,.85f,.95f):new Color(.18f,.55f,.72f);}
+                        break;
+                    case "merchant":
+                        if(y>=10&&y<=14&&x>=5&&x<=10){draw=true;color=y>=12?new Color(.32f,.38f,.48f):new Color(.08f,.07f,.12f);}
+                        else if(y==9&&(x==6||x==8)){draw=true;color=new Color(1f,.85f,.3f);}
+                        else if(y==7&&x>=5&&x<=10){draw=true;color=new Color(.65f,.18f,.28f);}
+                        else if(x>=2&&x<=4&&y>=3&&y<=12){draw=true;color=y>=10?new Color(.75f,.6f,.45f):new Color(.42f,.26f,.18f);}
+                        else if(x>=5&&x<=11&&y>=2&&y<=6){draw=true;color=y==2?new Color(.9f,.7f,.2f):x<=7?new Color(.32f,.38f,.48f):new Color(.2f,.24f,.32f);}
+                        else if(x>=12&&x<=14&&y>=3&&y<=7){draw=true;color=(x==13&&y>=4&&y<=6)?new Color(1f,.85f,.35f):new Color(.25f,.18f,.12f);}
+                        else if(y<2&&(x==6||x==7||x==9||x==10)){draw=true;color=new Color(.25f,.16f,.12f);}
+                        break;
+                    case "roasted_apple":
+                        if(r<5.2f&&y<=11){draw=true;bool isGlaze=(x==6||x==8)&&(y==5||y==7);color=isGlaze?new Color(.35f,.18f,.1f):new Color(.92f,.55f,.18f);}
+                        else if(y>=11&&y<=13&&(x==7||x==8)){draw=true;color=new Color(.35f,.18f,.1f);}
+                        break;
+                    case "mushroom_stew":
+                        if(y>=2&&y<=5&&x>=3&&x<=12){draw=true;color=new Color(.45f,.28f,.18f);}
+                        else if(y>=6&&y<=8&&x>=4&&x<=11){draw=true;color=(x==6||x==8)?new Color(1f,.95f,.8f):new Color(.92f,.65f,.25f);}
+                        else if(y>=9&&y<=12&&(x==9||x==10)){draw=true;color=new Color(.65f,.45f,.3f);}
+                        break;
                     default:draw=x>=2&&x<14&&y>=2&&y<14;break;
                 }
                 if(draw)c[y*size+x]=color;
@@ -790,7 +861,7 @@ namespace Ember
                 bool isWoodTree=!n.Dropped&&n.Resource==Resource.Wood;
                 bool isDustBush=!n.Dropped&&n.Resource==Resource.Dust;
                 Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Cyan:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
-                Sprite sprite=isWoodTree?Primitive("tree_oak"):isDustBush?Primitive("lumidust_bush"):n.Dropped&&n.Resource==Resource.Wood?Primitive("wood"):n.Dropped&&n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+                Sprite sprite=isWoodTree?Primitive("tree_oak"):isDustBush?Primitive("lumidust_bush"):n.Dropped?DroppedItemSprite(n):MaterialSprite(ResourceIcons[(int)n.Resource]);
                 float scale=isWoodTree?1.45f:isDustBush?1.35f:n.Dropped?.70f:.62f;
                 V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
                 if(isDustBush)
@@ -953,7 +1024,19 @@ namespace Ember
                 var s=structsArr[si];
                 if(Mathf.Abs(s.Pos.X-center.X)>viewHalfW||Mathf.Abs(s.Pos.Y-center.Y)>viewHalfH)continue;
                 if(!IsExplored(s.Pos)&&s.Kind!=1)continue;
-                Put("structure"+s.Id,Primitive(s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":"diamond"),s.Pos,Color.white,s.Kind==2?1.4f:s.Kind==4?1.35f:1);
+                bool isMerchant=s.Kind==5||s.Kind==10;
+                string structArt=s.Kind<2?"torch":s.Kind==2?"wall":s.Kind==3?"trap":s.Kind==4?"chest":isMerchant?"merchant":s.Kind==11?"chest":"diamond";
+                float structScale=s.Kind==2?1.4f:s.Kind==4?1.35f:isMerchant?1.25f:s.Kind==11?1.4f:1f;
+                int mFrame=(int)(clock*3.5f+s.Id)%4;
+                Sprite sSprite=isMerchant?EnemyFrame("merchant",mFrame):Primitive(structArt);
+                Put("structure"+s.Id,sSprite,s.Pos,Color.white,structScale);
+                if(isMerchant)
+                {
+                    float mPulse=.85f+.15f*Mathf.Sin(clock*4f+s.Id);
+                    Color mGlow=new Color(1f,.82f,.35f,.45f*mPulse);
+                    var lanternHalo=Put("merchantGlow"+s.Id,Primitive("circle"),s.Pos+new V2(0.25f,0.3f),mGlow,1.1f,-1);
+                    if(emissionMaterial!=null)lanternHalo.sharedMaterial=emissionMaterial;
+                }
             }
             var enemiesArr=State.Enemies;
             for(int ei=0;ei<enemiesArr.Length;ei++)
@@ -1527,15 +1610,18 @@ namespace Ember
                 Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.8f,.2f,.4f,.2f));
             if(clock<clickMarkerUntil)Ring(clickMarker,.3f,new Color(1,.8f,.4f,(clickMarkerUntil-clock)/.8f));
             DrawBossArena();
+            DrawRelicWorldEffects();
             DrawBossTelegraphs();
             DrawRangeRulers(p);
             foreach(var e in State.Effects){
                 if(e.Kind==6){Ring(e.To,.35f+(.3f-e.Life)*2,new Color(.83f,.73f,1,e.Life/.3f));continue;}
                 if(e.Kind==7){DrawHarvestChips(e);continue;}
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
+                if(e.Kind==8){DrawCookingSteamEffect(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
             DrawHarvestBars();
+            DrawCookingBars();
             DrawBeaconOverhead(p);
             DrawEnemyHealthBars();
             DrawCombatPopups();
@@ -1549,6 +1635,8 @@ namespace Ember
             if(Event.current.type==EventType.Repaint){hudBlockingRects.Clear();hudCapturing=true;}
             DrawFieldHud(p);
             DrawBossHud();
+            DrawRelicHud();
+            DrawMerchantHud(p);
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
             DrawFieldNotices(p,QuestCollapsed?objectiveY+54:objectiveY+80);
@@ -1787,49 +1875,7 @@ namespace Ember
         }
         void DrawCraft(Player p)
         {
-            float width=Mathf.Min(360,Screen.width-28);
-            Rect panel=new Rect(Screen.width-width-14,100,width,Mathf.Max(108,Screen.height-224));
-            PixelPanel(panel,FieldPaper);
-            bool prevCapture=hudCapturing;hudCapturing=false;
-            GUILayout.BeginArea(new Rect(panel.x+12,panel.y+10,panel.width-24,panel.height-20));
-            UiText(L("Chế tạo","Crafting"),title);
-            scroll=GUILayout.BeginScrollView(scroll);
-            for(int i=0;i<Catalog.Recipes.Length;i++)
-            {
-                var recipe=Catalog.Recipes[i];
-                bool unlocked=p.Recipes==null||p.Recipes.Contains(i);
-                bool nearBeacon=i<7||p.Pos.Length<=5;
-                bool supplied=true;
-                for(int j=0;j<recipe.Cost.Length;j++)supplied&=p.Bag[j]>=recipe.Cost[j];
-                bool can=unlocked&&nearBeacon&&supplied&&!p.Ghost&&!p.Extracted;
-                Rect card=GUILayoutUtility.GetRect(190,102,GUILayout.ExpandWidth(true));
-                PixelPanel(card,can?new Color(.23f,.17f,.36f):FieldPaper);
-                DrawSpritePreview(new Rect(card.x+8,card.y+7,38,38),i<4?HeldItemSprite(i):Primitive(CraftIcons[i]));
-                UiLabel(new Rect(card.x+51,card.y+8,card.width-58,31),recipe.Name,label);
-                float chipX=card.x+10, chipY=card.y+45;
-                for(int j=0;j<recipe.Cost.Length;j++)
-                {
-                    int cost=recipe.Cost[j];
-                    if(cost<=0)continue;
-                    PixelArt(new Rect(chipX,chipY,17,17),ResourceIcons[j]);
-                    var count=new Rect(chipX+19,chipY-2,44,22);
-                    var previous=GUI.contentColor;
-                    if(p.Bag[j]<cost)GUI.contentColor=new Color(1,.60f,.64f);
-                    UiLabel(count,p.Bag[j]+"/"+cost,small);
-                    GUI.contentColor=previous;
-                    chipX+=60;
-                }
-                string action=!unlocked?L("Mở công thức ở sảnh","Unlock recipe in Sanctuary"):
-                    !nearBeacon?L("Cần đến gần hải đăng","Move closer to the beacon"):
-                    !supplied?L("Thiếu nguyên liệu","Missing ingredients"):L("Chế tạo","Craft");
-                GUI.enabled=can;
-                if(UiButton(new Rect(card.x+8,card.y+69,card.width-16,26),action))intent.Craft=i;
-                GUI.enabled=true;
-                GUILayout.Space(7);
-            }
-            GUILayout.EndScrollView();
-            GUILayout.EndArea();
-            hudCapturing=prevCapture;
+            DrawCraftingMenu(p);
         }
         void DrawMenu()
         {

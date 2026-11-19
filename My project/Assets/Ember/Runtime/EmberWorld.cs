@@ -18,7 +18,7 @@ namespace Ember
     public enum Perk { SteelNerves, StrongBack, GhostStep, Prepared, Miner, LastLight, ReluctantHealer }
     public enum Hat { Straw, Witch, Candle, Jester }
     public enum Pet { Firefly, Bat, CrystalCat, LittleGhost }
-    public enum Recipe { Torch, Flare, Sedative, RevivalStone, Wall, Trap, Chest, InfernoLantern, RelicLantern, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield }
+    public enum Recipe { Torch, Flare, Sedative, RevivalStone, Wall, Trap, Chest, InfernoLantern, RelicLantern, CrystalAxe, ShadowBlades, Crossbow, LumenGun, MirrorShield, EnergyDrink, Apple, Mushroom, RoastedApple, MushroomStew }
     public enum BuffKind { None, Swiftness, AttackPower, IronSkin, Regen, StaminaSurge, LightAura, DreadWard }
 
     [Serializable]
@@ -49,8 +49,8 @@ namespace Ember
     [Serializable] public sealed class Command
     {
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
-        public int Craft=-1,Use=-1,Equip; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive
-        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0;
+        public int Craft=-1,Use=-1,Equip,Trade=-1; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive, 14 energy drink...
+        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0;
     }
     [Serializable] public sealed class Player
     {
@@ -58,15 +58,16 @@ namespace Ember
         public V2 Pos,Move; public bool Right=true,Safe,Extracted,CarriesLantern,LampOn=true,Ready;
         public float HP=100,MaxHP=100,Stamina=100,Dread,AttackCD,SkillCD,DashCD,DashTime,CastTime,Invulnerable,ShieldTime,Shield,HarvestCD;
         public float PushCD,ReloadTimer;
-        public V2 DashDir; public Weapon Weapon; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6,PrevHeldSlot=2; public bool HasPickaxe=true; public Lantern Lantern;
-        public int PickaxeTier=1; public int PickaxeDurability=80;
-        public int PickaxeMaxDurability => PickaxeTier==0?40:PickaxeTier==1?80:PickaxeTier==2?150:250;
+        public float StaminaBuffTimer,WarmthBuffTimer;
+        public V2 DashDir; public Weapon Weapon=Weapon.Stick; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6,PrevHeldSlot=2; public bool HasPickaxe=true,HasWeapon=true,HasSideWeapon=true; public Lantern Lantern;
+        public int PickaxeTier=1; public int PickaxeDurability=48;
+        public int PickaxeMaxDurability => PickaxeTier==0?30:PickaxeTier==1?48:PickaxeTier==2?120:200;
         public string PickaxeName => PickaxeTier==0?(EmberLanguage.English?"Stone Pickaxe":"Cuốc Đá Thô"):
             PickaxeTier==1?(EmberLanguage.English?"Iron Pickaxe":"Cuốc Sắt"):
             PickaxeTier==2?(EmberLanguage.English?"Crystal Pickaxe":"Cuốc Pha Lê"):
             (EmberLanguage.English?"Shadow Pickaxe":"Cuốc Hắc Ám");
         public V2 MiragePos;public float MirageLife,MirageCD=12;
-        public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
+        public int[] Bag=new int[(int)Resource.Count],Items=new int[24];
         public int[] Perks=Array.Empty<int>(); public int Hat=-1,Pet=-1;
         public int[] PerkRanks=Array.Empty<int>(),Recipes;public int Gathered,Crafted;
         public int Rank(Perk perk)=>Has(perk)?Math.Max(1,Math.Min(3,PerkRanks!=null&&PerkRanks.Length>(int)perk?PerkRanks[(int)perk]:1)):0;
@@ -76,7 +77,7 @@ namespace Ember
         public float BaseCapacity=>30f+Stats.Gathering*5f;
         public int Load=>Bag.Sum(); public float Capacity=>BaseCapacity*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1);
         public bool HasHeldTorch=>(HeldSlot==2||(HeldSlot==8&&PrevHeldSlot==2&&HarvestCD>0))&&Items[0]>0&&LampOn&&!Ghost&&!Extracted;
-        public bool HoldingWeapon=>HeldSlot==1||HeldSlot==7||HeldSlot==8;
+        public bool HoldingWeapon=>(HeldSlot==1&&(HasWeapon||Weapon==Weapon.Stick))||(HeldSlot==7&&HasSideWeapon)||(HeldSlot==8&&HasPickaxe);
         public Weapon ActiveWeapon=>HeldSlot==7?SideWeapon:HeldSlot==8?Weapon.Pickaxe:Weapon;
         public bool Ranged=>ActiveWeapon==Weapon.Crossbow||ActiveWeapon==Weapon.LumenGun||ActiveWeapon==Weapon.MirrorShield;
         public float Range=>Ranged?7:ActiveWeapon==Weapon.CrystalAxe?2.6f:ActiveWeapon==Weapon.Pickaxe?2.4f:2;
@@ -175,6 +176,9 @@ namespace Ember
     {
         public int Id; public V2 Pos; public Resource Resource; public int Amount; public bool Dropped;
         public int MaxAmount; public float LastHitTime;
+        public int DropKind; // 0=raw resource, 1=weapon, 2=item/consumable
+        public int DropId;   // id of weapon or item
+        public float CookTimer;
     }
     [Serializable] public sealed class Structure
     {
@@ -436,11 +440,58 @@ namespace Ember
             new RecipeData("Đuốc",5,wood:3),new RecipeData("Pháo sáng",8,ore:2),new RecipeData("Thuốc an thần",10),new RecipeData("Đá hồi sinh",15,2),
             new RecipeData("Tường",wood:8,ore:2),new RecipeData("Bẫy điện",4,wood:4,ore:4),new RecipeData("Rương chung",wood:12),
             new RecipeData("Đèn Hỏa Ngục",15,4,ore:5),new RecipeData("Đèn Thánh Tích",20,5,ore:3),new RecipeData("Rìu Quang Tinh",5,2,wood:4,ore:5),
-            new RecipeData("Song Đao Bóng Đêm",umbra:5,ore:8),new RecipeData("Nỏ Tinh Thể",core:3,wood:8,ore:3),new RecipeData("Súng Quang Năng",10,4,ore:10),new RecipeData("Khiên Gương",core:3,ore:12)};
+            new RecipeData("Song Đao Bóng Đêm",umbra:5,ore:8),new RecipeData("Nỏ Tinh Thể",core:3,wood:8,ore:3),new RecipeData("Súng Quang Năng",10,4,ore:10),new RecipeData("Khiên Gương",core:3,ore:12),
+            new RecipeData("Nước Tăng Lực",dust:5,ore:2),
+            new RecipeData("Quả Táo",wood:2),
+            new RecipeData("Nấm Rừng",dust:3),
+            new RecipeData("Táo Nướng",dust:2,wood:2),
+            new RecipeData("Súp Nấm Ấm",dust:4,wood:3)};
+        public static string GetItemDisplayName(int id)
+        {
+            if(EmberLanguage.English)
+            {
+                switch(id)
+                {
+                    case 0: return "Torch";
+                    case 1: return "Flare";
+                    case 2: return "Sedative";
+                    case 3: return "Revival Stone";
+                    case 4:
+                    case 14: return "Energy Drink";
+                    case 5:
+                    case 15: return "Apple";
+                    case 6:
+                    case 16: return "Mushroom";
+                    case 7:
+                    case 17: return "Roasted Apple";
+                    case 8:
+                    case 18: return "Mushroom Stew";
+                    default: return "Item";
+                }
+            }
+            switch(id)
+            {
+                case 0: return "Đuốc";
+                case 1: return "Pháo sáng";
+                case 2: return "Thuốc an thần";
+                case 3: return "Đá hồi sinh";
+                case 4:
+                case 14: return "Nước Tăng Lực";
+                case 5:
+                case 15: return "Quả Táo";
+                case 6:
+                case 16: return "Nấm Rừng";
+                case 7:
+                case 17: return "Táo Nướng";
+                case 8:
+                case 18: return "Súp Nấm";
+                default: return "Vật phẩm";
+            }
+        }
     }
 
     // The host alone advances simulation. Clients send intent, never HP/inventory.
-    public sealed class EmberWorld
+    public sealed partial class EmberWorld
     {
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
@@ -708,6 +759,27 @@ namespace Ember
                 double a=i*Math.PI*.2;V2 pos=new V2((float)Math.Cos(a),(float)Math.Sin(a))*(52+i*5);
                 if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Nest,Pos=pos,HP=180,MaxHP=180,AttackCD=5});
             }
+            for(int m=0;m<8;m++)
+            {
+                double ma=m*(Math.PI*2/8)+0.35;
+                float mr=15f+(m%3)*3f;
+                V2 mpos=new V2((float)Math.Cos(ma)*mr,(float)Math.Sin(ma)*mr);
+                if(Walkable(mpos))
+                {
+                    nodes.Add(new Node{Id=nextId++,Pos=mpos,Resource=Resource.Dust,Amount=1,MaxAmount=1,Dropped=false,DropKind=2,DropId=16});
+                }
+            }
+            structures.Add(new Structure{Id=nextId++,Kind=10,Pos=BeaconColliderPos+new V2(3.8f,0f),Life=999999f,MaxLife=999999f,HP=1000f});
+        }
+        public void SpawnStarterGroundLoot()
+        {
+            if(nodes.Any(n=>n.Dropped&&(n.DropKind==1||n.DropKind==2)&&(n.DropId==(int)Weapon.Stick||n.DropId==0||n.DropId==(int)Weapon.Pickaxe)))return;
+            // 1 Wooden Stick (~2.0 tiles west of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(-2.0f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Stick});
+            // 1 Starter Torch (~2.0 tiles east of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(2.0f,0f),Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
+            // 1 Iron Pickaxe (~2.0 tiles north of beacon)
+            nodes.Add(new Node{Id=nextId++,Pos=BeaconColliderPos+new V2(0f,2.0f),Resource=Resource.Ore,Amount=1,MaxAmount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
         }
         V2 BeaconSpawnSpot(int slotIndex,float radius=2.4f)
         {
@@ -740,8 +812,14 @@ namespace Ember
             p.Ready=players.Count==0;
             p.Bag[(int)Resource.Dust]=12;
             p.Items[0]=1;
+            p.HasPickaxe=true;
+            p.HasWeapon=true;
+            p.HasSideWeapon=true;
+            p.HeldSlot=6;
+            p.PickaxeDurability=48;
+            p.PickaxeTier=1;
             if(p.Has(Perk.Prepared)){p.Items[1]=1+p.Rank(Perk.Prepared);p.Items[2]=p.Rank(Perk.Prepared)==3?2:1;}
-            if(p.Has(Perk.Miner))p.Weapon=Weapon.Pickaxe;
+            if(p.Has(Perk.Miner)){p.HasPickaxe=true;p.Weapon=Weapon.Pickaxe;p.PickaxeTier=1;p.PickaxeDurability=48;}
             players.Add(p);Publish();return p;
         }
         public void RemovePlayer(int id)
@@ -871,12 +949,29 @@ namespace Ember
             return restored;
         }
         public void SetReady(int id,bool ready){if(S.Phase==Phase.Sanctuary){var p=PlayerById(id);if(p!=null)p.Ready=ready;}}
-        public bool StartRun(bool requireReady=false)
+        public bool StartRun(bool requireReady=false,bool liveMatch=false)
         {
             if(players.Count==0||S.Phase!=Phase.Sanctuary||(requireReady&&players.Any(p=>!p.Ready)))return false;
+            if(liveMatch)
+            {
+                foreach(var p in players)
+                {
+                    p.HeldSlot=6;
+                    p.HasPickaxe=false;
+                    p.HasWeapon=false;
+                    p.HasSideWeapon=false;
+                    p.Items=new int[24];
+                    p.Bag=new int[(int)Resource.Count];
+                    if(p.Has(Perk.Prepared)){p.Items[1]=1+p.Rank(Perk.Prepared);p.Items[2]=p.Rank(Perk.Prepared)==3?2:1;}
+                    if(p.Has(Perk.Miner)){p.HasPickaxe=true;p.Weapon=Weapon.Pickaxe;p.PickaxeTier=1;p.PickaxeDurability=48;}
+                }
+                SpawnStarterGroundLoot();
+            }
             spawnClock=18f;
             S.NextBossEventTime=S.Time+GetBossEventInterval(S.Difficulty);
-            S.Phase=Phase.Explore;return true;
+            S.Phase=Phase.Explore;
+            Publish();
+            return true;
         }
         public void Submit(int id,Command c)
         {
@@ -1010,7 +1105,7 @@ namespace Ember
             if(!DebugEnabled)return false;var p=PlayerById(playerId);if(p==null)return false;
             switch(action)
             {
-                case "supplies":for(int i=0;i<5;i++)p.Bag[i]=100;for(int i=0;i<4;i++)p.Items[i]=10;break;
+                case "supplies":for(int i=0;i<5;i++)p.Bag[i]=100;for(int i=0;i<p.Items.Length;i++)p.Items[i]=10;break;
                 case "heal":p.HP=p.MaxHP;p.Dread=0;p.Stamina=100;p.SkillCD=p.DashCD=0;break;
                 case "ghost":p.HP=0;break;
                 case "beacon":p.Pos=BeaconSpawnSpot(0,2.3f);p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
@@ -1071,6 +1166,36 @@ namespace Ember
                 TriggerWorldBossEvent();
             foreach(var p in players)UpdatePlayer(p,dt);
             if(!DebugEnabled||!DebugNoEnemies)foreach(var e in enemies.ToArray())UpdateEnemy(e,dt);
+            EmberEvents.Update(this,dt);
+            EmberMerchant.Update(this,dt);
+            for(int cni=0;cni<nodes.Count;cni++)
+            {
+                var cn=nodes[cni];
+                if(cn.Dropped&&cn.DropKind==2&&(cn.DropId==15||cn.DropId==16))
+                {
+                    bool nearFire=cn.Pos.Length<3.2f||structures.Any(s=>(s.Kind==0||s.Kind==1)&&s.Life>0&&V2.Distance(cn.Pos,s.Pos)<2.5f);
+                    if(nearFire)
+                    {
+                        cn.CookTimer+=dt;
+                        if(cn.CookTimer>=4.5f)
+                        {
+                            cn.CookTimer=0f;
+                            if(cn.DropId==15)
+                            {
+                                cn.DropId=17; // Roasted Apple
+                                FX(cn.Pos,cn.Pos,2);
+                                Announce(EmberLanguage.English?"✦ Fresh apple roasted over the fire into Crispy Roasted Apple!":"✦ Táo rừng đã nướng chín giòn thơm lừng bên ngọn lửa!");
+                            }
+                            else if(cn.DropId==16)
+                            {
+                                cn.DropId=18; // Mushroom Stew
+                                FX(cn.Pos,cn.Pos,2);
+                                Announce(EmberLanguage.English?"✦ Wild mushroom simmered into warm Mushroom Stew!":"✦ Nấm rừng đã nấu chín thành bát Súp Nấm ấm áp!");
+                            }
+                        }
+                    }
+                }
+            }
             UpdateProjectiles(dt);
             UpdateMeteors(dt);
             UpdateBossTelegraphs(dt);
@@ -1151,6 +1276,16 @@ namespace Ember
             var stats=p.Stats;
             bool alone=!players.Any(q=>q.Id!=p.Id&&!q.Ghost&&V2.Distance(p.Pos,q.Pos)<12);
             float dreadRate=p.Safe?-5*stats.DreadCalmMultiplier:(alone?3:1.5f)*DifficultyDreadScale*stats.DreadGainMultiplier;
+            if(p.WarmthBuffTimer>0)
+            {
+                p.WarmthBuffTimer=Math.Max(0,p.WarmthBuffTimer-dt);
+                if(dreadRate>0)dreadRate*=.5f;
+            }
+            if(p.StaminaBuffTimer>0)
+            {
+                p.StaminaBuffTimer=Math.Max(0,p.StaminaBuffTimer-dt);
+                p.Stamina=100f;
+            }
             if(p.Weapon==Weapon.ShadowBlades&&!p.Safe)dreadRate+=.5f;
             if(dreadRate>0&&p.Has(Perk.SteelNerves))dreadRate*=1-.25f*p.PerkStrength(Perk.SteelNerves);
             if(dreadRate>0&&p.Hat==(int)Hat.Candle)dreadRate*=.9f;
@@ -1158,6 +1293,7 @@ namespace Ember
             float stamMult=stats.StaminaRegenMultiplier*(p.Hat==(int)Hat.Witch?1.08f:1);
             if(p.HasBuff(BuffKind.StaminaSurge))stamMult*=(1f+p.BuffValue(BuffKind.StaminaSurge));
             p.Stamina=Clamp(p.Stamina+dt*(p.Safe?8f:5f)*stamMult,0,100);
+            if(p.StaminaBuffTimer>0)p.Stamina=100f;
             if(p.HeldSlot!=8)p.PrevHeldSlot=p.HeldSlot;
             if(!commands.TryGetValue(p.Id,out var movement))movement=new Command();
             if(inputAt.TryGetValue(p.Id,out var received)&&S.Time-received>.5f){movement.X=movement.Y=0;}
@@ -1166,6 +1302,7 @@ namespace Ember
             p.Move=new V2(c.X,c.Y);if(p.Move.Length>1)p.Move=p.Move.Normal;
             if(Math.Abs(p.Move.X)>.01f)p.Right=p.Move.X>0;
             float speed=stats.MoveSpeed;
+            if(p.StaminaBuffTimer>0&&!p.HasBuff(BuffKind.Swiftness))speed*=1.35f;
             if(p.HasBuff(BuffKind.Swiftness))speed*=(1f+p.BuffValue(BuffKind.Swiftness));
             if(p.Load>p.Capacity)speed*=.55f;
             if(p.Ghost){p.ClearBuffs();p.Move=new V2();return;}
@@ -1181,10 +1318,15 @@ namespace Ember
             {
                 var position=p.Pos+new V2(p.Right?4:-4,2);if(Walkable(position)){p.MiragePos=position;p.MirageLife=14;}p.MirageCD=20;
             }
-            float dashCost=25*stats.StaminaCostMultiplier*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1);
+            float dashCost=p.StaminaBuffTimer>0?0f:(25*stats.StaminaCostMultiplier*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1));
             if(c.Dash&&p.DashCD<=0&&p.Stamina>=dashCost)
             {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=stats.DashCooldown;p.DashTime=.16f;p.Invulnerable=.16f;}
             if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
+            for(int ni=nodes.Count-1;ni>=0;ni--)
+            {
+                if(ni<nodes.Count&&nodes[ni].Dropped&&V2.Distance(nodes[ni].Pos,p.Pos)<0.65f)
+                    PickupNode(p,nodes[ni]);
+            }
             if(c.Refuel)
             {
                 if(p.Bag[0]>0&&S.Fuel<100){int amount=Math.Min(p.Bag[0],(int)Math.Ceiling((100-S.Fuel)/15f));p.Bag[0]-=amount;S.Fuel=Math.Min(100,S.Fuel+amount*15f);}
@@ -1253,7 +1395,17 @@ namespace Ember
                     if(p.Load>0)for(int r=0;r<5;r++){Chest[r]+=p.Bag[r];p.Bag[r]=0;}
                     else for(int r=0;r<5;r++){int count=Math.Min(Chest[r],Math.Max(0,(int)p.Capacity-p.Load));Chest[r]-=count;p.Bag[r]+=count;}
                 }
-                else Harvest(p,2.4f);
+                else
+                {
+                    var dropped=nodes.Where(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.2f).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+                    if(dropped!=null)PickupNode(p,dropped);
+                    else Harvest(p,2.4f);
+                }
+            }
+            if(c.Trade>=0)
+            {
+                var merchant=structures.Find(s=>s.Kind==10&&V2.Distance(s.Pos,p.Pos)<2.6f);
+                if(merchant!=null)ExecuteTrade(p,c.Trade);
             }
             if(c.Craft>=0&&c.Craft<Catalog.Recipes.Length)Craft(p,(Recipe)c.Craft);
             if(c.Equip>=1&&c.Equip<=8)
@@ -1265,7 +1417,7 @@ namespace Ember
                 p.AmmoWeapon=p.ActiveWeapon;
                 p.ReloadTimer=Catalog.WeaponReloadTime(p.ActiveWeapon);
             }
-            if(c.Use>=0&&c.Use<4)Use(p,c.Use);
+            if(c.Use>=0&&c.Use<24)Use(p,c.Use);
             if(c.Push)PushEnemy(p);
             if(c.Attack&&p.HoldingWeapon&&p.AttackCD<=0&&p.CastTime<=0)
             {
@@ -1294,18 +1446,18 @@ namespace Ember
                 int actual=Math.Min(amount,p.Bag[r]);
                 if(actual<=0)return;
                 p.Bag[r]-=actual;
-                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=(Resource)r,Amount=actual,Dropped=true});
-                string resName=EmberLanguage.English?new[]{"Lumen Dust","Core","Umbra Shard","Wood","Ore"}[r]:Catalog.ResourceNames[r];
+                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=(Resource)r,Amount=actual,Dropped=true,DropKind=0,DropId=r});
+                string resName=Catalog.ResourceNames[r];
                 Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+actual+" "+resName);
             }
             else if(kind==2)
             {
-                int c=Math.Max(0,Math.Min(3,id));
+                int c=Math.Max(0,Math.Min(p.Items.Length-1,id));
                 int actual=Math.Min(amount,p.Items[c]);
                 if(actual<=0)return;
                 p.Items[c]-=actual;
-                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=c==0?Resource.Wood:Resource.Ore,Amount=actual,Dropped=true});
-                string itemName=EmberLanguage.English?new[]{"Torch","Flare","Sedative","Revival Stone"}[c]:new[]{"Đuốc","Pháo sáng","Thuốc an thần","Đá hồi sinh"}[c];
+                nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=c==0?Resource.Wood:Resource.Ore,Amount=actual,Dropped=true,DropKind=2,DropId=c});
+                string itemName=Catalog.GetItemDisplayName(c);
                 Announce((EmberLanguage.English?"Dropped: ":"Đã vứt: ")+actual+" "+itemName);
             }
             else if(kind==1&&id==8)
@@ -1314,15 +1466,111 @@ namespace Ember
                 {
                     p.HasPickaxe=false;
                     if(p.HeldSlot==8)p.HeldSlot=6;
-                    nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=2,Dropped=true});
+                    nodes.Add(new Node{Id=nextId++,Pos=dropPos,Resource=Resource.Ore,Amount=1,Dropped=true,DropKind=1,DropId=(int)Weapon.Pickaxe});
                     Announce(EmberLanguage.English?"Dropped Pickaxe":"Đã vứt Cuốc đào");
                 }
             }
             Publish();
         }
+        public bool PickupNode(Player p,Node n)
+        {
+            if(p==null||p.Ghost||n==null)return false;
+            if(n.DropKind==1)
+            {
+                var w=(Weapon)n.DropId;
+                if(w==Weapon.Pickaxe)
+                {
+                    p.HasPickaxe=true;
+                    p.PickaxeTier=1;
+                    p.PickaxeDurability=48;
+                    if(p.HeldSlot==6)p.HeldSlot=8;
+                    Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+p.PickaxeName,p.Name);
+                }
+                else
+                {
+                    p.HasWeapon=true;
+                    p.Weapon=w;
+                    if(p.HeldSlot==6)p.HeldSlot=1;
+                    Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+(EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi),p.Name);
+                }
+                FX(n.Pos,p.Pos,1);
+            }
+            else if(n.DropKind==2)
+            {
+                int itemId=n.DropId;
+                if(itemId>=0&&itemId<p.Items.Length)
+                {
+                    p.Items[itemId]+=Math.Max(1,n.Amount);
+                    if(itemId==0&&p.HeldSlot==6)p.HeldSlot=2;
+                }
+                string itemName=Catalog.GetItemDisplayName(itemId);
+                Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+Math.Max(1,n.Amount)+" "+itemName,p.Name);
+                FX(n.Pos,p.Pos,1);
+                EmitPopup(p.Pos,3,Math.Max(1,n.Amount),0,.95f);
+            }
+            else
+            {
+                int r=(int)n.Resource;
+                int amt=Math.Max(1,n.Amount);
+                p.Bag[r]+=amt;
+                p.Gathered+=amt;
+                string resName=Catalog.ResourceNames[r];
+                Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+amt+" "+resName,p.Name);
+                FX(n.Pos,p.Pos,1);
+                EmitPopup(p.Pos,3,amt,r,.95f);
+            }
+            nodes.Remove(n);
+            Publish();
+            return true;
+        }
+        public bool ExecuteTrade(Player p,int tradeIndex)
+        {
+            if(p==null||p.Ghost)return false;
+            switch(tradeIndex)
+            {
+                case 0: // 8 Dust -> 1 Torch
+                    if(p.Bag[0]<8)return false;
+                    p.Bag[0]-=8;p.Items[0]++;
+                    Announce((EmberLanguage.English?"Traded 8 Lumidust for 1 Torch!":"Đã đổi 8 Bụi quang lấy 1 Đuốc!"),p.Name);
+                    break;
+                case 1: // 6 Ore -> 1 Energy Drink
+                    if(p.Bag[4]<6)return false;
+                    p.Bag[4]-=6;p.Items[14]++;
+                    p.StaminaBuffTimer=30f;p.Stamina=100f;
+                    p.ApplyBuff(BuffKind.Swiftness,30f,0.35f);
+                    p.ApplyBuff(BuffKind.StaminaSurge,30f,1.0f);
+                    Announce((EmberLanguage.English?"Traded 6 Ore for 1 Energy Drink!":"Đã đổi 6 Quặng lấy 1 Nước Tăng Lực!"),p.Name);
+                    break;
+                case 2: // 8 Wood -> 2 Apples
+                    if(p.Bag[3]<8)return false;
+                    p.Bag[3]-=8;p.Items[15]+=2;
+                    Announce((EmberLanguage.English?"Traded 8 Wood for 2 Apples!":"Đã đổi 8 Gỗ lấy 2 Quả Táo!"),p.Name);
+                    break;
+                case 3: // 1 Core -> 2 Revival Stones
+                    if(p.Bag[1]<1)return false;
+                    p.Bag[1]-=1;p.Items[3]+=2;
+                    Announce((EmberLanguage.English?"Traded 1 Core for 2 Revival Stones!":"Đã đổi 1 Lõi lấy 2 Đá Hồi Sinh!"),p.Name);
+                    break;
+                default:
+                    return false;
+            }
+            FX(p.Pos,p.Pos,2);
+            Publish();
+            return true;
+        }
         bool Harvest(Player p,float range,bool dustOnly=false)
         {
             if(!dustOnly&&p.HarvestCD>0)return false;
+            var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<range);
+            if(shroom!=null)
+            {
+                shroom.Dropped=true;
+                FX(shroom.Pos,shroom.Pos,7);
+                Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
+                p.HarvestCD=0.5f;
+                Publish();
+                return true;
+            }
             var node=nodes.Where(n=>(!dustOnly||n.Resource==Resource.Dust)&&V2.Distance(n.Pos,p.Pos)<range).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
             if(node==null&&!dustOnly)
             {
@@ -1367,7 +1615,7 @@ namespace Ember
                         Announce(reqMsg);
                         return false;
                     }
-                    float staminaCost=35f*p.Stats.StaminaCostMultiplier;
+                    float staminaCost=p.StaminaBuffTimer>0?0f:(35f*p.Stats.StaminaCostMultiplier);
                     if(p.Stamina<staminaCost)
                     {
                         Announce(EmberLanguage.English?"Exhausted! Not enough stamina.":"Kiệt sức! Không đủ thể lực.");
@@ -1379,12 +1627,29 @@ namespace Ember
                     V2 blockPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
                     if(Math.Abs(blockPos.X-p.Pos.X)>.05f)p.Right=blockPos.X>p.Pos.X;
                     float tierSpeedBonus=p.PickaxeTier*0.12f;
-                    p.HarvestCD=Math.Max(0.55f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
+                    p.HarvestCD=Math.Max(0.75f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
                     FX(p.Pos,blockPos,7);
                     Resource res=targetTile==3?Resource.Wood:Resource.Ore;
                     int yield=(p.Has(Perk.Miner)?2+p.Rank(Perk.Miner):2)+(p.HeldSlot==8?p.PickaxeTier:0);
                     p.Bag[(int)res]+=yield;p.Gathered+=yield;
                     EmitPopup(blockPos,3,yield,(int)res,.95f);
+                    if(targetTile==3)
+                    {
+                        int hash=((bestTx*374761393)^(bestTy*668265263))&0x7FFFFFFF;
+                        float tdx=bestTx-size/2f,tdy=bestTy-size/2f;
+                        float tr=(float)Math.Sqrt(tdx*tdx+tdy*tdy);
+                        bool isAppleTree=tr<size*.22f&&((hash%10)>=3&&(hash%10)<=5);
+                        if(isAppleTree||rng.NextDouble()<0.20)
+                        {
+                            int appleCount=rng.Next(1,3);
+                            for(int a=0;a<appleCount;a++)
+                            {
+                                V2 aScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+aScatter,Resource=Resource.Wood,Amount=1,MaxAmount=1,DropKind=2,DropId=15,Dropped=true});
+                            }
+                            Announce(EmberLanguage.English?"Fresh apples fell to the ground!":"Táo rừng chín mọng rơi xuống đất!");
+                        }
+                    }
                     if(p.HasPickaxe)
                     {
                         p.PickaxeDurability=Math.Max(0,p.PickaxeDurability-1);
@@ -1436,7 +1701,7 @@ namespace Ember
                     Announce(reqMsg);
                     return false;
                 }
-                float staminaCost=(node.Resource==Resource.Wood?35f:30f)*p.Stats.StaminaCostMultiplier;
+                float staminaCost=p.StaminaBuffTimer>0?0f:((node.Resource==Resource.Wood?35f:30f)*p.Stats.StaminaCostMultiplier);
                 if(p.Stamina<staminaCost)
                 {
                     Announce(EmberLanguage.English?"Exhausted! Not enough stamina.":"Kiệt sức! Không đủ thể lực.");
@@ -1454,7 +1719,7 @@ namespace Ember
             {
                 if(Math.Abs(node.Pos.X-p.Pos.X)>.05f)p.Right=node.Pos.X>p.Pos.X;
                 float tierSpeedBonus=p.PickaxeTier*0.12f;
-                p.HarvestCD=Math.Max(0.55f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
+                p.HarvestCD=Math.Max(0.75f,(p.Stats.HarvestCooldown/(p.Hat==(int)Hat.Straw?1.05f:1f))/(1f+tierSpeedBonus));
                 if(!node.Dropped)
                 {
                     FX(p.Pos,node.Pos,7);
@@ -1488,7 +1753,8 @@ namespace Ember
             if(index<4)p.Items[index]++;
             else if(index<7){float life=index==5?90f:999999f;float hp=index==4?150f:100f;structures.Add(new Structure{Id=nextId++,Kind=index-2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=life,MaxLife=life,HP=hp});}
             else if(index<9){p.Lantern=index==7?Lantern.Inferno:Lantern.Relic;p.CarriesLantern=true;}
-            else p.Weapon=(Weapon)(index-8);
+            else if(index<14)p.Weapon=(Weapon)(index-8);
+            else if(index<p.Items.Length)p.Items[index]++;
             p.Crafted++;Announce("Đã chế tạo: "+Catalog.Recipes[index].Name);return true;
         }
         public bool CanReviveAtBeacon(Player p)
@@ -1517,16 +1783,63 @@ namespace Ember
         }
         void Use(Player p,int item)
         {
-            if(p.Items[item]<=0)return;
-            if(item==3)
+            int effectiveItem=item;
+            if(item==4)effectiveItem=14;
+            else if(item==5)effectiveItem=15;
+            else if(item==6)effectiveItem=16;
+            else if(item==7)effectiveItem=17;
+            else if(item==8)effectiveItem=18;
+
+            if(effectiveItem<0||effectiveItem>=p.Items.Length||p.Items[effectiveItem]<=0)return;
+
+            if(effectiveItem==3)
             {
                 if(p.Pos.Length>5)return;var dead=players.Find(q=>q.Ghost);if(dead==null)return;
                 dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=p.Pos;dead.Invulnerable=3;
             }
-            else if(item==2)p.Dread=Math.Max(0,p.Dread-40);
-            else {float life=item==0?45f:12f;structures.Add(new Structure{Id=nextId++,Kind=item,Pos=p.Pos,Life=life,MaxLife=life});}
-            p.Items[item]--;
-            if(p.Items[item]<=0&&p.HeldSlot==item+2)p.HeldSlot=6;
+            else if(effectiveItem==2)p.Dread=Math.Max(0,p.Dread-40);
+            else if(effectiveItem==0||effectiveItem==1){float life=effectiveItem==0?45f:12f;structures.Add(new Structure{Id=nextId++,Kind=effectiveItem,Pos=p.Pos,Life=life,MaxLife=life});}
+            else if(effectiveItem==14)
+            {
+                p.StaminaBuffTimer=30f;
+                p.Stamina=100f;
+                p.ApplyBuff(BuffKind.Swiftness,30f,0.35f);
+                p.ApplyBuff(BuffKind.StaminaSurge,30f,1.0f);
+                FX(p.Pos,p.Pos,2);
+                Announce(EmberLanguage.English?"Energy Drink: +35% Speed, Infinite Stamina [30s]!":"Nước Tăng Lực: +35% Tốc chạy, Thể lực vô tận [30s]!",p.Name);
+            }
+            else if(effectiveItem==15)
+            {
+                p.HP=Math.Min(p.MaxHP,p.HP+25f);
+                FX(p.Pos,p.Pos,2);
+                Announce(EmberLanguage.English?"Ate Crisp Apple: +25 HP!":"Ăn Táo Rừng: +25 HP!",p.Name);
+            }
+            else if(effectiveItem==16)
+            {
+                p.HP=Math.Min(p.MaxHP,p.HP+15f);
+                FX(p.Pos,p.Pos,2);
+                Announce(EmberLanguage.English?"Ate Wild Mushroom: +15 HP!":"Ăn Nấm Rừng: +15 HP!",p.Name);
+            }
+            else if(effectiveItem==17)
+            {
+                p.HP=Math.Min(p.MaxHP,p.HP+45f);
+                p.WarmthBuffTimer=45f;
+                p.ApplyBuff(BuffKind.DreadWard,45f,0.50f);
+                FX(p.Pos,p.Pos,2);
+                Announce(EmberLanguage.English?"Ate Roasted Apple: +45 HP, Well Fed (+50% Dread Resist) [45s]!":"Ăn Táo Nướng: +45 HP, No Ấm (+50% Kháng sợ hãi) [45s]!",p.Name);
+            }
+            else if(effectiveItem==18)
+            {
+                p.HP=Math.Min(p.MaxHP,p.HP+50f);
+                p.Stamina=100f;
+                p.WarmthBuffTimer=45f;
+                p.ApplyBuff(BuffKind.Regen,45f,1.5f);
+                p.ApplyBuff(BuffKind.DreadWard,45f,0.50f);
+                FX(p.Pos,p.Pos,2);
+                Announce(EmberLanguage.English?"Ate Mushroom Stew: +50 HP, Well Fed & Regen [45s]!":"Ăn Súp Nấm: +50 HP, No Ấm & Hồi phục [45s]!",p.Name);
+            }
+            p.Items[effectiveItem]--;
+            if(p.Items[effectiveItem]<=0&&p.HeldSlot==effectiveItem+2)p.HeldSlot=6;
         }
         public Enemy Target(Player p,float range)
         {
@@ -1598,7 +1911,14 @@ namespace Ember
         {
             var weapon=p.ActiveWeapon;
             if(p.Ranged&&p.ReloadTimer>0)return;
-            int baseStamCost=Catalog.WeaponStaminaCost(weapon);
+            var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<p.Range);
+            if(shroom!=null)
+            {
+                shroom.Dropped=true;
+                FX(shroom.Pos,shroom.Pos,7);
+                Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
+            }
+            int baseStamCost=p.StaminaBuffTimer>0?0:Catalog.WeaponStaminaCost(weapon);
             if(baseStamCost>0)
             {
                 float atkStaminaCost=baseStamCost*p.Stats.StaminaCostMultiplier;
@@ -1820,7 +2140,7 @@ namespace Ember
             }
             projectiles.RemoveAll(p=>p.Life<=0);
         }
-        void EmitPopup(V2 pos,int kind,int amount,int subKind=0,float duration=.88f)
+        public void EmitPopup(V2 pos,int kind,int amount,int subKind=0,float duration=.88f)
         {
             if(amount<=0)return;
             if(combatPopups.Count>=48)combatPopups.RemoveAt(0);
@@ -2159,6 +2479,7 @@ namespace Ember
             {
                 var p=players[i];
                 if(p.Ghost||p.Extracted)continue;
+                if(!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss&&EmberMerchant.IsInvisible(p))continue;
                 float d=V2.Distance(p.Pos,e.Pos);
                 if(d<distToPlayer){distToPlayer=d;target=p;}
             }
@@ -2328,8 +2649,8 @@ namespace Ember
             float jitter=.92f+(float)rng.NextDouble()*.18f;
             e.SkillCD=(spec.Cooldown/diffRate)*jitter;
         }
-        void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
-        void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
+        public void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
+        public void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
         void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.HarvestTargets=harvestTargets.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
     }

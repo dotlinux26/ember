@@ -151,7 +151,14 @@ namespace Ember
         {
             V2 targetPos;
             string caption;
-            if(State.Phase==Phase.Extraction&&p.Pos.Length<3)
+            var merchant=State.Structures?.Where(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,p.Pos)<EmberMerchant.MerchantInteractionDistance)
+                .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+            if(merchant!=null&&!EmberMerchant.DialogOpen)
+            {
+                targetPos=merchant.Pos+new V2(0,.75f);
+                caption=L("Giao dịch Thương Nhân","Trade with Merchant");
+            }
+            else if(State.Phase==Phase.Extraction&&p.Pos.Length<3)
             {
                 targetPos=new V2(0,1.2f);
                 caption=L("Rút lui","Extract");
@@ -231,7 +238,13 @@ namespace Ember
             GUI.contentColor=oldColor;
             if(GUI.Button(box,GUIContent.none,GUIStyle.none))
             {
-                if(ShouldAutoEquipPickaxe(p))
+                if(merchant!=null&&!EmberMerchant.DialogOpen)
+                {
+                    EmberMerchant.DialogOpen=true;
+                    inventoryOpen=false;
+                    craftOpen=false;
+                }
+                else if(ShouldAutoEquipPickaxe(p))
                 {
                     AutoEquipHarvestTool(p);
                     intent.Interact=true;
@@ -1256,25 +1269,83 @@ namespace Ember
 
         void DrawActiveBuffs(Player p,float startX,float startY)
         {
-            if(p.Buffs==null||p.Buffs.Count==0)return;
             float curX=startX,curY=startY;
-            for(int i=0;i<p.Buffs.Count;i++)
+
+            // 1. Stamina Buff (Nước Tăng Lực / Energy Drink - Infinite Stamina & +35% Speed)
+            if(p!=null&&p.StaminaBuffTimer>0)
             {
-                var b=p.Buffs[i];
-                if(b.Duration<=0)continue;
-                var def=Catalog.GetBuffDef(b.Kind);
-                string valStr=def.FormatValue(b.Value,b.Stacks);
-                string iconPrefix=b.Kind==BuffKind.Swiftness?"⚡ ":b.Kind==BuffKind.AttackPower?"⚔️ ":b.Kind==BuffKind.IronSkin?"🛡️ ":b.Kind==BuffKind.Regen?"💖 ":b.Kind==BuffKind.StaminaSurge?"🏃 ":"✦ ";
-                string text=$"{iconPrefix}{def.DisplayName} {valStr} ({b.Duration:0.0}s)";
-                float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+18,110,220);
-                Rect badgeRect=new Rect(curX,curY,badgeW,22);
-                Color badgeBg=b.Kind==BuffKind.Swiftness?new Color(.12f,.28f,.38f,.90f):b.Kind==BuffKind.IronSkin?new Color(.38f,.30f,.12f,.90f):b.Kind==BuffKind.Regen?new Color(.12f,.38f,.18f,.90f):new Color(.20f,.16f,.32f,.90f);
-                PixelPanel(badgeRect,badgeBg);
-                float ratio=Mathf.Clamp01(b.Duration/Mathf.Max(0.1f,b.MaxDuration));
-                Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),b.Kind==BuffKind.Swiftness?Cyan:Gold);
-                UiLabel(new Rect(badgeRect.x+6,badgeRect.y+1,badgeRect.width-12,19),text,small);
+                float t=p.StaminaBuffTimer;
+                string text=L($"⚡ Nước Tăng Lực: Thể lực vô tận [{Mathf.CeilToInt(t)}s]",$"⚡ Energy Drink: Infinite Stamina [{Mathf.CeilToInt(t)}s]");
+                float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
+                Rect badgeRect=new Rect(curX,curY,badgeW,23);
+                PixelPanel(badgeRect,new Color(.08f,.28f,.36f,.95f));
+                float ratio=Mathf.Clamp01(t/30f);
+                Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),Cyan);
+                var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                labelStyle.normal.textColor=new Color(.4f,1f,.95f);
+                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
                 curX+=badgeW+6;
-                if(curX+110>Screen.width-150){curX=startX;curY+=26;}
+                if(curX+150>Screen.width-150){curX=startX;curY+=27;}
+            }
+
+            // 2. Warmth Buff (No Ấm / Well Fed - +50% Dread Resistance)
+            if(p!=null&&p.WarmthBuffTimer>0)
+            {
+                float t=p.WarmthBuffTimer;
+                string text=L($"🍲 No Ấm: Kháng sợ hãi +50% [{Mathf.CeilToInt(t)}s]",$"🍲 Well Fed: +50% Dread Resist [{Mathf.CeilToInt(t)}s]");
+                float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
+                Rect badgeRect=new Rect(curX,curY,badgeW,23);
+                PixelPanel(badgeRect,new Color(.36f,.20f,.08f,.95f));
+                float ratio=Mathf.Clamp01(t/45f);
+                Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),Gold);
+                var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                labelStyle.normal.textColor=new Color(1f,.88f,.45f);
+                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
+                curX+=badgeW+6;
+                if(curX+150>Screen.width-150){curX=startX;curY+=27;}
+            }
+
+            // 3. Shadow Veil Invisibility (from Merchant Secret Stash)
+            if(p!=null)
+            {
+                float veilTime=EmberMerchant.GetInvisibilityDuration(p.Id);
+                if(veilTime>0)
+                {
+                    string text=L($"🌑 Áo Choàng Tàng Hình [{Mathf.CeilToInt(veilTime)}s]",$"🌑 Shadow Veil: Invisible [{Mathf.CeilToInt(veilTime)}s]");
+                    float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
+                    Rect badgeRect=new Rect(curX,curY,badgeW,23);
+                    PixelPanel(badgeRect,new Color(.22f,.10f,.32f,.95f));
+                    float ratio=Mathf.Clamp01(veilTime/15f);
+                    Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),new Color(.75f,.40f,1f));
+                    var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                    labelStyle.normal.textColor=new Color(.85f,.65f,1f);
+                    GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
+                    curX+=badgeW+6;
+                    if(curX+150>Screen.width-150){curX=startX;curY+=27;}
+                }
+            }
+
+            // 4. Other Active Buffs from p.Buffs
+            if(p!=null&&p.Buffs!=null&&p.Buffs.Count>0)
+            {
+                for(int i=0;i<p.Buffs.Count;i++)
+                {
+                    var b=p.Buffs[i];
+                    if(b.Duration<=0)continue;
+                    var def=Catalog.GetBuffDef(b.Kind);
+                    string valStr=def.FormatValue(b.Value,b.Stacks);
+                    string iconPrefix=b.Kind==BuffKind.Swiftness?"⚡ ":b.Kind==BuffKind.AttackPower?"⚔️ ":b.Kind==BuffKind.IronSkin?"🛡️ ":b.Kind==BuffKind.Regen?"💖 ":b.Kind==BuffKind.StaminaSurge?"🏃 ":"✦ ";
+                    string text=$"{iconPrefix}{def.DisplayName} {valStr} [{Mathf.CeilToInt(b.Duration)}s]";
+                    float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+18,110,220);
+                    Rect badgeRect=new Rect(curX,curY,badgeW,22);
+                    Color badgeBg=b.Kind==BuffKind.Swiftness?new Color(.12f,.28f,.38f,.90f):b.Kind==BuffKind.IronSkin?new Color(.38f,.30f,.12f,.90f):b.Kind==BuffKind.Regen?new Color(.12f,.38f,.18f,.90f):new Color(.20f,.16f,.32f,.90f);
+                    PixelPanel(badgeRect,badgeBg);
+                    float ratio=Mathf.Clamp01(b.Duration/Mathf.Max(0.1f,b.MaxDuration));
+                    Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),b.Kind==BuffKind.Swiftness?Cyan:Gold);
+                    UiLabel(new Rect(badgeRect.x+6,badgeRect.y+1,badgeRect.width-12,19),text,small);
+                    curX+=badgeW+6;
+                    if(curX+110>Screen.width-150){curX=startX;curY+=26;}
+                }
             }
         }
 
