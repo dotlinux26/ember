@@ -1430,7 +1430,7 @@ namespace Ember
             DrawBossHud();
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
-            DrawFieldNotices(p,objectiveY+80);
+            DrawFieldNotices(p,QuestCollapsed?objectiveY+54:objectiveY+80);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
             hudCapturing=false;
 

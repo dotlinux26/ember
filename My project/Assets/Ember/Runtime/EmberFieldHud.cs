@@ -435,11 +435,52 @@ namespace Ember
             GUI.color=Color.white;
         }
 
+        bool questCollapsed;
+        bool questCollapsedInitialized;
+        bool QuestCollapsed
+        {
+            get
+            {
+                if(!questCollapsedInitialized)
+                {
+                    questCollapsed=PlayerPrefs.GetInt("Ember.QuestCollapsed",0)==1;
+                    questCollapsedInitialized=true;
+                }
+                return questCollapsed;
+            }
+            set
+            {
+                questCollapsed=value;
+                questCollapsedInitialized=true;
+                PlayerPrefs.SetInt("Ember.QuestCollapsed",questCollapsed?1:0);
+                PlayerPrefs.Save();
+            }
+        }
+
+        void DrawCircularProgress(Vector2 center,float radius,float ratio,Color color)
+        {
+            const int segments=28;
+            float filled=Mathf.Clamp01(ratio)*segments;
+            for(int i=0;i<segments;i++)
+            {
+                float a=(-90f+360f*i/segments)*Mathf.Deg2Rad;
+                float b=(-90f+360f*(i+1)/segments)*Mathf.Deg2Rad;
+                Vector2 from=center+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*radius;
+                Vector2 to=center+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*radius;
+                GUI.color=new Color(.14f,.10f,.22f,.90f);
+                Line(from,to,5);
+                if(filled>i)
+                {
+                    GUI.color=color;
+                    Line(from,Vector2.Lerp(from,to,Mathf.Clamp01(filled-i)),4);
+                }
+            }
+            GUI.color=Color.white;
+        }
+
         void DrawObjectiveCard(Player p,float y)
         {
-            var card=new Rect(16,y,Mathf.Min(370,Screen.width-32),72);
             bool blackout=State.Blackout>0;
-            PixelPanel(card,blackout?new Color(.31f,.11f,.21f):FieldPaper);
             string heading,hint;
             float progress;
             string icon;
@@ -481,11 +522,72 @@ namespace Ember
                 icon="core";
             }
 
-            var iconRect=new Rect(card.x+12,card.y+12,32,32);
-            if(icon=="torch")DrawSpritePreview(iconRect,Primitive("torch"));
-            else PixelArt(iconRect,icon);
-            UiLabel(new Rect(card.x+54,card.y+6,card.width-62,25),heading,label);
-            UiLabel(new Rect(card.x+54,card.y+31,card.width-62,28),hint,small);
+            if(QuestCollapsed)
+            {
+                // Compact circular quest bubble
+                Vector2 center=new Vector2(38,y+24);
+                Rect bubbleRect=new Rect(center.x-24,center.y-24,48,48);
+                RegisterHudRect(bubbleRect);
+
+                // Dark circular background
+                GUI.color=blackout?new Color(.35f,.11f,.22f,.95f):new Color(.11f,.08f,.18f,.95f);
+                DrawSpritePreview(new Rect(center.x-19,center.y-19,38,38),Primitive("circle"));
+                GUI.color=Color.white;
+
+                // Circular progress ring
+                Color ringColor=blackout?Coral:progress>=1f?Cyan:Gold;
+                DrawCircularProgress(center,20,progress,ringColor);
+
+                // Quest icon in center
+                Rect iconRect=new Rect(center.x-12,center.y-12,24,24);
+                if(icon=="torch")DrawSpritePreview(iconRect,Primitive("torch"));
+                else PixelArt(iconRect,icon);
+
+                // Expand badge with arrow >
+                Rect arrowBadge=new Rect(center.x+13,center.y-8,16,16);
+                PixelPanel(arrowBadge,new Color(.22f,.16f,.35f,.95f));
+                var oldContent=GUI.contentColor;
+                GUI.contentColor=new Color(1f,.92f,.55f);
+                GUI.Label(new Rect(arrowBadge.x+4,arrowBadge.y-2,12,16),">",small);
+                GUI.contentColor=oldContent;
+
+                // Percentage text under the bubble
+                string pctText=Mathf.RoundToInt(Mathf.Clamp01(progress)*100)+"%";
+                var oldAlign=small.alignment;
+                small.alignment=TextAnchor.MiddleCenter;
+                GUI.Label(new Rect(center.x-24,center.y+19,48,14),pctText,small);
+                small.alignment=oldAlign;
+
+                // Click to expand
+                if(GUI.Button(new Rect(center.x-24,center.y-24,56,56),new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
+                {
+                    QuestCollapsed=false;
+                }
+                return;
+            }
+
+            var card=new Rect(16,y,Mathf.Min(370,Screen.width-32),72);
+            RegisterHudRect(card);
+            PixelPanel(card,blackout?new Color(.31f,.11f,.21f):FieldPaper);
+
+            var cIconRect=new Rect(card.x+12,card.y+12,32,32);
+            if(icon=="torch")DrawSpritePreview(cIconRect,Primitive("torch"));
+            else PixelArt(cIconRect,icon);
+            UiLabel(new Rect(card.x+54,card.y+6,card.width-90,25),heading,label);
+            UiLabel(new Rect(card.x+54,card.y+31,card.width-90,28),hint,small);
+
+            // Collapse button [ < ] in upper right of card
+            Rect collapseBtn=new Rect(card.xMax-26,card.y+6,20,20);
+            PixelPanel(collapseBtn,new Color(.24f,.18f,.38f,.92f));
+            var oldCol=GUI.contentColor;
+            GUI.contentColor=new Color(.88f,.91f,.98f);
+            GUI.Label(new Rect(collapseBtn.x+5,collapseBtn.y-2,14,20),"<",small);
+            GUI.contentColor=oldCol;
+            if(GUI.Button(collapseBtn,new GUIContent("",L("Thu gọn hiển thị nhiệm vụ","Collapse quest display")),GUIStyle.none))
+            {
+                QuestCollapsed=true;
+            }
+
             var rail=new Rect(card.x+12,card.yMax-10,card.width-24,4);
             Panel(rail,new Color(.31f,.25f,.45f));
             rail.width*=Mathf.Clamp01(progress);
