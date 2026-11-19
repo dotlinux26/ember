@@ -101,7 +101,7 @@ namespace Ember
         {
             if(State==null||Local==null||clock<nextLaugh)return;
             var jester=State.Players.FirstOrDefault(p=>p.Hat==(int)Hat.Jester&&p.Dread>=90&&!p.Ghost&&!p.Extracted&&V2.Distance(p.Pos,Local.Pos)<14);
-            if(jester!=null){audioSource.panStereo=Mathf.Clamp((jester.Pos.X-Local.Pos.X)/12,-.8f,.8f);audioSource.PlayOneShot(jesterLaugh,.7f);nextLaugh=clock+7;Trace("audio.jester","player="+jester.Id);}
+            if(jester!=null&&audioSource!=null&&jesterLaugh!=null){audioSource.panStereo=Mathf.Clamp((jester.Pos.X-Local.Pos.X)/12,-.8f,.8f);audioSource.PlayOneShot(jesterLaugh,.7f);nextLaugh=clock+7;Trace("audio.jester","player="+jester.Id);}
         }
         bool pauseSettings,pauseConfirm;
         Vector2 pauseScroll;

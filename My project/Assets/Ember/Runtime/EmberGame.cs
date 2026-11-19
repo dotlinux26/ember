@@ -181,6 +181,7 @@ namespace Ember
 
         void Update()
         {
+            EnsureAudio();
             clock+=Time.deltaTime;lan?.Poll(Time.realtimeSinceStartupAsDouble);DiagnosticTick();
             TickCoopAutoReconnect(Time.deltaTime);
             if(network&&!host&&lan.LocalId==0&&string.IsNullOrEmpty(lan.Error)){joinClock-=Time.deltaTime;if(joinClock<=0){lan.Join(JsonUtility.ToJson(new JoinInfo{Name=nameText,PlayerId=installationId,Sandbox=debugSession,Vessel=selected,Perks=Profile.EquippedPerks.Take(Profile.PerkSlots).ToArray(),Ranks=Profile.PerkRanks,Recipes=Profile.Recipes,Hat=Profile.SelectedHat,Pet=Profile.SelectedPet,Awake=Profile.IsAwake(selected)}));joinClock=1;}}
@@ -215,7 +216,7 @@ namespace Ember
             StreamTrees();
             UpdateExploration(Time.deltaTime);
             if(netSmoke&&!netSmokeValidated&&State.Tick>120&&State.Players.Length==netExpected&&State.Players.All(p=>p.Id==1||p.Pos.X>(p.Id-1)*1.5f+1))NetSmokeCheck();
-            if(Local!=null&&Local.Dread>=30&&!Local.Safe){phantomClock-=Time.deltaTime;if(phantomClock<=0){audioSource.panStereo=Mathf.Sin(clock*2)*.8f;audioSource.PlayOneShot(footstep,.12f);phantomClock=3.5f;}}
+            if(Local!=null&&Local.Dread>=30&&!Local.Safe){phantomClock-=Time.deltaTime;if(phantomClock<=0&&audioSource!=null&&footstep!=null){audioSource.panStereo=Mathf.Sin(clock*2)*.8f;audioSource.PlayOneShot(footstep,.12f);phantomClock=3.5f;}}
             if((Local?.Extracted==true||(Local?.Ghost==true&&State.TeamExtracted>0)||State.Phase==Phase.Won||State.Phase==Phase.Lost)&&!rewarded)
             {
                 var p=Local;if(p!=null)RecordRunReward(p);
@@ -251,6 +252,12 @@ namespace Ember
         {
             int count=(int)(22050*seconds);var samples=new float[count];for(int i=0;i<count;i++)samples[i]=Mathf.Sin(i*hz*Mathf.PI*2/22050)*(1-(float)i/count)*.2f;
             var clip=AudioClip.Create("Ember tone",count,1,22050,false);clip.SetData(samples,0);return clip;
+        }
+        void EnsureAudio()
+        {
+            if(audioSource==null)audioSource=GetComponent<AudioSource>()??gameObject.AddComponent<AudioSource>();
+            if(tone==null)tone=MakeTone(440,.12f);
+            if(footstep==null)footstep=MakeTone(90,.08f);
         }
         bool Press(Key key)=>Keyboard.current!=null&&Keyboard.current[key].wasPressedThisFrame;
         bool Held(Key key)=>Keyboard.current!=null&&Keyboard.current[key].isPressed;
@@ -333,7 +340,7 @@ namespace Ember
             intent.X=move.x;intent.Y=move.y;
             bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
             bool attack=wantAttack&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;
-            intent.Attack|=attack;if(attack)audioSource.PlayOneShot(tone,.2f);
+            intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
             bool pressedInteract=Press(Key.E);
             if(pressedInteract&&Local!=null&&!Local.Ghost)
             {
@@ -1155,7 +1162,20 @@ namespace Ember
 
         void BuildMap()
         {
-            renderedSeed=State.Seed;foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
+            if(State==null)return;
+            renderedSeed=State.Seed;
+            if(mapRoot==null)
+            {
+                mapRoot=GameObject.Find("Ember map");
+                if(mapRoot==null)mapRoot=new GameObject("Ember map");
+            }
+            if(white==null)
+            {
+                white=new Texture2D(1,1);
+                white.SetPixel(0,0,Color.white);
+                white.Apply();
+            }
+            foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
             visibleTrees.Clear();treePool.Clear();treeSpawnClock.Clear();treeBaseScale.Clear();treeBasePos.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
             float edgeWorld=State.Size/2f-3;
             var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=2;
@@ -1165,7 +1185,7 @@ namespace Ember
                 var border=new GameObject("Abyss / physical boundary");border.transform.SetParent(mapRoot.transform);border.transform.position=side;
                 var collider=border.AddComponent<BoxCollider2D>();collider.size=side.x!=0?new Vector2(4,State.Size+8):new Vector2(State.Size+8,4);
             }
-            byte[] tiles=host?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
+            byte[] tiles=(host&&World!=null&&World.Tiles!=null)?World.Tiles:EmberWorld.MakeTiles(State.Seed,State.Size);currentTiles=tiles;int size=State.Size;
             exploredSize=size;
             exploredTiles=new bool[size*size];
             int initR=14;
