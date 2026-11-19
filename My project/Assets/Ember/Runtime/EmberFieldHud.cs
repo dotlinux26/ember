@@ -126,18 +126,17 @@ namespace Ember
                         .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
                     if(node!=null)
                     {
+                        // Undropped resource veins/bushes already have overhead health bars and direct Click/K harvest.
+                        // Only show interact prompt for dropped loot on the ground!
+                        if(!node.Dropped)return;
                         string resName=EmberLanguage.Text(Catalog.ResourceNames[(int)node.Resource]);
-                        bool isDust=node.Resource==Resource.Dust;
-                        bool needsPick=!node.Dropped&&!isDust&&!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe&&p.Weapon!=Weapon.CrystalAxe;
-                        string verb=node.Dropped?(node.Resource==Resource.Wood?L("Nhặt cành","Pick up branch"):L("Nhặt","Pick up")):isDust?L("Hái","Harvest"):node.Resource==Resource.Wood?L("Chặt","Chop"):L("Đào","Mine");
-                        bool hasTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
-                        string keyPrefix=(!node.Dropped&&hasTool)?L("[K / Click] ","[K / Click] "):"[E] ";
-                        targetPos=node.Pos+new V2(0,node.Dropped?.55f:.75f);
-                        caption=needsPick?L("Cần Cuốc để khai thác","Requires Pickaxe"):keyPrefix+verb+" · "+resName+" ×"+node.Amount;
+                        string verb=node.Resource==Resource.Wood?L("Nhặt cành","Pick up branch"):L("Nhặt","Pick up");
+                        targetPos=node.Pos+new V2(0,.55f);
+                        caption=verb+" · "+resName+" ×"+node.Amount;
                     }
                     else
                     {
-                        // Check for natural trees (tile 3) and rock cliffs (tile 2)
+                        // Check for broken bridge tiles (tile 7) to repair
                         int size=State.Size;
                         int px=(int)Mathf.Floor(p.Pos.X+size/2f);
                         int py=(int)Mathf.Floor(p.Pos.Y+size/2f);
@@ -152,7 +151,7 @@ namespace Ember
                                 int idx=ty*size+tx;
                                 if(idx<0||idx>=tiles.Length)continue;
                                 byte t=tiles[idx];
-                                if(t==3||t==2||t==7)
+                                if(t==7)
                                 {
                                     V2 blockPos=new V2(tx-size/2f+.5f,ty-size/2f+.5f);
                                     float d=V2.Distance(p.Pos,blockPos);
@@ -160,24 +159,11 @@ namespace Ember
                                 }
                             }
                         }
-                        if(bestTx>=0)
+                        if(bestTx>=0&&targetTile==7)
                         {
                             targetPos=new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f);
-                            if(targetTile==7)
-                            {
-                                bool canRepair=p.Bag[(int)Resource.Wood]>=4&&p.Bag[(int)Resource.Ore]>=2;
-                                caption=canRepair?L("Sửa cầu · Gỗ ×4, Quặng ×2","Repair · Wood ×4, Ore ×2"):L("Cầu gãy (Cần Gỗ ×4, Quặng ×2)","Broken (Need Wood ×4, Ore ×2)");
-                            }
-                            else
-                            {
-                                bool isTree=targetTile==3;
-                                bool needsPick=!p.HasPickaxe&&p.Weapon!=Weapon.Pickaxe&&p.Weapon!=Weapon.CrystalAxe;
-                                string verb=isTree?L("Chặt","Chop"):L("Đào","Mine");
-                                string resName=isTree?L("Gỗ","Wood"):L("Quặng","Ore");
-                                bool hasTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
-                                string keyPrefix=hasTool?L("[K / Click] ","[K / Click] "):"[E] ";
-                                caption=needsPick?(isTree?L("Cần Rìu/Cuốc để chặt cây","Requires Axe/Pickaxe"):L("Cần Cuốc để khai thác","Requires Pickaxe")):keyPrefix+verb+" · "+resName+" ×2";
-                            }
+                            bool canRepair=p.Bag[(int)Resource.Wood]>=4&&p.Bag[(int)Resource.Ore]>=2;
+                            caption=canRepair?L("Sửa cầu · Gỗ ×4, Quặng ×2","Repair · Wood ×4, Ore ×2"):L("Cầu gãy (Cần Gỗ ×4, Quặng ×2)","Broken (Need Wood ×4, Ore ×2)");
                         }
                         else return;
                     }
