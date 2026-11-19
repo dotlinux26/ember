@@ -18,6 +18,7 @@ namespace Ember
         readonly Dictionary<int,V2> prevPlayerPos=new Dictionary<int,V2>(),prevEnemyPos=new Dictionary<int,V2>(),prevProjPos=new Dictionary<int,V2>();
         float renderInterp=1f;
         Vector2Int visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+        int lastTreeRespawnCount=-1;
         readonly Dictionary<string,SpriteRenderer> renderers=new Dictionary<string,SpriteRenderer>();
         readonly Dictionary<string,Sprite[]> atlases=new Dictionary<string,Sprite[]>();
         readonly Dictionary<string,Sprite> primitives=new Dictionary<string,Sprite>();
@@ -774,10 +775,29 @@ namespace Ember
             }
             if(State.TreeRespawns!=null)
             {
+                if(State.TreeRespawns.Length!=lastTreeRespawnCount)
+                {
+                    lastTreeRespawnCount=State.TreeRespawns.Length;
+                    visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+                }
                 int size=State.Size;
                 for(int tri=0;tri<State.TreeRespawns.Length;tri++)
                 {
                     var tr=State.TreeRespawns[tri];
+                    int key=tr.Ty*size+tr.Tx;
+                    if(visibleTrees.TryGetValue(key,out var tSr))
+                    {
+                        tSr.enabled=false;
+                        treePool.Push(tSr);
+                        visibleTrees.Remove(key);
+                        treeSpawnClock.Remove(key);
+                        treeBaseScale.Remove(key);
+                        treeBasePos.Remove(key);
+                    }
+                    if(currentTiles!=null&&key>=0&&key<currentTiles.Length&&currentTiles[key]!=0)
+                    {
+                        currentTiles[key]=0;
+                    }
                     V2 stumpPos=new V2(tr.Tx-size/2f+.5f,tr.Ty-size/2f+.15f);
                     if(Mathf.Abs(stumpPos.X-center.X)>viewHalfW||Mathf.Abs(stumpPos.Y-center.Y)>viewHalfH)continue;
                     int sOrder=5000-Mathf.RoundToInt(stumpPos.Y*10);
@@ -786,6 +806,11 @@ namespace Ember
                     else if(tr.Tile==2)
                         Put("rubble_"+tr.Tx+"_"+tr.Ty,Primitive("rock_small"),stumpPos,Color.white,0.85f,sOrder);
                 }
+            }
+            else if(lastTreeRespawnCount!=0)
+            {
+                lastTreeRespawnCount=0;
+                visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
             }
             if(local!=null&&!local.Ghost&&currentTiles!=null)
             {
@@ -1390,6 +1415,7 @@ namespace Ember
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
             DrawHarvestBars();
+            DrawBeaconOverhead(p);
             DrawEnemyHealthBars();
             DrawCombatPopups();
             foreach(var q in State.Players)

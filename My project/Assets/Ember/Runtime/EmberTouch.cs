@@ -49,7 +49,7 @@ namespace Ember
             var p=Local;
             DrawTouchTile(AttackTouch,L("Đánh","Attack"),IsHoldingWeaponSlot(heldSlot)?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,heldSlot)]):null,IsHoldingWeaponSlot(heldSlot));
             if(p.Vessel!=Vessel.Wanderer||p.Awake)
-                DrawTouchTile(SkillTouch,L("Kỹ năng","Skill"),p.Vessel==Vessel.LittleMoone?MaterialSprite("meteor"):Frame(p.Vessel,"cast",0),
+                DrawTouchTile(SkillTouch,L("Kỹ năng","Skill"),Frame(p.Vessel,"idle",0),
                     p.SkillCD<=0&&HasSkillFocus(p));
             DrawTouchTile(DashTouch,L("Lướt","Dash"),MaterialSprite("perk_2"),p.DashCD<=0);
             DrawTouchTile(PushTouch,L("Đẩy","Shove"),Glove(false),p.PushCD<=0&&p.Stamina>=15);

@@ -73,7 +73,8 @@ namespace Ember
                     int maxAmt=n.MaxAmount>0?n.MaxAmount:5;
                     if(n.Amount>=maxAmt)continue;
                     float ratio=Mathf.Clamp01(n.Amount/(float)maxAmt);
-                    Vector2 anchor=ScreenPos(n.Pos+new V2(0,.85f));
+                    float yOff=(!n.Dropped&&n.Resource==Resource.Wood)?1.85f:.85f;
+                    Vector2 anchor=ScreenPos(n.Pos+new V2(0,yOff));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
                     Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
                     Color fill=ratio<.3f?Coral:n.Resource==Resource.Dust?new Color(.35f,1f,.90f):n.Resource==Resource.Wood?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
@@ -98,6 +99,78 @@ namespace Ember
                     Color fill=ratio<.3f?Coral:ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
                     Panel(new Rect(x-19,y-6,38*ratio,5),fill);
                     Panel(new Rect(x-19,y-6,38*ratio,1),new Color(1f,1f,1f,.25f));
+                }
+            }
+        }
+
+        void DrawBeaconOverhead(Player p)
+        {
+            if(State==null)return;
+            V2 beaconTop=new V2(0,2.45f);
+            Vector2 screen=ScreenPos(beaconTop);
+            if(screen.x<-150||screen.x>Screen.width+150||screen.y<-150||screen.y>Screen.height+150)return;
+
+            int tier=Mathf.Clamp(Mathf.FloorToInt(State.Charge/100f)+1,1,10);
+            string tierTitle=L($"Trụ Tinh Thể · Cấp {tier}",$"Crystal Beacon · Tier {tier}");
+            int curCharge=Mathf.RoundToInt(State.Charge);
+            int targetCharge=Mathf.Max(1,Mathf.RoundToInt(State.ChargeTarget));
+            bool overcharged=curCharge>=targetCharge;
+            string energyText;
+            if(State.Phase==Phase.Eclipse)
+                energyText=L($"Bảo vệ Hải Đăng · HP {Mathf.CeilToInt(State.BeaconHP)}/600",$"Defend Beacon · HP {Mathf.CeilToInt(State.BeaconHP)}/600");
+            else if(overcharged)
+                energyText=$"{curCharge}/{targetCharge} NL "+L("(Sẵn sàng)","(Ready)");
+            else
+                energyText=$"{curCharge}/{targetCharge} NL";
+
+            bool nearBeacon=p!=null&&!p.Ghost&&p.Pos.Length<3.8f;
+            float bw=154, bh=nearBeacon?64:36;
+            Rect panelRect=new Rect(Mathf.Round(screen.x-bw/2),Mathf.Round(screen.y-bh),bw,bh);
+
+            PixelPanel(panelRect,new Color(.08f,.06f,.14f,.93f));
+
+            // Header title
+            UiLabel(new Rect(panelRect.x+4,panelRect.y+2,panelRect.width-8,16),tierTitle,small);
+
+            // Energy meter
+            float chargeRatio=Mathf.Clamp01(curCharge/(float)targetCharge);
+            float mw=panelRect.width-20;
+            Rect barBg=new Rect(panelRect.x+10,panelRect.y+18,mw,6);
+            Panel(barBg,new Color(.04f,.03f,.08f,.95f));
+            Color meterCol=overcharged?new Color(.35f,1f,.85f):new Color(.28f,.85f,1f);
+            Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,4),meterCol);
+            Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,1),new Color(1f,1f,1f,.32f));
+
+            // Energy text under meter
+            var oldCol=GUI.contentColor;
+            GUI.contentColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+24,panelRect.width-8,14),energyText,small);
+            GUI.contentColor=oldCol;
+
+            // Interactive deposit prompt when player is nearby
+            if(nearBeacon)
+            {
+                int cores=p!=null?p.Bag[(int)Resource.Core]:0;
+                Rect btnRect=new Rect(panelRect.x+6,panelRect.y+40,panelRect.width-12,20);
+                PixelPanel(btnRect,cores>0?new Color(.18f,.14f,.28f,.96f):new Color(.12f,.10f,.18f,.88f));
+
+                Rect keyBox=new Rect(btnRect.x+3,btnRect.y+2,16,16);
+                Panel(keyBox,Gold);
+                var oldContent=GUI.contentColor;
+                GUI.contentColor=Color.black;
+                GUI.Label(new Rect(keyBox.x+3,keyBox.y-1,12,18),"B",small);
+
+                GUI.contentColor=cores>0?new Color(1f,.94f,.55f):new Color(.70f,.72f,.80f);
+                string depositPrompt=cores>0
+                    ?L($"Nạp {cores} Lõi (+{cores*25} NL)",$"Deposit {cores} Core (+{cores*25} NL)")
+                    :L("Nạp Lõi (+25 NL/lõi)","Deposit Core (+25 NL)");
+                GUI.Label(new Rect(keyBox.xMax+5,btnRect.y+1,btnRect.width-26,18),depositPrompt,small);
+                GUI.contentColor=oldContent;
+
+                if(GUI.Button(btnRect,GUIContent.none,GUIStyle.none))
+                {
+                    if(cores>0)intent.Deposit=true;
+                    else notice=L("Mang Lõi Tinh Thể về trụ để nạp năng lượng!","Bring Crystal Cores to the beacon to charge!");
                 }
             }
         }
@@ -889,8 +962,7 @@ namespace Ember
                 Rect icon=new Rect(tile.center.x-14,tile.y+5,28,28);
                 if(skill)
                 {
-                    if(p.Vessel!=Vessel.LittleMoone)DrawSpritePreview(icon,Frame(p.Vessel,"cast",0));
-                    else PixelArt(icon,"meteor");
+                    DrawSpritePreview(icon,Frame(p.Vessel,"idle",0));
                 }
                 else DrawSpritePreview(icon,SlotIconSprite(p,slot));
                 string key=skill?"J":(i+1).ToString();

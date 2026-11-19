@@ -480,7 +480,12 @@ int hTx=(int)(25+hSize/2f), hTy=(int)(25+hSize/2f);
 harvestWorld.Tiles[hTy*hSize+hTx]=3; // tree obstacle
 harvestWorld.Submit(1, new Command{Interact=true});
 harvestWorld.Tick();
-Check(harvestWorld.Tiles[hTy*hSize+hTx]==0&&harvestPlayer.PickaxeDurability==49&&harvestPlayer.Bag[(int)Resource.Wood]>0, "chopping tree tile clears collision, spends pickaxe durability, and yields wood");
+Check(harvestWorld.S.HarvestTargets.Any(h=>h.Tx==hTx&&h.Ty==hTy&&h.HP<h.MaxHP)&&harvestPlayer.Bag[(int)Resource.Wood]>0, "chopping tree tile damages it, reveals overhead health bar, and yields wood");
+harvestPlayer.HarvestCD=0;
+harvestPlayer.Stamina=100;
+harvestWorld.Submit(1, new Command{Interact=true});
+harvestWorld.Tick();
+Check(harvestWorld.Tiles[hTy*hSize+hTx]==0&&harvestPlayer.PickaxeDurability==48, "final chop clears tree collision, spawns stump, and depletes durability");
 
 // Pickaxe break check
 harvestPlayer.PickaxeTier=0;
@@ -489,6 +494,7 @@ harvestPlayer.Pos=new V2(28, 28);
 int bTx=(int)(28+hSize/2f), bTy=(int)(28+hSize/2f);
 harvestWorld.Tiles[bTy*hSize+bTx]=3;
 harvestPlayer.HarvestCD=0;
+harvestPlayer.Stamina=100;
 harvestWorld.Submit(1, new Command{Interact=true});
 harvestWorld.Tick();
 Check(!harvestPlayer.HasPickaxe&&harvestPlayer.PickaxeDurability==0, "depleted tier 0 pickaxe breaks completely");

@@ -661,7 +661,7 @@ namespace Ember
                 if(nearBridge)continue;
                 float radius=pos.Length;Resource resource=new[]{Resource.Dust,Resource.Core,Resource.Wood,Resource.Ore}[rng.Next(4)];
                 if(radius<15)resource=i%3==0?Resource.Core:Resource.Dust;
-                int amt=resource==Resource.Core?(radius>S.Size*.35f?5:2):4;
+                int amt=resource==Resource.Core?(radius>S.Size*.35f?5:2):resource==Resource.Wood?6:4;
                 nodes.Add(new Node{Id=nextId++,Pos=pos,Resource=resource,Amount=amt,MaxAmount=amt});
             }
             // Guaranteed accessible starter resources, regardless of seed.
@@ -1281,7 +1281,7 @@ namespace Ember
                 int px=(int)Math.Floor(p.Pos.X+size/2f);
                 int py=(int)Math.Floor(p.Pos.Y+size/2f);
                 int bestTx=-1,bestTy=-1;float bestDist=float.MaxValue;byte targetTile=0;
-                for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+                for(int dy=-3;dy<=3;dy++)for(int dx=-3;dx<=3;dx++)
                 {
                     int tx=px+dx,ty=py+dy;
                     if(tx<0||ty<0||tx>=size||ty>=size)continue;
@@ -1353,7 +1353,7 @@ namespace Ember
                         }
                     }
                     int htIdx=harvestTargets.FindIndex(h=>h.Tx==bestTx&&h.Ty==bestTy);
-                    HarvestTarget ht=htIdx>=0?harvestTargets[htIdx]:new HarvestTarget{Tx=bestTx,Ty=bestTy,MaxHP=targetTile==3?60f:80f,HP=targetTile==3?60f:80f,Tile=targetTile,LastHitTime=S.Time};
+                    HarvestTarget ht=htIdx>=0?harvestTargets[htIdx]:new HarvestTarget{Tx=bestTx,Ty=bestTy,MaxHP=targetTile==3?120f:160f,HP=targetTile==3?120f:160f,Tile=targetTile,LastHitTime=S.Time};
                     float dmg=30f+p.PickaxeTier*30f+(p.Has(Perk.Miner)?10f*p.Rank(Perk.Miner):0f);
                     if(p.Weapon==Weapon.CrystalAxe||p.SideWeapon==Weapon.CrystalAxe)dmg=Math.Max(dmg,60f);
                     ht.HP=Math.Max(0f,ht.HP-dmg);
@@ -1363,6 +1363,7 @@ namespace Ember
                         harvestTargets.RemoveAll(h=>h.Tx==bestTx&&h.Ty==bestTy);
                         Tiles[bestTy*size+bestTx]=0;
                         treeRespawns.Add(new TreeRespawn{Tx=bestTx,Ty=bestTy,RespawnAt=S.Time+45f,Tile=targetTile});
+                        FX(blockPos,blockPos,7);
                     }
                     else
                     {
@@ -1529,7 +1530,7 @@ namespace Ember
             int size=S.Size;
             int px=(int)Math.Floor(p.Pos.X+size/2f);
             int py=(int)Math.Floor(p.Pos.Y+size/2f);
-            for(int dy=-2;dy<=2;dy++)for(int dx=-2;dx<=2;dx++)
+            for(int dy=-3;dy<=3;dy++)for(int dx=-3;dx<=3;dx++)
             {
                 int tx=px+dx,ty=py+dy;
                 if(tx<0||ty<0||tx>=size||ty>=size)continue;
