@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ember - Thư Viện Thẩm Mỹ Pixel Art Master</title>
+    <style>
+        body { background: #0d0b14; color: #e6e6f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 24px; }
+        h1 { color: #ffd700; margin-bottom: 6px; font-size: 26px; }
+        .subtitle { color: #78d6e8; margin-bottom: 24px; font-size: 14px; }
+        .section-title { font-size: 18px; color: #ffaa33; border-bottom: 2px solid #3d2f5a; padding-bottom: 6px; margin-top: 32px; margin-bottom: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+        .card { background: #181424; border: 1px solid #332847; border-radius: 8px; padding: 14px; text-align: center; transition: transform 0.15s, border-color 0.15s; }
+        .card:hover { transform: translateY(-3px); border-color: #ffd700; }
+        .sprite-box { background: #09070e; border: 1px solid #241d33; border-radius: 6px; padding: 16px; display: flex; align-items: center; justify-content: center; height: 140px; margin-bottom: 12px; }
+        .sprite-box img { image-rendering: pixelated; }
+        .card-name { font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 4px; }
+        .card-desc { font-size: 12px; color: #9c95b3; line-height: 1.4; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+        .badge-approved { background: #1e3d2f; color: #4ade80; border: 1px solid #22c55e; }
+        .badge-new { background: #3d241e; color: #fb923c; border: 1px solid #f97316; }
+        .badge-soulknight { background: #1e293d; color: #38bdf8; border: 1px solid #0284c7; }
+        .anim-box { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px; }
+        .anim-card { background: #181424; border: 1px solid #3d2f5a; border-radius: 8px; padding: 18px; text-align: center; }
+        .anim-canvas { width: 192px; height: 192px; image-rendering: pixelated; background: #09070e; border: 1px solid #241d33; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Ember Pixel Art Master - Thư Viện Thẩm Mỹ Trực Quan</h1>
+    <div class="subtitle">Thư mục làm việc tập trung: <code>D:\Ember\ArtShowcase\</code> · Toàn bộ asset đã upscale 8x sắc nét không vỡ hạt để kiểm tra từng pixel.</div>
+
+    <div class="section-title">🎬 Hoạt Ảnh Thời Gian Thực (Live Animations)</div>
+    <div class="anim-box">
+        <div class="anim-card">
+            <canvas id="merchantCanvas" class="anim-canvas" width="192" height="192"></canvas>
+            <div class="card-name" style="margin-top: 10px;">Thương Nhân Lang Thang (Độc Bản)</div>
+            <div class="card-desc">4 Frame Idle · Đèn lồng đung đưa & Nhịp thở sống động</div>
+        </div>
+        <div class="anim-card">
+            <canvas id="torchCanvas" class="anim-canvas" width="128" height="128"></canvas>
+            <div class="card-name" style="margin-top: 10px;">Ngọn Lửa Đuốc Cắm Đất</div>
+            <div class="card-desc">4 Frame Flame Loop · Lửa bập bùng & Tàn lửa bay</div>
+        </div>
+    </div>
+
+    <div class="section-title">🛡️ Trang Bị, Đèn Lồng & Vật Phẩm Sinh Tồn (Soul Knight Style)</div>
+    <div class="grid">
+        <div class="card">
+            <span class="badge badge-approved">ĐÃ DUYỆT FORM</span>
+            <div class="sprite-box"><img src="zoomed_8x/stick.png" width="120" height="120"></div>
+            <div class="card-name">Gậy Gỗ (Stick)</div>
+            <div class="card-desc">Dựng đứng ~75° tự nhiên, vân vỏ gỗ tự nhiên & đốm rêu xanh.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-new">TÁCH RIÊNG ĐÈN</span>
+            <div class="sprite-box"><img src="zoomed_8x/lantern_inferno.png" width="120" height="120"></div>
+            <div class="card-name">Đèn Hỏa Ngục (Inferno)</div>
+            <div class="card-desc">Gothic thép đen sừng quỷ, nhốt ngọn lửa địa ngục đỏ cam.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-new">TÁCH RIÊNG ĐÈN</span>
+            <div class="sprite-box"><img src="zoomed_8x/lantern_relic.png" width="120" height="120"></div>
+            <div class="card-name">Đèn Thánh Tích (Relic)</div>
+            <div class="card-desc">Đồng cổ cánh thiên thần, nhốt tinh thể Cyan/Gold phát quang.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">SOUL KNIGHT</span>
+            <div class="sprite-box"><img src="zoomed_8x/torch.png" width="120" height="120"></div>
+            <div class="card-name">Đuốc Cầm Tay</div>
+            <div class="card-desc">Chéo 60° dày dặn, đai sắt quấn vải hắc ín bốc lửa bập bùng.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">SOUL KNIGHT</span>
+            <div class="sprite-box"><img src="zoomed_8x/torch_ground.png" width="120" height="120"></div>
+            <div class="card-name">Đuốc Cắm Đất</div>
+            <div class="card-desc">Dựng đứng 90° cắm chắc trong ụ đá, lại gần bấm [E] để nhặt.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">SOUL KNIGHT</span>
+            <div class="sprite-box"><img src="zoomed_8x/pickaxe.png" width="120" height="120"></div>
+            <div class="card-name">Cuốc Sắt</div>
+            <div class="card-desc">Lưỡi dày lực lưỡng, viền đen 1px, phản quang kim loại sắc bén.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">SOUL KNIGHT</span>
+            <div class="sprite-box"><img src="zoomed_8x/axe.png" width="120" height="120"></div>
+            <div class="card-name">Rìu Đốn Củi</div>
+            <div class="card-desc">Lưỡi liềm rộng bản uy lực, lưng búa dẹt, cán cong công thái học.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">SOUL KNIGHT</span>
+            <div class="sprite-box"><img src="zoomed_8x/energy_drink.png" width="120" height="120"></div>
+            <div class="card-name">Nước Tăng Lực</div>
+            <div class="card-desc">Bình thủy tinh chunky tròn mập, dung dịch cyan ma thuật phóng tia sét.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-approved">ĐÃ DUYỆT FORM</span>
+            <div class="sprite-box"><img src="zoomed_8x/abandoned_chest.png" width="120" height="120"></div>
+            <div class="card-name">Rương Bỏ Hoang (Đóng)</div>
+            <div class="card-desc">Gỗ cổ đai sắt rêu phong, ổ khóa đầu lâu ma thuật phát quang.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-approved">ĐÃ DUYỆT FORM</span>
+            <div class="sprite-box"><img src="zoomed_8x/abandoned_chest_open.png" width="120" height="120"></div>
+            <div class="card-name">Rương Bỏ Hoang (Mở)</div>
+            <div class="card-desc">Nắp bật ra sau, khói ma thuật hư không bay lên và tàn lụi sau 30s.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-approved">ĐÃ DUYỆT FORM</span>
+            <div class="sprite-box"><img src="zoomed_8x/revival.png" width="120" height="120"></div>
+            <div class="card-name">Đá Hồi Sinh</div>
+            <div class="card-desc">Tinh thể rune hình thoi giác cạnh, khắc ankh phục sinh vàng rực.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-approved">ĐÃ DUYỆT FORM</span>
+            <div class="sprite-box"><img src="zoomed_8x/wall.png" width="120" height="120"></div>
+            <div class="card-name">Tường Rào Gỗ</div>
+            <div class="card-desc">Hàng rào chấn thủ kiên cố ngăn chặn quái bóng tối tràn vào.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">THỰC PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/apple.png" width="120" height="120"></div>
+            <div class="card-name">Quả Táo Rừng</div>
+            <div class="card-desc">Đỏ bordeaux căng mọng, phản quang ánh sáng và cuống lá tươi.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">THỰC PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/roasted_apple.png" width="120" height="120"></div>
+            <div class="card-name">Táo Nướng Mật</div>
+            <div class="card-desc">Xiên cành gỗ nướng caramel, vết nứt vỏ thơm ngậy và làn khói mỏng.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">THỰC PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/mushroom.png" width="120" height="120"></div>
+            <div class="card-name">Nấm Phát Quang</div>
+            <div class="card-desc">Mũ tím đốm cyan phát sáng trong đêm, chân nấm có thớ đất rừng sâu.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">THỰC PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/mushroom_stew.png" width="120" height="120"></div>
+            <div class="card-name">Bát Súp Nấm</div>
+            <div class="card-desc">Bát gỗ mộc mạc, nước súp vàng béo ngậy có lát nấm và thìa gỗ.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">VẬT PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/flare.png" width="120" height="120"></div>
+            <div class="card-name">Pháo Sáng Ma Thuật</div>
+            <div class="card-desc">Thỏi pháo đồng khắc cổ ngữ, bắn pháo hoa xua tan bóng tối diện rộng.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-soulknight">VẬT PHẨM</span>
+            <div class="sprite-box"><img src="zoomed_8x/sedative.png" width="120" height="120"></div>
+            <div class="card-name">Thuốc An Thần</div>
+            <div class="card-desc">Lọ nút bạc dung dịch tím mộng mị, giảm hoảng loạn ngay lập tức.</div>
+        </div>
+    </div>
+
+    <script>
+        const merchantImg = new Image();
+        merchantImg.src = 'raw/merchant.png';
+        const mCanvas = document.getElementById('merchantCanvas');
+        const mCtx = mCanvas.getContext('2d');
+        mCtx.imageSmoothingEnabled = false;
+        let mFrame = 0;
+        merchantImg.onload = () => {
+            setInterval(() => {
+                mCtx.clearRect(0, 0, 192, 192);
+                mCtx.drawImage(merchantImg, mFrame * 48, 0, 48, 48, 0, 0, 192, 192);
+                mFrame = (mFrame + 1) % 4;
+            }, 300);
+        };
+
+        const torchGroundImg = new Image();
+        torchGroundImg.src = 'raw/torch_ground.png';
+        const torchFireImg = new Image();
+        torchFireImg.src = 'raw/torch_fire.png';
+        const tCanvas = document.getElementById('torchCanvas');
+        const tCtx = tCanvas.getContext('2d');
+        tCtx.imageSmoothingEnabled = false;
+        let tFrame = 0;
+        let loaded = 0;
+        function checkTorch() {
+            loaded++;
+            if (loaded === 2) {
+                setInterval(() => {
+                    tCtx.clearRect(0, 0, 128, 128);
+                    tCtx.drawImage(torchGroundImg, 0, 0, 32, 32, 0, 0, 128, 128);
+                    tCtx.drawImage(torchFireImg, tFrame * 32, 0, 32, 32, 0, -8, 128, 128);
+                    tFrame = (tFrame + 1) % 4;
+                }, 150);
+            }
+        }
+        torchGroundImg.onload = checkTorch;
+        torchFireImg.onload = checkTorch;
+    </script>
+</body>
+</html>
