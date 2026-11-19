@@ -96,6 +96,7 @@ namespace Ember
             selectedDifficulty=(Difficulty)Mathf.Clamp(PlayerPrefs.GetInt(DifficultyPref,(int)Difficulty.Normal),0,2);
             LoadProfile();selected=Profile.SelectedVessel;
             if(!Profile.CanPlay(selected))selected=0;
+            WarmVesselSprites();
             RefreshSavedRunPreview();
             LoadLastCoopSession();
             NewWorld(Environment.TickCount);
@@ -1939,7 +1940,91 @@ namespace Ember
             if(p==null||p.Version!=1||p.Ash<0||p.Memory<0||p.Tokens<0||p.PerkSlots<1||p.PerkSlots>3||p.Vessels==null||p.Perks==null||p.Hats==null||p.Pets==null||p.EquippedPerks==null||p.EquippedPerks.Length>p.PerkSlots||p.Vessels.Any(v=>v<0||v>=Catalog.VesselNames.Length)||p.EquippedPerks.Any(v=>!p.Perks.Contains(v)))throw new InvalidDataException("Profile không hợp lệ.");
             if(!p.CanPlay(p.SelectedVessel)||p.Perks.Any(v=>v<0||v>=Catalog.PerkNames.Length)||p.Hats.Any(v=>v<0||v>3)||p.Pets.Any(v=>v<0||v>3)||(p.SelectedHat!=-1&&!p.Hats.Contains(p.SelectedHat))||(p.SelectedPet!=-1&&!p.Pets.Contains(p.SelectedPet)))throw new InvalidDataException("Profile chứa lựa chọn không hợp lệ.");
         }
-        void SaveProfile(){if(saveBlocked||debugSession)return;try{Profile.SelectedVessel=Profile.CanPlay(selected)?selected:0;EmberSave.WriteAtomic(SavePath,EmberSave.Protect(JsonUtility.ToJson(Profile),LocalPassword));}catch(Exception ex){notice="Lưu thất bại: "+ex.Message;Trace("save.error",ex.Message);}}
+        void WarmVesselSprites()
+        {
+            try
+            {
+                for(int i=0;i<Catalog.VesselNames.Length;i++)Frame((Vessel)i,"idle",0);
+            }
+            catch(Exception ex){Trace("vessel.warm_error",ex.Message);}
+        }
+        readonly object profileSaveLock=new object();
+        volatile bool profileSaveInFlight=false;
+        string pendingProfileJson=null;
+
+        void SaveProfile(bool asyncWrite=true)
+        {
+            if(saveBlocked||debugSession)return;
+            try
+            {
+                Profile.SelectedVessel=Profile.CanPlay(selected)?selected:0;
+                string json=JsonUtility.ToJson(Profile);
+                string pwd=LocalPassword;
+                string path=SavePath;
+
+                if(!asyncWrite)
+                {
+                    lock(profileSaveLock)
+                    {
+                        byte[] protectedBytes=EmberSave.Protect(json,pwd);
+                        EmberSave.WriteAtomic(path,protectedBytes);
+                    }
+                    return;
+                }
+
+                lock(profileSaveLock)
+                {
+                    pendingProfileJson=json;
+                    if(profileSaveInFlight)return;
+                    profileSaveInFlight=true;
+                }
+
+                RunBackgroundProfileSave(pwd,path);
+            }
+            catch(Exception ex){notice="Lưu thất bại: "+ex.Message;Trace("save.error",ex.Message);}
+        }
+
+        void RunBackgroundProfileSave(string pwd,string path)
+        {
+            System.Threading.Tasks.Task.Run(()=>
+            {
+                while(true)
+                {
+                    string jsonToSave;
+                    lock(profileSaveLock)
+                    {
+                        jsonToSave=pendingProfileJson;
+                        pendingProfileJson=null;
+                    }
+
+                    if(jsonToSave==null)
+                    {
+                        lock(profileSaveLock){profileSaveInFlight=false;}
+                        break;
+                    }
+
+                    try
+                    {
+                        byte[] protectedBytes=EmberSave.Protect(jsonToSave,pwd);
+                        lock(profileSaveLock){EmberSave.WriteAtomic(path,protectedBytes);}
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.LogWarning("Async profile save failed: "+ex.Message);
+                        Trace("save.error",ex.Message);
+                    }
+
+                    lock(profileSaveLock)
+                    {
+                        if(pendingProfileJson==null)
+                        {
+                            profileSaveInFlight=false;
+                            break;
+                        }
+                    }
+                }
+            });
+        }
         void Export()
         {
             if(savePassword.Length<8){notice="Dùng mật khẩu sao lưu ít nhất 8 ký tự.";return;}
@@ -1951,8 +2036,8 @@ namespace Ember
             try{string file=EmberFileDialog.Choose(false);if(string.IsNullOrEmpty(file))return;PreviewRestore(File.ReadAllBytes(file),Path.GetFileName(file));}
             catch(Exception ex){notice=ex.Message;}
         }
-        void OnApplicationPause(bool paused){if(paused&&!netSmoke){SaveActiveRun(false);SaveProfile();PlayerPrefs.Save();}}
-        void OnApplicationQuit(){if(!netSmoke){SaveActiveRun(false);SaveProfile();PlayerPrefs.Save();}try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
+        void OnApplicationPause(bool paused){if(paused&&!netSmoke){SaveActiveRun(false);SaveProfile(false);PlayerPrefs.Save();}}
+        void OnApplicationQuit(){if(!netSmoke){SaveActiveRun(false);SaveProfile(false);PlayerPrefs.Save();}try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
         void OnDestroy(){lan?.Dispose();CloseDiagnostics();}
     }
 }
