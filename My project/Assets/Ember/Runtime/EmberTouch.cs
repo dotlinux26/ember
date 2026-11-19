@@ -55,7 +55,7 @@ namespace Ember
             DrawTouchTile(PushTouch,L("Đẩy","Shove"),Glove(false),p.PushCD<=0&&p.Stamina>=15);
             DrawTouchTile(RangesTouch,L("Tầm","Range"),Primitive("ring"),ranges);
             DrawTouchTile(InteractTouch,L("Tương tác","Interact"),Glove(true),true);
-            DrawTouchTile(DepositTouch,L("Nạp lõi","Deposit"),MaterialSprite("core"),true);
+            DrawTouchTile(DepositTouch,L("Nạp NL","Deposit"),MaterialSprite("core"),true);
             DrawTouchTile(RefuelTouch,L("Nạp đèn","Refuel"),Primitive("torch"),true);
         }
 

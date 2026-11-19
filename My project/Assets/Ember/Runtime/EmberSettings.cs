@@ -110,7 +110,7 @@ namespace Ember
         {
             float width=pauseSettings?Mathf.Min(640,Screen.width-40):Mathf.Min(438,Screen.width-30);
             bool canSaveRun=CanSaveCurrentSoloRun();
-            float height=pauseSettings?Mathf.Min(600,Screen.height-48):(canSaveRun?344:300);
+            float height=pauseSettings?Mathf.Min(600,Screen.height-48):(canSaveRun?344:network?336:300);
             var box=new Rect((Screen.width-width)/2,(Screen.height-height)/2,width,height);
             Panel(new Rect(0,0,Screen.width,Screen.height),new Color(.035f,.025f,.075f,.70f));
             PixelPanel(box,FieldPaper);
@@ -148,7 +148,18 @@ namespace Ember
             }
             else
             {
-                if(network)UiText(L("Trận co-op vẫn tiếp tục.","The co-op match keeps running."),small);
+                if(network)
+                {
+                    var warnBox=GUILayoutUtility.GetRect(0,36,GUILayout.ExpandWidth(true));
+                    PixelPanel(warnBox,new Color(.28f,.14f,.08f,.95f));
+                    var oldCol=GUI.contentColor;
+                    GUI.contentColor=new Color(1f,.78f,.25f);
+                    var warnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,fontStyle=FontStyle.Bold};
+                    GUI.Label(new Rect(warnBox.x+6,warnBox.y+2,warnBox.width-12,warnBox.height-4),
+                        L("⚠️ Đang chơi Online — Trò chơi vẫn tiếp tục chạy trong nền!",
+                          "⚠️ Online Co-op active — Game continues running in background!"),warnStyle);
+                    GUI.contentColor=oldCol;
+                }
                 else
                 {
                     var banner=GUILayoutUtility.GetRect(0,54,GUILayout.ExpandWidth(true));
@@ -169,6 +180,15 @@ namespace Ember
 
         void DrawSettings()
         {
+            if(network)
+            {
+                var oldCol=GUI.contentColor;
+                GUI.contentColor=new Color(1f,.78f,.25f);
+                UiText(L("⚠️ Đang chơi Online — Trò chơi vẫn tiếp tục chạy trong nền!",
+                         "⚠️ Online Co-op active — Game continues running in background!"),small);
+                GUI.contentColor=oldCol;
+                GUILayout.Space(6);
+            }
             UiText(L("Âm thanh","Audio"),label);
             UiText(L("Âm lượng ","Volume ")+Mathf.RoundToInt(soundVolume*100)+"%",small);
             float volume=GUILayout.HorizontalSlider(soundVolume,0,1,GUILayout.Height(20));

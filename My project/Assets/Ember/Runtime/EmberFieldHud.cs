@@ -161,16 +161,14 @@ namespace Ember
                 GUI.Label(new Rect(keyBox.x+3,keyBox.y-1,12,18),"B",small);
 
                 GUI.contentColor=cores>0?new Color(1f,.94f,.55f):new Color(.70f,.72f,.80f);
-                string depositPrompt=cores>0
-                    ?L($"Nạp {cores} Lõi (+{cores*25} NL)",$"Deposit {cores} Core (+{cores*25} NL)")
-                    :L("Nạp Lõi (+25 NL/lõi)","Deposit Core (+25 NL)");
+                string depositPrompt=L("Nạp năng lượng","Deposit Energy");
                 GUI.Label(new Rect(keyBox.xMax+5,btnRect.y+1,btnRect.width-26,18),depositPrompt,small);
                 GUI.contentColor=oldContent;
 
                 if(GUI.Button(btnRect,GUIContent.none,GUIStyle.none))
                 {
                     if(cores>0)intent.Deposit=true;
-                    else notice=L("Mang Lõi Tinh Thể về trụ để nạp năng lượng!","Bring Crystal Cores to the beacon to charge!");
+                    else notice=L("Không có vật phẩm nạp!","No items to deposit!");
                 }
             }
         }

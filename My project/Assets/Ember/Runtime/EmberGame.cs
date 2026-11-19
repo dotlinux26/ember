@@ -343,7 +343,16 @@ namespace Ember
                         :(EmberLanguage.English?"Need a Pickaxe to mine rocks!":"Không có Cuốc để khai thác quặng!");
                 }
             }
-            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);intent.Deposit|=Press(Key.B);
+            intent.Skill|=Press(Key.J);intent.Dash|=Press(Key.Space);intent.Interact|=pressedInteract;intent.Refuel|=Press(Key.Q);
+            if(Press(Key.B))
+            {
+                if(Local!=null&&Local.Pos.Length<4.5f)
+                {
+                    if(Local.Bag[(int)Resource.Core]>0)intent.Deposit=true;
+                    else notice=L("Không có vật phẩm nạp!","No items to deposit!");
+                }
+                else intent.Deposit=true;
+            }
             intent.ToggleLamp|=Press(Key.T);intent.PassLamp|=Press(Key.G);intent.Push|=Press(Key.L);intent.Revive|=Press(Key.H);intent.Reload|=Press(Key.X);
             if(Local!=null&&Local.Pos.Length<4.5f)
             {
