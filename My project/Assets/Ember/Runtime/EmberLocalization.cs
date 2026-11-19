@@ -70,7 +70,9 @@ namespace Ember
             DrawInterface();
             DrawTouchControls();
             DrawDebugPanel();
-            if(GUI.Button(new Rect(Screen.width-104,12,90,29),EmberLanguage.English?"EN  /  VI":"VI  /  EN"))
+            float rightPad=12f;
+            float langW=90f;
+            if(GUI.Button(new Rect(Screen.width-rightPad-langW,12,langW,28),EmberLanguage.English?"EN  /  VI":"VI  /  EN"))
             {
                 EmberLanguage.English=!EmberLanguage.English;PlayerPrefs.SetInt("Ember.Language",EmberLanguage.English?1:0);PlayerPrefs.Save();
             }

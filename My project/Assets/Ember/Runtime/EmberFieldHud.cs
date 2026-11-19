@@ -750,6 +750,9 @@ namespace Ember
             GUI.EndClip();
         }
 
+        string lastNotice;
+        float noticeTime;
+
         void DrawHeaderAnnouncements(Player p)
         {
             if(State==null||Event.current.type!=EventType.Repaint)return;
@@ -797,6 +800,29 @@ namespace Ember
                 float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
                 Rect evtRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
                 DrawMarqueeOutlineLabel(evtRect,evt,evtStyle,evtColor,new Color(0f,0f,0f,.95f),52f);
+                return;
+            }
+
+            // 3. Active player notice / feedback (e.g. tool hints, deposit warnings, MOBA toggle)
+            if(!string.IsNullOrEmpty(notice))
+            {
+                if(notice!=lastNotice)
+                {
+                    lastNotice=notice;
+                    noticeTime=clock;
+                }
+                if(clock-noticeTime<3.8f)
+                {
+                    var noticeStyle=new GUIStyle(small)
+                    {
+                        alignment=TextAnchor.MiddleCenter,
+                        fontStyle=FontStyle.Bold,
+                        fontSize=15
+                    };
+                    float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
+                    Rect noticeRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
+                    DrawMarqueeOutlineLabel(noticeRect,notice,noticeStyle,new Color(1f,.92f,.55f),new Color(0f,0f,0f,.95f),52f);
+                }
             }
         }
 
@@ -829,12 +855,13 @@ namespace Ember
             if(craftOpen||inventoryOpen)return;
 
             float mapSize=176f;
-            float mapX=Screen.width-mapSize-14f;
-            float mapY=48f;
+            float rightPad=12f;
+            float mapRight=Screen.width-rightPad;
+            float mapY=54f;
 
             if(minimapCollapsed)
             {
-                Rect collRect=new Rect(Screen.width-48,mapY,38,38);
+                Rect collRect=new Rect(mapRight-38,mapY,38,38);
                 RegisterHudRect(collRect);
                 bool hoverMap=collRect.Contains(Event.current.mousePosition);
                 PixelPanel(collRect,hoverMap?new Color(.38f,.26f,.58f,.98f):new Color(.16f,.12f,.25f,.95f));
@@ -846,7 +873,8 @@ namespace Ember
             }
 
             float headerH=26f;
-            Rect frameRect=new Rect(mapX-4,mapY-4,mapSize+8,mapSize+headerH+8);
+            Rect frameRect=new Rect(mapRight-(mapSize+8),mapY-4,mapSize+8,mapSize+headerH+8);
+            float mapX=frameRect.x+4;
             RegisterHudRect(frameRect);
 
             // Dread / Hallucination impact
@@ -1256,9 +1284,13 @@ namespace Ember
             DrawMatchClock();
             DrawHeaderAnnouncements(p);
             DrawCornerPauseButton();
-            float toolWidth=Mathf.Clamp((Screen.width-120)/2f,72,130);
-            float toolX=Screen.width-112-toolWidth;
-            if(UiButton(new Rect(toolX,12,toolWidth,29),"Chế tạo [Tab]"))craftOpen=!craftOpen;
+            float rightPad=12f;
+            float langW=90f;
+            float langX=Screen.width-rightPad-langW;
+            float btnGap=8f;
+            float toolWidth=Mathf.Clamp((Screen.width-240)/3f,76,120);
+            float craftX=langX-btnGap-toolWidth;
+            if(UiButton(new Rect(craftX,12,toolWidth,28),"Chế tạo [Tab]"))craftOpen=!craftOpen;
             float upperWidth=Mathf.Min(180,(Screen.width-40)/2f);
             float upperY=CompactFieldHud?45:12;
             DrawFieldMeter(16,upperY,upperWidth,L("Hoảng loạn","Dread"),p.Dread,100,new Color(.65f,.4f,.85f));
@@ -1266,7 +1298,8 @@ namespace Ember
                 DrawFieldMeter(22+upperWidth,upperY,upperWidth,L("Nhiên liệu đuốc","Torch fuel"),State.Fuel,100,Gold);
             DrawActiveBuffs(p,16,upperY+36);
 
-            if(UiButton(new Rect(toolX-toolWidth-8,12,toolWidth,29),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
+            float invX=craftX-btnGap-toolWidth;
+            if(UiButton(new Rect(invX,12,toolWidth,28),L("Kho đồ [I]","Inventory [I]"))){inventoryOpen=!inventoryOpen;craftOpen=false;}
             if(network)DrawPartyBubbles();
             DrawMinimap(p);
 
