@@ -36,8 +36,10 @@ Shader "Ember/CrystalFill"
    {
     half4 baseCol=SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv);
     if(baseCol.a<=0.05)return half4(0,0,0,0);
+    if(_FillLevel<=0.001)return half4(0,0,0,0);
+    float targetLevel=lerp(0.04,0.94,saturate(_FillLevel));
     float wave=sin(_TimeVal*4.5+input.uv.x*28.0)*0.022;
-    float surface=_FillLevel+wave;
+    float surface=targetLevel+wave;
     if(input.uv.y>surface)return half4(0,0,0,0);
     float distToSurface=abs(input.uv.y-surface);
     if(distToSurface<0.038)

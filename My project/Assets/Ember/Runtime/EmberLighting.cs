@@ -103,8 +103,19 @@ namespace Ember
             var props=outlineProperties;Rect r=sprite.rect;var tex=sprite.texture;
             props.SetVector("_CellUV",new Vector4(r.xMin/tex.width,r.yMin/tex.height,r.xMax/tex.width,r.yMax/tex.height));renderer.SetPropertyBlock(props);
         }
+        void EnsureLightingMaterials()
+        {
+            if(outlineMaterial==null)outlineMaterial=Resources.Load<Material>("Ember/EmberOutline");
+            if(emissionMaterial==null)emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
+            if(crystalFillMaterial==null)
+            {
+                var cShader=Shader.Find("Ember/CrystalFill");
+                if(cShader!=null)crystalFillMaterial=new Material(cShader);
+            }
+        }
         void ApplyCrystalFill(SpriteRenderer renderer,float fillLevel,float timeVal)
         {
+            EnsureLightingMaterials();
             if(crystalFillMaterial==null)return;
             renderer.sharedMaterial=crystalFillMaterial;
             if(crystalProperties==null)crystalProperties=new MaterialPropertyBlock();

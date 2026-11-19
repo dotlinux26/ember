@@ -678,7 +678,11 @@ namespace Ember
             float viewHalfW=cam.orthographicSize*cam.aspect+2.4f;
             if(Mathf.Abs(center.X)<=viewHalfW+3f&&Mathf.Abs(center.Y)<=viewHalfH+3f)
             {
-                bool hasEnergy=State.Charge>0||State.BeaconHP>0||State.Fuel>0;
+                bool isDefend=State.Phase==Phase.Eclipse||State.Phase==Phase.Extraction;
+                float fillRatio=isDefend
+                    ?(State.BeaconHP>0?Mathf.Clamp01(State.BeaconHP/600f):0f)
+                    :(State.ChargeTarget>0?Mathf.Clamp01(State.Charge/(float)State.ChargeTarget):0f);
+                bool hasEnergy=fillRatio>0.001f||State.Charge>0||State.BeaconHP>0;
                 string lakeArt=hasEnergy?"beacon_lit":"beacon_dark";
                 var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,10);
                 if(hasEnergy&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
@@ -691,14 +695,11 @@ namespace Ember
                 float floatY=Mathf.Sin(clock*2.0f)*.14f;
                 Color crystalColor=hasEnergy?Color.white:new Color(.65f,.70f,.82f,.95f);
                 float crystalY=1.05f+floatY; // Cách không: hovers gracefully above the lake
-                float energyRatio=Mathf.Clamp01(State.Fuel/100f);
-                float chargeRatio=State.ChargeTarget>0?Mathf.Clamp01(State.Charge/(float)State.ChargeTarget):0f;
-                float fillRatio=Mathf.Max(energyRatio,chargeRatio);
 
                 // Base dark crystal monolith frame
                 Put("beacon_crystal_dark_core",Primitive("beacon_crystal_dark"),new V2(0,crystalY),new Color(.6f,.65f,.75f,.9f),1.45f,1004);
-                // Glowing cyan energy liquid rising/falling along Y-axis
-                if(hasEnergy&&fillRatio>0.005f)
+                // Glowing cyan energy liquid rising/falling along Y-axis matching exact charge level
+                if(hasEnergy&&fillRatio>0.001f)
                 {
                     var coreLit=Put("beacon_crystal_core",Primitive("beacon_crystal_lit"),new V2(0,crystalY),crystalColor,1.45f,1005);
                     if(crystalFillMaterial!=null)ApplyCrystalFill(coreLit,fillRatio,clock);
@@ -734,7 +735,7 @@ namespace Ember
                     float ry=crystalY+depthY+floatYOrb;
                     int sOrder=depthY<0?5006:5004;
                     Put("beacon_crystal_dark_"+ci,Primitive("beacon_crystal_dark"),new V2(rx,ry),new Color(.6f,.65f,.75f,.9f),.75f,sOrder-1);
-                    if(hasEnergy&&fillRatio>0.005f)
+                    if(hasEnergy&&fillRatio>0.001f)
                     {
                         var crLit=Put("beacon_crystal_"+ci,Primitive("beacon_crystal_lit"),new V2(rx,ry),crystalColor,.75f,sOrder);
                         if(crystalFillMaterial!=null)ApplyCrystalFill(crLit,fillRatio,clock);
