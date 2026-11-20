@@ -1172,6 +1172,7 @@ shadowHero.Right = true;
 axeWorld.Submit(2, new Command { Equip = 1, Attack = true });
 axeWorld.Tick();
 Check(!axeWorld.S.Projectiles.Any(p => p.Weapon == Weapon.ShadowBlades), "Shadow Blades is pure dual-wield melee and does not shoot shuriken projectile");
+Check(axeWorld.S.Effects.Any(e => e.Kind == 9), "Shadow Blades attack emits Song Trảm Chữ X effect kind 9");
 
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 

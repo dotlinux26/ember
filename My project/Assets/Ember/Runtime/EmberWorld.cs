@@ -2577,7 +2577,7 @@ namespace Ember
                     projectiles.Add(new Projectile{Id=nextId++,Owner=p.Id,Pos=p.Pos+aimDir*.6f,Velocity=aimDir*14f,Damage=damage*.65f,Life=.6f,Weapon=Weapon.CrystalAxe});
                 }
                 bool isHarvest=p.HeldSlot==8||weapon==Weapon.Pickaxe||weapon==Weapon.CrystalAxe;
-                FX(p.Pos,p.Pos+new V2(p.Right?1.2f:-1.2f,0),isHarvest?7:0);return;
+                FX(p.Pos,p.Pos+new V2(p.Right?1.2f:-1.2f,0),isHarvest?7:weapon==Weapon.ShadowBlades?9:0);return;
             }
             if(p.Ranged){ConsumeAmmoAndShoot(p,target.Pos,damage);return;}
             if(weapon==Weapon.CrystalAxe||weapon==Weapon.MirrorShield)
@@ -2599,7 +2599,7 @@ namespace Ember
                 Damage(target,damage);
                 Knockback(target,target.Pos-p.Pos,.55f);
             }
-            FX(p.Pos,target.Pos,0);
+            FX(p.Pos,target.Pos,weapon==Weapon.ShadowBlades?9:0);
         }
         public void EmitLight(V2 pos,float radius,float duration,LightColorKind colorKind,float intensity=1.2f,bool grantsSafety=true,int followPlayerId=0)
         {

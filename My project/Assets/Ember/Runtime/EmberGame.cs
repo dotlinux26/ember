@@ -1208,7 +1208,7 @@ namespace Ember
                     else if(t==2) // Rock/cliff
                     {
                         var def=Catalog.GetTileHarvestDef(tx,ty,2);
-                        string rockSpriteName=def.Tier==0?"rock_small":"rock_large";
+                        string rockSpriteName=def.Tier==0?"rock_small":def.Tier==1?"rock_boulder":"rock_large";
                         var rockSprite=Primitive(rockSpriteName);
                         V2 rPos=new V2(tx-size/2f+.5f,ty-size/2f+.2f);
                         float rScale=def.VisualScale;
@@ -1784,7 +1784,7 @@ namespace Ember
                         int key=idx;keepDecor.Add(key);
                         if(!visibleDecor.ContainsKey(key))
                         {
-                            int decorType=(dHash/100)%7;
+                            int decorType=(dHash/100)%9;
                             string decorArt=decorType switch
                             {
                                 0=>"wildflowers",
@@ -1793,6 +1793,8 @@ namespace Ember
                                 3=>"bush_small",
                                 4=>"bush_wide",
                                 5=>"tall_stump",
+                                6=>"bush_round",
+                                7=>"tree_stump",
                                 _=>"log_fallen"
                             };
                             SpriteRenderer decorSr;
@@ -1815,6 +1817,8 @@ namespace Ember
                                 3=>.85f,
                                 4=>.95f,
                                 5=>.90f,
+                                6=>.90f,
+                                7=>.90f,
                                 _=>.95f
                             };
                             decorSr.transform.localScale=Vector3.one*decorScale;
@@ -1939,6 +1943,67 @@ namespace Ember
             GUI.DrawTexture(new Rect(a.x,a.y,delta.magnitude,width),white);
             GUI.matrix=matrix;
         }
+        void DrawShadowDualCrossSlash(Effect e)
+        {
+            if(Event.current.type!=EventType.Repaint)return;
+            float prog=Mathf.Clamp01((.3f-e.Life)/.3f);
+            float alpha=Mathf.Max(0f,1f-prog*.85f);
+            Vector2 from=ScreenPos(e.From);
+            Vector2 to=ScreenPos(e.To);
+            Vector2 dir=to-from;
+            if(dir.sqrMagnitude<.001f)dir=new Vector2(1f,0f);
+            Vector2 fwd=dir.normalized;
+            Vector2 perp=new Vector2(-fwd.y,fwd.x);
+
+            Vector2 center=Vector2.Lerp(from,to,.65f)+fwd*(prog*18f);
+
+            // Tay chính: chém lướt chéo xuống-phải (góc ~18°)
+            float angle1=18f*Mathf.Deg2Rad;
+            Vector2 fwd1=fwd*Mathf.Cos(angle1)+perp*Mathf.Sin(angle1);
+            Vector2 perp1=-fwd*Mathf.Sin(angle1)+perp*Mathf.Cos(angle1);
+            DrawCrescentArc(center,fwd1,perp1,18f+prog*6f,24f+prog*6f,
+                new Color(.66f,.33f,.97f,alpha*.40f),
+                new Color(.85f,.70f,1f,alpha*.85f),
+                new Color(1f,1f,1f,alpha*.95f));
+
+            // Tay phụ: chém lướt chéo lên-phải (góc ~-18°, lùi sau 3px theo nhịp delay)
+            float angle2=-18f*Mathf.Deg2Rad;
+            Vector2 fwd2=fwd*Mathf.Cos(angle2)+perp*Mathf.Sin(angle2);
+            Vector2 perp2=-fwd*Mathf.Sin(angle2)+perp*Mathf.Cos(angle2);
+            Vector2 center2=center-fwd*3f;
+            DrawCrescentArc(center2,fwd2,perp2,18f+prog*6f,24f+prog*6f,
+                new Color(.93f,.28f,.60f,alpha*.35f),
+                new Color(.96f,.45f,.73f,alpha*.80f),
+                new Color(1f,1f,1f,alpha*.95f));
+        }
+        void DrawCrescentArc(Vector2 center,Vector2 forward,Vector2 perp,float rx,float ry,Color outerGlow,Color bodyColor,Color coreColor)
+        {
+            const int segments=10;
+            const float maxAngle=.38f*Mathf.PI;
+            Vector2 prevOuter=Vector2.zero,prevBody=Vector2.zero,prevCore=Vector2.zero;
+            for(int i=0;i<=segments;i++)
+            {
+                float t=(float)i/segments;
+                float angle=Mathf.Lerp(-maxAngle,maxAngle,t);
+                float cosA=Mathf.Cos(angle);
+                float sinA=Mathf.Sin(angle);
+                Vector2 pt=center+forward*(rx*cosA)+perp*(ry*sinA);
+                if(i>0)
+                {
+                    GUI.color=outerGlow;
+                    Line(prevOuter,pt,5.5f);
+                    GUI.color=bodyColor;
+                    Line(prevBody,pt,2.5f);
+                    if(t>=.15f&&t<=.85f)
+                    {
+                        GUI.color=coreColor;
+                        Line(prevCore,pt,1f);
+                    }
+                }
+                prevOuter=pt;prevBody=pt;prevCore=pt;
+            }
+            GUI.color=Color.white;
+        }
         void DrawInterface()
         {
             InitStyles();
@@ -1975,6 +2040,7 @@ namespace Ember
                 if(e.Kind==7){DrawHarvestChips(e);continue;}
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 if(e.Kind==8){DrawCookingSteamEffect(e);continue;}
+                if(e.Kind==9){DrawShadowDualCrossSlash(e);continue;}
                 GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
             DrawHarvestBars();
