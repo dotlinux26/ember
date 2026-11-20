@@ -232,14 +232,14 @@ Check(wardenStat.Stats.DamageTakenMultiplier<wraithStat.Stats.DamageTakenMultipl
 var mineWorld=new EmberWorld(42);
 var miner=mineWorld.AddPlayer(1,"Miner",Vessel.Wanderer);
 mineWorld.StartRun();
-var nearestNode=mineWorld.S.Nodes.OrderBy(n=>V2.Distance(n.Pos,miner.Pos)).First();
+var nearestNode=mineWorld.S.Nodes.Where(n=>!n.Dropped&&n.DropKind==0&&(n.Resource==Resource.Ore||n.Resource==Resource.Wood)).OrderBy(n=>V2.Distance(n.Pos,miner.Pos)).First();
 miner.Pos=nearestNode.Pos-new V2(1,0);
 int bagBefore=miner.Load;
 mineWorld.Submit(1,new Command{Equip=8,Attack=true});
 mineWorld.Tick();
 Check(miner.Load>bagBefore&&miner.HarvestCD>0&&mineWorld.S.Effects.Any(e=>e.Kind==7),"pickaxe slot mines nearby resource nodes with harvest swing and chip FX");
 miner.HeldSlot=1;miner.HarvestCD=0;
-var nextNode=mineWorld.S.Nodes.OrderBy(n=>V2.Distance(n.Pos,miner.Pos)).First();
+var nextNode=mineWorld.S.Nodes.Where(n=>!n.Dropped&&n.DropKind==0&&(n.Resource==Resource.Ore||n.Resource==Resource.Wood)).OrderBy(n=>V2.Distance(n.Pos,miner.Pos)).First();
 miner.Pos=nextNode.Pos-new V2(1,0);
 miner.HasPickaxe=false;
 int blockedLoad=miner.Load;
@@ -1099,6 +1099,79 @@ torchRetrWorld.Tick();
 Check(!torchRetrWorld.S.Structures.Any(s => s.Kind == 0), "ground torch structure removed upon retrieval");
 Check(torchRetrPlayer.Items[0] == 1, "torch item restored to player inventory");
 Check(torchRetrPlayer.HeldSlot == 2, "torch auto-equipped to slot 2 from empty hands");
+
+// 8b. Ground Torch Distance Boundary Check (> 2.0f rejected)
+torchRetrPlayer.Items[0] = 1;
+torchRetrPlayer.Pos = new V2(20f, 20f);
+torchRetrWorld.Use(torchRetrPlayer, 0);
+Check(torchRetrWorld.S.Structures.Any(s => s.Kind == 0 && V2.Distance(s.Pos, new V2(20f, 20f)) < 0.1f), "ground torch placed at (20,20)");
+torchRetrPlayer.Pos = new V2(22.5f, 20f); // 2.5f distance (> 2.0f)
+torchRetrWorld.Submit(torchRetrPlayer.Id, new Command { Interact = true });
+torchRetrWorld.Tick();
+Check(torchRetrWorld.S.Structures.Any(s => s.Kind == 0 && V2.Distance(s.Pos, new V2(20f, 20f)) < 0.1f), "torch not retrieved when beyond 2.0f distance");
+Check(torchRetrPlayer.Items[0] == 0, "player torch inventory unchanged on distant interact");
+
+// 8c. Ground Torch Full Inventory Drop (Items[0] == 99 drops node)
+torchRetrPlayer.Pos = new V2(20.5f, 20f); // within 0.5f (< 2.0f)
+torchRetrPlayer.Items[0] = 99; // full stack
+torchRetrWorld.Submit(torchRetrPlayer.Id, new Command { Interact = true });
+torchRetrWorld.Tick();
+Check(!torchRetrWorld.S.Structures.Any(s => s.Kind == 0), "ground torch removed even when inventory full");
+Check(torchRetrPlayer.Items[0] == 99, "torch inventory remains capped at 99");
+Check(torchRetrWorld.S.Nodes.Any(n => n.Dropped && n.DropKind == 2 && n.DropId == 0), "torch dropped as ground node when inventory full");
+
+// 8d. Dropped Item DropId 22 (Wooden Stick) Display Name Resolution Check
+Check(Catalog.GetDroppedDisplayName(2, 22, Resource.Wood, false) == "Gậy Gỗ", "dropped stick item 22 resolves to Gậy Gỗ");
+Check(Catalog.GetDroppedDisplayName(2, 22, Resource.Wood, true) == "Wooden Stick", "dropped stick item 22 resolves to Wooden Stick");
+
+// 8e. Beacon Modal Coordinate Clamp Simulation Check
+foreach (float sw in new[] { 320f, 360f, 480f, 720f, 1080f, 1920f })
+{
+    float mw = Math.Min(480f, sw - 20f);
+    float mx = Math.Max(10f, (sw - mw) * 0.5f);
+    Check(mx >= 10f && mx + mw <= sw, $"modal X clamped safely on screen width {sw}");
+}
+
+// 9. Weapon Grips & 3-Class Weapon Engine Checks
+Check(EmberWeaponGrips.Get(Weapon.ShadowBlades).GripMode == WeaponGripMode.DualWield, "ShadowBlades grip mode is DualWield");
+Check(EmberWeaponGrips.Get(Weapon.CrystalAxe).GripMode == WeaponGripMode.TwoHanded, "CrystalAxe grip mode is TwoHanded");
+Check(EmberWeaponGrips.Get(Weapon.Stick).GripMode == WeaponGripMode.SingleHand, "Stick grip mode is SingleHand");
+Check(EmberWeaponGrips.Get(Weapon.Crossbow).GripMode == WeaponGripMode.TwoHanded, "Crossbow grip mode is TwoHanded");
+Check(EmberWeaponGrips.Get(Weapon.LumenGun).GripMode == WeaponGripMode.TwoHanded, "LumenGun grip mode is TwoHanded");
+Check(EmberWeaponGrips.Get(Weapon.ShadowBlades).DualSpriteName == "shadow_blade_single", "ShadowBlades dual sprite is shadow_blade_single");
+Check(EmberWeaponGrips.Torch != null && EmberWeaponGrips.Torch.SpriteName == "torch", "Torch grip config exists and sprite is torch");
+Check(EmberWeaponGrips.Torch.SpriteBaseAngle == 90f, "Torch SpriteBaseAngle is 90f");
+Check(EmberWeaponGrips.Torch.GripPivot.X == 0.50f && EmberWeaponGrips.Torch.GripPivot.Y == 0.22f, "Torch GripPivot is (0.50, 0.22)");
+Check(EmberWeaponGrips.Torch.RestAngle == -22f, "Torch RestAngle is -22f");
+Check(EmberWeaponGrips.Torch.Scale == 0.85f, "Torch Scale is 0.85f");
+Check(EmberWeaponGrips.Torch.GripMode == WeaponGripMode.SingleHand, "Torch GripMode is SingleHand");
+Check(EmberWeaponGrips.GetGrip("torch") == EmberWeaponGrips.Torch, "EmberWeaponGrips.GetGrip(\"torch\") returns Torch grip");
+
+// 10. Crystal Axe Kiếm Khí (Blade Wave) Spawning Check
+var axeWorld = new EmberWorld(7, 250, Difficulty.Easy);
+var axeHero = axeWorld.AddPlayer(1, "AxeHero", Vessel.Wanderer);
+axeWorld.StartRun();
+axeHero.HasWeapon = true;
+axeHero.Weapon = Weapon.CrystalAxe;
+axeHero.HeldSlot = 1;
+axeHero.Stamina = 100f;
+axeHero.Pos = new V2(2f, 0f);
+axeHero.Right = true;
+axeWorld.Submit(1, new Command { Equip = 1, Attack = true });
+axeWorld.Tick();
+Check(axeWorld.S.Projectiles.Any(p => p.Weapon == Weapon.CrystalAxe), "Crystal Axe attack spawns Kiếm Khí blade wave projectile");
+
+// 11. Shadow Blades Dual-Wield Melee Check (Pure Melee, no projectile/shuriken)
+var shadowHero = axeWorld.AddPlayer(2, "ShadowHero", Vessel.Wanderer);
+shadowHero.HasWeapon = true;
+shadowHero.Weapon = Weapon.ShadowBlades;
+shadowHero.HeldSlot = 1;
+shadowHero.Stamina = 100f;
+shadowHero.Pos = new V2(2f, 2f);
+shadowHero.Right = true;
+axeWorld.Submit(2, new Command { Equip = 1, Attack = true });
+axeWorld.Tick();
+Check(!axeWorld.S.Projectiles.Any(p => p.Weapon == Weapon.ShadowBlades), "Shadow Blades is pure dual-wield melee and does not shoot shuriken projectile");
 
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 

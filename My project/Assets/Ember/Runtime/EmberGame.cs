@@ -26,6 +26,9 @@ namespace Ember
         }
         readonly Dictionary<int,SpriteRenderer> visibleTrees=new Dictionary<int,SpriteRenderer>();
         readonly Stack<SpriteRenderer> treePool=new Stack<SpriteRenderer>();
+        readonly Dictionary<int,SpriteRenderer> visibleDecor=new Dictionary<int,SpriteRenderer>();
+        readonly Stack<SpriteRenderer> decorPool=new Stack<SpriteRenderer>();
+        readonly List<int> keepDecor=new List<int>(),dropDecor=new List<int>();
         readonly Dictionary<int,V2> prevPlayerPos=new Dictionary<int,V2>(),prevEnemyPos=new Dictionary<int,V2>(),prevProjPos=new Dictionary<int,V2>();
         float renderInterp=1f;
         Vector2Int visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
@@ -399,6 +402,8 @@ namespace Ember
                 else
                 {
                     var merchant=State?.Structures?.FirstOrDefault(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,Local.Pos)<=EmberMerchant.MerchantInteractionDistance);
+                    bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,Local.Pos)<2.0f))
+                        ||(State?.Nodes!=null&&State.Nodes.Any(n=>n.Dropped&&V2.Distance(n.Pos,Local.Pos)<2.0f));
                     if(merchant!=null)
                     {
                         EmberMerchant.DialogOpen=true;
@@ -407,11 +412,11 @@ namespace Ember
                         beaconDepositOpen=false;
                         pressedInteract=false;
                     }
-                    else if(ShouldAutoEquipPickaxe(Local))
+                    else if(!hasNearbyStructure&&ShouldAutoEquipPickaxe(Local))
                     {
                         AutoEquipHarvestTool(Local);
                     }
-                    else if(IsNearTreeOrRock(Local)&&!HasHarvestTool(Local))
+                    else if(!hasNearbyStructure&&IsNearTreeOrRock(Local)&&!HasHarvestTool(Local))
                     {
                         pressedInteract=false; // Block interaction when missing tool
                         bool isTree=IsNearTree(Local);
@@ -659,6 +664,7 @@ namespace Ember
                     case 16: return Primitive("mushroom");
                     case 17: return Primitive("roasted_apple");
                     case 18: return Primitive("mushroom_stew");
+                    case 22: return Primitive("stick");
                     default:
                         if(n.DropId==8)return Primitive("pickaxe");
                         return Primitive("diamond");
@@ -674,7 +680,7 @@ namespace Ember
             if(authored!=null)
             {
                 authored.filterMode=FilterMode.Point;
-                bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="merchant"||name.StartsWith("abandoned_chest");
+                bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="torch_ground"||name=="merchant"||name.StartsWith("abandoned_chest")||name.StartsWith("stone_")||name.EndsWith("stump")||name=="wildflowers"||name=="mushrooms";
                 int frameW=(authored.width>authored.height&&(rooted||name=="merchant"))?authored.height:authored.width;
                 cached=Sprite.Create(authored,new Rect(0,0,frameW,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);
                 primitives[name]=cached;
@@ -1039,12 +1045,18 @@ namespace Ember
                 if(Mathf.Abs(n.Pos.X-center.X)>viewHalfW||Mathf.Abs(n.Pos.Y-center.Y)>viewHalfH)continue;
                 if(!IsExplored(n.Pos))continue;
                 bool isWoodTree=!n.Dropped&&n.Resource==Resource.Wood;
-                bool isDustBush=!n.Dropped&&n.Resource==Resource.Dust;
+                bool isMushroomNode=!n.Dropped&&((n.DropKind==2&&n.DropId==16)||n.DropId==16);
+                bool isDustBush=!n.Dropped&&n.Resource==Resource.Dust&&!isMushroomNode;
                 Color color=n.Resource==Resource.Core?Cyan:n.Resource==Resource.Umbra?new Color(.7f,.4f,1):n.Resource==Resource.Dust?Cyan:n.Resource==Resource.Wood?new Color(.5f,.35f,.2f):new Color(.6f,.65f,.8f);
-                Sprite sprite=isWoodTree?Primitive("tree_oak"):isDustBush?Primitive("lumidust_bush"):n.Dropped?DroppedItemSprite(n):MaterialSprite(ResourceIcons[(int)n.Resource]);
-                float scale=isWoodTree?1.45f:isDustBush?1.35f:n.Dropped?.70f:.62f;
+                Sprite sprite=isWoodTree?Primitive("tree_oak"):isMushroomNode?Primitive("mushrooms"):isDustBush?Primitive("lumidust_bush"):n.Dropped?DroppedItemSprite(n):MaterialSprite(ResourceIcons[(int)n.Resource]);
+                float scale=isWoodTree?1.45f:isMushroomNode?0.95f:isDustBush?1.35f:n.Dropped?.70f:.62f;
                 V2 drawPos=n.Dropped?n.Pos+new V2(0,Mathf.Sin(clock*4.5f+n.Id)*.07f+.08f):n.Pos;
-                if(isDustBush)
+                if(isMushroomNode)
+                {
+                    float pulse=1f+Mathf.Sin(clock*3f+n.Id)*0.03f;
+                    scale*=pulse;
+                }
+                else if(isDustBush)
                 {
                     float sway=Mathf.Sin(clock*2.8f+n.Id*1.5f)*.06f;
                     float squish=1f+Mathf.Sin(clock*3.8f+n.Id*2f)*.08f;
@@ -1052,7 +1064,22 @@ namespace Ember
                     scale*=squish;
                 }
                 int order=5000-Mathf.RoundToInt(n.Pos.Y*10);
-                if(isDustBush)
+                if(isMushroomNode)
+                {
+                    Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
+                    for(int sIdx=0;sIdx<2;sIdx++)
+                    {
+                        float seed=n.Id*0.43f+sIdx*0.5f;
+                        float life=Mathf.Repeat((clock*0.35f)+seed,1f);
+                        float riseY=Mathf.Lerp(0.08f,0.85f,life);
+                        float driftX=Mathf.Sin(clock*1.4f+sIdx*3.1f+n.Id)*0.12f;
+                        float alpha=Mathf.Sin(life*Mathf.PI)*0.85f;
+                        Color pColor=new Color(0.75f,0.45f,1f,alpha);
+                        V2 partPos=n.Pos+new V2(driftX,riseY);
+                        Put("shroom_spore_"+n.Id+"_"+sIdx,Primitive("circle"),partPos,pColor,0.12f,order+2);
+                    }
+                }
+                else if(isDustBush)
                 {
                     // Main bush sprite - clean and natural without harsh outline or ground light
                     Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
@@ -1224,14 +1251,14 @@ namespace Ember
                 Put("structure"+s.Id,sSprite,s.Pos,Color.white,structScale,sOrder);
                 if(s.Kind==0) // Ground torch: animated flickering flame
                 {
-                    int flameFrame=(int)(clock*8f+s.Id)%4;
+                    int flameFrame=(int)(clock*8f+s.Id)%8;
                     Sprite flameSprite=EnemyFrame("torch_fire",flameFrame);
-                    var flameR=Put("torchFlame"+s.Id,flameSprite,s.Pos+new V2(0,.45f),Color.white,1.1f,sOrder+1);
+                    var flameR=Put("torchFlame"+s.Id,flameSprite,s.Pos+new V2(0,.08f),Color.white,structScale,sOrder+1);
                     if(emissionMaterial!=null)flameR.sharedMaterial=emissionMaterial;
 
                     float fPulse=.82f+.18f*Mathf.Sin(clock*10f+s.Id*2.3f);
                     Color flameGlow=new Color(1f,.65f,.2f,.35f*fPulse);
-                    var halo=Put("torchHalo"+s.Id,Primitive("circle"),s.Pos+new V2(0,.45f),flameGlow,1.15f,sOrder-1);
+                    var halo=Put("torchHalo"+s.Id,Primitive("circle"),s.Pos+new V2(0,.85f),flameGlow,1.15f,sOrder-1);
                     if(emissionMaterial!=null)halo.sharedMaterial=emissionMaterial;
                 }
                 if(s.Kind==12)
@@ -1349,7 +1376,54 @@ namespace Ember
                     if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
                     continue;
                 }
-                var pr=Put("projectile"+shot.Id,Primitive("diamond"),sPos+new V2(0,.3f),shot.Weapon==Weapon.ShadowBlades?new Color(.7f,.4f,1):new Color(.78f,.98f,1f),.30f);pr.transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg);if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+                float pAngle=Mathf.Atan2(shot.Velocity.Y,shot.Velocity.X)*Mathf.Rad2Deg;
+                if(shot.Weapon==Weapon.Crossbow)
+                {
+                    var pr=Put("projectile"+shot.Id,Primitive("projectile_arrow"),sPos+new V2(0,.22f),Color.white,.85f,1500);
+                    pr.transform.rotation=Quaternion.Euler(0,0,pAngle);
+                }
+                else if(shot.Weapon==Weapon.CrystalAxe)
+                {
+                    // Class 2: Kiếm Khí (Blade Wave)
+                    float wavePulse=1f+0.12f*Mathf.Sin(clock*15f+shot.Id);
+                    var pr=Put("projectile"+shot.Id,Primitive("blade_wave"),sPos+new V2(0,.22f),Color.white,.95f*wavePulse,1510);
+                    pr.transform.rotation=Quaternion.Euler(0,0,pAngle);
+                    if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+
+                    // Starlight cyan trailing glow
+                    float trailAlpha=0.6f+0.3f*Mathf.Sin(clock*10f);
+                    var halo=Put("bladeWaveGlow"+shot.Id,Primitive("circle"),sPos+new V2(0,.22f),new Color(0.2f,0.9f,1f,trailAlpha*0.35f),1.1f,1505);
+                    if(emissionMaterial!=null)halo.sharedMaterial=emissionMaterial;
+                }
+                else if(shot.Weapon==Weapon.LumenGun)
+                {
+                    // Class 3: Plasma energy beam
+                    var pr=Put("projectile"+shot.Id,Primitive("projectile_plasma"),sPos+new V2(0,.25f),Color.white,0.85f,1520);
+                    pr.transform.rotation=Quaternion.Euler(0,0,pAngle);
+                    if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+
+                    var glow=Put("lumenGlow"+shot.Id,Primitive("circle"),sPos+new V2(0,.25f),new Color(0.4f,1f,0.95f,0.5f),0.75f,1515);
+                    if(emissionMaterial!=null)glow.sharedMaterial=emissionMaterial;
+                }
+                else if(shot.Weapon==Weapon.ShadowBlades)
+                {
+                    // Song Trảm Chữ X Tím Hư Không (Cross-Scissor Void Slash)
+                    float slashPulse=1f+0.12f*Mathf.Sin(clock*20f+shot.Id);
+                    var pr=Put("projectile"+shot.Id,Primitive("shadow_cross_slash"),sPos+new V2(0,.22f),Color.white,.95f*slashPulse,1510);
+                    pr.transform.rotation=Quaternion.Euler(0,0,pAngle);
+                    if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+
+                    // Deep purple void halo
+                    float trailAlpha=0.6f+0.3f*Mathf.Sin(clock*12f);
+                    var halo=Put("shadowSlashGlow"+shot.Id,Primitive("circle"),sPos+new V2(0,.22f),new Color(0.7f,0.2f,1f,trailAlpha*0.35f),1.1f,1505);
+                    if(emissionMaterial!=null)halo.sharedMaterial=emissionMaterial;
+                }
+                else
+                {
+                    var pr=Put("projectile"+shot.Id,Primitive("diamond"),sPos+new V2(0,.3f),new Color(.78f,.98f,1f),.30f);
+                    pr.transform.rotation=Quaternion.Euler(0,0,pAngle);
+                    if(emissionMaterial!=null)pr.sharedMaterial=emissionMaterial;
+                }
             }
             if(local!=null&&local.Dread>=30&&!local.Safe)
             {
@@ -1638,6 +1712,7 @@ namespace Ember
             int halfY=Mathf.CeilToInt(cam.orthographicSize)+6;
             int cx=chunk.x*4+size/2,cy=chunk.y*4+size/2;
             keepTrees.Clear();dropTrees.Clear();
+            keepDecor.Clear();dropDecor.Clear();
             int yMin=Mathf.Max(3,cy-halfY),yMax=Mathf.Min(size-3,cy+halfY+2);
             int xMin=Mathf.Max(3,cx-halfX),xMax=Mathf.Min(size-3,cx+halfX+2);
             for(int y=yMin;y<yMax;y++)for(int x=xMin;x<xMax;x++)
@@ -1696,6 +1771,59 @@ namespace Ember
                 }
                 tree.sortingOrder=5000-Mathf.RoundToInt((y-size/2+.1f)*10);
                 visibleTrees[key]=tree;
+            }
+            else if(currentTiles[idx]==0)
+            {
+                float ddx=x-size/2f,ddy=y-size/2f;
+                float dr=Mathf.Sqrt(ddx*ddx+ddy*ddy);
+                if(dr>5.5f)
+                {
+                    int dHash=((x*1274126177)^(y*668265263))&0x7FFFFFFF;
+                    if((dHash%100)<14)
+                    {
+                        int key=idx;keepDecor.Add(key);
+                        if(!visibleDecor.ContainsKey(key))
+                        {
+                            int decorType=(dHash/100)%7;
+                            string decorArt=decorType switch
+                            {
+                                0=>"wildflowers",
+                                1=>"stone_pebble",
+                                2=>"mushrooms",
+                                3=>"bush_small",
+                                4=>"bush_wide",
+                                5=>"tall_stump",
+                                _=>"log_fallen"
+                            };
+                            SpriteRenderer decorSr;
+                            if(decorPool.Count>0){decorSr=decorPool.Pop();decorSr.enabled=true;}
+                            else
+                            {
+                                decorSr=new GameObject("GroundDecor").AddComponent<SpriteRenderer>();
+                                decorSr.transform.SetParent(mapRoot.transform);
+                                if(spriteMaterial!=null)decorSr.sharedMaterial=spriteMaterial;
+                            }
+                            decorSr.sprite=Primitive(decorArt);
+                            float jx=((dHash%17)-8)/26f;
+                            float jy=(((dHash/17)%17)-8)/26f;
+                            decorSr.transform.position=new Vector3(x-size/2f+.5f+jx,y-size/2f+.35f+jy,0);
+                            float decorScale=decorType switch
+                            {
+                                0=>.85f,
+                                1=>.80f,
+                                2=>.90f,
+                                3=>.85f,
+                                4=>.95f,
+                                5=>.90f,
+                                _=>.95f
+                            };
+                            decorSr.transform.localScale=Vector3.one*decorScale;
+                            decorSr.color=Color.white;
+                            decorSr.sortingOrder=2000-Mathf.RoundToInt((y-size/2f+.35f)*10);
+                            visibleDecor[key]=decorSr;
+                        }
+                    }
+                }
             }}
             foreach(var kv in visibleTrees)if(!keepTrees.Contains(kv.Key))dropTrees.Add(kv.Key);
             for(int i=0;i<dropTrees.Count;i++)
@@ -1708,6 +1836,15 @@ namespace Ember
                 treeSpawnClock.Remove(key);
                 treeBaseScale.Remove(key);
                 treeBasePos.Remove(key);
+            }
+            foreach(var kv in visibleDecor)if(!keepDecor.Contains(kv.Key))dropDecor.Add(kv.Key);
+            for(int i=0;i<dropDecor.Count;i++)
+            {
+                int key=dropDecor[i];
+                var sr=visibleDecor[key];
+                sr.enabled=false;
+                decorPool.Push(sr);
+                visibleDecor.Remove(key);
             }
         }
         void InitStyles()

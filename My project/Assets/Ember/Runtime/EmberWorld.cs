@@ -35,6 +35,8 @@ namespace Ember
     [Serializable] public struct V2
     {
         public float X, Y;
+        public float x => X;
+        public float y => Y;
         public V2(float x,float y){X=x;Y=y;}
         public float Length => (float)Math.Sqrt(X*X+Y*Y);
         public V2 Normal => Length>.0001f?this/Length:new V2();
@@ -900,14 +902,23 @@ namespace Ember
                 double a=i*Math.PI*.2;V2 pos=new V2((float)Math.Cos(a),(float)Math.Sin(a))*(52+i*5);
                 if(Walkable(pos))enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Nest,Pos=pos,HP=180,MaxHP=180,AttackCD=5});
             }
-            for(int m=0;m<8;m++)
+            // Natural Wild Mushroom Clusters (Nấm Rừng tự nhiên phân bố phong phú khắp bản đồ)
+            int clusterCount = 16;
+            for (int c = 0; c < clusterCount; c++)
             {
-                double ma=m*(Math.PI*2/8)+0.35;
-                float mr=15f+(m%3)*3f;
-                V2 mpos=new V2((float)Math.Cos(ma)*mr,(float)Math.Sin(ma)*mr);
-                if(Walkable(mpos))
+                double baseAngle = (c * (Math.PI * 2.0 / clusterCount)) + (rng.NextDouble() * 0.3 - 0.15);
+                float baseRadius = (c % 3 == 0) ? (float)(7.5 + rng.NextDouble() * 5.0) : (c % 3 == 1) ? (float)(14.0 + rng.NextDouble() * 8.0) : (float)(24.0 + rng.NextDouble() * 14.0);
+                V2 clusterCenter = new V2((float)Math.Cos(baseAngle) * baseRadius, (float)Math.Sin(baseAngle) * baseRadius);
+                int shroomsInCluster = rng.Next(2, 4);
+                for (int s = 0; s < shroomsInCluster; s++)
                 {
-                    nodes.Add(new Node{Id=nextId++,Pos=mpos,Resource=Resource.Dust,Amount=1,MaxAmount=1,Dropped=false,DropKind=2,DropId=16});
+                    float jx = (float)(rng.NextDouble() * 1.6 - 0.8);
+                    float jy = (float)(rng.NextDouble() * 1.6 - 0.8);
+                    V2 mpos = clusterCenter + new V2(jx, jy);
+                    if (Walkable(mpos))
+                    {
+                        nodes.Add(new Node { Id = nextId++, Pos = mpos, Resource = Resource.Dust, Amount = 1, MaxAmount = 1, Dropped = false, DropKind = 2, DropId = 16 });
+                    }
                 }
             }
         }
@@ -1819,7 +1830,7 @@ namespace Ember
                 }
                 if(p.HoldingWeapon)
                 {
-                    bool isHarvestTool=p.HeldSlot==8||p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe;
+                    bool isHarvestTool=p.HeldSlot==8||(p.HeldSlot!=1&&p.ActiveWeapon==Weapon.Pickaxe);
                     if(isHarvestTool)
                     {
                         var enemyTarget=Target(p,p.Range);
@@ -2560,12 +2571,23 @@ namespace Ember
             if(target==null)
             {
                 if(p.Ranged){ConsumeAmmoAndShoot(p,p.Pos+new V2(p.Right?p.Range:-p.Range,0),damage);return;}
+                if(weapon==Weapon.CrystalAxe)
+                {
+                    V2 aimDir=new V2(p.Right?1f:-1f,0);
+                    projectiles.Add(new Projectile{Id=nextId++,Owner=p.Id,Pos=p.Pos+aimDir*.6f,Velocity=aimDir*14f,Damage=damage*.65f,Life=.6f,Weapon=Weapon.CrystalAxe});
+                }
                 bool isHarvest=p.HeldSlot==8||weapon==Weapon.Pickaxe||weapon==Weapon.CrystalAxe;
                 FX(p.Pos,p.Pos+new V2(p.Right?1.2f:-1.2f,0),isHarvest?7:0);return;
             }
             if(p.Ranged){ConsumeAmmoAndShoot(p,target.Pos,damage);return;}
             if(weapon==Weapon.CrystalAxe||weapon==Weapon.MirrorShield)
             {
+                if(weapon==Weapon.CrystalAxe)
+                {
+                    V2 aimDir=(target.Pos-p.Pos).Normal;
+                    if(aimDir.Length<.001f)aimDir=new V2(p.Right?1f:-1f,0);
+                    projectiles.Add(new Projectile{Id=nextId++,Owner=p.Id,Pos=p.Pos+aimDir*.6f,Velocity=aimDir*14f,Damage=damage*.65f,Life=.6f,Weapon=Weapon.CrystalAxe});
+                }
                 foreach(var e in enemies.Where(e=>V2.Distance(e.Pos,target.Pos)<1.6f).ToArray())
                 {
                     Damage(e,damage);

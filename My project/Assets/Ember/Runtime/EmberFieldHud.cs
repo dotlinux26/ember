@@ -203,15 +203,26 @@ namespace Ember
                     if(node!=null)
                     {
                         // Undropped resource veins/bushes already have overhead health bars and direct Click/K harvest.
-                        // Only show interact prompt for dropped loot on the ground!
-                        if(!node.Dropped)return;
-                        string itemName=Catalog.GetDroppedDisplayName(node.DropKind,node.DropId,node.Resource,EmberLanguage.English);
-                        string verb=(node.DropKind==0&&node.Resource==Resource.Wood)
-                            ?L("Nhặt cành","Pick up branch")
-                            :L("Nhặt","Pick up");
-                        string countStr=(node.DropKind==1&&node.Amount<=1)?"":$" ×{node.Amount}";
-                        targetPos=node.Pos+new V2(0,.55f);
-                        caption=$"{verb} · {itemName}{countStr}";
+                        // Only show interact prompt for dropped loot on the ground or forageable wild mushrooms!
+                        if(!node.Dropped)
+                        {
+                            if(node.DropKind==2&&node.DropId==16)
+                            {
+                                targetPos=node.Pos+new V2(0,.55f);
+                                caption=L("Hái Nấm Rừng","Harvest Wild Mushroom");
+                            }
+                            else return;
+                        }
+                        else
+                        {
+                            string itemName=Catalog.GetDroppedDisplayName(node.DropKind,node.DropId,node.Resource,EmberLanguage.English);
+                            string verb=(node.DropKind==0&&node.Resource==Resource.Wood)
+                                ?L("Nhặt cành","Pick up branch")
+                                :L("Nhặt","Pick up");
+                            string countStr=(node.DropKind==1&&node.Amount<=1)?"":$" ×{node.Amount}";
+                            targetPos=node.Pos+new V2(0,.55f);
+                            caption=$"{verb} · {itemName}{countStr}";
+                        }
                     }
                     else
                     {
@@ -265,18 +276,20 @@ namespace Ember
             GUI.contentColor=oldColor;
             if(GUI.Button(box,GUIContent.none,GUIStyle.none))
             {
+                bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,p.Pos)<2.0f))
+                    ||(State?.Nodes!=null&&State.Nodes.Any(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.0f));
                 if(merchant!=null&&!EmberMerchant.DialogOpen)
                 {
                     EmberMerchant.DialogOpen=true;
                     inventoryOpen=false;
                     craftOpen=false;
                 }
-                else if(ShouldAutoEquipPickaxe(p))
+                else if(!hasNearbyStructure&&ShouldAutoEquipPickaxe(p))
                 {
                     AutoEquipHarvestTool(p);
                     intent.Interact=true;
                 }
-                else if(IsNearTreeOrRock(p)&&!HasHarvestTool(p))
+                else if(!hasNearbyStructure&&IsNearTreeOrRock(p)&&!HasHarvestTool(p))
                 {
                     bool isTree=IsNearTree(p);
                     notice=isTree
@@ -1533,7 +1546,7 @@ namespace Ember
                 return;
             }
 
-            float width = Mathf.Min(500f, Screen.width - 20f);
+            float width = Mathf.Min(480f, Screen.width - 20f);
             float height = Mathf.Min(416f, Screen.height - 30f);
             float modalX = Mathf.Max(10f, (Screen.width - width) * 0.5f);
             float modalY = Mathf.Max(10f, (Screen.height - height) * 0.5f);
@@ -1668,9 +1681,9 @@ namespace Ember
             if (sp != null) DrawSpritePreview(iconRect, sp);
 
             // Name & Owned
-            float textX = iconRect.xMax + 10f;
-            float textW = 112f;
-            var nameStyle = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 13 };
+            float textX = iconRect.xMax + 8f;
+            float textW = 108f;
+            var nameStyle = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 12 };
             nameStyle.normal.textColor = owned > 0 ? Color.white : new Color(0.6f, 0.6f, 0.65f);
             UiLabel(new Rect(textX, cardRect.y + 7, textW, 18), name, nameStyle);
 
@@ -1686,18 +1699,19 @@ namespace Ember
             float btnH = 28f;
             float btnY = cardRect.y + (rh - btnH) * 0.5f;
             float btnAreaX = textX + textW + 4f;
-            float btnAreaW = cardRect.xMax - btnAreaX - 6f;
+            float btnAreaW = cardRect.xMax - btnAreaX - 4f;
 
             int btnCount = (btn1Text != null ? 1 : 0) + (btn2Text != null ? 1 : 0) + (btn3Text != null ? 1 : 0);
-            float singleBtnW = (btnAreaW - (btnCount - 1) * 4f) / btnCount;
+            float singleBtnW = (btnAreaW - (btnCount - 1) * 3f) / btnCount;
 
             var btnStyle = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 11,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(1, 1, 0, 0),
-                margin = new RectOffset(0, 0, 0, 0)
+                padding = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(0, 0, 0, 0),
+                clipping = TextClipping.Overflow
             };
 
             float curBtnX = btnAreaX;

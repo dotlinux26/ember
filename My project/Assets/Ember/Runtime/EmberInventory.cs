@@ -224,13 +224,17 @@ namespace Ember
             V2 offHand=visualPos+new V2(-sign*pivots.BackX/48f,pivots.BackY/48f);
 
             Weapon activeWeapon=harvesting?Weapon.Pickaxe:WeaponForSlot(player,slot);
+            var grip=EmberWeaponGrips.Get(activeWeapon);
+            bool isDualWield=weapon&&!harvesting&&grip.GripMode==WeaponGripMode.DualWield;
             float aimWeight=0;
             Vector2 aimDir=new Vector2(sign,0);
             float swingAngle=0;
+            float offSwingAngle=0;
             V2 weaponHandOffset=new V2();
+            V2 offHandAttackOffset=new V2();
             bool flipWeapon=!player.Right;
             float desiredOffJoin=0;
-            V2 offJoinOffset=new V2(-sign*.07f,-.05f);
+            V2 offJoinOffset=grip.TwoHandJoinOffset;
             bool rangedWeapon=activeWeapon==Weapon.Crossbow||activeWeapon==Weapon.LumenGun||activeWeapon==Weapon.MirrorShield;
 
             if(weapon)
@@ -293,15 +297,28 @@ namespace Ember
                     {
                         float cdMax=activeWeapon==Weapon.ShadowBlades?.2f:activeWeapon==Weapon.LumenGun?.32f:.5f;
                         float kick=Mathf.Clamp01(player.AttackCD/cdMax);
-                        desiredOffJoin=1f;
-                        if(rangedWeapon)
+                        float arc=Mathf.Sin(kick*Mathf.PI);
+                        if(isDualWield)
                         {
+                            // Song Trảm 2 Nhịp (Staggered Dual Slash): Tay chính chém trước, tay phụ chém sau có delay
+                            desiredOffJoin=0f;
+                            float prog=1f-kick; // 0 (bắt đầu) -> 1 (kết thúc)
+                            float arc1=Mathf.Sin(Mathf.Clamp01(prog/0.65f)*Mathf.PI);
+                            float arc2=prog<0.25f?0f:Mathf.Sin(Mathf.Clamp01((prog-0.25f)/0.75f)*Mathf.PI);
+                            swingAngle=-sign*(25f-85f*arc1);
+                            offSwingAngle=-sign*(-35f+95f*arc2);
+                            weaponHandOffset+=new V2(sign*(.14f*arc1+.04f),.06f*arc1-.04f*kick);
+                            offHandAttackOffset=new V2(sign*(.14f*arc2),.07f*arc2);
+                        }
+                        else if(rangedWeapon)
+                        {
+                            desiredOffJoin=1f;
                             weaponHandOffset+=new V2(-aimDir.x*.09f*kick,-aimDir.y*.09f*kick);
                             offJoinOffset=new V2(aimDir.x*.10f,aimDir.y*.10f-.03f);
                         }
                         else
                         {
-                            float arc=Mathf.Sin(kick*Mathf.PI);
+                            desiredOffJoin=grip.GripMode==WeaponGripMode.TwoHanded?1f:0f;
                             swingAngle=-sign*55f*arc;
                             weaponHandOffset+=new V2(sign*.10f*arc,.06f*arc);
                             offJoinOffset=new V2(-sign*.08f,-.06f);
@@ -309,10 +326,17 @@ namespace Ember
                     }
                     else if(aimWeight>.05f)
                     {
-                        desiredOffJoin=rangedWeapon?aimWeight*.92f:aimWeight*.65f;
-                        offJoinOffset=rangedWeapon
-                            ?new V2(aimDir.x*.10f,aimDir.y*.10f-.02f)
-                            :new V2(-sign*.09f,-.05f);
+                        if(isDualWield)
+                        {
+                            desiredOffJoin=0f;
+                        }
+                        else
+                        {
+                            desiredOffJoin=rangedWeapon?aimWeight*.92f:(grip.GripMode==WeaponGripMode.TwoHanded?aimWeight*.65f:0f);
+                            offJoinOffset=rangedWeapon
+                                ?new V2(aimDir.x*.10f,aimDir.y*.10f-.02f)
+                                :new V2(-sign*.09f,-.05f);
+                        }
                     }
                 }
             }
@@ -322,11 +346,11 @@ namespace Ember
             float holdUntil=activeAction?clock+.18f:prevOff.holdUntil;
             if(!activeAction&&desiredOffJoin<=0&&clock<holdUntil)
             {
-                desiredOffJoin=.92f;
+                desiredOffJoin=isDualWield?0f:.92f;
                 offJoinOffset=prevOff.offset;
             }
             float joinSpeed=desiredOffJoin>prevOff.join?(activeAction?45f:24f):22f;
-            float offJoin=activeAction&&prevOff.join<.65f?Mathf.Max(.72f,Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed))):Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed));
+            float offJoin=isDualWield?0f:(activeAction&&prevOff.join<.65f?Mathf.Max(.72f,Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed))):Mathf.Lerp(prevOff.join,desiredOffJoin,Mathf.Clamp01(Time.deltaTime*joinSpeed)));
             V2 smoothOffset=new V2(
                 Mathf.Lerp(prevOff.offset.X,offJoinOffset.X,Mathf.Clamp01(Time.deltaTime*28f)),
                 Mathf.Lerp(prevOff.offset.Y,offJoinOffset.Y,Mathf.Clamp01(Time.deltaTime*28f)));
@@ -334,9 +358,9 @@ namespace Ember
 
             V2 activeHandPos=holdingHand+weaponHandOffset;
             V2 joinedOffHand=activeHandPos+smoothOffset;
-            V2 finalOffHand=new V2(
-                Mathf.Lerp(offHand.X,joinedOffHand.X,offJoin),
-                Mathf.Lerp(offHand.Y,joinedOffHand.Y,offJoin));
+            V2 finalOffHand=isDualWield
+                ?(offHand+offHandAttackOffset+new V2(-sign*.03f,.02f))
+                :new V2(Mathf.Lerp(offHand.X,joinedOffHand.X,offJoin),Mathf.Lerp(offHand.Y,joinedOffHand.Y,offJoin));
 
             V2 rightHand=player.Right?activeHandPos:finalOffHand;
             V2 leftHand=player.Right?finalOffHand:activeHandPos;
@@ -347,18 +371,21 @@ namespace Ember
 
             if(weapon)
             {
-                bool horizontalBarrel=activeWeapon==Weapon.LumenGun;
+                bool horizontalBarrel=grip.SpriteBaseAngle==0f;
+                string mainSpriteName=(isDualWield&&!string.IsNullOrEmpty(grip.DualSpriteName))
+                    ?grip.DualSpriteName
+                    :InventoryWeaponArt[(int)activeWeapon];
                 V2 itemPos=activeHandPos+(aimWeight>.05f&&!harvesting
                     ?new V2(aimDir.x*.12f,aimDir.y*.12f+.05f)
-                    :new V2(sign*.075f,.12f));
-                var held=Put("weapon"+player.Id,Primitive(InventoryWeaponArt[(int)activeWeapon]),
-                    itemPos,Color.white,.85f,heldOrder,flipWeapon);
+                    :new V2(sign*(grip.HandOffset.X+.06f),grip.HandOffset.Y+.08f));
+                var held=Put("weapon"+player.Id,Primitive(mainSpriteName),
+                    itemPos,Color.white,grip.Scale,heldOrder,flipWeapon);
                 float angle;
                 if(harvesting)
                 {
                     angle=swingAngle;
                 }
-                else if(player.Reloading&&activeWeapon==Weapon.LumenGun||player.Reloading&&activeWeapon==Weapon.Crossbow||player.Reloading&&activeWeapon==Weapon.MirrorShield)
+                else if(player.Reloading&&rangedWeapon)
                 {
                     angle=-sign*44f;
                 }
@@ -366,22 +393,57 @@ namespace Ember
                 {
                     float aimDeg=Mathf.Atan2(aimDir.y,aimDir.x)*Mathf.Rad2Deg;
                     float targetAngle=horizontalBarrel?(flipWeapon?aimDeg+180f:aimDeg):(aimDeg-90f);
-                    float restAngle=horizontalBarrel?0f:-sign*30f;
+                    float restAngle=grip.RestAngle*(flipWeapon?-1f:1f);
                     angle=Mathf.LerpAngle(restAngle,targetAngle,aimWeight)+swingAngle;
                 }
                 else
                 {
-                    angle=(horizontalBarrel?0f:-sign*30f)+swingAngle;
+                    angle=(grip.RestAngle*(flipWeapon?-1f:1f))+swingAngle;
                 }
                 held.transform.rotation=Quaternion.Euler(0,0,angle);
                 held.flipY=false;
+
+                // DUAL-WIELD OFF-HAND BLADE
+                if(isDualWield)
+                {
+                    string offSpriteName=!string.IsNullOrEmpty(grip.DualSpriteName)?grip.DualSpriteName:mainSpriteName;
+                    V2 offBladePos=finalOffHand+new V2(-sign*(grip.DualOffHandOffset.X+.04f),grip.DualOffHandOffset.Y+.06f);
+                    var heldOff=Put("weaponOff"+player.Id,Primitive(offSpriteName),
+                        offBladePos,Color.white,grip.DualOffHandScale,heldOrder-1,!flipWeapon);
+                    float offAngle=(grip.DualOffHandRestAngle*(flipWeapon?-1f:1f))+offSwingAngle;
+                    heldOff.transform.rotation=Quaternion.Euler(0,0,offAngle);
+                    heldOff.flipY=false;
+                }
             }
             else if(consumable)
             {
-                var held=Put("heldItem"+player.Id,HeldItemSprite(slot-2),holdingHand+new V2(sign*.055f,.105f),
-                    Color.white,.57f,heldOrder,!player.Right);
-                held.transform.rotation=Quaternion.identity;
-                held.flipY=false;
+                if(slot-2==0) // Handheld Torch with standardized ergonomic grip & flickering flame
+                {
+                    var tg=EmberWeaponGrips.Torch;
+                    V2 torchHandPos=holdingHand+new V2(sign*tg.HandOffset.X,tg.HandOffset.Y);
+                    var held=Put("heldItem"+player.Id,Primitive("torch"),torchHandPos,
+                        Color.white,tg.Scale,heldOrder,!player.Right);
+                    float torchAngle=tg.RestAngle*(player.Right?1f:-1f);
+                    held.transform.rotation=Quaternion.Euler(0,0,torchAngle);
+                    held.flipY=false;
+
+                    int flameFrame=(int)(clock*8f+player.Id)%8;
+                    Sprite flameSprite=EnemyFrame("torch_fire",flameFrame);
+                    float rad=(torchAngle+90f)*Mathf.Deg2Rad;
+                    float flameDist=0.50f*tg.Scale;
+                    V2 flamePos=torchHandPos+new V2(Mathf.Cos(rad)*flameDist,Mathf.Sin(rad)*flameDist);
+                    var flameR=Put("heldTorchFlame"+player.Id,flameSprite,flamePos,
+                        Color.white,tg.Scale,heldOrder+1,!player.Right);
+                    flameR.transform.rotation=Quaternion.Euler(0,0,torchAngle*0.5f);
+                    if(emissionMaterial!=null)flameR.sharedMaterial=emissionMaterial;
+                }
+                else
+                {
+                    var held=Put("heldItem"+player.Id,HeldItemSprite(slot-2),holdingHand+new V2(sign*.055f,.105f),
+                        Color.white,.57f,heldOrder,!player.Right);
+                    held.transform.rotation=Quaternion.identity;
+                    held.flipY=false;
+                }
             }
         }
 
