@@ -1,0 +1,964 @@
+fileFormatVersion: 2
+guid: cffc8cbd1dacbb84cb4007b142c1e72e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -323813576323859429
+    second: boss_eclipse_0
+  - first:
+      213: -8516780449813814204
+    second: boss_eclipse_1
+  - first:
+      213: 4053867170725242740
+    second: boss_eclipse_2
+  - first:
+      213: 7330548498315774133
+    second: boss_eclipse_3
+  - first:
+      213: 2329090559298997790
+    second: boss_eclipse_4
+  - first:
+      213: 7354723492811287452
+    second: boss_eclipse_5
+  - first:
+      213: -8286501375788742270
+    second: boss_eclipse_6
+  - first:
+      213: -3951390846574259799
+    second: boss_eclipse_7
+  - first:
+      213: 1072670423261468754
+    second: boss_eclipse_8
+  - first:
+      213: -8109486865595099978
+    second: boss_eclipse_9
+  - first:
+      213: -94390264841886411
+    second: boss_eclipse_10
+  - first:
+      213: 1219547879528840897
+    second: boss_eclipse_11
+  - first:
+      213: 3552753913561938593
+    second: boss_eclipse_12
+  - first:
+      213: -8853389323762894639
+    second: boss_eclipse_13
+  - first:
+      213: -3134938213740444564
+    second: boss_eclipse_14
+  - first:
+      213: 8876561110426240589
+    second: boss_eclipse_15
+  - first:
+      213: -4059031176647092220
+    second: boss_eclipse_16
+  - first:
+      213: 1953101928284411225
+    second: boss_eclipse_17
+  - first:
+      213: 6580089477618819027
+    second: boss_eclipse_18
+  - first:
+      213: -1742069210243767444
+    second: boss_eclipse_19
+  - first:
+      213: -7278378612530138173
+    second: boss_eclipse_20
+  - first:
+      213: -5232645403261559696
+    second: boss_eclipse_21
+  - first:
+      213: -76601899333190574
+    second: boss_eclipse_22
+  - first:
+      213: -5862113299119621096
+    second: boss_eclipse_23
+  - first:
+      213: -2164086143606005189
+    second: boss_eclipse_24
+  - first:
+      213: -574523407860196716
+    second: boss_eclipse_25
+  - first:
+      213: 2482152992254077941
+    second: boss_eclipse_26
+  - first:
+      213: 5183106467092949151
+    second: boss_eclipse_27
+  - first:
+      213: 2689018945678329489
+    second: boss_eclipse_28
+  - first:
+      213: -1373488686479441338
+    second: boss_eclipse_29
+  - first:
+      213: 6139294067155666895
+    second: boss_eclipse_30
+  - first:
+      213: 4063091737375548099
+    second: boss_eclipse_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: boss_eclipse_0
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 14
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1c74c99445918bf0800000000000000
+      internalID: -323813576323859429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_1
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 45
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4442bd20e415ec980800000000000000
+      internalID: -8516780449813814204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_2
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 50
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47722b5a6ba324830800000000000000
+      internalID: 4053867170725242740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_3
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 15
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b882e235075bb560800000000000000
+      internalID: 7330548498315774133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_4
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 50
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1e8bbc0687925020800000000000000
+      internalID: 2329090559298997790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_5
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 45
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9bac3abc0a311660800000000000000
+      internalID: 7354723492811287452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_6
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 14
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 289835907ee600d80800000000000000
+      internalID: -8286501375788742270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_7
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 45
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a1163dd5f6d929c0800000000000000
+      internalID: -3951390846574259799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_8
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 50
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25851931114e2ee00800000000000000
+      internalID: 1072670423261468754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_9
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 15
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b4128169a0557f80800000000000000
+      internalID: -8109486865595099978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_10
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 50
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53528d1ed88a0bef0800000000000000
+      internalID: -94390264841886411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_11
+      rect:
+        serializedVersion: 2
+        x: 237
+        y: 45
+        width: 13
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ceb5e1c554bce010800000000000000
+      internalID: 1219547879528840897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_12
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1aafc307cdaed4130800000000000000
+      internalID: 3552753913561938593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_13
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d870ea3151722580800000000000000
+      internalID: -8853389323762894639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_14
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c640431ed467e74d0800000000000000
+      internalID: -3134938213740444564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_15
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d46c006cc41ef2b70800000000000000
+      internalID: 8876561110426240589
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_16
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 408d6b786ac6ba7c0800000000000000
+      internalID: -4059031176647092220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_17
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 955d5851bdfca1b10800000000000000
+      internalID: 1953101928284411225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_18
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3df51cf548c215b50800000000000000
+      internalID: 6580089477618819027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_19
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 23
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c63664d784de2d7e0800000000000000
+      internalID: -1742069210243767444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_20
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c33753e6310efa90800000000000000
+      internalID: -7278378612530138173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_21
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 0
+        width: 52
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07c930fbab8e167b0800000000000000
+      internalID: -5232645403261559696
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_22
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25cff197afadfeef0800000000000000
+      internalID: -76601899333190574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_23
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81cb1e4630795aea0800000000000000
+      internalID: -5862113299119621096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_24
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 0
+        width: 52
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b32e4034e1f97f1e0800000000000000
+      internalID: -2164086143606005189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_25
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49a98572102e608f0800000000000000
+      internalID: -574523407860196716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_26
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fb2a75def0627220800000000000000
+      internalID: 2482152992254077941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_27
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 0
+        width: 52
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f98ea1cded71ee740800000000000000
+      internalID: 5183106467092949151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_28
+      rect:
+        serializedVersion: 2
+        x: 175
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 196c37beb70515520800000000000000
+      internalID: 2689018945678329489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_29
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6420063115360fce0800000000000000
+      internalID: -1373488686479441338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_30
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 0
+        width: 52
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc70a7c3d67233550800000000000000
+      internalID: 6139294067155666895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: boss_eclipse_31
+      rect:
+        serializedVersion: 2
+        x: 239
+        y: 9
+        width: 11
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c228107860036830800000000000000
+      internalID: 4063091737375548099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      boss_eclipse_0: -323813576323859429
+      boss_eclipse_1: -8516780449813814204
+      boss_eclipse_10: -94390264841886411
+      boss_eclipse_11: 1219547879528840897
+      boss_eclipse_12: 3552753913561938593
+      boss_eclipse_13: -8853389323762894639
+      boss_eclipse_14: -3134938213740444564
+      boss_eclipse_15: 8876561110426240589
+      boss_eclipse_16: -4059031176647092220
+      boss_eclipse_17: 1953101928284411225
+      boss_eclipse_18: 6580089477618819027
+      boss_eclipse_19: -1742069210243767444
+      boss_eclipse_2: 4053867170725242740
+      boss_eclipse_20: -7278378612530138173
+      boss_eclipse_21: -5232645403261559696
+      boss_eclipse_22: -76601899333190574
+      boss_eclipse_23: -5862113299119621096
+      boss_eclipse_24: -2164086143606005189
+      boss_eclipse_25: -574523407860196716
+      boss_eclipse_26: 2482152992254077941
+      boss_eclipse_27: 5183106467092949151
+      boss_eclipse_28: 2689018945678329489
+      boss_eclipse_29: -1373488686479441338
+      boss_eclipse_3: 7330548498315774133
+      boss_eclipse_30: 6139294067155666895
+      boss_eclipse_31: 4063091737375548099
+      boss_eclipse_4: 2329090559298997790
+      boss_eclipse_5: 7354723492811287452
+      boss_eclipse_6: -8286501375788742270
+      boss_eclipse_7: -3951390846574259799
+      boss_eclipse_8: 1072670423261468754
+      boss_eclipse_9: -8109486865595099978
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

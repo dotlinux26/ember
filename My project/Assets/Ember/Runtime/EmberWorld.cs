@@ -393,11 +393,11 @@ namespace Ember
                 SubtitleVi="Lò Lửa Hủy Diệt",SubtitleEn="Molten Titan",
                 RainNameVi="Mưa Thiên Thạch Tro",RainNameEn="Cinder Barrage",
                 BulletNameVi="Pháo Hỏa Loạn Xạ",BulletNameEn="Chaotic Embers",
-                ChargeNameVi="Húc Lửa Liên Hoàn",ChargeNameEn="Blazing Ram",
+                ChargeNameVi="⚠ HỎA CHƯỞNG TRO TÀN (CINDER BEAM) ⚠",ChargeNameEn="⚠ CINDER BEAM ⚠",
                 BaseHP=1200,MoveSpeed=1.55f,SkillInterval=4.9f,Scale=2.25f,
                 CircleCount=6,CircleRadius=2.6f,CircleDelay=1.6f,CircleDamage=30f,
                 BulletWaves=2,BulletCount=14,BulletSpeed=7.8f,BulletDelay=.9f,BulletDamage=15f,BulletChaotic=true,
-                ChargeLength=12f,ChargeWidth=3.0f,ChargeDelay=1.3f,ChargeDamage=32f
+                ChargeLength=15f,ChargeWidth=2.8f,ChargeDelay=1.6f,ChargeDamage=36f
             },
             new BossSpec{
                 NameVi="Kẻ Dệt Nhật Thực",NameEn="Eclipse Weaver",
@@ -598,10 +598,10 @@ namespace Ember
                         MaxDrop = 2,
                         VisualScale = 0.95f,
                         NameVi = "Mỏ Sỏi Nhỏ",
-                        NameEn = "Gravel Rock"
+                        NameEn = "Small Gravel"
                     };
                 }
-                // Normal Ore (~55%)
+                // Normal Boulder / Ore (~55%)
                 return new TileHarvestDef
                 {
                     IsTree = false,
@@ -610,8 +610,8 @@ namespace Ember
                     MinDrop = 2,
                     MaxDrop = 4,
                     VisualScale = 1.18f,
-                    NameVi = "Tảng Quặng",
-                    NameEn = "Ore Rock"
+                    NameVi = "Đá Tảng Cuội",
+                    NameEn = "Boulder Rock"
                 };
             }
         }
@@ -904,6 +904,8 @@ namespace Ember
             }
             // Natural Wild Mushroom Clusters (Nấm Rừng tự nhiên phân bố phong phú khắp bản đồ)
             int clusterCount = 16;
+            int size = S.Size;
+            byte[] tiles = Tiles;
             for (int c = 0; c < clusterCount; c++)
             {
                 double baseAngle = (c * (Math.PI * 2.0 / clusterCount)) + (rng.NextDouble() * 0.3 - 0.15);
@@ -915,9 +917,25 @@ namespace Ember
                     float jx = (float)(rng.NextDouble() * 1.6 - 0.8);
                     float jy = (float)(rng.NextDouble() * 1.6 - 0.8);
                     V2 mpos = clusterCenter + new V2(jx, jy);
-                    if (Walkable(mpos))
+                    int mx = (int)Math.Floor(mpos.X + size / 2f);
+                    int my = (int)Math.Floor(mpos.Y + size / 2f);
+                    if (mx >= 0 && my >= 0 && mx < size && my < size)
                     {
-                        nodes.Add(new Node { Id = nextId++, Pos = mpos, Resource = Resource.Dust, Amount = 1, MaxAmount = 1, Dropped = false, DropKind = 2, DropId = 16 });
+                        byte t = tiles[my * size + mx];
+                        // Cannot grow on bridges (5, 7), water (1), abyss (4), or paths (6)
+                        bool nearBridgeOrWater = false;
+                        for (int dy = -1; dy <= 1; dy++)
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                int nx = mx + dx, ny = my + dy;
+                                if (nx < 0 || ny < 0 || nx >= size || ny >= size) { nearBridgeOrWater = true; break; }
+                                byte bt = tiles[ny * size + nx];
+                                if (bt == 1 || bt == 4 || bt == 5 || bt == 6 || bt == 7) { nearBridgeOrWater = true; break; }
+                            }
+                        if (!nearBridgeOrWater && t == 0 && Walkable(mpos) && !nodes.Any(n => V2.Distance(n.Pos, mpos) < 2.0f))
+                        {
+                            nodes.Add(new Node { Id = nextId++, Pos = mpos, Resource = Resource.Dust, Amount = 1, MaxAmount = 1, Dropped = false, DropKind = 2, DropId = 16 });
+                        }
                     }
                 }
             }
@@ -1796,10 +1814,56 @@ namespace Ember
                     Announce(EmberLanguage.English?"Retrieved Torch!":"Đã thu hồi Đuốc!",p.Name);
                     Publish();
                 }
+                else if(structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f))
+                {
+                    var wall=structures.OrderBy(s=>V2.Distance(s.Pos,p.Pos)).First(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f);
+                    structures.Remove(wall);
+                    if(p.Items[4]<1)
+                    {
+                        p.Items[4]=1;
+                    }
+                    else
+                    {
+                        nodes.Add(new Node{Id=nextId++,Pos=wall.Pos,Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=4});
+                    }
+                    FX(wall.Pos,p.Pos,1);
+                    Announce(EmberLanguage.English?"Picked up Stone Wall!":"Đã nhấc Tường Đá!",p.Name);
+                    Publish();
+                }
                 else
                 {
+                    var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.4f);
                     var dropped=nodes.Where(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.2f).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
                     if(dropped!=null)PickupNode(p,dropped);
+                    else if(shroom!=null)
+                    {
+                        bool isHarvestTool=p.HoldingWeapon&&(p.ActiveWeapon==Weapon.Pickaxe||p.ActiveWeapon==Weapon.CrystalAxe);
+                        if(isHarvestTool)
+                        {
+                            shroom.Dropped=true;
+                            FX(shroom.Pos,shroom.Pos,7);
+                            Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
+                        }
+                        else
+                        {
+                            if(p.Items[16]<99)
+                            {
+                                p.Items[16]++;
+                                nodes.Remove(shroom);
+                                FX(shroom.Pos,p.Pos,2);
+                                EmitPopup(p.Pos,2,1);
+                                Announce(EmberLanguage.English?"Harvested Wild Mushroom!":"Đã hái Nấm Rừng!",p.Name);
+                            }
+                            else
+                            {
+                                shroom.Dropped=true;
+                                FX(shroom.Pos,shroom.Pos,7);
+                                Announce(EmberLanguage.English?"Backpack full! Mushroom dropped.":"Túi đầy! Nấm rơi ra đất.",p.Name);
+                            }
+                        }
+                        p.HarvestCD=0.5f;
+                        Publish();
+                    }
                     else Harvest(p,2.4f);
                 }
             }
@@ -1850,6 +1914,18 @@ namespace Ember
                     else
                     {
                         Attack(p);
+                    }
+                }
+                else
+                {
+                    var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.4f);
+                    if(shroom!=null)
+                    {
+                        shroom.Dropped=true;
+                        FX(shroom.Pos,shroom.Pos,7);
+                        Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
+                        p.AttackCD=0.35f;
+                        Publish();
                     }
                 }
             }
@@ -2236,7 +2312,7 @@ namespace Ember
                         {
                             if(def.Tier==2) // Rich Vein (~15%)
                             {
-                                int oreBurst=rng.Next(2,5);
+                                int oreBurst=rng.Next(def.MinDrop, def.MaxDrop+1);
                                 V2 oScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
                                 nodes.Add(new Node{Id=nextId++,Pos=blockPos+oScatter,Resource=Resource.Ore,Amount=oreBurst,MaxAmount=oreBurst,Dropped=true});
                                 if(rng.NextDouble()<0.35)
@@ -2252,11 +2328,17 @@ namespace Ember
                             }
                             else if(def.Tier==0) // Small Gravel
                             {
+                                int oreBurst=rng.Next(def.MinDrop, def.MaxDrop+1);
+                                V2 oScatter=new V2((float)(rng.NextDouble()*0.8-0.4),(float)(rng.NextDouble()*0.8-0.4));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+oScatter,Resource=Resource.Ore,Amount=oreBurst,MaxAmount=oreBurst,Dropped=true});
                                 Announce(EmberLanguage.English?"Small gravel cleared.":"Đã dọn xong mỏ sỏi nhỏ.",p.Name);
                             }
-                            else // Normal Ore
+                            else // Boulder Rock (Tier 1)
                             {
-                                Announce(EmberLanguage.English?"Ore rock shattered!":"Tảng quặng đã vỡ vụn!",p.Name);
+                                int oreBurst=rng.Next(def.MinDrop, def.MaxDrop+1);
+                                V2 oScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
+                                nodes.Add(new Node{Id=nextId++,Pos=blockPos+oScatter,Resource=Resource.Ore,Amount=oreBurst,MaxAmount=oreBurst,Dropped=true});
+                                Announce(EmberLanguage.English?"Boulder shattered!":"Đá tảng cuội đã vỡ vụn!",p.Name);
                             }
                         }
                     }
@@ -2406,7 +2488,8 @@ namespace Ember
         {
             if(p==null||p.Ghost)return;
             int effectiveItem=item;
-            if(item==4)effectiveItem=14;
+            if(item==4&&p.Items[4]>0&&p.Items[14]<=0)effectiveItem=4;
+            else if(item==4)effectiveItem=14;
             else if(item==5)effectiveItem=15;
             else if(item==6)effectiveItem=16;
             else if(item==7)effectiveItem=17;
@@ -2428,6 +2511,11 @@ namespace Ember
             }
             else if(effectiveItem==2)p.Dread=Math.Max(0,p.Dread-40);
             else if(effectiveItem==0||effectiveItem==1){float life=effectiveItem==0?45f:12f;structures.Add(new Structure{Id=nextId++,Kind=effectiveItem,Pos=p.Pos,Life=life,MaxLife=life});}
+            else if(effectiveItem==4)
+            {
+                structures.Add(new Structure{Id=nextId++,Kind=2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=999999f,MaxLife=999999f,HP=150f});
+                Announce(EmberLanguage.English?"Stone Wall placed!":"Đã đặt Tường Đá!",p.Name);
+            }
             else if(effectiveItem==14)
             {
                 p.StaminaBuffTimer=30f;
@@ -3071,12 +3159,38 @@ namespace Ember
                 }
                 else if(bt.Kind==1)
                 {
-                    owner.ChargeDir=bt.Dir;
-                    owner.ChargeTime=.42f;
-                    owner.ChargeSpeed=bt.Length/.42f;
-                    owner.ChargeDamage=bt.Damage;
-                    owner.WindupTime=0;
-                    FX(owner.Pos,owner.Pos+bt.Dir*bt.Length,3);
+                    if(bt.BossType==BossType.CinderBehemoth)
+                    {
+                        // Hỏa Chưởng Tro Tàn (Cinder Kamehameha Beam) - Cự Thú đứng tấn khai hỏa luồng magma hủy diệt
+                        owner.WindupTime=0.8f;
+                        owner.ChargeTime=0;
+                        V2 beamEnd=owner.Pos+bt.Dir*bt.Length;
+                        V2 fwd=bt.Dir;
+                        V2 perp=new V2(-fwd.Y,fwd.X);
+                        float halfW=bt.Radius>0?bt.Radius:1.4f;
+                        foreach(var p in players.Where(p=>!p.Ghost&&!p.Extracted))
+                        {
+                            V2 toP=p.Pos-owner.Pos;
+                            float proj=toP.X*fwd.X+toP.Y*fwd.Y;
+                            float lat=Math.Abs(toP.X*perp.X+toP.Y*perp.Y);
+                            if(proj>=0&&proj<=bt.Length&&lat<=halfW)
+                            {
+                                Hurt(p,bt.Damage);
+                                p.Pos=Move(p.Pos,fwd*1.6f+perp*(toP.X*perp.X+toP.Y*perp.Y>=0?0.85f:-0.85f),body:p);
+                            }
+                        }
+                        effects.Add(new Effect{From=owner.Pos,To=beamEnd,Kind=3,Life=0.8f});
+                        FX(owner.Pos,beamEnd,3);
+                    }
+                    else
+                    {
+                        owner.ChargeDir=bt.Dir;
+                        owner.ChargeTime=.42f;
+                        owner.ChargeSpeed=bt.Length/.42f;
+                        owner.ChargeDamage=bt.Damage;
+                        owner.WindupTime=0;
+                        FX(owner.Pos,owner.Pos+bt.Dir*bt.Length,3);
+                    }
                 }
             }
         }

@@ -685,6 +685,47 @@ liveWorld.Submit(1, new Command { Attack = true });
 liveWorld.Tick();
 Check(targetMushroom.Dropped, "attacking wild mushroom pops it to the ground");
 
+// Test 2-in-1 Mushroom Harvesting & Clearance in Isolated World
+var shroomWorld = new EmberWorld(999);
+var shroomPlayer = shroomWorld.AddPlayer(1, "ShroomGatherer", Vessel.Wanderer);
+shroomWorld.StartRun();
+var forageShrooms = shroomWorld.S.Nodes.Where(n => !n.Dropped && n.DropKind == 2 && n.DropId == 16).ToList();
+Check(forageShrooms.Count >= 3, "wild mushrooms spawned in shroom world");
+
+// 1. Bare hands [E] harvests directly into inventory
+shroomPlayer.HeldSlot = 6; // bare hands
+shroomPlayer.Pos = forageShrooms[0].Pos - new V2(0.8f, 0f); // within 2.4f
+shroomWorld.Submit(1, new Command { Interact = true });
+shroomWorld.Tick();
+Check(shroomPlayer.Items[16] == 1, "bare hands [E] harvests wild mushroom directly into inventory");
+Check(!shroomWorld.S.Nodes.Contains(forageShrooms[0]), "directly harvested mushroom node removed from world");
+
+// 2. Holding pickaxe [E] chops mushroom onto the ground
+shroomPlayer.HasPickaxe = true;
+shroomPlayer.HeldSlot = 8; // pickaxe
+shroomPlayer.Pos = forageShrooms[1].Pos - new V2(0.8f, 0f);
+shroomWorld.Submit(1, new Command { Interact = true });
+shroomWorld.Tick();
+Check(forageShrooms[1].Dropped, "holding pickaxe [E] chops wild mushroom onto the ground");
+
+// 3. Picking up dropped mushroom from ground
+shroomPlayer.Pos = forageShrooms[1].Pos - new V2(0.8f, 0f);
+shroomWorld.Submit(1, new Command { Interact = true });
+shroomWorld.Tick();
+Check(shroomPlayer.Items[16] == 2, "picked up dropped mushroom from ground into inventory");
+
+// 4. Bare hands attack (Click / [K]) punches mushroom onto ground
+shroomPlayer.HeldSlot = 6;
+shroomPlayer.Pos = forageShrooms[2].Pos - new V2(0.8f, 0f);
+shroomWorld.Submit(1, new Command { Attack = true });
+shroomWorld.Tick();
+Check(forageShrooms[2].Dropped, "bare hands punch/attack pops wild mushroom onto the ground");
+
+// 5. Mushroom clearance: mushrooms never spawn on bridges (5, 7), paths (6), water (1), or abyss (4)
+bool anyShroomInvalid = shroomWorld.S.Nodes.Any(n => n.DropKind == 2 && n.DropId == 16 && (
+    shroomWorld.Tiles[(int)Math.Floor(n.Pos.Y + shroomWorld.S.Size / 2f) * shroomWorld.S.Size + (int)Math.Floor(n.Pos.X + shroomWorld.S.Size / 2f)] != 0));
+Check(!anyShroomInvalid, "wild mushrooms never spawn on bridges, paths, water, or obstacles");
+
 // Test Energy Drink Buffs
 hero.Items[14] = 1;
 liveWorld.Submit(1, new Command { Use = 14 });
@@ -1143,7 +1184,7 @@ Check(EmberWeaponGrips.Torch != null && EmberWeaponGrips.Torch.SpriteName == "to
 Check(EmberWeaponGrips.Torch.SpriteBaseAngle == 90f, "Torch SpriteBaseAngle is 90f");
 Check(EmberWeaponGrips.Torch.GripPivot.X == 0.50f && EmberWeaponGrips.Torch.GripPivot.Y == 0.22f, "Torch GripPivot is (0.50, 0.22)");
 Check(EmberWeaponGrips.Torch.RestAngle == -22f, "Torch RestAngle is -22f");
-Check(EmberWeaponGrips.Torch.Scale == 0.85f, "Torch Scale is 0.85f");
+Check(EmberWeaponGrips.Torch.Scale == 0.58f, "Torch Scale is 0.58f");
 Check(EmberWeaponGrips.Torch.GripMode == WeaponGripMode.SingleHand, "Torch GripMode is SingleHand");
 Check(EmberWeaponGrips.GetGrip("torch") == EmberWeaponGrips.Torch, "EmberWeaponGrips.GetGrip(\"torch\") returns Torch grip");
 

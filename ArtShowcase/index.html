@@ -356,11 +356,21 @@
     <div class="section-desc">Mọi hoạt ảnh được render theo thời gian thực từ spritesheet gốc bằng Nearest-Neighbor
         sampling, bảo toàn 100% độ sắc nét pixel.</div>
     <div class="anim-box">
-        <div class="anim-card">
+                <div class="anim-card">
             <canvas id="bossCanvas" class="anim-canvas" width="192" height="192"></canvas>
-            <div class="card-name" style="margin-top: 8px;">Chúa Tể Hắc Ám (Cinder Titan Boss)</div>
-            <div class="card-desc">Sừng quỷ đồ sộ, giáp hắc diện thạch, lõi dung nham rực sáng theo nhịp thở (4 Frame
-                64x64)</div>
+            <div class="card-name" style="margin-top: 8px;">Chúa Tể Hư Không (Void Sovereign Boss)</div>
+            <div class="card-desc">Giáp hắc diện thạch, sừng quỷ vươn cao, lõi Tim Hư Không tím hồng và chu kỳ bước 4 frame co duỗi so le bệ vệ (4 Frame 64x64)</div>
+        </div>
+        <div class="anim-card">
+            <canvas id="cinderCanvas" class="anim-canvas" width="192" height="192"></canvas>
+            <div class="card-name" style="margin-top: 8px;">Cự Thú Tro Tàn (Cinder Behemoth Boss)</div>
+            <div class="card-desc">Cự Thú Bazan Dung Nham: giáp đá bazan nứt nẻ, vai nhấp nhô 1px, 2 cánh tay đá vung so le ngược nhịp chân, lõi dung nham co bóp rực nhiệt và tuyệt kỹ Hỏa Chưởng Tro Tàn (Magma Kamehameha Ray) với vạch cảnh báo tụ lực 1.6s để người chơi né lướt sang 2 bên (4 Frame 64x64)</div>
+        </div>
+        <div class="anim-card">
+            <canvas id="eclipseCanvas" class="anim-canvas" width="192" height="192"></canvas>
+            <div class="card-name" style="margin-top: 8px;">Kẻ Dệt Nhật Thực (Eclipse Weaver Boss)</div>
+            <div class="card-desc">Kẻ Dệt Nhật Thực: hào quang vương miện nhật thực vàng tím, lõi Hắc Nhật bí ẩn, 6 mắt hoàng kim rực sáng và 6 chân lưỡi hái ma mị (4 Frame 64x64)</div>
+        </div>
         </div>
         <div class="anim-card">
             <canvas id="dualCanvas" class="anim-canvas" width="144" height="144"></canvas>
@@ -529,7 +539,13 @@
     <div class="section-desc">Khôi phục nguyên vẹn 100% các bản vẽ kinh điển người dùng yêu thích: Cuốc sắt cong 2 đầu
         đinh đồng, Rìu đốn củi lưỡi liềm lưng búa, Nước tăng lực nút bần sóng sánh tia sét.</div>
     <div class="grid">
-        <div class="card">
+                <div class="card">
+            <span class="badge badge-class1">⛏️ CÔNG CỤ ĐÁ</span>
+            <div class="sprite-box"><img src="zoomed_8x/stone_pickaxe.png" width="120" height="120"></div>
+            <div class="card-name">Cuốc Đá (Stone Pickaxe)</div>
+            <div class="card-desc">Đầu đá hoa cương ghè đẽo thô mộc buộc dây gai chéo, cán cành cây sinh tồn (Cấp 0, khai khoáng cơ bản).</div>
+        </div>
+<div class="card">
             <span class="badge badge-fav">⭐ BẢN YÊU THÍCH</span>
             <div class="sprite-box"><img src="zoomed_8x/pickaxe.png" width="120" height="120"></div>
             <div class="card-name">Cuốc Sắt (Iron Pickaxe)</div>
@@ -798,6 +814,12 @@
                 rương đầy ắp tiền vàng, thỏi vàng, cụm tinh thể Starlight Cyan & Amethyst phát quang bốc luồng hào quang
                 thiên thể. Kích hoạt 1 trong 4 sự kiện ngẫu nhiên: Nhả đồ (40%), Bẫy quái (25%), Đạn pháo hoa tròn
                 (20%), Đá bay về nhà (15%). Tàn lụi sau 30s.</div>
+        </div>
+        <div class="card">
+            <span class="badge badge-nature">CÔNG TRÌNH ĐỒNG ĐỘI</span>
+            <div class="sprite-box"><img src="zoomed_8x/chest.png" width="120" height="120"></div>
+            <div class="card-name">Rương Chung Đồng Đội (Shared Team Chest)</div>
+            <div class="card-desc">Thân gỗ sồi mộc mạc viền đai sắt gia cố với đinh tán rèn nổi, nẹp góc bo vòm và ổ khóa đồng thau ấm cúng (Structure Kind 4). Nơi tập kết chia sẻ nguyên vật liệu sinh tồn cho cả đội.</div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">SINH VẬT HƯ KHÔNG</span>
@@ -1155,6 +1177,8 @@
 
         // Live Mob & Boss Animations
         setupAnim('bossCanvas', 'raw/boss.png', 64, 64, 4, 300, 192, 192);
+        setupAnim('cinderCanvas', 'raw/boss_cinder.png', 64, 64, 4, 300, 192, 192);
+        setupAnim('eclipseCanvas', 'raw/boss_eclipse.png', 64, 64, 4, 300, 192, 192);
         setupAnim('shadeCanvas', 'raw/enemy_shade.png', 32, 32, 4, 180, 128, 128);
         setupAnim('sentinelCanvas', 'raw/enemy_sentinel.png', 32, 32, 4, 220, 128, 128);
         setupAnim('voidCanvas', 'raw/enemy_void.png', 32, 32, 4, 190, 128, 128);

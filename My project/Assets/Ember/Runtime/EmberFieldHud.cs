@@ -39,14 +39,20 @@ namespace Ember
                 if(s.Kind>2||s.Life<=0||V2.Distance(s.Pos,focus)>23)continue;
                 if(s.Kind==2)
                 {
-                    // Wall / Fence health bar (HP 150)
-                    if(s.HP>=150f||s.HP<=0)continue;
+                    // Tường đá (Wall / Barricade) - Luôn hiển thị thanh máu overhead nổi bật
+                    if(s.HP<=0)continue;
                     float ratio=Mathf.Clamp01(s.HP/150f);
-                    Vector2 anchor=ScreenPos(s.Pos+new V2(0,.78f));
+                    Vector2 anchor=ScreenPos(s.Pos+new V2(0,.92f));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
-                    Panel(new Rect(x-20,y-7,40,7),new Color(.05f,.04f,.09f,.92f));
-                    Color fill=ratio<.3f?Coral:new Color(.82f,.62f,.38f);
-                    Panel(new Rect(x-19,y-6,38*ratio,5),fill);
+                    // Khung viền đen nổi bật
+                    Panel(new Rect(x-22,y-8,44,9),new Color(.06f,.05f,.10f,.95f));
+                    Panel(new Rect(x-21,y-7,42,7),new Color(.18f,.16f,.22f,.90f));
+                    Color fill=ratio<=.25f?Coral:ratio<=.6f?Gold:new Color(.35f,.88f,.72f);
+                    if(ratio>0)
+                    {
+                        Panel(new Rect(x-20,y-6,Mathf.Round(40*ratio),5),fill);
+                        Panel(new Rect(x-20,y-6,Mathf.Round(40*ratio),2),Color.Lerp(fill,Color.white,.35f));
+                    }
                 }
                 else
                 {
@@ -93,13 +99,12 @@ namespace Ember
                     float ratio=Mathf.Clamp01(ht.HP/ht.MaxHP);
                     if(ratio>=1f)continue;
                     var def=Catalog.GetTileHarvestDef(ht.Tx,ht.Ty,ht.Tile);
-                    bool isGiant=def.Tier==2;
-                    float yOff=ht.Tile==3?(isGiant?2.35f:1.85f):(isGiant?1.05f:.85f);
+                    float barW=def.Tier==2?54f:def.Tier==0?32f:40f;
+                    float yOff=ht.Tile==3?(def.Tier==2?2.35f:def.Tier==0?1.45f:1.85f):(def.Tier==2?1.15f:def.Tier==0?0.70f:0.90f);
                     Vector2 anchor=ScreenPos(tPos+new V2(0,yOff));
                     float x=Mathf.Round(anchor.x), y=Mathf.Round(anchor.y);
-                    float barW=isGiant?54f:40f;
                     Panel(new Rect(x-barW/2f,y-7,barW,7),new Color(.05f,.04f,.09f,.92f));
-                    Color fill=ratio<.3f?Coral:isGiant?new Color(1f,.82f,.25f):ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
+                    Color fill=ratio<.3f?Coral:def.Tier==2?new Color(1f,.82f,.25f):ht.Tile==3?new Color(.35f,.95f,.45f):new Color(.38f,.85f,1f);
                     Panel(new Rect(x-barW/2f+1,y-6,(barW-2)*ratio,5),fill);
                     Panel(new Rect(x-barW/2f+1,y-6,(barW-2)*ratio,1),new Color(1f,1f,1f,.25f));
                 }
@@ -186,6 +191,8 @@ namespace Ember
                     .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
                 var groundTorch=State.Structures.Where(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f)
                     .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+                var groundWall=State.Structures.Where(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f)
+                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
                 if(chest!=null)
                 {
                     targetPos=chest.Pos+new V2(0,.65f);
@@ -196,23 +203,20 @@ namespace Ember
                     targetPos=groundTorch.Pos+new V2(0,.65f);
                     caption=L("Thu Hồi Đuốc","Retrieve Torch");
                 }
+                else if(groundWall!=null)
+                {
+                    targetPos=groundWall.Pos+new V2(0,.78f);
+                    caption=L("Nhấc Tường Đá","Pick up Stone Wall");
+                }
                 else
                 {
                     var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
                         .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
                     if(node!=null)
                     {
-                        // Undropped resource veins/bushes already have overhead health bars and direct Click/K harvest.
-                        // Only show interact prompt for dropped loot on the ground or forageable wild mushrooms!
-                        if(!node.Dropped)
-                        {
-                            if(node.DropKind==2&&node.DropId==16)
-                            {
-                                targetPos=node.Pos+new V2(0,.55f);
-                                caption=L("Hái Nấm Rừng","Harvest Wild Mushroom");
-                            }
-                            else return;
-                        }
+                        // Undropped resource veins/bushes/mushrooms have dynamic interactive glow when approached.
+                        // Only show interact prompt for dropped loot on the ground!
+                        if(!node.Dropped) return;
                         else
                         {
                             string itemName=Catalog.GetDroppedDisplayName(node.DropKind,node.DropId,node.Resource,EmberLanguage.English);
@@ -633,7 +637,18 @@ namespace Ember
             {
                 if(!State.Event.Contains("Thu thập lõi")&&!State.Event.Contains("Gather cores"))
                 {
-                    string message=(State.EventActor??"")+EmberLanguage.Text(State.Event)+(State.EventTarget??"");
+                    string actor=State.EventActor;
+                    string evtText=EmberLanguage.Text(State.Event);
+                    string target=State.EventTarget;
+                    string message;
+                    if(!string.IsNullOrEmpty(actor))
+                    {
+                        message=string.IsNullOrEmpty(target)?$"{actor}: {evtText}":$"{actor}: {evtText} {target}";
+                    }
+                    else
+                    {
+                        message=string.IsNullOrEmpty(target)?evtText:$"{evtText} {target}";
+                    }
                     y+=DrawFieldNotice(y,"beacon",message);
                 }
             }

@@ -11,16 +11,23 @@ namespace Ember
 
         static Color BossAccentColor(BossType type)
         {
-            return type==BossType.CinderBehemoth?new Color(1f,.42f,.14f)
-                :type==BossType.EclipseWeaver?new Color(.96f,.18f,.54f)
-                :new Color(.94f,.18f,.28f);
+            return type==BossType.CinderBehemoth?new Color(0.98f,0.45f,0.09f) // Cam Đỏ Dung Nham #f97316
+                :type==BossType.EclipseWeaver?new Color(0.92f,0.70f,0.03f)   // Vàng Kim Nhật Thực #eab308
+                :new Color(0.66f,0.33f,0.97f);                              // Tím Hư Không #a855f7
+        }
+
+        static Color BossSecondaryColor(BossType type)
+        {
+            return type==BossType.CinderBehemoth?new Color(0.98f,0.75f,0.14f) // Tro Tàn Rực Lửa #fbbf24
+                :type==BossType.EclipseWeaver?new Color(0.49f,0.13f,0.81f)   // Huyết Nguyệt Tím Đen #7e22ce
+                :new Color(0.22f,0.74f,0.97f);                              // Starlight Cyan #38bdf8
         }
 
         static Color BossTintColor(BossType type)
         {
             return type==BossType.CinderBehemoth?new Color(1f,.74f,.58f)
-                :type==BossType.EclipseWeaver?new Color(.82f,.76f,1f)
-                :new Color(1f,.86f,.94f);
+                :type==BossType.EclipseWeaver?new Color(.92f,.85f,.50f)
+                :new Color(.75f,.65f,1f);
         }
 
         Texture2D EnsureTelegraphDisc()
@@ -105,6 +112,7 @@ namespace Ember
                 float duration=Mathf.Max(.05f,bt.Duration);
                 float progress=Mathf.Clamp01(1f-bt.Timer/duration);
                 Color accent=BossAccentColor(bt.BossType);
+                Color secondary=BossSecondaryColor(bt.BossType);
                 float pulse=.78f+.22f*Mathf.Sin(clock*18f+bt.Id);
 
                 if(bt.Kind==0)
@@ -113,12 +121,12 @@ namespace Ember
                     float rPx=bt.Radius*pxPerTile;
                     GUI.color=new Color(accent.r,accent.g,accent.b,.28f+.22f*progress);
                     GUI.DrawTexture(new Rect(c.x-rPx,c.y-rPx,rPx*2f,rPx*2f),disc);
-                    // Expanding inner fill showing exact detonation countdown.
+                    // Expanding inner fill showing exact detonation countdown with boss secondary signature.
                     float fillR=Mathf.Max(3f,rPx*progress);
-                    GUI.color=new Color(1f,.35f,.30f,.38f+.30f*progress);
+                    GUI.color=new Color(secondary.r,secondary.g,secondary.b,.42f+.35f*progress);
                     GUI.DrawTexture(new Rect(c.x-fillR,c.y-fillR,fillR*2f,fillR*2f),disc);
                     GUI.color=Color.white;
-                    GlowRing(bt.Pos,bt.Radius,new Color(1f,.30f,.32f,.95f*pulse),2.4f);
+                    GlowRing(bt.Pos,bt.Radius,new Color(accent.r,accent.g,accent.b,.95f*pulse),2.4f);
                 }
                 else if(bt.Kind==1)
                 {
@@ -134,22 +142,37 @@ namespace Ember
                     // Base danger corridor.
                     Panel(lane,new Color(accent.r,accent.g,accent.b,.24f+.16f*pulse));
                     // Sweeping progress fill along the charge lane.
-                    Panel(new Rect(lane.x,lane.y,lane.width*progress,lane.height),new Color(1f,.26f,.26f,.36f+.22f*progress));
-                    // Crisp glowing red borders.
-                    Color border=new Color(1f,.32f,.32f,.95f*pulse);
+                    Panel(new Rect(lane.x,lane.y,lane.width*progress,lane.height),new Color(secondary.r,secondary.g,secondary.b,.40f+.25f*progress));
+                    // Crisp glowing borders.
+                    Color border=new Color(accent.r,accent.g,accent.b,.95f*pulse);
                     Panel(new Rect(lane.x,lane.y,lane.width,2.5f),border);
                     Panel(new Rect(lane.x,lane.yMax-2.5f,lane.width,2.5f),border);
                     Panel(new Rect(lane.x,lane.y,2.5f,lane.height),border);
                     Panel(new Rect(lane.xMax-2.5f,lane.y,2.5f,lane.height),border);
                     // Center direction stripe.
-                    Panel(new Rect(lane.x+6,start.y-1.5f,Mathf.Max(0,lane.width-12),3f),new Color(1f,.82f,.76f,.55f*pulse));
+                    Panel(new Rect(lane.x+6,start.y-1.5f,Mathf.Max(0,lane.width-12),3f),new Color(secondary.r,secondary.g,secondary.b,.75f*pulse));
+                    if(bt.BossType==BossType.CinderBehemoth)
+                    {
+                        // Molten lava progress arrows pointing along the warning corridor
+                        int arrowCount=Mathf.Max(3,Mathf.RoundToInt(lenPx/50f));
+                        for(int a=1;a<=arrowCount;a++)
+                        {
+                            float ax=lane.x+(lane.width/(arrowCount+1))*a;
+                            float ap=((clock*2.2f)+(a*0.25f))%1f;
+                            Color aCol=Color.Lerp(accent,secondary,ap);
+                            aCol.a=(0.65f+0.35f*Mathf.Sin(clock*10f+a))*pulse;
+                            GUI.color=aCol;
+                            Line(new Vector2(ax-10f,start.y-widthPx*0.25f),new Vector2(ax+4f,start.y),3.0f);
+                            Line(new Vector2(ax-10f,start.y+widthPx*0.25f),new Vector2(ax+4f,start.y),3.0f);
+                        }
+                    }
                     GUI.matrix=prev;
                 }
                 else if(bt.Kind==2)
                 {
                     float ringR=bt.Radius*(.55f+.55f*progress);
                     GlowRing(bt.Pos,ringR,new Color(accent.r,accent.g,accent.b,.92f*pulse),2.8f);
-                    Ring(bt.Pos,bt.Radius,new Color(1f,.65f,.70f,.55f*pulse),1.5f);
+                    Ring(bt.Pos,bt.Radius,new Color(secondary.r,secondary.g,secondary.b,.75f*pulse),1.6f);
                 }
             }
             GUI.color=Color.white;

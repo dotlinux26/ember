@@ -56,7 +56,7 @@ namespace Ember
             GripPivot = new V2(0.50f, 0.22f),
             HandOffset = new V2(0.04f, 0.08f),
             RestAngle = -22f,
-            Scale = 0.85f,
+            Scale = 0.58f,
             GripMode = WeaponGripMode.SingleHand
         };
         static bool initialized;

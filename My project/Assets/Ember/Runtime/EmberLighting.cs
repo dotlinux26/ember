@@ -27,8 +27,9 @@ namespace Ember
         {
             switch(colorKind)
             {
-                case 2:return new Color(1f,.48f,.16f);
-                case 3:return new Color(1f,.26f,.62f);
+                case 1:return new Color(0.66f, 0.33f, 0.97f);
+                case 2:return new Color(1f, 0.48f, 0.16f);
+                case 3:return new Color(0.92f, 0.70f, 0.03f);
                 case 4:return new Color(.68f,.46f,1f);
                 case 5:return new Color(.38f,.95f,.54f);
                 default:return new Color(1f,.22f,.32f);

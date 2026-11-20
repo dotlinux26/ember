@@ -106,7 +106,7 @@ namespace Ember
             if(p==null)return null;
             if(slot==1)return p.HasWeapon?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
             if(slot==7)return p.HasSideWeapon?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
-            if(slot==8)return p.HasPickaxe?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
+            if(slot==8)return p.HasPickaxe?Primitive(p.PickaxeTier>0?"pickaxe":"stone_pickaxe"):null;
             if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?HeldItemSprite(slot-2):null;
             return null;
         }
@@ -162,7 +162,7 @@ namespace Ember
             if(State.Structures!=null&&State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
             var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.8f)
                 .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
-            if(node!=null&&!node.Dropped)return true;
+            if(node!=null&&!node.Dropped&&!(node.DropKind==2&&node.DropId==16))return true;
             if(currentTiles!=null)
             {
                 int size=State.Size;
@@ -374,7 +374,7 @@ namespace Ember
                 bool horizontalBarrel=grip.SpriteBaseAngle==0f;
                 string mainSpriteName=(isDualWield&&!string.IsNullOrEmpty(grip.DualSpriteName))
                     ?grip.DualSpriteName
-                    :InventoryWeaponArt[(int)activeWeapon];
+                    :(activeWeapon==Weapon.Pickaxe?(player.PickaxeTier>0?"pickaxe":"stone_pickaxe"):InventoryWeaponArt[(int)activeWeapon]);
                 V2 itemPos=activeHandPos+(aimWeight>.05f&&!harvesting
                     ?new V2(aimDir.x*.12f,aimDir.y*.12f+.05f)
                     :new V2(sign*(grip.HandOffset.X+.06f),grip.HandOffset.Y+.08f));
@@ -429,12 +429,10 @@ namespace Ember
 
                     int flameFrame=(int)(clock*8f+player.Id)%8;
                     Sprite flameSprite=EnemyFrame("torch_fire",flameFrame);
-                    float rad=(torchAngle+90f)*Mathf.Deg2Rad;
-                    float flameDist=0.50f*tg.Scale;
-                    V2 flamePos=torchHandPos+new V2(Mathf.Cos(rad)*flameDist,Mathf.Sin(rad)*flameDist);
-                    var flameR=Put("heldTorchFlame"+player.Id,flameSprite,flamePos,
+                    var flameR=Put("heldTorchFlame"+player.Id,flameSprite,torchHandPos,
                         Color.white,tg.Scale,heldOrder+1,!player.Right);
-                    flameR.transform.rotation=Quaternion.Euler(0,0,torchAngle*0.5f);
+                    flameR.transform.rotation=Quaternion.Euler(0,0,torchAngle);
+                    flameR.flipY=false;
                     if(emissionMaterial!=null)flameR.sharedMaterial=emissionMaterial;
                 }
                 else
@@ -458,6 +456,10 @@ namespace Ember
             if(index==16)return Primitive("mushroom");
             if(index==17)return Primitive("roasted_apple");
             if(index==18)return Primitive("mushroom_stew");
+            if(index==19)return Primitive("pickaxe");
+            if(index==20)return Primitive("stone_pickaxe");
+            if(index==21)return Primitive("axe");
+            if(index==22)return Primitive("stick");
             if(index<ActionIcons.Length)return MaterialSprite(ActionIcons[index]);
             return Primitive("diamond");
         }
@@ -540,7 +542,11 @@ namespace Ember
         static int StackLimitFor(int kind,int id)
         {
             if(kind==1)return 1;
-            if(kind==2)return 5;
+            if(kind==2)
+            {
+                if(id==4)return 1; // Defensive Wall is unstackable
+                return 5;
+            }
             if(kind==3)return (id==(int)Resource.Core||id==(int)Resource.Umbra)?10:20;
             return 1;
         }
@@ -1151,7 +1157,8 @@ namespace Ember
             if (i == 16) return Primitive("mushroom");
             if (i == 17) return Primitive("roasted_apple");
             if (i == 18) return Primitive("mushroom_stew");
-            if (i == 19 || i == 20) return Primitive("pickaxe");
+            if (i == 19) return Primitive("pickaxe");
+            if (i == 20) return Primitive("stone_pickaxe");
             if (i == 21) return Primitive("axe");
             if (i == 22) return Primitive("stick");
             if (CraftIcons != null && i < CraftIcons.Length) return Primitive(CraftIcons[i]);

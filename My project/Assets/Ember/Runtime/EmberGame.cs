@@ -387,7 +387,8 @@ namespace Ember
             }
             intent.X=move.x;intent.Y=move.y;
             bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
-            bool attack=wantAttack&&IsHoldingWeaponSlot(heldSlot)&&Local.AttackCD<=0&&!Local.Reloading;
+            bool isNearShroom=State?.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,Local.Pos)<2.4f);
+            bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
             bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
             if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=selectedItem;
@@ -664,6 +665,9 @@ namespace Ember
                     case 16: return Primitive("mushroom");
                     case 17: return Primitive("roasted_apple");
                     case 18: return Primitive("mushroom_stew");
+                    case 19: return Primitive("pickaxe");
+                    case 20: return Primitive("stone_pickaxe");
+                    case 21: return Primitive("axe");
                     case 22: return Primitive("stick");
                     default:
                         if(n.DropId==8)return Primitive("pickaxe");
@@ -681,7 +685,8 @@ namespace Ember
             {
                 authored.filterMode=FilterMode.Point;
                 bool rooted=name.StartsWith("enemy_")||name=="nest"||name=="boss"||name.StartsWith("tree")||name.StartsWith("rock")||name.StartsWith("bush")||name.StartsWith("log")||name=="wall"||name=="chest"||name=="torch"||name=="torch_ground"||name=="merchant"||name.StartsWith("abandoned_chest")||name.StartsWith("stone_")||name.EndsWith("stump")||name=="wildflowers"||name=="mushrooms";
-                int frameW=(authored.width>authored.height&&(rooted||name=="merchant"))?authored.height:authored.width;
+                bool isAnimStrip=name.StartsWith("enemy_")||name.StartsWith("boss")||name=="merchant";
+                int frameW=(authored.width>authored.height&&isAnimStrip)?authored.height:authored.width;
                 cached=Sprite.Create(authored,new Rect(0,0,frameW,authored.height),new Vector2(.5f,rooted?.05f:.5f),32);
                 primitives[name]=cached;
                 return cached;
@@ -950,7 +955,15 @@ namespace Ember
         }
         SpriteRenderer Put(string key,Sprite sprite,V2 pos,Color color,float scale=1,int? order=null,bool flip=false)
         {
-            touched.Add(key);if(!renderers.TryGetValue(key,out var r)){r=new GameObject(key).AddComponent<SpriteRenderer>();r.transform.SetParent(entityRoot.transform);if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;renderers[key]=r;}
+            touched.Add(key);
+            if(!renderers.TryGetValue(key,out var r)||r==null||r.gameObject==null)
+            {
+                if(entityRoot==null)entityRoot=new GameObject("EntityRoot");
+                r=new GameObject(key).AddComponent<SpriteRenderer>();
+                r.transform.SetParent(entityRoot.transform);
+                if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;
+                renderers[key]=r;
+            }
             r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(5000-Mathf.RoundToInt(pos.Y*10));return r;
         }
         void Render()
@@ -1066,6 +1079,13 @@ namespace Ember
                 int order=5000-Mathf.RoundToInt(n.Pos.Y*10);
                 if(isMushroomNode)
                 {
+                    bool isNear=local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f;
+                    if(isNear)
+                    {
+                        float pulse=.78f+.22f*Mathf.Sin(clock*5f+n.Id);
+                        Color mGlow=new Color(.82f,.48f,1f,.88f*pulse);
+                        Outline(Put("nodeGlow"+n.Id,sprite,drawPos,mGlow,scale,order-1),sprite);
+                    }
                     Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
                     for(int sIdx=0;sIdx<2;sIdx++)
                     {
@@ -1081,10 +1101,16 @@ namespace Ember
                 }
                 else if(isDustBush)
                 {
-                    // Main bush sprite - clean and natural without harsh outline or ground light
+                    bool isNear=local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f;
+                    if(isNear)
+                    {
+                        float pulse=.78f+.22f*Mathf.Sin(clock*5f+n.Id);
+                        Color dGlow=new Color(.35f,1f,.92f,.88f*pulse);
+                        Outline(Put("nodeGlow"+n.Id,sprite,drawPos,dGlow,scale,order-1),sprite);
+                    }
                     Put("node"+n.Id,sprite,drawPos,Color.white,scale,order);
 
-                    // Delicate rising lumidust particles floating upward along Y axis (chậm thôi, sáng sáng glow)
+                    // Delicate rising lumidust particles floating upward along Y axis
                     for(int pIdx=0;pIdx<4;pIdx++)
                     {
                         float seed=n.Id*0.37f+pIdx*0.25f;
@@ -1102,7 +1128,7 @@ namespace Ember
                 }
                 else
                 {
-                    bool showGoldGlow=n.Dropped||!isWoodTree||(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f);
+                    bool showGoldGlow=n.Dropped||(!isWoodTree&&(local!=null&&!local.Ghost&&V2.Distance(n.Pos,localVisual)<2.4f));
                     if(showGoldGlow)
                     {
                         float pulse=.82f+.18f*Mathf.Sin(clock*6f+n.Id);
@@ -1135,8 +1161,7 @@ namespace Ember
                     int key=tr.Ty*size+tr.Tx;
                     if(visibleTrees.TryGetValue(key,out var tSr))
                     {
-                        tSr.enabled=false;
-                        treePool.Push(tSr);
+                        if(tSr!=null&&tSr.gameObject!=null){tSr.enabled=false;treePool.Push(tSr);}
                         visibleTrees.Remove(key);
                         treeSpawnClock.Remove(key);
                         treeBaseScale.Remove(key);
@@ -1291,7 +1316,7 @@ namespace Ember
                 V2 ePos=VisualEnemyPos(e);
                 if(Mathf.Abs(ePos.X-center.X)>viewHalfW+1.5f||Mathf.Abs(ePos.Y-center.Y)>viewHalfH+1.5f)continue;
                 if(!IsExplored(ePos)&&!e.IsWorldBoss&&e.Kind!=EnemyKind.Boss)continue;
-                string art=e.Kind==EnemyKind.Boss?"boss":e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite||e.Kind==EnemyKind.Sentinel?"enemy_sentinel":"enemy_shade";
+                string art=e.Kind==EnemyKind.Boss?(e.BossType==BossType.CinderBehemoth?"boss_cinder":e.BossType==BossType.EclipseWeaver?"boss_eclipse":"boss"):e.Kind==EnemyKind.Nest?"nest":e.Kind==EnemyKind.SwampLeech?"enemy_swamp":e.Kind==EnemyKind.VoidStalker?"enemy_void":e.Elite||e.Kind==EnemyKind.Sentinel?"enemy_sentinel":"enemy_shade";
                 float scale=e.IsWorldBoss?Catalog.BossFor(e.BossType).Scale:e.Kind==EnemyKind.Boss?1.5f:e.Elite||e.Kind==EnemyKind.Sentinel?1.4f:1;
                 Color glowColor=e.IsWorldBoss?BossAccentColor(e.BossType):e.Kind==EnemyKind.Sentinel?new Color(.35f,.92f,1f):Coral;
                 Color bodyTint=e.Blind>0?new Color(.6f,.7f,.8f):e.IsWorldBoss?BossTintColor(e.BossType):Color.white;
@@ -1309,6 +1334,19 @@ namespace Ember
                 V2 renderPos=ePos+new V2(0,bob);
                 Outline(Put("enemyGlow"+e.Id,artSprite,renderPos,glowColor,scale,5000-Mathf.RoundToInt(ePos.Y*10)-1,flip),artSprite);
                 Put("enemy"+e.Id,artSprite,renderPos,bodyTint,scale,flip:flip);
+                if(e.IsWorldBoss&&e.ChargeTime>0)
+                {
+                    V2 cDir=e.ChargeDir.Length>0.01f?e.ChargeDir.Normal:new V2(flip?1f:-1f,0f);
+                    for(int ghost=1;ghost<=3;ghost++)
+                    {
+                        float gDist=ghost*0.35f;
+                        float gAlpha=0.55f*(1f-ghost*0.25f);
+                        V2 gPos=renderPos-cDir*gDist;
+                        Color gColor=new Color(glowColor.r,glowColor.g,glowColor.b,gAlpha);
+                        var gSr=Put("bossGhost"+e.Id+"_"+ghost,artSprite,gPos,gColor,scale,5000-Mathf.RoundToInt(ePos.Y*10)-2-ghost,flip);
+                        if(emissionMaterial!=null)gSr.sharedMaterial=emissionMaterial;
+                    }
+                }
                 if(e.Kind==EnemyKind.Sentinel)
                 {
                     float rot=clock*140f+e.Id*45f;
@@ -1439,9 +1477,9 @@ namespace Ember
                     Put("falseShadow",shadowSprite,pos,shadowCol,1.2f,2000,flip:sign>0);
                 }
             }
-            foreach(var pair in renderers)if(!touched.Contains(pair.Key)&&pair.Value.enabled)pair.Value.enabled=false;
+            foreach(var pair in renderers)if(!touched.Contains(pair.Key)&&pair.Value!=null&&pair.Value.gameObject!=null&&pair.Value.enabled)pair.Value.enabled=false;
             // Reclaim transient node/enemy renderers instead of retaining an entire run.
-            if(renderers.Count>1400)foreach(var key in renderers.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(renderers[key].gameObject);renderers.Remove(key);}
+            if(renderers.Count>1400)foreach(var key in renderers.Where(p=>p.Value==null||p.Value.gameObject==null||!p.Value.enabled).Select(p=>p.Key).ToArray()){if(renderers.TryGetValue(key,out var sr)&&sr!=null&&sr.gameObject!=null)Destroy(sr.gameObject);renderers.Remove(key);}
         }
         static void Blit16(Color32[] dest,int px,int tx,int ty,Color32[] src,int srcW,int sc,int sr,bool blend=false)
         {
@@ -1587,7 +1625,7 @@ namespace Ember
                 white.Apply();
             }
             foreach(Transform t in mapRoot.transform)Destroy(t.gameObject);
-            visibleTrees.Clear();treePool.Clear();treeSpawnClock.Clear();treeBaseScale.Clear();treeBasePos.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
+            visibleTrees.Clear();treePool.Clear();visibleDecor.Clear();decorPool.Clear();keepDecor.Clear();dropDecor.Clear();treeSpawnClock.Clear();treeBaseScale.Clear();treeBasePos.Clear();visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
             float edgeWorld=State.Size/2f-3;
             var fog=new GameObject("Abyss / unlit impenetrable fog").AddComponent<SpriteRenderer>();fog.transform.SetParent(mapRoot.transform);fog.sprite=Sprite.Create(white,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);fog.transform.localScale=Vector3.one*(State.Size+40);fog.sortingOrder=2;
             var fogMaterial=Resources.Load<Material>("Ember/EmberAbyss");if(fogMaterial!=null){fog.material=new Material(fogMaterial);fog.material.SetFloat("_Boundary",edgeWorld);}
@@ -1741,12 +1779,13 @@ namespace Ember
                     int m=hash%10;
                     treeArt=(m<=2)?"tree_oak":(m<=5)?"tree_apple":(m<=7)?"tree_autumn":"tree_pine";
                 }
-                SpriteRenderer tree;
-                if(treePool.Count>0){tree=treePool.Pop();tree.enabled=true;}
+                SpriteRenderer tree=null;
+                while(treePool.Count>0&&(tree==null||tree.gameObject==null))tree=treePool.Pop();
+                if(tree!=null&&tree.gameObject!=null)tree.enabled=true;
                 else
                 {
                     tree=new GameObject("Ancient tree").AddComponent<SpriteRenderer>();
-                    tree.transform.SetParent(mapRoot.transform);
+                    if(mapRoot!=null)tree.transform.SetParent(mapRoot.transform);
                     if(spriteMaterial!=null)tree.sharedMaterial=spriteMaterial;
                 }
                 tree.sprite=Primitive(treeArt);
@@ -1774,68 +1813,93 @@ namespace Ember
             }
             else if(currentTiles[idx]==0)
             {
+                // Strict check: ONLY land grass (tile 0), NEVER bridges (5, 7, 8) or water (1) or paths (6)
                 float ddx=x-size/2f,ddy=y-size/2f;
                 float dr=Mathf.Sqrt(ddx*ddx+ddy*ddy);
                 if(dr>5.5f)
                 {
-                    int dHash=((x*1274126177)^(y*668265263))&0x7FFFFFFF;
-                    if((dHash%100)<14)
+                    // Coarse 3x3 cell grid: ensures at least 3 tiles separation between decor props
+                    int cellX=(x>=0?x:(x-2))/3;
+                    int cellY=(y>=0?y:(y-2))/3;
+                    int cellHash=((cellX*1274126177)^(cellY*668265263))&0x7FFFFFFF;
+                    if((cellHash%100)<35)
                     {
-                        int key=idx;keepDecor.Add(key);
-                        if(!visibleDecor.ContainsKey(key))
+                        int localX=((x%3)+3)%3;
+                        int localY=((y%3)+3)%3;
+                        if(localX==1&&localY==1)
                         {
-                            int decorType=(dHash/100)%9;
-                            string decorArt=decorType switch
+                            bool nearObstacle=false;
+                            for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++)
                             {
-                                0=>"wildflowers",
-                                1=>"stone_pebble",
-                                2=>"mushrooms",
-                                3=>"bush_small",
-                                4=>"bush_wide",
-                                5=>"tall_stump",
-                                6=>"bush_round",
-                                7=>"tree_stump",
-                                _=>"log_fallen"
-                            };
-                            SpriteRenderer decorSr;
-                            if(decorPool.Count>0){decorSr=decorPool.Pop();decorSr.enabled=true;}
-                            else
-                            {
-                                decorSr=new GameObject("GroundDecor").AddComponent<SpriteRenderer>();
-                                decorSr.transform.SetParent(mapRoot.transform);
-                                if(spriteMaterial!=null)decorSr.sharedMaterial=spriteMaterial;
+                                int nx=x+dx,ny=y+dy;
+                                if(nx<0||ny<0||nx>=size||ny>=size){nearObstacle=true;break;}
+                                byte t=currentTiles[ny*size+nx];
+                                if(t!=0){nearObstacle=true;break;}
                             }
-                            decorSr.sprite=Primitive(decorArt);
-                            float jx=((dHash%17)-8)/26f;
-                            float jy=(((dHash/17)%17)-8)/26f;
-                            decorSr.transform.position=new Vector3(x-size/2f+.5f+jx,y-size/2f+.35f+jy,0);
-                            float decorScale=decorType switch
-                            {
-                                0=>.85f,
-                                1=>.80f,
-                                2=>.90f,
-                                3=>.85f,
-                                4=>.95f,
-                                5=>.90f,
-                                6=>.90f,
-                                7=>.90f,
-                                _=>.95f
-                            };
-                            decorSr.transform.localScale=Vector3.one*decorScale;
-                            decorSr.color=Color.white;
-                            decorSr.sortingOrder=2000-Mathf.RoundToInt((y-size/2f+.35f)*10);
-                            visibleDecor[key]=decorSr;
+                            if(nearObstacle)continue;
+                            V2 decorWorldPos=new V2(x-size/2f+.5f,y-size/2f+.35f);
+                            if(State?.Structures!=null&&State.Structures.Any(s=>V2.Distance(s.Pos,decorWorldPos)<2.2f))continue;
+                            if(State?.Nodes!=null&&State.Nodes.Any(n=>V2.Distance(n.Pos,decorWorldPos)<2.0f))continue;
+                            int key=idx;keepDecor.Add(key);
+                            if(!visibleDecor.ContainsKey(key))
+                                {
+                                    int decorType=(cellHash/1000)%9;
+                                    string decorArt=decorType switch
+                                    {
+                                        0=>"wildflowers",
+                                        1=>"stone_pebble",
+                                        2=>"mushrooms",
+                                        3=>"bush_small",
+                                        4=>"bush_wide",
+                                        5=>"tall_stump",
+                                        6=>"bush_round",
+                                        7=>"tree_stump",
+                                        _=>"log_fallen"
+                                    };
+                                    if((decorArt=="bush_wide"||decorArt=="log_fallen")&&x+1<size&&currentTiles[y*size+x+1]!=0)
+                                    {
+                                        decorArt="bush_small";
+                                    }
+                                    SpriteRenderer decorSr=null;
+                                    while(decorPool.Count>0&&(decorSr==null||decorSr.gameObject==null))decorSr=decorPool.Pop();
+                                    if(decorSr!=null&&decorSr.gameObject!=null)decorSr.enabled=true;
+                                    else
+                                    {
+                                        decorSr=new GameObject("GroundDecor").AddComponent<SpriteRenderer>();
+                                        if(mapRoot!=null)decorSr.transform.SetParent(mapRoot.transform);
+                                        if(spriteMaterial!=null)decorSr.sharedMaterial=spriteMaterial;
+                                    }
+                                    decorSr.sprite=Primitive(decorArt);
+                                    float jx=((cellHash%17)-8)/32f;
+                                    float jy=(((cellHash/17)%17)-8)/32f;
+                                    decorSr.transform.position=new Vector3(x-size/2f+.5f+jx,y-size/2f+.35f+jy,0);
+                                    float decorScale=decorType switch
+                                    {
+                                        0=>.85f,
+                                        1=>.80f,
+                                        2=>.90f,
+                                        3=>.85f,
+                                        4=>.95f,
+                                        5=>.90f,
+                                        6=>.90f,
+                                        7=>.90f,
+                                        _=>.95f
+                                    };
+                                    decorSr.transform.localScale=Vector3.one*decorScale;
+                                    decorSr.color=Color.white;
+                                    decorSr.sortingOrder=2000-Mathf.RoundToInt((y-size/2f+.35f)*10);
+                                    visibleDecor[key]=decorSr;
+                                }
+                            }
                         }
                     }
-                }
             }}
             foreach(var kv in visibleTrees)if(!keepTrees.Contains(kv.Key))dropTrees.Add(kv.Key);
             for(int i=0;i<dropTrees.Count;i++)
             {
                 int key=dropTrees[i];
                 var sr=visibleTrees[key];
-                sr.enabled=false;
-                treePool.Push(sr);
+                if(sr!=null&&sr.gameObject!=null){sr.enabled=false;treePool.Push(sr);}
                 visibleTrees.Remove(key);
                 treeSpawnClock.Remove(key);
                 treeBaseScale.Remove(key);
@@ -1846,8 +1910,7 @@ namespace Ember
             {
                 int key=dropDecor[i];
                 var sr=visibleDecor[key];
-                sr.enabled=false;
-                decorPool.Push(sr);
+                if(sr!=null&&sr.gameObject!=null){sr.enabled=false;decorPool.Push(sr);}
                 visibleDecor.Remove(key);
             }
         }
@@ -2004,6 +2067,120 @@ namespace Ember
             }
             GUI.color=Color.white;
         }
+        void DrawBossChargeSlash(Effect e)
+        {
+            if(Event.current.type!=EventType.Repaint)return;
+            float prog=Mathf.Clamp01((.3f-e.Life)/.3f);
+            float alpha=Mathf.Max(0f,1f-prog*.85f);
+            BossType bType=State!=null?State.BossType:BossType.VoidSovereign;
+            Color accent=BossAccentColor(bType);
+            Color secondary=BossSecondaryColor(bType);
+            Color coreWhite=new Color(1f,1f,1f,alpha*.95f);
+
+            float dist=V2.Distance(e.From,e.To);
+            if(dist<0.5f)
+            {
+                Ring(e.To,0.4f+prog*1.6f,new Color(accent.r,accent.g,accent.b,alpha*.85f),3.5f);
+                Ring(e.To,0.2f+prog*1.1f,new Color(secondary.r,secondary.g,secondary.b,alpha*.95f),2.2f);
+                Ring(e.To,0.05f+prog*0.5f,coreWhite,1.2f);
+                return;
+            }
+
+            Vector2 from=ScreenPos(e.From);
+            Vector2 to=ScreenPos(e.To);
+            Vector2 delta=to-from;
+            float lenPx=delta.magnitude;
+            if(lenPx<1f)return;
+            Vector2 fwd=delta/lenPx;
+            Vector2 perp=new Vector2(-fwd.y,fwd.x);
+
+            if(bType==BossType.CinderBehemoth)
+            {
+                // Hỏa Chưởng Tro Tàn: Magma Kamehameha Ray VFX
+                float beamW=34f;
+                GUI.color=new Color(accent.r,accent.g,accent.b,alpha*.55f);
+                Line(from,to,beamW);
+                GUI.color=new Color(secondary.r,secondary.g,secondary.b,alpha*.85f);
+                Line(from,to,16f);
+                GUI.color=coreWhite;
+                Line(from,to,5f);
+                Ring(e.From,0.6f+prog*1.2f,new Color(secondary.r,secondary.g,secondary.b,alpha*.95f),3.5f);
+                Ring(e.To,0.8f+prog*1.8f,new Color(accent.r,accent.g,accent.b,alpha*.90f),4.5f);
+                Ring(e.To,0.3f+prog*0.9f,coreWhite,2.0f);
+                GUI.color=Color.white;
+                return;
+            }
+
+            float corridorW=22f;
+
+            // 1. Đa tầng vệt chém hư không rực sáng dọc đường lướt:
+            // Outer Glow tím hư không phủ rộng hai bên hành lang
+            GUI.color=new Color(accent.r,accent.g,accent.b,alpha*.35f);
+            Line(from+perp*(corridorW*.5f),to+perp*(corridorW*.5f),14f);
+            Line(from-perp*(corridorW*.5f),to-perp*(corridorW*.5f),14f);
+
+            // Dòng kiếm khí tím đậm ở thân vệt chém
+            GUI.color=new Color(accent.r,accent.g,accent.b,alpha*.75f);
+            Line(from,to,7.5f);
+
+            // Viền Cyan Starlight sắc nét xé toạc không gian dọc 2 mép
+            GUI.color=new Color(secondary.r,secondary.g,secondary.b,alpha*.95f);
+            Line(from+perp*corridorW,to+perp*corridorW,2.5f);
+            Line(from-perp*corridorW,to-perp*corridorW,2.5f);
+
+            // Lõi trắng Starlight Core xé toạc không gian ở chính giữa
+            GUI.color=coreWhite;
+            Line(from,to,1.8f);
+
+            // 2. Vệt cào xé bóng đêm: các vết rách không gian đan chéo so le dọc vệt lướt
+            for(int k=1;k<=4;k++)
+            {
+                float t=k*.2f;
+                Vector2 mid=Vector2.Lerp(from,to,t);
+                float clawAngle=(k%2==0?32f:-32f)*Mathf.Deg2Rad;
+                Vector2 clawDir=fwd*Mathf.Cos(clawAngle)+perp*Mathf.Sin(clawAngle);
+                Vector2 clawStart=mid-clawDir*(corridorW*1.2f);
+                Vector2 clawEnd=mid+clawDir*(corridorW*1.2f);
+
+                GUI.color=new Color(accent.r,accent.g,accent.b,alpha*.40f);
+                Line(clawStart,clawEnd,4.5f);
+                GUI.color=new Color(secondary.r,secondary.g,secondary.b,alpha*.90f);
+                Line(clawStart,clawEnd,2.0f);
+                GUI.color=coreWhite;
+                Line(Vector2.Lerp(clawStart,clawEnd,.2f),Vector2.Lerp(clawStart,clawEnd,.8f),1.0f);
+            }
+
+            // 3. Shockwave hình bán nguyệt dọc đường lướt:
+            // Sóng kích động bán nguyệt tiên phong ở đầu mũi lướt
+            float headT=Mathf.Clamp01(prog*1.35f);
+            Vector2 headPos=Vector2.Lerp(from,to,headT);
+            float rxLead=24f+prog*16f;
+            float ryLead=38f+prog*20f;
+            DrawCrescentArc(headPos,fwd,perp,rxLead,ryLead,
+                new Color(accent.r,accent.g,accent.b,alpha*.45f),
+                new Color(secondary.r,secondary.g,secondary.b,alpha*.90f),
+                coreWhite);
+
+            // Các tầng sóng bán nguyệt gợn sóng lan tỏa phía sau
+            if(prog>.08f)
+            {
+                Vector2 trailPos1=Vector2.Lerp(from,to,.40f);
+                DrawCrescentArc(trailPos1,fwd,perp,18f+prog*10f,28f+prog*12f,
+                    new Color(accent.r,accent.g,accent.b,alpha*.30f),
+                    new Color(secondary.r,secondary.g,secondary.b,alpha*.65f),
+                    new Color(1f,1f,1f,alpha*.70f));
+            }
+            if(prog>.18f)
+            {
+                Vector2 trailPos2=Vector2.Lerp(from,to,.75f);
+                DrawCrescentArc(trailPos2,fwd,perp,20f+prog*12f,32f+prog*14f,
+                    new Color(accent.r,accent.g,accent.b,alpha*.25f),
+                    new Color(secondary.r,secondary.g,secondary.b,alpha*.55f),
+                    new Color(1f,1f,1f,alpha*.60f));
+            }
+
+            GUI.color=Color.white;
+        }
         void DrawInterface()
         {
             InitStyles();
@@ -2041,7 +2218,8 @@ namespace Ember
                 if(e.Kind==4||e.Kind==5){DrawMeteorEffect(e);continue;}
                 if(e.Kind==8){DrawCookingSteamEffect(e);continue;}
                 if(e.Kind==9){DrawShadowDualCrossSlash(e);continue;}
-                GUI.color=e.Kind==0?Gold:e.Kind==3?Coral:Cyan;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+( .3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
+                if(e.Kind==3){DrawBossChargeSlash(e);continue;}
+                GUI.color=e.Kind==0?Gold:Coral;Line(ScreenPos(e.From),ScreenPos(e.To),3);if(e.Kind>=2)Ring(e.To,1+(.3f-e.Life)*6,GUI.color);GUI.color=Color.white;}
             DrawStructureBars();
             DrawHarvestBars();
             DrawCookingBars();
@@ -2062,7 +2240,7 @@ namespace Ember
             DrawMerchantHud(p);
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
-            DrawFieldNotices(p,QuestCollapsed?objectiveY+54:objectiveY+80);
+            DrawFieldNotices(p,QuestCollapsed?objectiveY+92f:objectiveY+88f);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
             if(!p.Ghost&&beaconDepositOpen)DrawBeaconDepositModal(p);
             hudCapturing=false;
