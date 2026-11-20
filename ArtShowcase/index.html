@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <title>Ember - Đại Triển Lãm Nghệ Thuật & Công Nghệ Pixel Art Soul Knight</title>
@@ -16,60 +17,315 @@
             --orange: #fb923c;
             --red: #f87171;
         }
-        body { background: var(--bg-main); color: #e6e6f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 28px 36px; line-height: 1.5; }
-        h1 { color: var(--gold); margin-bottom: 4px; font-size: 28px; display: flex; align-items: center; gap: 12px; }
-        .subtitle { color: var(--cyan); margin-bottom: 24px; font-size: 14px; }
-        .stats-banner { background: #151122; border: 1px solid #3d2f5a; border-radius: 8px; padding: 16px 20px; display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
-        .stat-item { flex: 1; min-width: 160px; text-align: center; }
-        .stat-val { font-size: 22px; font-weight: bold; color: var(--gold); }
-        .stat-lbl { font-size: 12px; color: #9c95b3; text-transform: uppercase; margin-top: 2px; }
 
-        .section-title { font-size: 20px; color: #ffaa33; border-bottom: 2px solid #3d2f5a; padding-bottom: 8px; margin-top: 36px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
-        .section-desc { font-size: 13px; color: #a59db8; margin-top: -12px; margin-bottom: 16px; }
+        body {
+            background: var(--bg-main);
+            color: #e6e6f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 28px 36px;
+            line-height: 1.5;
+        }
 
-        .anim-box { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
-        .anim-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; text-align: center; transition: transform 0.15s, border-color 0.15s; }
-        .anim-card:hover { transform: translateY(-3px); border-color: var(--gold); }
-        .anim-canvas { image-rendering: pixelated; background: #08060d; border: 1px solid #241d33; border-radius: 6px; }
+        h1 {
+            color: var(--gold);
+            margin-bottom: 4px;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; text-align: center; transition: transform 0.15s, border-color 0.15s; }
-        .card:hover { transform: translateY(-3px); border-color: var(--gold); background: var(--bg-card-hover); }
-        .sprite-box { background: #08060d; border: 1px solid #241d33; border-radius: 6px; padding: 14px; display: flex; align-items: center; justify-content: center; height: 130px; margin-bottom: 12px; }
-        .sprite-box img { image-rendering: pixelated; }
-        .card-name { font-weight: bold; font-size: 14px; color: #ffffff; margin-bottom: 4px; }
-        .card-desc { font-size: 12px; color: #9c95b3; line-height: 1.4; }
+        .subtitle {
+            color: var(--cyan);
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
 
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10.5px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
-        .badge-boss { background: #4a1515; color: #ff6b6b; border: 1px solid #ff4444; }
-        .badge-enemy { background: #2d1842; color: #d8b4fe; border: 1px solid #a855f7; }
-        .badge-weapon { background: #1e293d; color: #38bdf8; border: 1px solid #0284c7; }
-        .badge-nature { background: #1a3322; color: #4ade80; border: 1px solid #22c55e; }
-        .badge-lantern { background: #3d241e; color: #fb923c; border: 1px solid #f97316; }
-        .badge-beacon { background: #16384c; color: #38e1ff; border: 1px solid #06b6d4; }
-        .badge-vfx { background: #3b1d3d; color: #f472b6; border: 1px solid #ec4899; }
-        .badge-fav { background: #382d14; color: #facc15; border: 1px solid #eab308; }
+        .stats-banner {
+            background: #151122;
+            border: 1px solid #3d2f5a;
+            border-radius: 8px;
+            padding: 16px 20px;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .stat-lbl {
+            font-size: 12px;
+            color: #9c95b3;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #ffaa33;
+            border-bottom: 2px solid #3d2f5a;
+            padding-bottom: 8px;
+            margin-top: 36px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: #a59db8;
+            margin-top: -12px;
+            margin-bottom: 16px;
+        }
+
+        .anim-box {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .anim-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .anim-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold);
+        }
+
+        .anim-canvas {
+            image-rendering: pixelated;
+            background: #08060d;
+            border: 1px solid #241d33;
+            border-radius: 6px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold);
+            background: var(--bg-card-hover);
+        }
+
+        .sprite-box {
+            background: #08060d;
+            border: 1px solid #241d33;
+            border-radius: 6px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 130px;
+            margin-bottom: 12px;
+        }
+
+        .sprite-box img {
+            image-rendering: pixelated;
+        }
+
+        .card-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: #9c95b3;
+            line-height: 1.4;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .badge-boss {
+            background: #4a1515;
+            color: #ff6b6b;
+            border: 1px solid #ff4444;
+        }
+
+        .badge-enemy {
+            background: #2d1842;
+            color: #d8b4fe;
+            border: 1px solid #a855f7;
+        }
+
+        .badge-weapon {
+            background: #1e293d;
+            color: #38bdf8;
+            border: 1px solid #0284c7;
+        }
+
+        .badge-nature {
+            background: #1a3322;
+            color: #4ade80;
+            border: 1px solid #22c55e;
+        }
+
+        .badge-lantern {
+            background: #3d241e;
+            color: #fb923c;
+            border: 1px solid #f97316;
+        }
+
+        .badge-beacon {
+            background: #16384c;
+            color: #38e1ff;
+            border: 1px solid #06b6d4;
+        }
+
+        .badge-vfx {
+            background: #3b1d3d;
+            color: #f472b6;
+            border: 1px solid #ec4899;
+        }
+
+        .badge-fav {
+            background: #382d14;
+            color: #facc15;
+            border: 1px solid #eab308;
+        }
 
         /* Technology Engine Table */
-        .engine-table { width: 100%; border-collapse: collapse; background: #141021; border-radius: 8px; overflow: hidden; border: 1px solid #332847; margin-bottom: 24px; font-size: 12.5px; }
-        .engine-table th { background: #1f1833; color: var(--gold); padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid #3d2f5a; }
-        .engine-table td { padding: 9px 14px; border-bottom: 1px solid #261c38; color: #d1cde0; }
-        .engine-table tr:hover { background: #1c152e; }
-        .engine-table code { background: #0a0812; padding: 2px 6px; border-radius: 4px; color: var(--cyan); font-family: Consolas, monospace; }
-        .tag-class1 { color: #38bdf8; font-weight: bold; }
-        .tag-class2 { color: #e879f9; font-weight: bold; }
-        .tag-class3 { color: #facc15; font-weight: bold; }
+        .engine-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #141021;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #332847;
+            margin-bottom: 24px;
+            font-size: 12.5px;
+        }
 
-        .sim-btn { background: #261e38; border: 1px solid #483863; color: #e2ddf0; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12.5px; font-weight: bold; transition: all 0.15s; }
-        .sim-btn:hover { background: #3b2c58; border-color: #ffd700; color: #ffffff; }
-        .sim-btn.active { background: #4a2869; border-color: #c084fc; color: #f5d0fe; box-shadow: 0 0 10px rgba(192, 132, 252, 0.3); }
-        .sim-btn.attack-btn { background: #b91c1c; border-color: #ef4444; color: #ffffff; margin-left: auto; }
-        .sim-btn.attack-btn:hover { background: #dc2626; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+        .engine-table th {
+            background: #1f1833;
+            color: var(--gold);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #3d2f5a;
+        }
+
+        .engine-table td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #261c38;
+            color: #d1cde0;
+        }
+
+        .engine-table tr:hover {
+            background: #1c152e;
+        }
+
+        .engine-table code {
+            background: #0a0812;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--cyan);
+            font-family: Consolas, monospace;
+        }
+
+        .tag-class1 {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .tag-class2 {
+            color: #e879f9;
+            font-weight: bold;
+        }
+
+        .tag-class3 {
+            color: #facc15;
+            font-weight: bold;
+        }
+
+        .sim-btn {
+            background: #261e38;
+            border: 1px solid #483863;
+            color: #e2ddf0;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: bold;
+            transition: all 0.15s;
+        }
+
+        .sim-btn:hover {
+            background: #3b2c58;
+            border-color: #ffd700;
+            color: #ffffff;
+        }
+
+        .sim-btn.active {
+            background: #4a2869;
+            border-color: #c084fc;
+            color: #f5d0fe;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
+        }
+
+        .sim-btn.attack-btn {
+            background: #b91c1c;
+            border-color: #ef4444;
+            color: #ffffff;
+            margin-left: auto;
+        }
+
+        .sim-btn.attack-btn:hover {
+            background: #dc2626;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+        }
     </style>
 </head>
+
 <body>
     <h1>🔥 Ember - Đại Triển Lãm Nghệ Thuật & Công Nghệ Pixel Art Soul Knight</h1>
-    <div class="subtitle">Báo cáo thẩm mỹ trực quan chuyên sâu & Minh chứng kiểm định chất lượng công nghiệp · <code>D:\Ember\ArtShowcase\</code></div>
+    <div class="subtitle">Báo cáo thẩm mỹ trực quan chuyên sâu & Minh chứng kiểm định chất lượng công nghiệp ·
+        <code>D:\Ember\ArtShowcase\</code>
+    </div>
 
     <div class="stats-banner">
         <div class="stat-item">
@@ -77,7 +333,7 @@
             <div class="stat-lbl">Quality Audit Passed (100%)</div>
         </div>
         <div class="stat-item">
-            <div class="stat-val">343 / 343</div>
+            <div class="stat-val">335 / 335</div>
             <div class="stat-lbl">CoreChecks Suite Passed (100%)</div>
         </div>
         <div class="stat-item">
@@ -89,19 +345,22 @@
             <div class="stat-lbl">Semi-Transparent Anti-Aliasing</div>
         </div>
         <div class="stat-item">
-            <div class="stat-val">3 Lớp + Đuốc</div>
-            <div class="stat-lbl">Hệ Thống Phân Hạng Vũ Khí & Grip</div>
+            <div class="stat-val">3 Lớp</div>
+            <div class="stat-lbl">Hệ Thống Phân Hạng Vũ Khí</div>
         </div>
     </div>
 
     <!-- 1. LIVE ANIMATIONS -->
-    <div class="section-title">🎬 Hoạt Ảnh Thời Gian Thực: Quái Vật, Boss, Vũ Khí Song Thủ & Đuốc (Live Interactive Animations)</div>
-    <div class="section-desc">Mọi hoạt ảnh được render theo thời gian thực từ spritesheet gốc bằng Nearest-Neighbor sampling, bảo toàn 100% độ sắc nét pixel.</div>
+    <div class="section-title">🎬 Hoạt Ảnh Thời Gian Thực: Quái Vật, Boss, Vũ Khí Song Thủ & Đuốc (Live Interactive
+        Animations)</div>
+    <div class="section-desc">Mọi hoạt ảnh được render theo thời gian thực từ spritesheet gốc bằng Nearest-Neighbor
+        sampling, bảo toàn 100% độ sắc nét pixel.</div>
     <div class="anim-box">
         <div class="anim-card">
             <canvas id="bossCanvas" class="anim-canvas" width="192" height="192"></canvas>
-            <div class="card-name" style="margin-top: 8px;">Chúa Tể Hắc Ám (Void Titan Boss)</div>
-            <div class="card-desc">Sừng obsidian sweeping sắc bén, giáp vai khắc phù văn tím neon, Tim Hư Không đập 4 pha uy nghi, mắt ruby rực sáng (4 Frame 64x64)</div>
+            <div class="card-name" style="margin-top: 8px;">Chúa Tể Hắc Ám (Cinder Titan Boss)</div>
+            <div class="card-desc">Sừng quỷ đồ sộ, giáp hắc diện thạch, lõi dung nham rực sáng theo nhịp thở (4 Frame
+                64x64)</div>
         </div>
         <div class="anim-card">
             <canvas id="dualCanvas" class="anim-canvas" width="144" height="144"></canvas>
@@ -136,7 +395,8 @@
         <div class="anim-card">
             <canvas id="torchCanvas" class="anim-canvas" width="128" height="128"></canvas>
             <div class="card-name" style="margin-top: 8px;">Đuốc Cắm Đất 90° (Upright Torch)</div>
-            <div class="card-desc">Cọc nhọn cắm sâu trong đất đá, đầu đuốc bốc ngọn lửa kiêu hãnh (4 Frame Flame Loop)</div>
+            <div class="card-desc">Cọc nhọn cắm sâu trong đất đá, đầu đuốc bốc ngọn lửa kiêu hãnh (4 Frame Flame Loop)
+            </div>
         </div>
         <div class="anim-card">
             <canvas id="beaconCanvas" class="anim-canvas" width="144" height="144"></canvas>
@@ -145,51 +405,11 @@
         </div>
     </div>
 
-    <!-- 1b. MOBS, BOSS & MERCHANT GALLERY -->
-    <div class="section-title">👾 Dàn Quái Vật Hư Không, Thương Nhân & Thủ Lĩnh Bóng Đêm (Mobs, Merchant & Boss Gallery)</div>
-    <div class="section-desc">Bộ sưu tập đầy đủ kẻ thù và NPC độc bản phong cách Soul Knight: Chúa Tể Hắc Ám Void Titan 64x64, Hộ Vệ Hư Không Magitech, Bóng Ma, Đỉa Đầm Lầy, Bọ Cạp và Thương Nhân ba lô lữ khách.</div>
-    <div class="grid">
-        <div class="card">
-            <span class="badge badge-boss">THỦ LĨNH TỐI CAO</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/boss.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Chúa Tể Hắc Ám (Void Titan Boss)</div>
-            <div class="card-desc">Dáng V-Taper lực lưỡng, sừng obsidian sweeping sắc bén, giáp vai chạm phù văn tím neon, Tim Hư Không đập 4 pha và mắt ruby rực sáng (64x64).</div>
-        </div>
-        <div class="card">
-            <span class="badge badge-enemy">HỘ VỆ MAGITECH</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/enemy_sentinel.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Hộ Vệ Hư Không (Sentinel)</div>
-            <div class="card-desc">Tháp đá kim cương phù văn Cyan phát quang, mắt cyclops laser điện từ, 2 khiên vệ tinh xoay quanh hộ vệ (32x32).</div>
-        </div>
-        <div class="card">
-            <span class="badge badge-enemy">QUÁI BÓNG TỐI</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/enemy_shade.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Bóng Ma Bóng Tối (Shade)</div>
-            <div class="card-desc">Linh hồn tăm tối mắt đỏ quỷ quyệt, vuốt sắc hư không uốn lượn bay bổng săn lùng ánh sáng (32x32).</div>
-        </div>
-        <div class="card">
-            <span class="badge badge-enemy">BỌ CẠP ĐỘC</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/enemy_void.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Bọ Cạp Hư Không (Void Stalker)</div>
-            <div class="card-desc">Càng gai sắc nhọn búng mở, đuôi gai độc bọc cyan ma quái chích nọc tê liệt (32x32).</div>
-        </div>
-        <div class="card">
-            <span class="badge badge-enemy">ĐẦM LẦY ĐỘC TỐ</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/enemy_swamp.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Quái Đỉa Đầm Lầy (Swamp Leech)</div>
-            <div class="card-desc">Miệng tròn ngập răng nhọn, bọng dịch tím sủi bọt co bóp liên hồi phun độc (32x32).</div>
-        </div>
-        <div class="card">
-            <span class="badge badge-fav">⭐ NPC ĐỘC BẢN</span>
-            <div class="sprite-box" style="overflow:hidden;"><img src="zoomed_8x/merchant.png" style="width: 480px; height: 120px; object-fit: cover; object-position: left; image-rendering: pixelated;"></div>
-            <div class="card-name">Thương Nhân Lang Thang (Merchant)</div>
-            <div class="card-desc">Nón phù thủy lữ khách thêu vàng, mắt hổ phách phát quang, ba lô khổng lồ mang dược phẩm, đèn lồng hổ phách đung đưa (48x48).</div>
-        </div>
-    </div>
-
     <!-- 2. WEAPON ENGINE ARCHITECTURE TABLE -->
-    <div class="section-title">⚙️ Kiến Trúc Engine Vũ Khí 3 Lớp & Bảng Thuộc Tính Công Nghệ (EmberWeaponGrips Engine)</div>
-    <div class="section-desc">Chuẩn hóa điểm neo (GripPivot), góc cơ sở (SpriteBaseAngle), thế thủ nghỉ (RestAngle) và cơ chế phân lớp chiến đấu. Loại bỏ hoàn toàn góc xoay hardcode bừa bãi!</div>
+    <div class="section-title">⚙️ Kiến Trúc Engine Vũ Khí 3 Lớp & Bảng Thuộc Tính Công Nghệ (EmberWeaponGrips Engine)
+    </div>
+    <div class="section-desc">Chuẩn hóa điểm neo (GripPivot), góc cơ sở (SpriteBaseAngle), thế thủ nghỉ (RestAngle) và
+        cơ chế phân lớp chiến đấu. Loại bỏ hoàn toàn góc xoay hardcode bừa bãi!</div>
     <table class="engine-table">
         <thead>
             <tr>
@@ -242,7 +462,8 @@
                 <td><code>(0.28, 0.22)</code></td>
                 <td>-28°</td>
                 <td>0.90x</td>
-                <td>Vung chém quét rộng nón (Cone Cleave Arc) + phóng làn sóng <b>Kiếm Khí (`blade_wave`)</b> xuyên phá tầm trung</td>
+                <td>Vung chém quét rộng nón (Cone Cleave Arc) + phóng làn sóng <b>Kiếm Khí (`blade_wave`)</b> xuyên phá
+                    tầm trung</td>
             </tr>
             <tr>
                 <td><span class="tag-class3">LỚP 3: TẦM XA</span></td>
@@ -274,82 +495,88 @@
                 <td>0.95x</td>
                 <td>Giương khiên che chắn, phản xạ đòn đánh & tạo vệt hào quang Cyan bảo hộ</td>
             </tr>
-            <tr>
-                <td><span class="tag-class1">TIỆN ÍCH / CHIẾU SÁNG</span></td>
-                <td><b>Đuốc Cầm Tay (Torch)</b></td>
-                <td><code>SingleHand</code></td>
-                <td>90° (Đứng)</td>
-                <td><code>(0.50, 0.22)</code></td>
-                <td>-22° (Nghiêng)</td>
-                <td>0.85x</td>
-                <td>Cầm tay góc nghiêng -22° công thái học, ngọn lửa bập bùng đồng trục soi sáng màn đêm</td>
-            </tr>
         </tbody>
     </table>
 
     <!-- 2b. INTERACTIVE 3-CLASS WEAPON & COMBAT SIMULATOR -->
     <div class="section-title">🎯 Phòng Thử Nghiệm Vũ Khí Tương Tác 3 Lớp (Interactive 3-Class Combat Simulator)</div>
-    <div class="section-desc">Trực tiếp trải nghiệm và kiểm thử hoạt ảnh tấn công, vệt chém hư không và đường bay đầu đạn VFX của từng lớp vũ khí chuẩn Soul Knight!</div>
-    <div style="background: #181424; border: 1px solid #3d2f5a; border-radius: 8px; padding: 20px; margin-bottom: 28px;">
+    <div class="section-desc">Trực tiếp trải nghiệm và kiểm thử hoạt ảnh tấn công, vệt chém hư không và đường bay đầu
+        đạn VFX của từng lớp vũ khí chuẩn Soul Knight!</div>
+    <div
+        style="background: #181424; border: 1px solid #3d2f5a; border-radius: 8px; padding: 20px; margin-bottom: 28px;">
         <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
             <span style="font-size: 13px; color: #ffd700; font-weight: bold;">CHỌN VŨ KHÍ:</span>
-            <button id="btn_shadow" class="sim-btn active" onclick="selectSimWeapon('shadow_blades')">⚔️ Lớp 1: Song Đao (Dual-Wield)</button>
-            <button id="btn_axe" class="sim-btn" onclick="selectSimWeapon('crystal_axe')">🪓 Lớp 2: Rìu Quang Tinh (Kiếm Khí)</button>
-            <button id="btn_crossbow" class="sim-btn" onclick="selectSimWeapon('crossbow')">🏹 Lớp 3: Nỏ Tinh Thể (Mũi Tên)</button>
-            <button id="btn_gun" class="sim-btn" onclick="selectSimWeapon('lumen_gun')">🔫 Lớp 3: Súng Quang Năng (Plasma)</button>
+            <button id="btn_shadow" class="sim-btn active" onclick="selectSimWeapon('shadow_blades')">⚔️ Lớp 1: Song Đao
+                (Dual-Wield)</button>
+            <button id="btn_axe" class="sim-btn" onclick="selectSimWeapon('crystal_axe')">🪓 Lớp 2: Rìu Quang Tinh (Kiếm
+                Khí)</button>
+            <button id="btn_crossbow" class="sim-btn" onclick="selectSimWeapon('crossbow')">🏹 Lớp 3: Nỏ Tinh Thể (Mũi
+                Tên)</button>
+            <button id="btn_gun" class="sim-btn" onclick="selectSimWeapon('lumen_gun')">🔫 Lớp 3: Súng Quang Năng
+                (Plasma)</button>
             <button class="sim-btn attack-btn" onclick="triggerSimAttack()">🔥 TẤN CÔNG / BẮN NGAY</button>
         </div>
         <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-            <canvas id="simCanvas" width="600" height="180" style="background: #08060d; border: 1px solid #241d33; border-radius: 6px; image-rendering: pixelated;"></canvas>
-            <div id="simInfo" style="flex: 1; min-width: 220px; font-size: 13px; color: #b8b0cc; line-height: 1.6;"></div>
+            <canvas id="simCanvas" width="600" height="180"
+                style="background: #08060d; border: 1px solid #241d33; border-radius: 6px; image-rendering: pixelated;"></canvas>
+            <div id="simInfo" style="flex: 1; min-width: 220px; font-size: 13px; color: #b8b0cc; line-height: 1.6;">
+            </div>
         </div>
     </div>
 
     <!-- 3. WEAPONS, TOOLS & LANTERNS -->
     <div class="section-title">⚔️ Bộ Sưu Tập Vũ Khí, Công Cụ & Đèn Lồng (Soul Knight Style)</div>
-    <div class="section-desc">Khôi phục nguyên vẹn 100% các bản vẽ kinh điển người dùng yêu thích: Cuốc sắt cong 2 đầu đinh đồng, Rìu đốn củi lưỡi liềm lưng búa, Nước tăng lực nút bần sóng sánh tia sét.</div>
+    <div class="section-desc">Khôi phục nguyên vẹn 100% các bản vẽ kinh điển người dùng yêu thích: Cuốc sắt cong 2 đầu
+        đinh đồng, Rìu đốn củi lưỡi liềm lưng búa, Nước tăng lực nút bần sóng sánh tia sét.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-fav">⭐ BẢN YÊU THÍCH</span>
             <div class="sprite-box"><img src="zoomed_8x/pickaxe.png" width="120" height="120"></div>
             <div class="card-name">Cuốc Sắt (Iron Pickaxe)</div>
-            <div class="card-desc">Lưỡi cong 2 đầu sắc bén, đai thép tán đinh đồng vàng rực, cán quấn da chéo công thái học.</div>
+            <div class="card-desc">Lưỡi cong 2 đầu sắc bén, đai thép tán đinh đồng vàng rực, cán quấn da chéo công thái
+                học.</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">⭐ BẢN YÊU THÍCH</span>
             <div class="sprite-box"><img src="zoomed_8x/axe.png" width="120" height="120"></div>
             <div class="card-name">Rìu Đốn Củi (Woodcutter Axe)</div>
-            <div class="card-desc">Lưỡi liềm rộng bản (bearded) uy lực, lưng búa dẹt dũng mãnh, cán cong chắc nịch, mép chém bạc sắc lẹm.</div>
+            <div class="card-desc">Lưỡi liềm rộng bản (bearded) uy lực, lưng búa dẹt dũng mãnh, cán cong chắc nịch, mép
+                chém bạc sắc lẹm.</div>
         </div>
         <div class="card">
             <span class="badge badge-weapon">VŨ KHÍ CAO CẤP</span>
             <div class="sprite-box"><img src="zoomed_8x/crystal_axe.png" width="120" height="120"></div>
             <div class="card-name">Rìu Quang Tinh (Crystal Axe)</div>
-            <div class="card-desc">Lưỡi pha lê Cyan giác cạnh tỏa ánh sáng huyền bí, cán hắc diện thạch bọc da và đai vàng kim.</div>
+            <div class="card-desc">Lưỡi pha lê Cyan giác cạnh tỏa ánh sáng huyền bí, cán hắc diện thạch bọc da và đai
+                vàng kim.</div>
         </div>
         <div class="card">
             <span class="badge badge-vfx">VFX KIẾM KHÍ LAI</span>
             <div class="sprite-box"><img src="zoomed_8x/blade_wave.png" width="120" height="120"></div>
             <div class="card-name">Kiếm Khí (Blade Wave)</div>
-            <div class="card-desc">Sóng chém hình lưỡi liềm Cyan rực sáng phóng ra từ Rìu Quang Tinh, xuyên phá tầm trung.</div>
+            <div class="card-desc">Sóng chém hình lưỡi liềm Cyan rực sáng phóng ra từ Rìu Quang Tinh, xuyên phá tầm
+                trung.</div>
         </div>
         <div class="card">
             <span class="badge badge-weapon">SONG THỦ CẶP</span>
             <div class="sprite-box"><img src="zoomed_8x/shadow_blades.png" width="120" height="120"></div>
             <div class="card-name">Song Đao Bóng Đêm (Cặp)</div>
-            <div class="card-desc">Cặp đoản kiếm chữ X tím hư không, mắt ngọc ruby đỏ rực tâm hilt vàng cổ (hiển thị trong Túi đồ / Rơi).</div>
+            <div class="card-desc">Cặp đoản kiếm chữ X tím hư không, mắt ngọc ruby đỏ rực tâm hilt vàng cổ (hiển thị
+                trong Túi đồ / Rơi).</div>
         </div>
         <div class="card">
             <span class="badge badge-weapon">SONG THỦ ĐỘC LẬP</span>
             <div class="sprite-box"><img src="zoomed_8x/shadow_blade_single.png" width="120" height="120"></div>
             <div class="card-name">Đoản Đao Bóng Đêm (Đơn)</div>
-            <div class="card-desc">Mảnh đao tím hư không tách rời gắn vào từng tay trong cơ chế Song Trảm Dual-Wield.</div>
+            <div class="card-desc">Mảnh đao tím hư không tách rời gắn vào từng tay trong cơ chế Song Trảm Dual-Wield.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-weapon">VŨ KHÍ TẦM XA</span>
             <div class="sprite-box"><img src="zoomed_8x/crossbow.png" width="120" height="120"></div>
             <div class="card-name">Nỏ Tinh Thể (Crossbow)</div>
-            <div class="card-desc">Cánh cung nỏ pha lê cyan trong suốt, ngậm mũi tên năng lượng starlight vàng kim.</div>
+            <div class="card-desc">Cánh cung nỏ pha lê cyan trong suốt, ngậm mũi tên năng lượng starlight vàng kim.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-vfx">VFX ĐẦU ĐẠN</span>
@@ -361,7 +588,8 @@
             <span class="badge badge-weapon">VŨ KHÍ TẦM XA</span>
             <div class="sprite-box"><img src="zoomed_8x/lumen_gun.png" width="120" height="120"></div>
             <div class="card-name">Súng Quang Năng (Lumen Gun)</div>
-            <div class="card-desc">Khẩu súng lục năng lượng Soul Knight chunky, buồng plasma cyan sủi bọt, nòng đồng thau.</div>
+            <div class="card-desc">Khẩu súng lục năng lượng Soul Knight chunky, buồng plasma cyan sủi bọt, nòng đồng
+                thau.</div>
         </div>
         <div class="card">
             <span class="badge badge-vfx">VFX ĐẦU ĐẠN</span>
@@ -373,13 +601,15 @@
             <span class="badge badge-weapon">PHÒNG THỦ</span>
             <div class="sprite-box"><img src="zoomed_8x/mirror_shield.png" width="120" height="120"></div>
             <div class="card-name">Khiên Gương (Mirror Shield)</div>
-            <div class="card-desc">Khiên tháp giác cạnh viền vàng kim, mặt gương pha lê phản chiếu vệt sáng ma thuật trắng cyan.</div>
+            <div class="card-desc">Khiên tháp giác cạnh viền vàng kim, mặt gương pha lê phản chiếu vệt sáng ma thuật
+                trắng cyan.</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">⭐ BẢN YÊU THÍCH</span>
             <div class="sprite-box"><img src="zoomed_8x/energy_drink.png" width="120" height="120"></div>
             <div class="card-name">Nước Tăng Lực (Energy Drink)</div>
-            <div class="card-desc">Bình tròn chunky nút bần buộc dây sáp, dung dịch cyan ma thuật phóng tia sét thể lực vàng rực.</div>
+            <div class="card-desc">Bình tròn chunky nút bần buộc dây sáp, dung dịch cyan ma thuật phóng tia sét thể lực
+                vàng rực.</div>
         </div>
         <div class="card">
             <span class="badge badge-weapon">ĐÃ DUYỆT FORM</span>
@@ -397,13 +627,15 @@
             <span class="badge badge-lantern">ĐÈN ĐỘC BẢN</span>
             <div class="sprite-box"><img src="zoomed_8x/lantern_relic.png" width="120" height="120"></div>
             <div class="card-name">Đèn Thánh Tích (Relic)</div>
-            <div class="card-desc">Đồng cổ hoa văn cánh thiên thần, đỉnh thánh giá, nhốt tinh thể Starlight Cyan/Gold.</div>
+            <div class="card-desc">Đồng cổ hoa văn cánh thiên thần, đỉnh thánh giá, nhốt tinh thể Starlight Cyan/Gold.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-lantern">CẮM ĐẤT 90° KIÊU HÃNH</span>
             <div class="sprite-box"><img src="zoomed_8x/torch_ground.png" width="120" height="120"></div>
             <div class="card-name">Đuốc Cắm Đất (Torch Ground)</div>
-            <div class="card-desc">Cọc nhọn cắm sâu trong đất đá chèn nêm, đai sắt rèn tán đinh, giá đỡ rực lửa kiêu hãnh.</div>
+            <div class="card-desc">Cọc nhọn cắm sâu trong đất đá chèn nêm, đai sắt rèn tán đinh, giá đỡ rực lửa kiêu
+                hãnh.</div>
         </div>
         <div class="card">
             <span class="badge badge-lantern">CẦM TAY 60°</span>
@@ -415,21 +647,24 @@
             <span class="badge badge-weapon">CÔNG TRÌNH BẪY</span>
             <div class="sprite-box"><img src="zoomed_8x/trap.png" width="120" height="120"></div>
             <div class="card-name">Bẫy Điện Tesla (Electric Trap)</div>
-            <div class="card-desc">Đĩa cơ khí đai sọc hazard vàng-đen, 4 vuốt thép cơ khí và lõi tesla phóng điện cực mạnh.</div>
+            <div class="card-desc">Đĩa cơ khí đai sọc hazard vàng-đen, 4 vuốt thép cơ khí và lõi tesla phóng điện cực
+                mạnh.</div>
         </div>
     </div>
 
     <!-- 4. NATURAL ECOSYSTEM & GROUND DECOR STREAMING -->
     <div class="section-title">🌲 Hệ Sinh Thái Tự Nhiên & Địa Hình Mặt Đất (Ground Decor Streaming)</div>
-    <div class="section-desc">Giải quyết triệt để vấn đề "mặt đất trống trơn": Nấm rừng, hoa dại, sỏi đá, thân gỗ đổ được rải sống động trên thảm cỏ theo thuật toán phân phối tự nhiên.</div>
+    <div class="section-desc">Giải quyết triệt để vấn đề "mặt đất trống trơn": Nấm rừng, hoa dại, sỏi đá, thân gỗ đổ
+        được rải sống động trên thảm cỏ theo thuật toán phân phối tự nhiên.</div>
     <div class="grid">
-                <div class="card">
+        <div class="card">
             <span class="badge badge-nature">BỤI BỘT SÁNG</span>
             <div class="sprite-box"><img src="zoomed_8x/lumidust_bush.png" width="120" height="120"></div>
             <div class="card-name">Bụi Bột Sáng (Lumidust Bush)</div>
-            <div class="card-desc">Bụi cây phát quang tự nhiên trong bóng tối, tỏa ra các hạt bột sáng Cyan thăng hoa nhẹ nhàng.</div>
+            <div class="card-desc">Bụi cây phát quang tự nhiên trong bóng tối, tỏa ra các hạt bột sáng Cyan thăng hoa
+                nhẹ nhàng.</div>
         </div>
-<div class="card">
+        <div class="card">
             <span class="badge badge-nature">THẢM THỰC VẬT</span>
             <div class="sprite-box"><img src="zoomed_8x/mushrooms.png" width="120" height="120"></div>
             <div class="card-name">Khóm Nấm Rừng (Ground Mushrooms)</div>
@@ -445,7 +680,8 @@
             <span class="badge badge-nature">THẢM HOA CỎ</span>
             <div class="sprite-box"><img src="zoomed_8x/wildflowers.png" width="120" height="120"></div>
             <div class="card-name">Hoa Dại Rực Rỡ (Wildflowers)</div>
-            <div class="card-desc">Các cụm hoa rừng đa sắc mọc xen kẽ trên cỏ, tô điểm vẻ đẹp huyền bí cho thế giới Ember.</div>
+            <div class="card-desc">Các cụm hoa rừng đa sắc mọc xen kẽ trên cỏ, tô điểm vẻ đẹp huyền bí cho thế giới
+                Ember.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">ĐỊA HÌNH SỎI ĐÁ</span>
@@ -457,7 +693,8 @@
             <span class="badge badge-nature">ĐỊA HÌNH GỖ MỤC</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_stump.png" width="120" height="120"></div>
             <div class="card-name">Gốc Cây Đâm Chồi (Stump)</div>
-            <div class="card-desc">Gốc cây cổ thụ cưa ngang lộ vân gỗ đồng tâm, chồi non lá xanh đâm chồi bên sườn.</div>
+            <div class="card-desc">Gốc cây cổ thụ cưa ngang lộ vân gỗ đồng tâm, chồi non lá xanh đâm chồi bên sườn.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">ĐỊA HÌNH RỪNG SÂU</span>
@@ -475,13 +712,15 @@
             <span class="badge badge-nature">KHOÁNG SẢN HIẾM</span>
             <div class="sprite-box"><img src="zoomed_8x/rock_large.png" width="120" height="120"></div>
             <div class="card-name">Mỏ Quặng Giàu (Rich Vein)</div>
-            <div class="card-desc">Khối tinh thể Cyan lấp lánh giác cạnh phản quang, khai thác thu được Quặng & Lõi Tinh Thể.</div>
+            <div class="card-desc">Khối tinh thể Cyan lấp lánh giác cạnh phản quang, khai thác thu được Quặng & Lõi Tinh
+                Thể.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">ĐÁ TẢNG PHONG HÓA</span>
             <div class="sprite-box"><img src="zoomed_8x/rock_boulder.png" width="120" height="120"></div>
             <div class="card-name">Đá Tảng Cuội (Boulder)</div>
-            <div class="card-desc">Khối đá tảng phong hóa tròn chunky, rãnh nứt cổ xưa và mảng rêu rậm rạp trên đỉnh.</div>
+            <div class="card-desc">Khối đá tảng phong hóa tròn chunky, rãnh nứt cổ xưa và mảng rêu rậm rạp trên đỉnh.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">CÂY RỪNG SỒI</span>
@@ -499,25 +738,29 @@
             <span class="badge badge-nature">RỪNG LÁ KIM</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_pine.png" width="120" height="120"></div>
             <div class="card-name">Cây Thông 3 Tầng (Pine)</div>
-            <div class="card-desc">Cây thông 3 tầng chóp nhọn lá kim răng cưa đặc trưng phong cách Soul Knight dứt khoát.</div>
+            <div class="card-desc">Cây thông 3 tầng chóp nhọn lá kim răng cưa đặc trưng phong cách Soul Knight dứt
+                khoát.</div>
         </div>
     </div>
 
     <!-- 5. ANCIENT BEACON & PANDORA CHESTS -->
     <div class="section-title">🏛️ Hải Đăng, Rương Cổ Bỏ Hoang & Nguồn Lực Ma Thuật</div>
-    <div class="section-desc">Hải Đăng thắp sáng bằng Lõi Tinh Thể & Bụi Quang. Rương bỏ hoang chứa đựng bất ngờ may rủi.</div>
+    <div class="section-desc">Hải Đăng thắp sáng bằng Lõi Tinh Thể & Bụi Quang. Rương bỏ hoang chứa đựng bất ngờ may
+        rủi.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-beacon">TRỤ HẢI ĐĂNG</span>
             <div class="sprite-box"><img src="zoomed_8x/beacon.png" width="128" height="128"></div>
             <div class="card-name">Trụ Hải Đăng Cổ (Beacon)</div>
-            <div class="card-desc">Cấu trúc đá cổ bát giác vững chãi, giá đỡ tinh thể thần bí giữa ranh giới sống chết.</div>
+            <div class="card-desc">Cấu trúc đá cổ bát giác vững chãi, giá đỡ tinh thể thần bí giữa ranh giới sống chết.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">TINH THỂ PHÁT QUANG</span>
             <div class="sprite-box"><img src="zoomed_8x/beacon_crystal_lit.png" width="120" height="120"></div>
             <div class="card-name">Tinh Thể Phát Quang (Lit)</div>
-            <div class="card-desc">Khối pha lê Cyan giác cạnh kim cương 32x32, phát quang rực sáng theo mức nạp năng lượng [B].</div>
+            <div class="card-desc">Khối pha lê Cyan giác cạnh kim cương 32x32, phát quang rực sáng theo mức nạp năng
+                lượng [B].</div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">TINH THỂ HẮC ÁM</span>
@@ -529,25 +772,32 @@
             <span class="badge badge-beacon">NHIÊN LIỆU MA THUẬT</span>
             <div class="sprite-box"><img src="zoomed_8x/dust.png" width="120" height="120"></div>
             <div class="card-name">Túi Bụi Quang (Lumidust)</div>
-            <div class="card-desc">Túi da thắt nơ vàng kim Soul Knight 32x32, miệng túi tràn hạt bụi sao Cyan (+15 NL).</div>
+            <div class="card-desc">Túi da thắt nơ vàng kim Soul Knight 32x32, miệng túi tràn hạt bụi sao Cyan (+15 NL).
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">LÕI NĂNG LƯỢNG</span>
             <div class="sprite-box"><img src="zoomed_8x/core.png" width="120" height="120"></div>
             <div class="card-name">Lõi Tinh Thể (Crystal Core)</div>
-            <div class="card-desc">Viên ngọc năng lượng thuần khiết (+50 NL), nguồn lực tối thượng phục hưng ngọn lửa sinh mệnh.</div>
+            <div class="card-desc">Viên ngọc năng lượng thuần khiết (+50 NL), nguồn lực tối thượng phục hưng ngọn lửa
+                sinh mệnh.</div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">HỘP PANDORA</span>
             <div class="sprite-box"><img src="zoomed_8x/abandoned_chest.png" width="120" height="120"></div>
             <div class="card-name">Rương Cổ Bỏ Hoang (Pandora Closed)</div>
-            <div class="card-desc">Thân gỗ mun/sồi đỏ 4-step cel-shading, đai sắt rèn dập nổi đính tán đinh đồng thau cổ, ổ khóa đầu lâu ngậm ngọc tỏa ánh sáng ma mị Neon Cyan sắc bén cân đối, đai vòm nẹp góc chuẩn phong cách Soul Knight. Lại gần hiện prompt <b>[E] Mở Rương</b>.</div>
+            <div class="card-desc">Thân gỗ mun/sồi đỏ 4-step cel-shading, đai sắt rèn dập nổi đính tán đinh đồng thau
+                cổ, ổ khóa đầu lâu ngậm ngọc tỏa ánh sáng ma mị Neon Cyan sắc bén cân đối, đai vòm nẹp góc chuẩn phong
+                cách Soul Knight. Lại gần hiện prompt <b>[E] Mở Rương</b>.</div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">HỘP PANDORA</span>
             <div class="sprite-box"><img src="zoomed_8x/abandoned_chest_open.png" width="120" height="120"></div>
             <div class="card-name">Rương Bỏ Hoang Mở (Pandora Unleashed)</div>
-            <div class="card-desc">Nắp vòm bật ngửa góc 50° chiều sâu phối cảnh lộ thớ gỗ cổ và bản lề sắt rèn, lòng rương đầy ắp tiền vàng, thỏi vàng, cụm tinh thể Starlight Cyan & Amethyst phát quang bốc luồng hào quang thiên thể. Kích hoạt 1 trong 4 sự kiện ngẫu nhiên: Nhả đồ (40%), Bẫy quái (25%), Đạn pháo hoa tròn (20%), Đá bay về nhà (15%). Tàn lụi sau 30s.</div>
+            <div class="card-desc">Nắp vòm bật ngửa góc 50° chiều sâu phối cảnh lộ thớ gỗ cổ và bản lề sắt rèn, lòng
+                rương đầy ắp tiền vàng, thỏi vàng, cụm tinh thể Starlight Cyan & Amethyst phát quang bốc luồng hào quang
+                thiên thể. Kích hoạt 1 trong 4 sự kiện ngẫu nhiên: Nhả đồ (40%), Bẫy quái (25%), Đạn pháo hoa tròn
+                (20%), Đá bay về nhà (15%). Tàn lụi sau 30s.</div>
         </div>
         <div class="card">
             <span class="badge badge-beacon">SINH VẬT HƯ KHÔNG</span>
@@ -557,58 +807,67 @@
         </div>
     </div>
 
-    
+
     <!-- 5. FOOD & COOKING CUISINE -->
     <div class="section-title">🍲 Ẩm Thực Sinh Tồn & Nấu Nướng (Food & Cooking)</div>
-    <div class="section-desc">Hệ thống thực phẩm và món ăn hồi phục thể lực, sinh lực chuẩn Soul Knight: táo rừng, táo nướng caramel, súp nấm đậm đà và nước tăng lực ma thuật.</div>
+    <div class="section-desc">Hệ thống thực phẩm và món ăn hồi phục thể lực, sinh lực chuẩn Soul Knight: táo rừng, táo
+        nướng caramel, súp nấm đậm đà và nước tăng lực ma thuật.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-nature">🌿 THỰC PHẨM</span>
             <div class="sprite-box"><img src="zoomed_8x/apple.png" width="120" height="120"></div>
             <div class="card-name">Quả Táo Rừng (Wild Apple)</div>
-            <div class="card-desc">Quả táo rừng đỏ mọng hái từ cây táo, cuống lá xanh tươi phản chiếu ánh sáng tự nhiên (+10 HP).</div>
+            <div class="card-desc">Quả táo rừng đỏ mọng hái từ cây táo, cuống lá xanh tươi phản chiếu ánh sáng tự nhiên
+                (+10 HP).</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">⭐ MÓN NƯỚNG</span>
             <div class="sprite-box"><img src="zoomed_8x/roasted_apple.png" width="120" height="120"></div>
             <div class="card-name">Táo Nướng Caramel (Roasted Apple)</div>
-            <div class="card-desc">Táo nướng trên lửa than vỏ caramel giòn rụm, vết rạn nứt bốc khói thơm lừng (+25 HP + Giữ ấm).</div>
+            <div class="card-desc">Táo nướng trên lửa than vỏ caramel giòn rụm, vết rạn nứt bốc khói thơm lừng (+25 HP +
+                Giữ ấm).</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">⭐ MÓN SÚP</span>
             <div class="sprite-box"><img src="zoomed_8x/mushroom_stew.png" width="120" height="120"></div>
             <div class="card-name">Súp Nấm Rừng (Mushroom Stew)</div>
-            <div class="card-desc">Bát súp gỗ sồi nghi ngút khói, thìa gỗ nhúng vào nước dùng sánh mịn đậm đà dinh dưỡng (+50 HP + No lâu).</div>
+            <div class="card-desc">Bát súp gỗ sồi nghi ngút khói, thìa gỗ nhúng vào nước dùng sánh mịn đậm đà dinh dưỡng
+                (+50 HP + No lâu).</div>
         </div>
         <div class="card">
             <span class="badge badge-class1">⚡ THỂ LỰC</span>
             <div class="sprite-box"><img src="zoomed_8x/energy_drink.png" width="120" height="120"></div>
             <div class="card-name">Nước Tăng Lực (Energy Drink)</div>
-            <div class="card-desc">Bình thủy tinh chunky nút bần buộc dây sáp, dung dịch cyan sóng sánh phóng tia sét thể lực vàng rực (+Stamina).</div>
+            <div class="card-desc">Bình thủy tinh chunky nút bần buộc dây sáp, dung dịch cyan sóng sánh phóng tia sét
+                thể lực vàng rực (+Stamina).</div>
         </div>
     </div>
 
     <!-- 6. SURVIVAL MATERIALS & PHARMACY -->
     <div class="section-title">📦 Nguyên Liệu Chế Tạo, Dược Liệu & Phòng Thủ (Materials & Meds)</div>
-    <div class="section-desc">Kho nguyên vật liệu phong phú thu thập từ rừng sâu và mỏ khoáng: các loại gỗ, quặng kim loại, pháo sáng xua bóng đêm và dược phẩm cứu sinh.</div>
+    <div class="section-desc">Kho nguyên vật liệu phong phú thu thập từ rừng sâu và mỏ khoáng: các loại gỗ, quặng kim
+        loại, pháo sáng xua bóng đêm và dược phẩm cứu sinh.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-nature">🪵 GỖ XẺ</span>
             <div class="sprite-box"><img src="zoomed_8x/wood.png" width="120" height="120"></div>
             <div class="card-name">Ván Gỗ Xẻ (Plank Wood)</div>
-            <div class="card-desc">Ván gỗ sồi xẻ phẳng phiu màu vàng nâu ấm, nguyên liệu cốt lõi để xây tường, bẫy và rương chứa.</div>
+            <div class="card-desc">Ván gỗ sồi xẻ phẳng phiu màu vàng nâu ấm, nguyên liệu cốt lõi để xây tường, bẫy và
+                rương chứa.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🪵 THÂN GỖ</span>
             <div class="sprite-box"><img src="zoomed_8x/wood_log.png" width="120" height="120"></div>
             <div class="card-name">Khúc Gỗ Tròn (Wood Log)</div>
-            <div class="card-desc">Khúc gỗ tròn nguyên vỏ rêu phong vừa đốn hạ, dùng làm cọc cắm, chất đốt và gia cố công trình.</div>
+            <div class="card-desc">Khúc gỗ tròn nguyên vỏ rêu phong vừa đốn hạ, dùng làm cọc cắm, chất đốt và gia cố
+                công trình.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🌿 CÀNH CÂY</span>
             <div class="sprite-box"><img src="zoomed_8x/wood_branch.png" width="120" height="120"></div>
             <div class="card-name">Cành Cây Khô (Branch)</div>
-            <div class="card-desc">Cành cây gãy nhặt trong rừng sâu, dùng để se sợi bện dây và quấn đuốc chiếu sáng.</div>
+            <div class="card-desc">Cành cây gãy nhặt trong rừng sâu, dùng để se sợi bện dây và quấn đuốc chiếu sáng.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🧪 BỘT GỖ</span>
@@ -620,13 +879,15 @@
             <span class="badge badge-class1">⛏️ QUẶNG</span>
             <div class="sprite-box"><img src="zoomed_8x/ore.png" width="120" height="120"></div>
             <div class="card-name">Cục Quặng Thô (Metal Ore)</div>
-            <div class="card-desc">Khối quặng sắt thô ánh kim giác cạnh sắc lẹm, nguyên liệu rèn đúc vũ khí và giáp sắt.</div>
+            <div class="card-desc">Khối quặng sắt thô ánh kim giác cạnh sắc lẹm, nguyên liệu rèn đúc vũ khí và giáp sắt.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-class1">⛏️ MỎ QUẶNG</span>
             <div class="sprite-box"><img src="zoomed_8x/ore_node.png" width="120" height="120"></div>
             <div class="card-name">Mạch Quặng Tự Nhiên (Ore Node)</div>
-            <div class="card-desc">Mạch quặng trồi lên từ lòng đất đá với các vỉa kim loại lấp lánh cần cuốc sắt để khai thác.</div>
+            <div class="card-desc">Mạch quặng trồi lên từ lòng đất đá với các vỉa kim loại lấp lánh cần cuốc sắt để khai
+                thác.</div>
         </div>
         <div class="card">
             <span class="badge badge-class2">💎 BỘT ĐÁ</span>
@@ -638,49 +899,57 @@
             <span class="badge badge-class3">🔥 PHÁO SÁNG</span>
             <div class="sprite-box"><img src="zoomed_8x/flare.png" width="120" height="120"></div>
             <div class="card-name">Pháo Sáng Cứu Hộ (Flare)</div>
-            <div class="card-desc">Ống pháo sáng đỏ rực phát tín hiệu, thiêu đốt sương mù bóng đêm và bảo vệ khu vực trong 30 giây.</div>
+            <div class="card-desc">Ống pháo sáng đỏ rực phát tín hiệu, thiêu đốt sương mù bóng đêm và bảo vệ khu vực
+                trong 30 giây.</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">⭐ THẦN DƯỢC</span>
             <div class="sprite-box"><img src="zoomed_8x/revival.png" width="120" height="120"></div>
             <div class="card-name">Thuốc Hồi Sinh (Revival Stone)</div>
-            <div class="card-desc">Viên đá hồi sinh rực ánh sáng thánh tích vàng kim, hồi sinh đồng đội ngã xuống ngay tại chỗ.</div>
+            <div class="card-desc">Viên đá hồi sinh rực ánh sáng thánh tích vàng kim, hồi sinh đồng đội ngã xuống ngay
+                tại chỗ.</div>
         </div>
         <div class="card">
             <span class="badge badge-class2">🧪 DƯỢC LIỆU</span>
             <div class="sprite-box"><img src="zoomed_8x/sedative.png" width="120" height="120"></div>
             <div class="card-name">Thuốc An Thần (Sedative)</div>
-            <div class="card-desc">Ống nghiệm dung dịch thanh tẩy bóng tối, dập tắt nỗi sợ hãi điên loạn (Dread Ward) tức thì.</div>
+            <div class="card-desc">Ống nghiệm dung dịch thanh tẩy bóng tối, dập tắt nỗi sợ hãi điên loạn (Dread Ward)
+                tức thì.</div>
         </div>
         <div class="card">
             <span class="badge badge-class1">🛡️ KIẾN TRÚC</span>
             <div class="sprite-box"><img src="zoomed_8x/wall.png" width="120" height="120"></div>
             <div class="card-name">Tường Đá Phòng Thủ (Stone Wall)</div>
-            <div class="card-desc">Bức tường đá khối xám kiên cố đính đai sắt, ngăn chặn đường tiến công của quái vật bóng đêm.</div>
+            <div class="card-desc">Bức tường đá khối xám kiên cố đính đai sắt, ngăn chặn đường tiến công của quái vật
+                bóng đêm.</div>
         </div>
     </div>
 
     <!-- 7. BIOME TREES & BOTANICAL WONDERS -->
     <div class="section-title">🌲 Cây Rừng Đa Sinh Cảnh & Thảm Thực Vật (Biome Trees & Flora)</div>
-    <div class="section-desc">Bộ sưu tập các loài cây sinh cảnh đặc trưng theo từng vùng đất: Rừng Thu lá đỏ, Rừng Tuyết giá lạnh, Rừng Hư Không tăm tối, Rừng Cọ nhiệt đới và Bụi rậm rào chắn.</div>
+    <div class="section-desc">Bộ sưu tập các loài cây sinh cảnh đặc trưng theo từng vùng đất: Rừng Thu lá đỏ, Rừng Tuyết
+        giá lạnh, Rừng Hư Không tăm tối, Rừng Cọ nhiệt đới và Bụi rậm rào chắn.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-nature">🍂 CÂY THU</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_autumn.png" width="120" height="120"></div>
             <div class="card-name">Cây Lá Đỏ Rừng Thu (Autumn Tree)</div>
-            <div class="card-desc">Tán lá cam đỏ vàng rực rỡ phong cách mùa thu, thân cây xám trầm mang vẻ đẹp hoài niệm.</div>
+            <div class="card-desc">Tán lá cam đỏ vàng rực rỡ phong cách mùa thu, thân cây xám trầm mang vẻ đẹp hoài
+                niệm.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">❄️ CÂY TUYẾT</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_snow.png" width="120" height="120"></div>
             <div class="card-name">Cây Rừng Tuyết (Snow Pine)</div>
-            <div class="card-desc">Tán lá phủ tuyết trắng xóa giác cạnh 40x48 chuẩn grid, thân cây đóng băng giá lạnh.</div>
+            <div class="card-desc">Tán lá phủ tuyết trắng xóa giác cạnh 40x48 chuẩn grid, thân cây đóng băng giá lạnh.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-class2">🌌 CÂY HƯ KHÔNG</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_void.png" width="120" height="120"></div>
             <div class="card-name">Cây Cổ Thụ Hư Không (Void Tree)</div>
-            <div class="card-desc">Tán cây tím sẫm hấp thụ tàn dư hư không, vỏ cây phát quang phù văn ma thuật kỳ bí.</div>
+            <div class="card-desc">Tán cây tím sẫm hấp thụ tàn dư hư không, vỏ cây phát quang phù văn ma thuật kỳ bí.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🌴 CÂY CỌ</span>
@@ -692,7 +961,8 @@
             <span class="badge badge-nature">💀 CÂY CHẾT</span>
             <div class="sprite-box"><img src="zoomed_8x/tree_dead.png" width="120" height="120"></div>
             <div class="card-name">Cây Khô Héo (Dead Tree)</div>
-            <div class="card-desc">Thân cây trơ trụi cành khẳng khiu xơ xác, dấu tích của những cơn bão bóng tối cổ xưa.</div>
+            <div class="card-desc">Thân cây trơ trụi cành khẳng khiu xơ xác, dấu tích của những cơn bão bóng tối cổ xưa.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🪵 GỐC CÂY CAO</span>
@@ -722,19 +992,22 @@
 
     <!-- 8. HATS, PETS & FARMING TOOLS -->
     <div class="section-title">🎩 Nón Thời Trang, Thú Cưng & Dụng Cụ Canh Nông (Hats, Pets & Farm)</div>
-    <div class="section-desc">Phụ kiện trang bị độc đáo: các loại mũ nón mang hiệu ứng đặc thù, dàn thú cưng trung thành hộ vệ và công cụ làm vườn chuẩn Soul Knight.</div>
+    <div class="section-desc">Phụ kiện trang bị độc đáo: các loại mũ nón mang hiệu ứng đặc thù, dàn thú cưng trung thành
+        hộ vệ và công cụ làm vườn chuẩn Soul Knight.</div>
     <div class="grid">
         <div class="card">
             <span class="badge badge-class3">🕯️ NÓN NẾN</span>
             <div class="sprite-box"><img src="zoomed_8x/hat_candle.png" width="120" height="120"></div>
             <div class="card-name">Mũ Nến Soi Sáng (Candle Hat)</div>
-            <div class="card-desc">Mũ bện gắn cây nến sáp cháy bập bùng trên đỉnh đầu, tỏa quầng sáng dịu xua tan nỗi sợ.</div>
+            <div class="card-desc">Mũ bện gắn cây nến sáp cháy bập bùng trên đỉnh đầu, tỏa quầng sáng dịu xua tan nỗi
+                sợ.</div>
         </div>
         <div class="card">
             <span class="badge badge-fav">🎭 NÓN CHÚ HỀ</span>
             <div class="sprite-box"><img src="zoomed_8x/hat_jester.png" width="120" height="120"></div>
             <div class="card-name">Mũ Chú Hề Rực Rỡ (Jester Hat)</div>
-            <div class="card-desc">Mũ hề 2 sừng uốn cong sọc tím-vàng đính chuông vàng leng keng mang lại sự hoạt náo.</div>
+            <div class="card-desc">Mũ hề 2 sừng uốn cong sọc tím-vàng đính chuông vàng leng keng mang lại sự hoạt náo.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🌾 NÓN RƠM</span>
@@ -746,7 +1019,8 @@
             <span class="badge badge-class2">🧙 NÓN PHÙ THỦY</span>
             <div class="sprite-box"><img src="zoomed_8x/hat_witch.png" width="120" height="120"></div>
             <div class="card-name">Mũ Phù Thủy Hư Không (Witch Hat)</div>
-            <div class="card-desc">Mũ nhung chóp nhọn màu tím huyền bí đai vàng, gia tăng khả năng cộng hưởng ma thuật.</div>
+            <div class="card-desc">Mũ nhung chóp nhọn màu tím huyền bí đai vàng, gia tăng khả năng cộng hưởng ma thuật.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-class2">🦇 THÚ CƯNG</span>
@@ -758,25 +1032,29 @@
             <span class="badge badge-nature">🐱 THÚ CƯNG</span>
             <div class="sprite-box"><img src="zoomed_8x/pet_cat.png" width="120" height="120"></div>
             <div class="card-name">Pet Mèo Tinh Thể (Crystal Cat)</div>
-            <div class="card-desc">Mèo con lông trắng đính ngọc pha lê cyan, quấn quýt chạy theo chủ nhân tăng tốc độ di chuyển.</div>
+            <div class="card-desc">Mèo con lông trắng đính ngọc pha lê cyan, quấn quýt chạy theo chủ nhân tăng tốc độ di
+                chuyển.</div>
         </div>
         <div class="card">
             <span class="badge badge-class3">✨ THÚ CƯNG</span>
             <div class="sprite-box"><img src="zoomed_8x/pet_firefly.png" width="120" height="120"></div>
             <div class="card-name">Pet Đom Đóm Dạ Quang (Firefly)</div>
-            <div class="card-desc">Chú đom đóm bụng vàng rực rỡ bay vòng quanh người chơi, cung cấp nguồn sáng tự nhiên.</div>
+            <div class="card-desc">Chú đom đóm bụng vàng rực rỡ bay vòng quanh người chơi, cung cấp nguồn sáng tự nhiên.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-class2">👻 THÚ CƯNG</span>
             <div class="sprite-box"><img src="zoomed_8x/pet_ghost.png" width="120" height="120"></div>
             <div class="card-name">Pet Bóng Ma Tí Hon (Ghost Pet)</div>
-            <div class="card-desc">Linh hồn tí hon trong suốt lượn lờ đùa giỡn, mang lại phước lành may mắn khi nhặt đồ.</div>
+            <div class="card-desc">Linh hồn tí hon trong suốt lượn lờ đùa giỡn, mang lại phước lành may mắn khi nhặt đồ.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🌾 NÔNG NGHIỆP</span>
             <div class="sprite-box"><img src="zoomed_8x/hoe.png" width="120" height="120"></div>
             <div class="card-name">Cuốc Làm Vườn (Garden Hoe)</div>
-            <div class="card-desc">Cuốc sắt lưỡi vuông cán gỗ công thái học, dùng xới đất tơi xốp để gieo hạt giống.</div>
+            <div class="card-desc">Cuốc sắt lưỡi vuông cán gỗ công thái học, dùng xới đất tơi xốp để gieo hạt giống.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">💧 NÔNG NGHIỆP</span>
@@ -788,7 +1066,8 @@
             <span class="badge badge-class1">🚪 CÔNG TRÌNH</span>
             <div class="sprite-box"><img src="zoomed_8x/door.png" width="120" height="120"></div>
             <div class="card-name">Cửa Gỗ Phòng Thủ (Closed Door)</div>
-            <div class="card-desc">Cánh cửa gỗ sồi đóng chặt đính bản lề sắt rèn bảo vệ an toàn cho ngôi nhà sinh tồn.</div>
+            <div class="card-desc">Cánh cửa gỗ sồi đóng chặt đính bản lề sắt rèn bảo vệ an toàn cho ngôi nhà sinh tồn.
+            </div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🚪 CÔNG TRÌNH</span>
@@ -800,52 +1079,63 @@
             <span class="badge badge-nature">🚪 CÔNG TRÌNH</span>
             <div class="sprite-box"><img src="zoomed_8x/fence_gate.png" width="120" height="120"></div>
             <div class="card-name">Cổng Rào Trang Trại (Fence Gate)</div>
-            <div class="card-desc">Cổng rào gỗ có chốt cài tiện lợi, phân định lối đi và bảo vệ khu vườn nông trại.</div>
+            <div class="card-desc">Cổng rào gỗ có chốt cài tiện lợi, phân định lối đi và bảo vệ khu vườn nông trại.
+            </div>
         </div>
     </div>
 
     <!-- 9. MAP TILESETS & WORLD ARCHITECTURE -->
     <div class="section-title">🗺️ Bộ Gạch Bản Đồ Thế Giới (Map Tilesets & World Terrain)</div>
-    <div class="section-desc">Hệ thống gạch Autotile liền mạch xây dựng toàn bộ bản đồ thế giới Ember: thảm cỏ tươi, đường mòn đất sỏi, mặt nước gợn sóng, cầu gỗ, hàng rào và đồi núi phân tầng.</div>
+    <div class="section-desc">Hệ thống gạch Autotile liền mạch xây dựng toàn bộ bản đồ thế giới Ember: thảm cỏ tươi,
+        đường mòn đất sỏi, mặt nước gợn sóng, cầu gỗ, hàng rào và đồi núi phân tầng.</div>
     <div class="grid">
         <div class="card" style="grid-column: span 2;">
             <span class="badge badge-nature">🌱 THẢM CỎ</span>
-            <div class="sprite-box" style="height: 180px;"><img src="raw/grass_tileset.png" style="max-height: 160px; width: auto; image-rendering: pixelated;"></div>
+            <div class="sprite-box" style="height: 180px;"><img src="raw/grass_tileset.png"
+                    style="max-height: 160px; width: auto; image-rendering: pixelated;"></div>
             <div class="card-name">Tileset Thảm Cỏ Tự Nhiên (Grass Tileset 176x112)</div>
-            <div class="card-desc">Hệ thống Autotile 47 bitmask thảm cỏ xanh mướt, chuyển tiếp mượt mà giữa cỏ rậm, đất hoa và viền đá.</div>
+            <div class="card-desc">Hệ thống Autotile 47 bitmask thảm cỏ xanh mướt, chuyển tiếp mượt mà giữa cỏ rậm, đất
+                hoa và viền đá.</div>
         </div>
         <div class="card" style="grid-column: span 2;">
             <span class="badge badge-class1">⛰️ ĐỒI NÚI</span>
-            <div class="sprite-box" style="height: 180px;"><img src="raw/hills_tileset.png" style="max-height: 160px; width: auto; image-rendering: pixelated;"></div>
+            <div class="sprite-box" style="height: 180px;"><img src="raw/hills_tileset.png"
+                    style="max-height: 160px; width: auto; image-rendering: pixelated;"></div>
             <div class="card-name">Tileset Đồi Núi Phân Tầng (Hills Tileset 176x144)</div>
-            <div class="card-desc">Vách đá nhiều tầng bậc cao độ, tạo nên chiều sâu địa hình đồi núi hùng vĩ trong thế giới mở.</div>
+            <div class="card-desc">Vách đá nhiều tầng bậc cao độ, tạo nên chiều sâu địa hình đồi núi hùng vĩ trong thế
+                giới mở.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🛤️ ĐƯỜNG MÒN</span>
-            <div class="sprite-box"><img src="raw/paths_tileset.png" width="128" height="128" style="image-rendering: pixelated;"></div>
+            <div class="sprite-box"><img src="raw/paths_tileset.png" width="128" height="128"
+                    style="image-rendering: pixelated;"></div>
             <div class="card-name">Lối Mòn Đất Sỏi (Paths 64x64)</div>
             <div class="card-desc">Đường mòn đất nện quanh co kết nối Hải Đăng đến các cánh rừng nguyên sinh.</div>
         </div>
         <div class="card">
             <span class="badge badge-class2">🌊 MẶT NƯỚC</span>
-            <div class="sprite-box"><img src="raw/water_tileset.png" width="128" height="32" style="image-rendering: pixelated; margin: 48px auto;"></div>
+            <div class="sprite-box"><img src="raw/water_tileset.png" width="128" height="32"
+                    style="image-rendering: pixelated; margin: 48px auto;"></div>
             <div class="card-name">Hồ Nước Ngầm (Water 64x16)</div>
             <div class="card-desc">Mặt nước trong xanh có hoạt ảnh gợn sóng lấp lánh phản chiếu ánh sao.</div>
         </div>
         <div class="card">
             <span class="badge badge-nature">🌉 CẦU GỖ</span>
-            <div class="sprite-box"><img src="raw/bridge_tileset.png" width="140" height="84" style="image-rendering: pixelated; margin: 20px auto;"></div>
+            <div class="sprite-box"><img src="raw/bridge_tileset.png" width="140" height="84"
+                    style="image-rendering: pixelated; margin: 20px auto;"></div>
             <div class="card-name">Cầu Gỗ Qua Sông (Bridge 80x48)</div>
             <div class="card-desc">Cầu gỗ ghép nan chắc nịch bắc qua các dòng suối và khe vực hiểm trở.</div>
         </div>
         <div class="card">
             <span class="badge badge-class1">🛡️ HÀNG RÀO</span>
-            <div class="sprite-box"><img src="raw/fences_tileset.png" width="128" height="128" style="image-rendering: pixelated;"></div>
+            <div class="sprite-box"><img src="raw/fences_tileset.png" width="128" height="128"
+                    style="image-rendering: pixelated;"></div>
             <div class="card-name">Hàng Rào Cọc Gỗ (Fences 64x64)</div>
             <div class="card-desc">Hàng rào gỗ cọc nhọn đan chéo bảo vệ vành đai căn cứ trước quái vật bóng đêm.</div>
         </div>
     </div>
-\n    <script>
+    \n
+    <script>
         function setupAnim(canvasId, src, fw, fh, count, speed, dw, dh) {
             const img = new Image();
             img.src = src;
@@ -883,10 +1173,10 @@
                 if (++lCount === 2) {
                     setInterval(() => {
                         tctx.clearRect(0, 0, 128, 128);
-                        // Cọc gỗ đứng thẳng 90° kiêu hãnh trên chân đế sắt (offset Y=12 để thoáng đỉnh)
-                        tctx.drawImage(tg, 0, 0, 32, 32, 0, 12, 128, 128);
-                        // Ngọn lửa 8 frame hữu cơ bập bùng đồng trục X=15.0 và nhấc cao hơn đài đỡ 2.5px (offset Y=4)
-                        tctx.drawImage(tf, tfIdx * 32, 0, 32, 32, 0, 4, 128, 128);
+                        // Cọc gỗ đứng thẳng 90° kiêu hãnh trên chân đế sắt
+                        tctx.drawImage(tg, 0, 0, 32, 32, 0, 0, 128, 128);
+                        // Ngọn lửa 8 frame hữu cơ bập bùng đồng trục X và đặt khít ngay trên đài đỡ
+                        tctx.drawImage(tf, tfIdx * 32, 0, 32, 32, 0, 0, 128, 128);
                         tfIdx = (tfIdx + 1) % 8;
                     }, 110);
                 }
@@ -943,46 +1233,41 @@
                         xOff1 = chop1 * 12;
                         xOff2 = -chop2 * 12;
 
-                        // Vệt Kiếm Khí Song Trảm Khí Động Học: 2 luồng chém lướt ngang xé gió cắt chéo thành chữ X / mũi tên >
+                        // Vòng cung 1: Tay chính chém lướt xuống-phải (giao nhau chữ X sát nhau)
                         if (chop1 > 0.15) {
                             dctx.save();
-                            dctx.strokeStyle = 'rgba(216, 180, 254, ' + (chop1 * 0.85) + ')';
-                            dctx.lineWidth = 3.2;
+                            dctx.strokeStyle = 'rgba(216, 180, 254, ' + (chop1 * 0.70) + ')';
+                            dctx.lineWidth = 3.5;
                             dctx.beginPath();
-                            // Nhát 1: Chém lướt từ trên-trái xuống-phải hướng về phía trước
-                            dctx.moveTo(38 + xOff1 * 0.5, 42);
-                            dctx.bezierCurveTo(68 + xOff1, 56, 92 + xOff1 * 0.7, 68, 114 + xOff1, 74);
+                            dctx.ellipse(73 + xOff1 * 0.5, 68, 20, 24, 18 * Math.PI / 180, -Math.PI * 0.38, Math.PI * 0.38);
                             dctx.stroke();
 
-                            dctx.strokeStyle = 'rgba(255, 255, 255, ' + (chop1 * 0.95) + ')';
+                            dctx.strokeStyle = 'rgba(255, 255, 255, ' + (chop1 * 0.85) + ')';
                             dctx.lineWidth = 1.2;
                             dctx.beginPath();
-                            dctx.moveTo(42 + xOff1 * 0.5, 44);
-                            dctx.bezierCurveTo(70 + xOff1, 57, 94 + xOff1 * 0.7, 68, 110 + xOff1, 73);
+                            dctx.ellipse(73 + xOff1 * 0.5, 68, 19, 22, 18 * Math.PI / 180, -Math.PI * 0.28, Math.PI * 0.28);
                             dctx.stroke();
                             dctx.restore();
                         }
 
+                        // Vòng cung 2: Tay phụ chém cắt chéo lên-phải (gần nhau 2-3px để đan thành hình chữ X sắc nét)
                         if (chop2 > 0.15) {
                             dctx.save();
-                            dctx.strokeStyle = 'rgba(244, 114, 182, ' + (chop2 * 0.85) + ')';
-                            dctx.lineWidth = 3.2;
+                            dctx.strokeStyle = 'rgba(244, 114, 182, ' + (chop2 * 0.65) + ')';
+                            dctx.lineWidth = 3.5;
                             dctx.beginPath();
-                            // Nhát 2: Chém lướt từ dưới-trái lên-phải cắt chéo thành chữ X / mũi tên >
-                            dctx.moveTo(38 + xOff2 * 0.5, 96);
-                            dctx.bezierCurveTo(68 + xOff2, 82, 92 + xOff2 * 0.7, 70, 114 + xOff2, 64);
+                            dctx.ellipse(71 + xOff2 * 0.5, 70, 20, 24, -18 * Math.PI / 180, -Math.PI * 0.38, Math.PI * 0.38);
                             dctx.stroke();
 
-                            dctx.strokeStyle = 'rgba(255, 255, 255, ' + (chop2 * 0.95) + ')';
+                            dctx.strokeStyle = 'rgba(255, 255, 255, ' + (chop2 * 0.85) + ')';
                             dctx.lineWidth = 1.2;
                             dctx.beginPath();
-                            dctx.moveTo(42 + xOff2 * 0.5, 94);
-                            dctx.bezierCurveTo(70 + xOff2, 81, 94 + xOff2 * 0.7, 70, 110 + xOff2, 65);
+                            dctx.ellipse(71 + xOff2 * 0.5, 70, 19, 22, -18 * Math.PI / 180, -Math.PI * 0.28, Math.PI * 0.28);
                             dctx.stroke();
                             dctx.restore();
                         }
                     }
-                    
+
                     // Main blade
                     dctx.save();
                     dctx.translate(56 + xOff1, 72);
@@ -1168,52 +1453,53 @@
                     p.x += p.vx;
 
                     if (p.type === 'dual_crescent') {
-                        // Sóng Kiếm Khí Song Trảm Khí Động Học: 2 luồng chém lướt ngang cắt chéo thành chữ X / mũi tên > xé gió
+                        // 2 Vòng cung kiếm khí lướt ngang động lực học, mềm mại, bán trong suốt (không dựng đứng như cột)
                         const prog = Math.min(1.0, (p.x - p.startX) / p.maxDist);
                         const alpha = Math.max(0, 1.0 - prog * 0.85);
 
+                        // Vòng cung 1: Tay chính vung chém chéo xuống-phải (góc ~18° lướt ngang xé gió)
                         sctx.save();
-                        sctx.translate(p.x, p.y);
+                        // Lớp tỏa sáng mờ ảo ngoài (Outer Glow)
+                        sctx.strokeStyle = 'rgba(168, 85, 247, ' + (alpha * 0.40) + ')';
+                        sctx.lineWidth = 5.5;
+                        sctx.beginPath();
+                        sctx.ellipse(p.x, p.y - 2, 18 + prog * 6, 24 + prog * 6, 18 * Math.PI / 180, -Math.PI * 0.38, Math.PI * 0.38);
+                        sctx.stroke();
 
-                        // Vệt chém 1: Lướt chéo từ trên-trái xuống-phải (cánh trên chữ X / mũi tên >)
+                        // Thân kiếm khí tím neon sắc nét
                         sctx.strokeStyle = 'rgba(216, 180, 254, ' + (alpha * 0.85) + ')';
-                        sctx.lineWidth = 3.2;
+                        sctx.lineWidth = 2.5;
                         sctx.beginPath();
-                        sctx.moveTo(-24, -18);
-                        sctx.bezierCurveTo(-8, -10, 8, -2, 24, 6);
+                        sctx.ellipse(p.x, p.y - 2, 18 + prog * 6, 24 + prog * 6, 18 * Math.PI / 180, -Math.PI * 0.36, Math.PI * 0.36);
+                        sctx.stroke();
+
+                        // Lõi sáng trắng ma thuật xé gió (Starlight Core)
+                        sctx.strokeStyle = 'rgba(255, 255, 255, ' + (alpha * 0.95) + ')';
+                        sctx.lineWidth = 1.0;
+                        sctx.beginPath();
+                        sctx.ellipse(p.x, p.y - 2, 17 + prog * 6, 22 + prog * 6, 18 * Math.PI / 180, -Math.PI * 0.26, Math.PI * 0.26);
+                        sctx.stroke();
+                        sctx.restore();
+
+                        // Vòng cung 2: Tay phụ vung chém chéo lên-phải (gần sát nhau để giao nhau tạo hình chữ X sắc nét, trễ 3px nhịp delay)
+                        sctx.save();
+                        sctx.strokeStyle = 'rgba(236, 72, 153, ' + (alpha * 0.35) + ')';
+                        sctx.lineWidth = 5.5;
+                        sctx.beginPath();
+                        sctx.ellipse(p.x - 3, p.y + 1, 18 + prog * 6, 24 + prog * 6, -18 * Math.PI / 180, -Math.PI * 0.38, Math.PI * 0.38);
+                        sctx.stroke();
+
+                        sctx.strokeStyle = 'rgba(244, 114, 182, ' + (alpha * 0.80) + ')';
+                        sctx.lineWidth = 2.5;
+                        sctx.beginPath();
+                        sctx.ellipse(p.x - 3, p.y + 1, 18 + prog * 6, 24 + prog * 6, -18 * Math.PI / 180, -Math.PI * 0.36, Math.PI * 0.36);
                         sctx.stroke();
 
                         sctx.strokeStyle = 'rgba(255, 255, 255, ' + (alpha * 0.95) + ')';
-                        sctx.lineWidth = 1.2;
+                        sctx.lineWidth = 1.0;
                         sctx.beginPath();
-                        sctx.moveTo(-20, -16);
-                        sctx.bezierCurveTo(-6, -9, 8, -2, 20, 5);
+                        sctx.ellipse(p.x - 3, p.y + 1, 17 + prog * 6, 22 + prog * 6, -18 * Math.PI / 180, -Math.PI * 0.26, Math.PI * 0.26);
                         sctx.stroke();
-
-                        // Vệt chém 2: Lướt chéo từ dưới-trái lên-phải (cánh dưới chữ X / mũi tên >)
-                        sctx.strokeStyle = 'rgba(244, 114, 182, ' + (alpha * 0.85) + ')';
-                        sctx.lineWidth = 3.2;
-                        sctx.beginPath();
-                        sctx.moveTo(-24, 18);
-                        sctx.bezierCurveTo(-8, 10, 8, 2, 24, -6);
-                        sctx.stroke();
-
-                        sctx.strokeStyle = 'rgba(255, 255, 255, ' + (alpha * 0.95) + ')';
-                        sctx.lineWidth = 1.2;
-                        sctx.beginPath();
-                        sctx.moveTo(-20, 16);
-                        sctx.bezierCurveTo(-6, 9, 8, 2, 20, -5);
-                        sctx.stroke();
-
-                        // Lõi điểm giao cắt phát sáng trắng Starlight
-                        sctx.fillStyle = 'rgba(255, 255, 255, ' + alpha + ')';
-                        sctx.beginPath();
-                        sctx.arc(8, 0, 3, 0, Math.PI * 2);
-                        sctx.fill();
-
-                        // Hiển thị trực tiếp sprite pixel art shadow_cross_slash
-                        sctx.globalAlpha = alpha;
-                        sctx.drawImage(simImgs.shadow_cross_slash, 0, 0, 32, 32, -16, -16, 32, 32);
                         sctx.restore();
 
                         if (p.x - p.startX >= p.maxDist) {
@@ -1249,4 +1535,5 @@
         }
     </script>
 </body>
+
 </html>
