@@ -2131,18 +2131,13 @@ namespace Ember
             if(title!=null)return;
             try
             {
-                var osFont=Font.CreateDynamicFontFromOSFont(new[]{"Arial","Segoe UI","Tahoma"},14);
+                var osFont=Font.CreateDynamicFontFromOSFont(new[]{"Segoe UI","Arial","Tahoma"},14);
                 if(osFont!=null)GUI.skin.font=osFont;
             }
             catch{}
-            title=new GUIStyle(GUI.skin.label){fontSize=27,fontStyle=FontStyle.Bold,clipping=TextClipping.Overflow,normal={textColor=new Color(1,.92f,.78f)}};
-            label=new GUIStyle(GUI.skin.label){fontSize=15,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(0,0,1,3),normal={textColor=new Color(.88f,.91f,.94f)}};
-            small=new GUIStyle(label){fontSize=12,clipping=TextClipping.Overflow,padding=new RectOffset(0,0,1,3)};
-            GUI.skin.label.clipping=TextClipping.Overflow;
-            GUI.skin.box.clipping=TextClipping.Overflow;
-            GUI.skin.button.fontSize=14;
-            GUI.skin.button.clipping=TextClipping.Overflow;
-            GUI.skin.button.padding=new RectOffset(12,12,8,8);
+            title=new GUIStyle(GUI.skin.label){fontSize=27,fontStyle=FontStyle.Bold,normal={textColor=new Color(1,.92f,.78f)}};
+            label=new GUIStyle(GUI.skin.label){fontSize=15,wordWrap=true,normal={textColor=new Color(.88f,.91f,.94f)}};
+            small=new GUIStyle(label){fontSize=12};GUI.skin.button.fontSize=14;GUI.skin.button.padding=new RectOffset(12,12,8,8);
         }
         void Panel(Rect rect,Color color){GUI.color=color;GUI.DrawTexture(rect,white);GUI.color=Color.white;}
         Vector2 ScreenPos(V2 p){Vector3 v=cam.WorldToScreenPoint(new Vector3(p.X,p.Y));return new Vector2(v.x,Screen.height-v.y);}
@@ -2480,7 +2475,7 @@ namespace Ember
             DrawMerchantHud(p);
             float objectiveY=ObjectiveCardY;
             DrawObjectiveCard(p,objectiveY);
-            DrawFieldNotices(p,QuestCollapsed?objectiveY+92f:objectiveY+98f);
+            DrawFieldNotices(p,QuestCollapsed?objectiveY+92f:objectiveY+88f);
             if(!p.Ghost&&craftOpen)DrawCraft(p);
             if(!p.Ghost&&beaconDepositOpen)DrawBeaconDepositModal(p);
             hudCapturing=false;

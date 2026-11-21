@@ -161,19 +161,19 @@ namespace Ember
             string phaseName=s.Phase==Phase.Eclipse?L("Nhật thực","Eclipse"):s.Phase==Phase.Extraction?L("Rút lui","Extraction"):L("Thám hiểm","Explore");
             string clockText=Mathf.FloorToInt(s.Time/60).ToString("00")+":"+Mathf.FloorToInt(s.Time%60).ToString("00");
 
-            Rect box=GUILayoutUtility.GetRect(180,112,GUILayout.ExpandWidth(true));
+            Rect box=GUILayoutUtility.GetRect(180,104,GUILayout.ExpandWidth(true));
             var card=new Rect(box.x+4,box.y,Mathf.Max(140,box.width-8),box.height);
             PixelPanel(card,Color.Lerp(Lilac,Plum,.16f));
             DrawSpritePreview(new Rect(card.x+8,card.y+8,48,48),Frame((Vessel)vIdx,"idle",(int)(Time.unscaledTime*6)));
-            UiLabel(new Rect(card.x+62,card.y+8,card.width-70,24),
+            UiLabel(new Rect(card.x+62,card.y+8,card.width-70,22),
                 L("Trận dở · ","Saved run · ")+Catalog.VesselNames[vIdx],label);
-            UiLabel(new Rect(card.x+62,card.y+34,card.width-70,24),
+            UiLabel(new Rect(card.x+62,card.y+31,card.width-70,22),
                 diffName+" · "+phaseName+" · "+clockText+" · "+L("Trụ ","Beacon ")+Mathf.FloorToInt(s.Charge)+"/"+Mathf.FloorToInt(s.ChargeTarget)+" · HP "+Mathf.CeilToInt(p.HP),small);
 
             float discardW=76;
             float resumeW=Mathf.Max(90,card.width-24-discardW);
-            if(UiButton(new Rect(card.x+8,card.y+64,resumeW,36),L("Tiếp tục trận dở","Continue saved run")))ResumeSoloRun();
-            if(UiButton(new Rect(card.x+16+resumeW,card.y+64,discardW,36),L("Xóa","Clear")))
+            if(UiButton(new Rect(card.x+8,card.y+60,resumeW,36),L("Tiếp tục trận dở","Continue saved run")))ResumeSoloRun();
+            if(UiButton(new Rect(card.x+16+resumeW,card.y+60,discardW,36),L("Xóa","Clear")))
             {
                 ClearSavedRun();
                 notice=L("Đã xóa bản lưu trận dở.","Cleared saved run.");

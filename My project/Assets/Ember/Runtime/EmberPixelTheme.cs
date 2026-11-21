@@ -39,9 +39,8 @@ namespace Ember
             var active=PixelFrame(Plum,edge,new Color(.66f,.51f,.85f));
             var input=PixelFrame(light?Paper:new Color(.13f,.10f,.21f),edge,surface);
             var rail=PixelFrame(light?new Color(.85f,.80f,.91f):new Color(.10f,.08f,.16f),edge,surface);
-            foreach(var style in new[]{skin.button,skin.toggle,skin.box,skin.textField,skin.textArea,skin.label})
+            foreach(var style in new[]{skin.button,skin.toggle,skin.box,skin.textField,skin.textArea})
             {
-                style.clipping=TextClipping.Overflow;
                 style.border=new RectOffset(6,6,6,6);
                 style.normal.background=style==skin.textField||style==skin.textArea?input:normal;
                 style.hover.background=style.focused.background=hover;
@@ -50,9 +49,7 @@ namespace Ember
                 style.active.textColor=style.onNormal.textColor=style.onHover.textColor=style.onActive.textColor=style.onFocused.textColor=Color.white;
             }
             skin.button.fontStyle=FontStyle.Bold;
-            skin.button.padding=new RectOffset(11,11,6,10);
-            skin.label.clipping=TextClipping.Overflow;
-            skin.box.clipping=TextClipping.Overflow;
+            skin.button.padding=new RectOffset(11,11,7,7);
             foreach(var bar in new[]{skin.verticalScrollbar,skin.horizontalScrollbar,skin.verticalScrollbarThumb,skin.horizontalScrollbarThumb})
             {
                 bar.border=new RectOffset(5,5,5,5);

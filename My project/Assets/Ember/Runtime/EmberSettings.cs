@@ -154,7 +154,7 @@ namespace Ember
                     PixelPanel(warnBox,new Color(.28f,.14f,.08f,.95f));
                     var oldCol=GUI.contentColor;
                     GUI.contentColor=new Color(1f,.78f,.25f);
-                    var warnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,fontStyle=FontStyle.Bold};
+                    var warnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,fontStyle=FontStyle.Bold};
                     GUI.Label(new Rect(warnBox.x+6,warnBox.y+2,warnBox.width-12,warnBox.height-4),
                         L("⚠️ Đang chơi Online — Trò chơi vẫn tiếp tục chạy trong nền!",
                           "⚠️ Online Co-op active — Game continues running in background!"),warnStyle);
