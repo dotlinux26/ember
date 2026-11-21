@@ -64,6 +64,7 @@ namespace Ember
         public float PushCD,ReloadTimer;
         public float StaminaBuffTimer,WarmthBuffTimer;
         public V2 DashDir; public Weapon Weapon=Weapon.Stick; public Weapon SideWeapon=Weapon.LumenGun; public Weapon AmmoWeapon=Weapon.LumenGun; public int Ammo=-1; public int HeldSlot=6,PrevHeldSlot=2; public bool HasPickaxe=true,HasWeapon=true,HasSideWeapon=true; public Lantern Lantern;
+        public float WallHP=150f,TorchFuel=45f;
         public int PickaxeTier=1; public int PickaxeDurability=48;
         public int PickaxeMaxDurability => PickaxeTier==0?30:PickaxeTier==1?48:PickaxeTier==2?120:200;
         public string PickaxeName => PickaxeTier==0?(EmberLanguage.English?"Stone Pickaxe":"Cuốc Đá Thô"):
@@ -169,7 +170,8 @@ namespace Ember
         public bool HasPickaxe=true,LampOn=true;
         public int PickaxeTier=1,PickaxeDurability=80;
         public Lantern Lantern;
-        public int[] Bag=new int[(int)Resource.Count],Items=new int[4];
+        public float WallHP=150f,TorchFuel=45f;
+        public int[] Bag=new int[(int)Resource.Count],Items=new int[24];
         public int[] Perks=Array.Empty<int>(),PerkRanks=Array.Empty<int>(),Recipes;
         public int Hat=-1,Pet=-1,Gathered,Crafted;
         public V2 LastPos;
@@ -485,15 +487,13 @@ namespace Ember
                     case 1: return "Flare";
                     case 2: return "Sedative";
                     case 3: return "Revival Stone";
-                    case 4:
+                    case 4: return "Stone Wall";
+                    case 5: return "Shock Trap";
+                    case 6: return "Shared Chest";
                     case 14: return "Energy Drink";
-                    case 5:
                     case 15: return "Apple";
-                    case 6:
                     case 16: return "Mushroom";
-                    case 7:
                     case 17: return "Roasted Apple";
-                    case 8:
                     case 18: return "Mushroom Stew";
                     case 19: return "Iron Pickaxe";
                     case 20: return "Stone Pickaxe";
@@ -508,15 +508,13 @@ namespace Ember
                 case 1: return "Pháo sáng";
                 case 2: return "Thuốc an thần";
                 case 3: return "Đá hồi sinh";
-                case 4:
+                case 4: return "Tường";
+                case 5: return "Bẫy điện";
+                case 6: return "Rương chung";
                 case 14: return "Nước Tăng Lực";
-                case 5:
                 case 15: return "Quả Táo";
-                case 6:
                 case 16: return "Nấm Rừng";
-                case 7:
                 case 17: return "Táo Nướng";
-                case 8:
                 case 18: return "Súp Nấm";
                 case 19: return "Cuốc Sắt";
                 case 20: return "Cuốc Đá";
@@ -1254,7 +1252,13 @@ namespace Ember
             {
                 if(p==null||p.MaxHP<=0||(int)p.Vessel<0||(int)p.Vessel>=Catalog.VesselNames.Length)throw new System.IO.InvalidDataException("Dữ liệu nhân vật không hợp lệ.");
                 if(p.Bag==null||p.Bag.Length!=(int)Resource.Count)p.Bag=new int[(int)Resource.Count];
-                if(p.Items==null||p.Items.Length!=4)p.Items=new int[4];
+                if(p.Items==null)p.Items=new int[24];
+                else if(p.Items.Length<24)
+                {
+                    var newItems=new int[24];
+                    Array.Copy(p.Items,newItems,p.Items.Length);
+                    p.Items=newItems;
+                }
                 if(p.Perks==null)p.Perks=Array.Empty<int>();
                 if(p.PerkRanks==null)p.PerkRanks=Array.Empty<int>();
             }
@@ -2383,6 +2387,7 @@ namespace Ember
                 {
                     var torch=structures.OrderBy(s=>V2.Distance(s.Pos,p.Pos)).First(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f);
                     structures.Remove(torch);
+                    p.TorchFuel=torch.Life;
                     if(p.Items[0]<99)
                     {
                         p.Items[0]++;
@@ -2393,23 +2398,24 @@ namespace Ember
                         nodes.Add(new Node{Id=nextId++,Pos=torch.Pos,Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=0});
                     }
                     FX(torch.Pos,p.Pos,1);
-                    Announce(EmberLanguage.English?"Retrieved Torch!":"Đã thu hồi Đuốc!",p.Name);
+                    Announce(EmberLanguage.English?$"Retrieved Torch ({Math.Ceiling(torch.Life)}s)!":$"Đã thu hồi Đuốc ({Math.Ceiling(torch.Life)}s)!",p.Name);
                     Publish();
                 }
                 else if(structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f))
                 {
                     var wall=structures.OrderBy(s=>V2.Distance(s.Pos,p.Pos)).First(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f);
                     structures.Remove(wall);
-                    if(p.Items[4]<1)
+                    p.WallHP=wall.HP;
+                    if(p.Items[4]<99)
                     {
-                        p.Items[4]=1;
+                        p.Items[4]++;
                     }
                     else
                     {
                         nodes.Add(new Node{Id=nextId++,Pos=wall.Pos,Resource=Resource.Wood,Amount=1,MaxAmount=1,Dropped=true,DropKind=2,DropId=4});
                     }
                     FX(wall.Pos,p.Pos,1);
-                    Announce(EmberLanguage.English?"Picked up Stone Wall!":"Đã nhấc Tường Đá!",p.Name);
+                    Announce(EmberLanguage.English?$"Picked up Stone Wall (HP {Math.Ceiling(wall.HP)}/150)!":$"Đã nhấc Tường Đá (HP {Math.Ceiling(wall.HP)}/150)!",p.Name);
                     Publish();
                 }
                 else
@@ -3026,8 +3032,20 @@ namespace Ember
             var cost=Catalog.Recipes[index].Cost;if(p.Pos.Length>5&&isSanctuaryGear)return false;
             for(int i=0;i<5;i++)if(p.Bag[i]<cost[i])return false;
             for(int i=0;i<5;i++)p.Bag[i]-=cost[i];
-            if(index<4)p.Items[index]++;
-            else if(index<7){float life=index==5?90f:999999f;float hp=index==4?150f:100f;structures.Add(new Structure{Id=nextId++,Kind=index-2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=life,MaxLife=life,HP=hp});}
+            if(index<4)
+            {
+                p.Items[index]++;
+                if(index==0&&p.TorchFuel<=0)p.TorchFuel=45f;
+            }
+            else if(index==4)
+            {
+                p.Items[4]++;
+                if(p.WallHP<=0)p.WallHP=150f;
+            }
+            else if(index<7)
+            {
+                p.Items[index]++;
+            }
             else if(index<9){p.Lantern=index==7?Lantern.Inferno:Lantern.Relic;p.CarriesLantern=true;}
             else if(index<14){p.HasWeapon=true;p.Weapon=(Weapon)(index-8);if(p.HeldSlot==6)p.HeldSlot=1;}
             else if(index<19)
@@ -3084,12 +3102,6 @@ namespace Ember
         {
             if(p==null||p.Ghost)return;
             int effectiveItem=item;
-            if(item==4&&p.Items[4]>0&&p.Items[14]<=0)effectiveItem=4;
-            else if(item==4)effectiveItem=14;
-            else if(item==5)effectiveItem=15;
-            else if(item==6)effectiveItem=16;
-            else if(item==7)effectiveItem=17;
-            else if(item==8)effectiveItem=18;
 
             int targetItem=-1;
             if(effectiveItem>=0&&effectiveItem<p.Items.Length&&p.Items[effectiveItem]>0)
@@ -3106,11 +3118,28 @@ namespace Ember
                 dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=p.Pos;dead.Invulnerable=3;
             }
             else if(effectiveItem==2)p.Dread=Math.Max(0,p.Dread-40);
-            else if(effectiveItem==0||effectiveItem==1){float life=effectiveItem==0?45f:12f;structures.Add(new Structure{Id=nextId++,Kind=effectiveItem,Pos=p.Pos,Life=life,MaxLife=life});}
+            else if(effectiveItem==0||effectiveItem==1)
+            {
+                float life=effectiveItem==0?(p.TorchFuel>0?p.TorchFuel:45f):12f;
+                structures.Add(new Structure{Id=nextId++,Kind=effectiveItem,Pos=p.Pos,Life=life,MaxLife=effectiveItem==0?45f:12f});
+                if(effectiveItem==0)p.TorchFuel=45f;
+            }
             else if(effectiveItem==4)
             {
-                structures.Add(new Structure{Id=nextId++,Kind=2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=999999f,MaxLife=999999f,HP=150f});
+                float wallHp=p.WallHP>0?p.WallHP:150f;
+                structures.Add(new Structure{Id=nextId++,Kind=2,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=999999f,MaxLife=999999f,HP=wallHp});
+                p.WallHP=150f;
                 Announce(EmberLanguage.English?"Stone Wall placed!":"Đã đặt Tường Đá!",p.Name);
+            }
+            else if(effectiveItem==5)
+            {
+                structures.Add(new Structure{Id=nextId++,Kind=3,Pos=p.Pos,Life=90f,MaxLife=90f,HP=100f});
+                Announce(EmberLanguage.English?"Shock Trap placed!":"Đã đặt Bẫy điện!",p.Name);
+            }
+            else if(effectiveItem==6)
+            {
+                structures.Add(new Structure{Id=nextId++,Kind=4,Pos=p.Pos,Life=999999f,MaxLife=999999f,HP=200f});
+                Announce(EmberLanguage.English?"Shared Chest placed!":"Đã đặt Rương chung!",p.Name);
             }
             else if(effectiveItem==14)
             {

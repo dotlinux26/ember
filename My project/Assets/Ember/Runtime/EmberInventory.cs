@@ -452,6 +452,9 @@ namespace Ember
             if(index==1)return Primitive("flare");
             if(index==2)return Primitive("sedative");
             if(index==3)return Primitive("revival");
+            if(index==4)return Primitive("wall");
+            if(index==5)return Primitive("trap");
+            if(index==6)return Primitive("chest");
             if(index==14)return Primitive("energy_drink");
             if(index==15)return Primitive("apple");
             if(index==16)return Primitive("mushroom");
@@ -461,6 +464,7 @@ namespace Ember
             if(index==20)return Primitive("stone_pickaxe");
             if(index==21)return Primitive("axe");
             if(index==22)return Primitive("stick");
+            if(CraftIcons!=null&&index<CraftIcons.Length)return Primitive(CraftIcons[index]);
             if(index<ActionIcons.Length)return MaterialSprite(ActionIcons[index]);
             return Primitive("diamond");
         }
@@ -526,7 +530,7 @@ namespace Ember
                 }
                 else if(cell.Kind==2)
                 {
-                    int c=Mathf.Clamp(cell.Id,0,3);
+                    int c=Mathf.Clamp(cell.Id,0,p.Items.Length-1);
                     int actual=Mathf.Min(amount,p.Items[c]);
                     p.Items[c]-=actual;
                 }
@@ -545,8 +549,10 @@ namespace Ember
             if(kind==1)return 1;
             if(kind==2)
             {
-                if(id==4)return 1; // Defensive Wall is unstackable
-                return 5;
+                // Only consumables (potions, drinks, food) can stack:
+                if(id==2||id==14||id==15||id==16||id==17||id==18)return 5;
+                // Torch, Flare, Revival stone, Wall, Trap, Chest are unstackable (1 per slot):
+                return 1;
             }
             if(kind==3)return (id==(int)Resource.Core||id==(int)Resource.Umbra)?10:20;
             return 1;
@@ -664,7 +670,19 @@ namespace Ember
         {
             if(cell.Empty)return "";
             if(cell.Kind==1)return SlotShortValue(p,cell.Id);
-            return cell.Count+"/"+StackLimitFor(cell.Kind,cell.Id);
+            if(cell.Kind==2&&cell.Id==4)
+            {
+                int wallHp=Mathf.CeilToInt(p!=null&&p.WallHP>0?p.WallHP:150f);
+                return wallHp+" HP";
+            }
+            if(cell.Kind==2&&cell.Id==0)
+            {
+                int fuel=Mathf.CeilToInt(p!=null&&p.TorchFuel>0?p.TorchFuel:45f);
+                return fuel+"s";
+            }
+            int limit=StackLimitFor(cell.Kind,cell.Id);
+            if(limit==1)return "";
+            return cell.Count+"/"+limit;
         }
 
         string CellDetailInfo(Player p,BackpackCell cell)
@@ -689,6 +707,16 @@ namespace Ember
             int limit=StackLimitFor(cell.Kind,cell.Id);
             if(cell.Kind==2)
             {
+                if(cell.Id==4)
+                {
+                    int wallHp=Mathf.CeilToInt(p!=null&&p.WallHP>0?p.WallHP:150f);
+                    return name+" · "+L("Máu: ","HP: ")+wallHp+"/150 · "+L("Chắn đường di chuyển của quái. Chuột phải chọn Sử dụng để đặt xuống.","Blocks enemy movement. Right-click and choose Use to place.");
+                }
+                if(cell.Id==0)
+                {
+                    int fuel=Mathf.CeilToInt(p!=null&&p.TorchFuel>0?p.TorchFuel:45f);
+                    return name+" · "+L("Nhiên liệu: ","Fuel: ")+fuel+"s/45s · "+L("Soi sáng & xua bóng tối. Cầm lên tay [2] hoặc đặt xuống đất.","Illuminates dark. Equip [2] or place on ground.");
+                }
                 string desc=cell.Id==14?L("Tăng 35% tốc & vô hạn thể lực 30s","+35% speed & infinite stamina 30s")
                     :cell.Id==15?L("Táo tươi hái từ cây · Hồi 25 HP","Fresh apple · Restores 25 HP")
                     :cell.Id==16?L("Nấm rừng thu hái · Hồi 15 HP","Forest mushroom · Restores 15 HP")
@@ -937,7 +965,8 @@ namespace Ember
             var cell=backpackCells[contextMenuCell];
             if(cell.Empty){contextMenuOpen=false;return;}
             int eqSlot=EquipSlotForCell(cell);
-            float mw=256,mh=eqSlot>0?220:cell.Kind==2?80:55;
+            float mw=256;
+            float mh=eqSlot>0?220:cell.Kind==2?135:cell.Kind==3?105:(cell.Kind==1&&cell.Id==8)?105:75;
             float mx=Mathf.Clamp(contextMenuPos.x,parentBox.x+10,parentBox.xMax-mw-10);
             float my=Mathf.Clamp(contextMenuPos.y,parentBox.y+10,parentBox.yMax-mh-10);
             var menuRect=new Rect(mx,my,mw,mh);
@@ -1151,6 +1180,9 @@ namespace Ember
             if (i == 1) return Primitive("flare");
             if (i == 2) return Primitive("sedative");
             if (i == 3) return Primitive("revival");
+            if (i == 4) return Primitive("wall");
+            if (i == 5) return Primitive("trap");
+            if (i == 6) return Primitive("chest");
             if (i == 7) return Primitive("lantern_inferno");
             if (i == 8) return Primitive("lantern_relic");
             if (i == 14) return Primitive("energy_drink");
