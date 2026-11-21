@@ -54,6 +54,7 @@ namespace Ember
         int UiToolbar(int selected,string[] text)=>GUILayout.Toolbar(selected,text.Select(EmberLanguage.Text).ToArray());
         void OnGUI()
         {
+            if(Event.current.type==EventType.Layout)GUI.tooltip="";
             var original=GUI.skin;
             if(fieldSkin==null)
             {
@@ -84,7 +85,9 @@ namespace Ember
         void DrawPixelTooltip()
         {
             string text=GUI.tooltip;
+            GUI.tooltip="";
             if(Event.current.type!=EventType.Repaint||string.IsNullOrWhiteSpace(text))return;
+            if(!menu&&!IsMouseOverHud())return;
             if(tooltipStyle==null)
                 tooltipStyle=new GUIStyle(small)
                 {

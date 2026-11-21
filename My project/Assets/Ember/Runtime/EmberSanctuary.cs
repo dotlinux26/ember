@@ -177,7 +177,7 @@ namespace Ember
                 PixelPanel(cell,active?Plum:hover?Color.Lerp(Lilac,Plum,.18f):Lilac);
                 PixelArt(new Rect(cell.center.x-12,cell.y+4,24,24),SanctuaryTabIcons[i]);
                 GUI.Label(new Rect(cell.x+1,cell.y+28,cell.width-2,cell.height-30),names[i],active?activeTabText:inactiveTabText);
-                if(GUI.Button(cell,new GUIContent("",names[i]),GUIStyle.none))page=i;
+                if(GUI.Button(cell,GUIContent.none,GUIStyle.none))page=i;
             }
             return page;
         }
