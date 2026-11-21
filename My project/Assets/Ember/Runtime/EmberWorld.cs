@@ -3455,6 +3455,6 @@ namespace Ember
         public void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         public void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.HarvestTargets=harvestTargets.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
+        public void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.HarvestTargets=harvestTargets.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
     }
 }

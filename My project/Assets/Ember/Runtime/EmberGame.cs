@@ -272,7 +272,16 @@ namespace Ember
             spectateId=alive[(index+delta+alive.Length)%alive.Length].Id;
         }
         void BeginRoomRun(){if(World.StartRun(true,liveMatch:true)){lan.AcceptingJoins=false;ClearActions();}}
-        void LeaveRoom(){coopReconnectArmed=false;try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();}
+        void LeaveRoom()
+        {
+            coopReconnectArmed=false;
+            coopReconnectTimer=0;
+            coopReconnectAttempts=0;
+            ClearLastCoopSession();
+            joinRoomCode="";
+            try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}
+            network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();
+        }
         static AudioClip MakeTone(float hz,float seconds)
         {
             int count=(int)(22050*seconds);var samples=new float[count];for(int i=0;i<count;i++)samples[i]=Mathf.Sin(i*hz*Mathf.PI*2/22050)*(1-(float)i/count)*.2f;
@@ -2038,6 +2047,18 @@ namespace Ember
                 new Color(.93f,.28f,.60f,alpha*.35f),
                 new Color(.96f,.45f,.73f,alpha*.80f),
                 new Color(1f,1f,1f,alpha*.95f));
+
+            // Tâm điểm giao nhau hình chữ X: Vẽ sprite shadow_cross_slash phát quang sắc nét
+            var slashSprite=Primitive("shadow_cross_slash");
+            if(slashSprite!=null&&slashSprite.texture!=null)
+            {
+                float slashSize=32f+prog*14f;
+                var slashRect=new Rect(center.x-slashSize/2,center.y-slashSize/2,slashSize,slashSize);
+                var oldCol=GUI.color;
+                GUI.color=new Color(1f,1f,1f,alpha*.95f);
+                GUI.DrawTexture(slashRect,slashSprite.texture);
+                GUI.color=oldCol;
+            }
         }
         void DrawCrescentArc(Vector2 center,Vector2 forward,Vector2 perp,float rx,float ry,Color outerGlow,Color bodyColor,Color coreColor)
         {

@@ -56,6 +56,10 @@ namespace Ember
         void ClearLastCoopSession()
         {
             lastCoopSession=null;
+            coopReconnectArmed=false;
+            coopReconnectTimer=0;
+            coopReconnectAttempts=0;
+            joinRoomCode="";
             PlayerPrefs.DeleteKey(LastCoopSessionPref);
             PlayerPrefs.Save();
         }

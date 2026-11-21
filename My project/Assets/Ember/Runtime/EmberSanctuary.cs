@@ -333,8 +333,15 @@ namespace Ember
             UiText(L("Tham gia phòng","Join room"),label);
             if(usePublicBroker)
             {
-                UiText("Mã phòng để tham gia",small);
+                UiText(L("Mã phòng để tham gia","Join room code"),small);
+                GUILayout.BeginHorizontal();
                 joinRoomCode=GUILayout.TextField(joinRoomCode,6).ToUpperInvariant();
+                if(!string.IsNullOrEmpty(joinRoomCode)&&UiButton("✕",GUILayout.Width(28),GUILayout.Height(24)))
+                {
+                    joinRoomCode="";
+                    ClearLastCoopSession();
+                }
+                GUILayout.EndHorizontal();
             }
             else
             {
