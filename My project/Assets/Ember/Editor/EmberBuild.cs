@@ -26,10 +26,25 @@ namespace Ember.Editor
             else EditorSceneManager.OpenScene(path);
             EditorBuildSettings.scenes=new[]{new EditorBuildSettingsScene(path,true)};
             PlayerSettings.companyName="Ember";PlayerSettings.productName="Ember — Don't Trust The Torch";
-            PlayerSettings.bundleVersion="0.3.0-test";
+            PlayerSettings.bundleVersion="0.3.0";
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64,false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,new[]{UnityEngine.Rendering.GraphicsDeviceType.Direct3D11});
             PlayerSettings.defaultScreenWidth=1280;PlayerSettings.defaultScreenHeight=800;PlayerSettings.fullScreenMode=FullScreenMode.Windowed;
+
+            var iconImporter=(TextureImporter)AssetImporter.GetAtPath("Assets/app_icon.png");
+            if(iconImporter!=null)
+            {
+                iconImporter.textureType=TextureImporterType.Default;
+                iconImporter.alphaIsTransparency=true;
+                iconImporter.isReadable=true;
+                iconImporter.SaveAndReimport();
+            }
+            var icon=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/app_icon.png");
+            if(icon!=null)
+            {
+                PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Standalone,new[]{icon});
+            }
+
             foreach(string guid in AssetDatabase.FindAssets("t:Texture2D",new[]{"Assets/Resources/Ember/Active","Assets/Resources/Ember/Props"}))
             {
                 var importer=(TextureImporter)AssetImporter.GetAtPath(AssetDatabase.GUIDToAssetPath(guid));importer.textureType=TextureImporterType.Default;importer.filterMode=FilterMode.Point;importer.textureCompression=TextureImporterCompression.Uncompressed;importer.mipmapEnabled=false;importer.alphaIsTransparency=true;importer.npotScale=TextureImporterNPOTScale.None;importer.SaveAndReimport();
@@ -39,8 +54,10 @@ namespace Ember.Editor
         [MenuItem("Ember/Build Windows")]
         public static void Windows()
         {
-            Prepare();Directory.CreateDirectory("../Builds/Windows");
-            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{"Assets/Scenes/Ember.unity"},locationPathName="../Builds/Windows/Ember.exe",target=BuildTarget.StandaloneWindows64,options=BuildOptions.Development});
+            Prepare();
+            string outDir="D:/Ember/Builds/Windows";
+            Directory.CreateDirectory(outDir);
+            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{"Assets/Scenes/Ember.unity"},locationPathName=Path.Combine(outDir,"Ember.exe"),target=BuildTarget.StandaloneWindows64,options=BuildOptions.None});
             if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Ember build failed: "+report.summary.result);
             Debug.Log("EMBER_BUILD_PASS "+report.summary.totalSize);
         }
