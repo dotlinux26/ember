@@ -455,6 +455,13 @@ namespace Ember
             if(index==4)return Primitive("wall");
             if(index==5)return Primitive("trap");
             if(index==6)return Primitive("chest");
+            if(index==7)return Primitive("lantern_inferno");
+            if(index==8)return Primitive("lantern_relic");
+            if(index==9)return Primitive("crystal_axe");
+            if(index==10)return Primitive("shadow_blades");
+            if(index==11)return Primitive("crossbow");
+            if(index==12)return Primitive("lumen_gun");
+            if(index==13)return Primitive("mirror_shield");
             if(index==14)return Primitive("energy_drink");
             if(index==15)return Primitive("apple");
             if(index==16)return Primitive("mushroom");
@@ -717,13 +724,20 @@ namespace Ember
                     int fuel=Mathf.CeilToInt(p!=null&&p.TorchFuel>0?p.TorchFuel:45f);
                     return name+" · "+L("Nhiên liệu: ","Fuel: ")+fuel+"s/45s · "+L("Soi sáng & xua bóng tối. Cầm lên tay [2] hoặc đặt xuống đất.","Illuminates dark. Equip [2] or place on ground.");
                 }
-                string desc=cell.Id==14?L("Tăng 35% tốc & vô hạn thể lực 30s","+35% speed & infinite stamina 30s")
+                string desc=cell.Id==1?L("Bắn pháo sáng soi rộng 8 ô [E]","Deploys 8-tile bright flare [E]")
+                    :cell.Id==2?L("Thuốc an thần · Giảm ngay 40 Hoảng loạn [E]","Sedative · Reduces 40 Dread [E]")
+                    :cell.Id==3?L("Đá hồi sinh · Hồi sinh đồng đội tại Hải Đăng [E]","Revival stone · Revives teammate [E]")
+                    :cell.Id==5?L("Đặt bẫy điện giật & làm chậm quái [Sử dụng]","Shock trap that stuns & slows [Use]")
+                    :cell.Id==6?L("Rương chung lưu trữ tài nguyên tại thực địa [Sử dụng]","Shared chest storage [Use]")
+                    :cell.Id==7?L("Đèn Hỏa Ngục · Thiêu đốt quái xung quanh","Inferno Lantern · Burns nearby enemies")
+                    :cell.Id==8?L("Đèn Thánh Tích · Hồi máu cho đồng đội đứng gần","Relic Lantern · Heals nearby allies")
+                    :cell.Id==14?L("Tăng 35% tốc & vô hạn thể lực 30s","+35% speed & infinite stamina 30s")
                     :cell.Id==15?L("Táo tươi hái từ cây · Hồi 25 HP","Fresh apple · Restores 25 HP")
                     :cell.Id==16?L("Nấm rừng thu hái · Hồi 15 HP","Forest mushroom · Restores 15 HP")
                     :cell.Id==17?L("Táo nướng giòn · Hồi 45 HP + No ấm","Crisp roasted apple · +45 HP & Well Fed")
                     :cell.Id==18?L("Súp nấm ấm · Hồi 50 HP + Hồi phục","Warm mushroom stew · +50 HP & Regen")
                     :Catalog.GetItemDisplayName(cell.Id);
-                return name+" ("+cell.Count+"/"+limit+") · "+L("Vật phẩm · ","Item · ")+desc;
+                return name+(limit>1?" ("+cell.Count+"/"+limit+")":"")+" · "+L("Vật phẩm · ","Item · ")+desc;
             }
             string descRes=cell.Id==0?L("Nhiên liệu nạp đèn [Q], nạp Hải Đăng (+15 NL/10 bụi) và chế tạo.","Refuels lantern [Q], charges Beacon (+15 NL/10 dust), and crafting.")
                 :cell.Id==1?L("Mang về Hải Đăng bấm [B] để mở menu nạp năng lượng trụ (+50 NL/viên).","Bring to Beacon and press [B] to deposit energy (+50/core).")
@@ -1176,26 +1190,7 @@ namespace Ember
 
         Sprite RecipeSprite(int i)
         {
-            if (i == 0) return Primitive("torch");
-            if (i == 1) return Primitive("flare");
-            if (i == 2) return Primitive("sedative");
-            if (i == 3) return Primitive("revival");
-            if (i == 4) return Primitive("wall");
-            if (i == 5) return Primitive("trap");
-            if (i == 6) return Primitive("chest");
-            if (i == 7) return Primitive("lantern_inferno");
-            if (i == 8) return Primitive("lantern_relic");
-            if (i == 14) return Primitive("energy_drink");
-            if (i == 15) return Primitive("apple");
-            if (i == 16) return Primitive("mushroom");
-            if (i == 17) return Primitive("roasted_apple");
-            if (i == 18) return Primitive("mushroom_stew");
-            if (i == 19) return Primitive("pickaxe");
-            if (i == 20) return Primitive("stone_pickaxe");
-            if (i == 21) return Primitive("axe");
-            if (i == 22) return Primitive("stick");
-            if (CraftIcons != null && i < CraftIcons.Length) return Primitive(CraftIcons[i]);
-            return Primitive("diamond");
+            return HeldItemSprite(i);
         }
 
         string RecipeDescription(int i)

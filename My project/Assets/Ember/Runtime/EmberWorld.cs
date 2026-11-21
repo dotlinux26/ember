@@ -490,6 +490,13 @@ namespace Ember
                     case 4: return "Stone Wall";
                     case 5: return "Shock Trap";
                     case 6: return "Shared Chest";
+                    case 7: return "Inferno Lantern";
+                    case 8: return "Relic Lantern";
+                    case 9: return "Crystal Axe";
+                    case 10: return "Shadow Blades";
+                    case 11: return "Crystal Crossbow";
+                    case 12: return "Lumen Gun";
+                    case 13: return "Mirror Shield";
                     case 14: return "Energy Drink";
                     case 15: return "Apple";
                     case 16: return "Mushroom";
@@ -511,6 +518,13 @@ namespace Ember
                 case 4: return "Tường";
                 case 5: return "Bẫy điện";
                 case 6: return "Rương chung";
+                case 7: return "Đèn Hỏa Ngục";
+                case 8: return "Đèn Thánh Tích";
+                case 9: return "Rìu Quang Tinh";
+                case 10: return "Song Đao Bóng Đêm";
+                case 11: return "Nỏ Tinh Thể";
+                case 12: return "Súng Quang Năng";
+                case 13: return "Khiên Gương";
                 case 14: return "Nước Tăng Lực";
                 case 15: return "Quả Táo";
                 case 16: return "Nấm Rừng";

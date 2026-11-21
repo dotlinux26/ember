@@ -855,34 +855,17 @@ namespace Ember
             }
             if(n.DropKind==2)
             {
-                switch(n.DropId)
-                {
-                    case 0: return Primitive("torch");
-                    case 1: return Primitive("flare");
-                    case 2: return Primitive("sedative");
-                    case 3: return Primitive("revival");
-                    case 8: return Primitive("pickaxe");
-                    case 14: return Primitive("energy_drink");
-                    case 15: return Primitive("apple");
-                    case 16: return Primitive("mushroom");
-                    case 17: return Primitive("roasted_apple");
-                    case 18: return Primitive("mushroom_stew");
-                    case 19: return Primitive("pickaxe");
-                    case 20: return Primitive("stone_pickaxe");
-                    case 21: return Primitive("axe");
-                    case 22: return Primitive("stick");
-                    default:
-                        if(n.DropId==8)return Primitive("pickaxe");
-                        return Primitive("diamond");
-                }
+                return HeldItemSprite(n.DropId);
             }
             if(n.Dropped&&n.DropId==(int)Weapon.Pickaxe)return Primitive("pickaxe");
-            return n.Resource==Resource.Wood?Primitive("wood"):n.Resource==Resource.Ore?Primitive("ore"):MaterialSprite(ResourceIcons[(int)n.Resource]);
+            int rId=Mathf.Clamp((int)n.Resource,0,ResourceIcons.Length-1);
+            return MaterialSprite(ResourceIcons[rId]);
         }
         Sprite Primitive(string name)
         {
             if(primitives.TryGetValue(name,out var cached))return cached;
             var authored=Resources.Load<Texture2D>("Ember/Props/"+name);
+            if(authored==null)authored=Resources.Load<Texture2D>("Ember/Interface/"+name);
             if(authored!=null)
             {
                 authored.filterMode=FilterMode.Point;
