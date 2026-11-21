@@ -442,7 +442,7 @@ namespace Ember
         public static readonly string[] PetDescriptions={"Tự nhặt bụi quang ở gần.","Cảnh báo quái vật ở gần.","Mỗi 30 giây chỉ hướng tới mỏ lõi gần nhất.","Giữ đốm sáng tại vị trí chủ nhân chết."};
         public static readonly RecipeData[] Recipes={
             new RecipeData("Đuốc",5,wood:3),new RecipeData("Pháo sáng",8,ore:2),new RecipeData("Thuốc an thần",10),new RecipeData("Đá hồi sinh",15,2),
-            new RecipeData("Tường",wood:8,ore:2),new RecipeData("Bẫy điện",4,wood:4,ore:4),new RecipeData("Rương chung",wood:12),
+            new RecipeData("Tường",wood:2,ore:2),new RecipeData("Bẫy điện",4,wood:4,ore:4),new RecipeData("Rương chung",wood:12),
             new RecipeData("Đèn Hỏa Ngục",15,4,ore:5),new RecipeData("Đèn Thánh Tích",20,5,ore:3),new RecipeData("Rìu Quang Tinh",5,2,wood:4,ore:5),
             new RecipeData("Song Đao Bóng Đêm",umbra:5,ore:8),new RecipeData("Nỏ Tinh Thể",core:3,wood:8,ore:3),new RecipeData("Súng Quang Năng",10,4,ore:10),new RecipeData("Khiên Gương",core:3,ore:12),
             new RecipeData("Nước Tăng Lực",dust:5,ore:2),

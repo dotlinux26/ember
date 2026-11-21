@@ -21,10 +21,10 @@ namespace Ember
                     styles[i]=new GUIStyle(GUI.skin.button)
                     {
                         fontSize=14-i,
-                        padding=new RectOffset(6,6,3,3),
+                        padding=new RectOffset(6,6,3,6),
                         alignment=TextAnchor.MiddleCenter,
                         wordWrap=false,
-                        clipping=TextClipping.Clip
+                        clipping=TextClipping.Overflow
                     };
                 }
                 compactButtonStyles.Add(GUI.skin,styles);
@@ -92,11 +92,12 @@ namespace Ember
                 tooltipStyle=new GUIStyle(small)
                 {
                     wordWrap=true,
+                    clipping=TextClipping.Overflow,
                     normal={textColor=new Color(.98f,.93f,1)}
                 };
             var content=new GUIContent(text);
             float width=Mathf.Min(Mathf.Max(100,tooltipStyle.CalcSize(content).x+22),Mathf.Min(340,Screen.width-16));
-            float height=Mathf.Max(30,tooltipStyle.CalcHeight(content,width-20)+12);
+            float height=Mathf.Max(32,tooltipStyle.CalcHeight(content,width-20)+16);
             var pointer=Event.current.mousePosition;
             float x=Mathf.Clamp(pointer.x+13,8,Screen.width-width-8);
             float y=pointer.y+19+height<=Screen.height-8?pointer.y+19:pointer.y-height-8;

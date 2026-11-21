@@ -27,9 +27,10 @@ namespace Ember
             {
                 sanctuarySkin=Instantiate(previousSkin);
                 sanctuarySkin.label.normal.textColor=Ink;
-                sanctuaryTitle=new GUIStyle(title){fontSize=38,normal={textColor=Ink},hover={textColor=Ink}};
-                sanctuaryLabel=new GUIStyle(label){normal={textColor=Ink},hover={textColor=Ink}};
-                sanctuarySmall=new GUIStyle(small){normal={textColor=Plum},hover={textColor=Plum}};
+                sanctuarySkin.label.clipping=TextClipping.Overflow;
+                sanctuaryTitle=new GUIStyle(title){fontSize=38,clipping=TextClipping.Overflow,normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuaryLabel=new GUIStyle(label){clipping=TextClipping.Overflow,padding=new RectOffset(0,0,1,3),normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuarySmall=new GUIStyle(small){clipping=TextClipping.Overflow,padding=new RectOffset(0,0,1,3),normal={textColor=Plum},hover={textColor=Plum}};
                 PaintPixelSkin(sanctuarySkin,true);
             }
             GUI.skin=sanctuarySkin;
@@ -94,8 +95,8 @@ namespace Ember
         {
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,4)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             Rect raw=GUILayoutUtility.GetRect(180,height,GUILayout.ExpandWidth(true));
             const float margin=4, gap=8;
@@ -142,8 +143,8 @@ namespace Ember
         {
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,4)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             if(page==2)
             {
@@ -164,8 +165,8 @@ namespace Ember
             Rect row=GUILayoutUtility.GetRect(144,compact?66:57,GUILayout.ExpandWidth(true));
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,4)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             int page=sanctuaryPage;
             float step=Mathf.Max(1,(row.width-8-24)/names.Length);
@@ -176,7 +177,7 @@ namespace Ember
                 bool hover=cell.Contains(Event.current.mousePosition);
                 PixelPanel(cell,active?Plum:hover?Color.Lerp(Lilac,Plum,.18f):Lilac);
                 PixelArt(new Rect(cell.center.x-12,cell.y+4,24,24),SanctuaryTabIcons[i]);
-                GUI.Label(new Rect(cell.x+1,cell.y+28,cell.width-2,cell.height-30),names[i],active?activeTabText:inactiveTabText);
+                GUI.Label(new Rect(cell.x+1,cell.y+26,cell.width-2,cell.height-26),names[i],active?activeTabText:inactiveTabText);
                 if(GUI.Button(cell,GUIContent.none,GUIStyle.none))page=i;
             }
             return page;
@@ -595,10 +596,11 @@ namespace Ember
         void DrawCurrencyChip(Rect rect,string icon,string name,int amount,string tooltip)
         {
             PixelPanel(rect,Paper);
-            PixelArt(new Rect(rect.x+7,rect.y+7,22,22),icon);
-            UiLabel(new Rect(rect.x+33,rect.y+3,rect.width-38,16),name,small);
-            UiLabel(new Rect(rect.x+33,rect.y+17,rect.width-38,19),amount.ToString(),sanctuaryLabel);
-            GUI.Label(rect,new GUIContent("",tooltip),GUIStyle.none);
+            PixelArt(new Rect(rect.x+7,rect.y+10,24,24),icon);
+            UiLabel(new Rect(rect.x+35,rect.y+3,rect.width-40,18),name,small);
+            UiLabel(new Rect(rect.x+35,rect.y+21,rect.width-40,20),amount.ToString(),sanctuaryLabel);
+            if(rect.Contains(Event.current.mousePosition))
+                GUI.Label(rect,new GUIContent("",tooltip),GUIStyle.none);
         }
 
         void DrawSanctuaryHeaderCurrencies(float leftX,float totalWidth)
@@ -612,8 +614,8 @@ namespace Ember
                 L("Đá Định Mệnh · Dùng 3 đá để Triệu hồi Bản Ngã, Mũ, Thú cưng","Void Tokens · Spend 3 to Summon Vessels, Hats, Pets"),
                 L("Đá Ký Ức Thức Tỉnh · Đánh thức Little Moone (rơi 30% khi thắng hoặc 25% mỗi Boss hạ gục)","Awakening Stones · Awaken Little Moone (30% on win or 25% per Boss defeated)")
             };
-            const float chipW=130, chipH=38, gap=8;
-            float y=58;
+            const float chipW=130, chipH=44, gap=8;
+            float y=54;
             for(int i=0;i<2;i++)
                 DrawCurrencyChip(new Rect(leftX+i*(chipW+gap),y,chipW,chipH),icons[i],names[i],amounts[i],tips[i]);
             float rightStart=leftX+totalWidth-(chipW*2+gap);
@@ -623,7 +625,7 @@ namespace Ember
 
         void DrawSanctuaryCompactCurrencies()
         {
-            var raw=GUILayoutUtility.GetRect(180,40,GUILayout.ExpandWidth(true));
+            var raw=GUILayoutUtility.GetRect(180,48,GUILayout.ExpandWidth(true));
             string[] icons={"ash","memory","token","awakening"};
             string[] names={L("Tro","Ash"),L("Ký ức","Memory"),L("Định Mệnh","Tokens"),L("Thức tỉnh","Awaken")};
             int[] amounts={Profile.Ash,Profile.Memory,Profile.Tokens,Profile.AwakeningStones};
@@ -637,7 +639,7 @@ namespace Ember
             float innerW=Mathf.Max(120,raw.width-2*margin);
             float step=(innerW-gap*3)/4;
             for(int i=0;i<4;i++)
-                DrawCurrencyChip(new Rect(raw.x+margin+i*(step+gap),raw.y,step,38),icons[i],names[i],amounts[i],tips[i]);
+                DrawCurrencyChip(new Rect(raw.x+margin+i*(step+gap),raw.y+2,step,44),icons[i],names[i],amounts[i],tips[i]);
             GUILayout.Space(6);
         }
 
