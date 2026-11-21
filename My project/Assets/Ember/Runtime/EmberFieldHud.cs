@@ -322,7 +322,7 @@ namespace Ember
                 overheadName=new GUIStyle
                 {
                     font=GUI.skin.font,fontSize=13,fontStyle=FontStyle.Bold,
-                    alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Clip,
+                    alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Overflow,
                     normal={textColor=Color.black}
                 };
                 overheadGlow=new GUIStyle(overheadName){normal={textColor=Cyan}};
@@ -384,7 +384,7 @@ namespace Ember
                 }
                 partyBubble.SetPixels(pixels);
                 partyBubble.Apply(false,true);
-                partyName=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,wordWrap=false,clipping=TextClipping.Clip};
+                partyName=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,wordWrap=false,clipping=TextClipping.Overflow};
             }
             var members=State.Players??System.Array.Empty<Player>();
             var offline=State.Disconnected??System.Array.Empty<DisconnectedSeat>();
@@ -600,15 +600,15 @@ namespace Ember
                 return;
             }
 
-            var card=new Rect(16,y,Mathf.Min(370,Screen.width-32),72);
+            var card=new Rect(16,y,Mathf.Min(380,Screen.width-32),78);
             RegisterHudRect(card);
             PixelPanel(card,blackout?new Color(.31f,.11f,.21f):FieldPaper);
 
             var cIconRect=new Rect(card.x+12,card.y+12,32,32);
             if(icon=="torch")DrawSpritePreview(cIconRect,Primitive("torch"));
             else PixelArt(cIconRect,icon);
-            UiLabel(new Rect(card.x+54,card.y+6,card.width-96,25),heading,label);
-            UiLabel(new Rect(card.x+54,card.y+31,card.width-96,28),hint,small);
+            UiLabel(new Rect(card.x+54,card.y+6,card.width-94,22),heading,label);
+            UiLabel(new Rect(card.x+54,card.y+28,card.width-94,38),hint,small);
 
             // Large, clear collapse button in upper right of card
             Rect collapseBtn=new Rect(card.xMax-34,card.y+6,28,28);
@@ -1519,14 +1519,16 @@ namespace Ember
                 DrawFieldMeter(16,upper,compact,"HP",p.HP,p.MaxHP,Coral);
                 DrawFieldMeter(23+compact,upper,compact,L("Thể lực","Stamina"),p.Stamina,100,Cyan);
             }
+            var slotLabelStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Overflow};
             for(int i=0;i<count;i++)
             {
                 bool skill=i==4;
                 int slot=skill?0:quickSlots[i];
                 bool enabled=!debugOpen&&(!skill||(!p.Ghost&&!p.Extracted&&p.SkillCD<=0&&HasSkillFocus(p)));
-                Rect tile=new Rect(start+i*cell,y+38,Mathf.Min(58,cell-4),Mathf.Min(58,cell-4));
+                float tileSize=Mathf.Min(60,cell-4);
+                Rect tile=new Rect(start+i*cell,y+36,tileSize,tileSize);
                 PixelPanel(tile,!skill&&heldSlot==slot?new Color(.51f,.34f,.72f):enabled?new Color(.22f,.16f,.34f):FieldPaper);
-                Rect icon=new Rect(tile.center.x-14,tile.y+5,28,28);
+                Rect icon=new Rect(tile.center.x-14,tile.y+4,28,28);
                 if(skill)
                 {
                     DrawSpritePreview(icon,Frame(p.Vessel,"idle",0));
@@ -1534,10 +1536,12 @@ namespace Ember
                 else DrawSpritePreview(icon,SlotIconSprite(p,slot));
                 string key=skill?"J":(i+1).ToString();
                 string value=skill?(p.SkillCD<=0?(HasSkillFocus(p)?L("Sẵn","Ready"):L("Chờ","Aim")):p.SkillCD.ToString("0.0")+"s"):SlotShortValue(p,slot);
-                UiLabel(new Rect(tile.x+5,tile.y+36,tile.width-8,20),key+" · "+value,small);
+                UiLabel(new Rect(tile.x+1,tile.y+34,tile.width-2,22),key+" · "+value,slotLabelStyle);
                 string tooltip=skill?L("Kỹ năng","Skill"):InventorySlotName(p,slot);
+                if(tile.Contains(Event.current.mousePosition)&&!inventoryOpen&&!craftOpen&&!beaconDepositOpen)
+                    GUI.tooltip=tooltip;
                 GUI.enabled=enabled;
-                if(GUI.Button(tile,new GUIContent("",tooltip),GUIStyle.none))
+                if(GUI.Button(tile,GUIContent.none,GUIStyle.none))
                 {
                     if(skill)intent.Skill=true;
                     else EquipSlot(slot);

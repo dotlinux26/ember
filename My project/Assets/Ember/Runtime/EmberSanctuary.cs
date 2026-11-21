@@ -27,9 +27,11 @@ namespace Ember
             {
                 sanctuarySkin=Instantiate(previousSkin);
                 sanctuarySkin.label.normal.textColor=Ink;
-                sanctuaryTitle=new GUIStyle(title){fontSize=38,normal={textColor=Ink},hover={textColor=Ink}};
-                sanctuaryLabel=new GUIStyle(label){normal={textColor=Ink},hover={textColor=Ink}};
-                sanctuarySmall=new GUIStyle(small){normal={textColor=Plum},hover={textColor=Plum}};
+                sanctuarySkin.label.normal.background=null;
+                sanctuarySkin.label.clipping=TextClipping.Overflow;
+                sanctuaryTitle=new GUIStyle(title){fontSize=38,clipping=TextClipping.Overflow,normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuaryLabel=new GUIStyle(label){clipping=TextClipping.Overflow,normal={textColor=Ink},hover={textColor=Ink}};
+                sanctuarySmall=new GUIStyle(small){clipping=TextClipping.Overflow,normal={textColor=Plum},hover={textColor=Plum}};
                 PaintPixelSkin(sanctuarySkin,true);
             }
             GUI.skin=sanctuarySkin;
@@ -94,8 +96,8 @@ namespace Ember
         {
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,2)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             Rect raw=GUILayoutUtility.GetRect(180,height,GUILayout.ExpandWidth(true));
             const float margin=4, gap=8;
@@ -142,8 +144,8 @@ namespace Ember
         {
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,2)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             if(page==2)
             {
@@ -164,8 +166,8 @@ namespace Ember
             Rect row=GUILayoutUtility.GetRect(144,compact?66:57,GUILayout.ExpandWidth(true));
             if(inactiveTabText==null)
             {
-                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Clip,padding=new RectOffset(3,3,0,0)};
-                activeTabText=new GUIStyle(inactiveTabText){normal={textColor=Color.white}};
+                inactiveTabText=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=true,clipping=TextClipping.Overflow,padding=new RectOffset(3,3,0,2)};
+                activeTabText=new GUIStyle(inactiveTabText){clipping=TextClipping.Overflow,normal={textColor=Color.white}};
             }
             int page=sanctuaryPage;
             float step=Mathf.Max(1,(row.width-8-24)/names.Length);
@@ -596,9 +598,10 @@ namespace Ember
         {
             PixelPanel(rect,Paper);
             PixelArt(new Rect(rect.x+7,rect.y+7,22,22),icon);
-            UiLabel(new Rect(rect.x+33,rect.y+3,rect.width-38,16),name,small);
-            UiLabel(new Rect(rect.x+33,rect.y+17,rect.width-38,19),amount.ToString(),sanctuaryLabel);
-            GUI.Label(rect,new GUIContent("",tooltip),GUIStyle.none);
+            UiLabel(new Rect(rect.x+33,rect.y+2,rect.width-38,18),name,small);
+            UiLabel(new Rect(rect.x+33,rect.y+18,rect.width-38,20),amount.ToString(),sanctuaryLabel);
+            if(rect.Contains(Event.current.mousePosition))
+                GUI.Label(rect,new GUIContent("",tooltip),GUIStyle.none);
         }
 
         void DrawSanctuaryHeaderCurrencies(float leftX,float totalWidth)

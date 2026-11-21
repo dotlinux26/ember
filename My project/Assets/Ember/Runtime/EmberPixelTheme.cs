@@ -49,7 +49,11 @@ namespace Ember
                 style.active.textColor=style.onNormal.textColor=style.onHover.textColor=style.onActive.textColor=style.onFocused.textColor=Color.white;
             }
             skin.button.fontStyle=FontStyle.Bold;
-            skin.button.padding=new RectOffset(11,11,7,7);
+            skin.button.padding=new RectOffset(11,11,6,8);
+            skin.button.clipping=TextClipping.Overflow;
+            skin.box.clipping=TextClipping.Overflow;
+            skin.label.clipping=TextClipping.Overflow;
+            skin.label.normal.background=null;
             foreach(var bar in new[]{skin.verticalScrollbar,skin.horizontalScrollbar,skin.verticalScrollbarThumb,skin.horizontalScrollbarThumb})
             {
                 bar.border=new RectOffset(5,5,5,5);

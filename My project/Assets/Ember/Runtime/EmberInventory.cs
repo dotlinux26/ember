@@ -751,7 +751,7 @@ namespace Ember
             if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
             if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;contextMenuOpen=false;}
 
-            UiLabel(new Rect(box.x+14,box.y+42,width-28,20),
+            UiLabel(new Rect(box.x+14,box.y+40,width-28,24),
                 L("Kéo vào ô 1–4 để gán · Nhấn để cầm/cất · Chuột phải mở menu vứt đồ & gán ô",
                   "Drag onto slots 1–4 to bind · Click to equip/unequip · Right-click for drop & bind menu"),small);
 
@@ -1063,7 +1063,7 @@ namespace Ember
                 var tabRect = new Rect(panel.x + 12 + c * tabW, catY, tabW - 2, 24);
                 bool active = craftCategory == c;
                 Panel(tabRect, active ? new Color(.48f, .32f, .72f, .95f) : new Color(.18f, .14f, .28f, .85f));
-                var tabStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontStyle = active ? FontStyle.Bold : FontStyle.Normal };
+                var tabStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow, fontStyle = active ? FontStyle.Bold : FontStyle.Normal };
                 tabStyle.normal.textColor = active ? Gold : new Color(.85f, .85f, .95f);
                 GUI.Label(tabRect, catNames[c], tabStyle);
                 if (GUI.Button(tabRect, GUIContent.none, GUIStyle.none)) craftCategory = c;
@@ -1092,7 +1092,7 @@ namespace Ember
                 for (int j = 0; j < recipe.Cost.Length; j++) supplied &= p.Bag[j] >= recipe.Cost[j];
                 bool can = unlocked && nearBeacon && supplied && !p.Ghost && !p.Extracted;
 
-                Rect card = GUILayoutUtility.GetRect(190, 108, GUILayout.ExpandWidth(true));
+                Rect card = GUILayoutUtility.GetRect(190, 114, GUILayout.ExpandWidth(true));
                 PixelPanel(card, can ? new Color(.24f, .18f, .38f, .95f) : new Color(.13f, .10f, .20f, .92f));
 
                 // Icon
@@ -1105,13 +1105,13 @@ namespace Ember
                 string desc = RecipeDescription(i);
                 if (!string.IsNullOrEmpty(desc))
                 {
-                    var descStyle = new GUIStyle(small) { fontSize = 10 };
+                    var descStyle = new GUIStyle(small) { fontSize = 10, clipping = TextClipping.Overflow };
                     descStyle.normal.textColor = new Color(.82f, .85f, .95f, .85f);
-                    GUI.Label(new Rect(card.x + 50, card.y + 26, card.width - 56, 18), desc, descStyle);
+                    GUI.Label(new Rect(card.x + 50, card.y + 26, card.width - 56, 22), desc, descStyle);
                 }
 
                 // Cost chips
-                float chipX = card.x + 10, chipY = card.y + 47;
+                float chipX = card.x + 10, chipY = card.y + 49;
                 for (int j = 0; j < recipe.Cost.Length; j++)
                 {
                     int cost = recipe.Cost[j];
@@ -1130,7 +1130,7 @@ namespace Ember
                     !nearBeacon ? L("Cần đến gần hải đăng", "Move closer to beacon") :
                     !supplied ? L("Thiếu nguyên liệu", "Missing ingredients") : L("Chế tạo", "Craft");
                 GUI.enabled = can;
-                if (UiButton(new Rect(card.x + 8, card.y + 75, card.width - 16, 26), action))
+                if (UiButton(new Rect(card.x + 8, card.y + 77, card.width - 16, 26), action))
                 {
                     intent.Craft = i;
                     if (audioSource != null && tone != null) audioSource.PlayOneShot(tone, 0.4f);
