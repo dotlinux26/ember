@@ -163,7 +163,16 @@ namespace Ember
         }
         public void OpenPublic(bool host,string brokerAddress,string roomCode,string password,int brokerPort=EmberRoomRoute.BrokerPort,bool useStun=true)
         {
-            Open(host,brokerAddress,roomCode.ToUpperInvariant()+":"+password);route=new EmberRoomRoute(udp,host,new IPEndPoint(IPAddress.Parse(brokerAddress),brokerPort),roomCode,password,Capacity){Mode=Mode,Trace=Trace};
+            string cleanHost=brokerAddress;
+            int port=brokerPort;
+            if(!string.IsNullOrEmpty(brokerAddress)&&brokerAddress.Contains(":"))
+            {
+                var parts=brokerAddress.Split(':');
+                cleanHost=parts[0];
+                if(int.TryParse(parts[1],out int p))port=p;
+            }
+            Open(host,cleanHost,roomCode.ToUpperInvariant()+":"+password);
+            route=new EmberRoomRoute(udp,host,new IPEndPoint(IPAddress.Parse(cleanHost),port),roomCode,password,Capacity){Mode=Mode,Trace=Trace};
             if(useStun)stunDns=Dns.GetHostAddressesAsync("stun.l.google.com");
         }
         public void Join(string identity){if(!Host&&udp!=null&&(route==null||route.Ready))Send(server,"JOIN|0|"+handshake+"."+identity);}

@@ -232,6 +232,8 @@ Phổ thông	Common
 Đặc biệt	Special
 Ngủ đông	Dormant
 Tỷ lệ triệu hồi: 1%	Summon chance: 1%
+Tỷ lệ triệu hồi: 0,1%	Summon chance: 0.1%
+Tỷ lệ triệu hồi: 0.1%	Summon chance: 0.1%
 Đá Ký Ức Thức Tỉnh	Awakening Memory Stone
 Thức tỉnh Little Moone	Awaken Little Moone
 Nhận 1 Đá Ký Ức Thức Tỉnh	Received 1 Awakening Memory Stone

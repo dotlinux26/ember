@@ -729,7 +729,9 @@ namespace Ember
                     PixelPanel(card,Lilac);
                     DrawSpritePreview(new Rect(card.center.x-28,card.y+6,56,56),SummonSprite(summonPool,i));
                     UiLabel(new Rect(card.x+6,card.y+62,card.width-12,24),names[i],small);
-                    string odds=summonPool==0?EmberLanguage.Text(Catalog.VesselRarities[i])+" · "+Catalog.VesselDrawWeights[i]+"%":"25%";
+                    float pct=Catalog.VesselDrawWeights[i]/10f;
+                    string pctStr=(pct%1==0?((int)pct).ToString():(EmberLanguage.English?pct.ToString("0.#",System.Globalization.CultureInfo.InvariantCulture):pct.ToString("0.#",System.Globalization.CultureInfo.InvariantCulture).Replace('.',',')))+"%";
+                    string odds=summonPool==0?EmberLanguage.Text(Catalog.VesselRarities[i])+" · "+pctStr:"25%";
                     GUI.Label(new Rect(card.x+6,card.y+84,card.width-12,20),odds,small);
                 }
                 GUILayout.Space(8);

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
-int port=int.TryParse(Environment.GetEnvironmentVariable("EMBER_BROKER_PORT"),out int configured)?configured:27842;
+int port=int.TryParse(Environment.GetEnvironmentVariable("EMBER_BROKER_PORT"),out int configured)?configured:5454;
 if(args.Contains("--version")){Console.WriteLine(JsonSerializer.Serialize(new{version="0.3.0-test",protocol=3,runtime=RuntimeInformation.FrameworkDescription,architecture=RuntimeInformation.ProcessArchitecture.ToString()}));return;}
 if(port<1||port>65535)throw new ArgumentOutOfRangeException("EMBER_BROKER_PORT");
 using var socket=new UdpClient(port);var rooms=new Dictionary<string,Room>();var limits=new Dictionary<string,(double since,int count)>();

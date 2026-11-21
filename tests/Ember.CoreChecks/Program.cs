@@ -142,9 +142,9 @@ using(var fakeBroker=new System.Net.Sockets.UdpClient(0))using(var routeSocket=n
     while(fakeBroker.Available>0){var endpoint=new System.Net.IPEndPoint(System.Net.IPAddress.Any,0);var packet=fakeBroker.Receive(ref endpoint);if(Encoding.UTF8.GetString(packet).StartsWith("FALLBACK|"))fallbacks++;}
     Check(fallbacks==2,"automatic relay fallback retries lost control request without flooding");
 }
-var mooneProfile=new Profile{Tokens=300};
-for(int draw=0;draw<100;draw++)mooneProfile.Roll(0,new FixedDraw(draw));
-Check(Catalog.VesselDrawWeights.Sum()==100&&Catalog.VesselDrawWeights[5]==1&&mooneProfile.Vessels.Contains(5)&&!mooneProfile.CanPlay(5),"Little Moone has a one-percent slot and initially sleeps");
+var mooneProfile=new Profile{Tokens=3000};
+for(int draw=0;draw<1000;draw++)mooneProfile.Roll(0,new FixedDraw(draw));
+Check(Catalog.VesselDrawWeights.Sum()==1000&&Catalog.VesselDrawWeights[5]==1&&mooneProfile.Vessels.Contains(5)&&!mooneProfile.CanPlay(5),"Little Moone has a 0.1% slot and initially sleeps");
 var mooneSnapshot=new Snapshot{Charge=100,Players=Array.Empty<Player>()};
 var mooneSurvivor=new Player{Extracted=true};
 mooneProfile.Reward(mooneSnapshot,mooneSurvivor,new FixedDraw(30));
@@ -971,6 +971,46 @@ int droppedNodes = lootWorld.S.Nodes.Count(n => n.Dropped && V2.Distance(n.Pos, 
 Check(droppedNodes >= 2 && droppedNodes <= 3, "loot drop scatters 2-3 item nodes near chest");
 Check(lootWorld.S.Event.Contains("Rương báu nhả ra quà tặng quý giá"), "scenario 1 broadcasts lucky gift announcement");
 
+// Test Scenario 1: Rich Weapon Drop Pool
+bool droppedAnyWeapon = false;
+var observedWeaponKinds = new HashSet<Weapon>();
+for (int seed = 200; seed < 230; seed++)
+{
+    var multiWorld = new EmberWorld(seed);
+    var looterPlayer = multiWorld.AddPlayer(1, "MultiLooter", Vessel.Wanderer);
+    multiWorld.StartRun();
+    var mysteryBox = multiWorld.S.Structures.FirstOrDefault(s => s.Kind == EmberWorld.MysteryChestKind);
+    if (mysteryBox == null) continue;
+    looterPlayer.Pos = mysteryBox.Pos;
+    multiWorld.OpenMysteryChest(looterPlayer, mysteryBox, forcedScenario: 1);
+    var weaponDrops = multiWorld.S.Nodes.Where(n => n.Dropped && n.DropKind == 1).ToList();
+    foreach (var wd in weaponDrops)
+    {
+        droppedAnyWeapon = true;
+        var wpn = (Weapon)wd.DropId;
+        observedWeaponKinds.Add(wpn);
+        string wName = Catalog.GetDroppedDisplayName(wd.DropKind, wd.DropId, wd.Resource, false);
+        Check(!string.IsNullOrEmpty(wName), "dropped weapon has valid Vietnamese name: " + wName);
+    }
+}
+Check(droppedAnyWeapon, "scenario 1 loot pool drops weapons from expanded weapon pool");
+Check(observedWeaponKinds.Count >= 2, "scenario 1 drops multiple distinct weapon types across runs");
+
+// Test Weapon Pickup equips to slot 1 and secondary weapon to slot 7
+var pickupWorld = new EmberWorld(300);
+var hero1 = pickupWorld.AddPlayer(1, "Hero1", Vessel.Wanderer);
+pickupWorld.StartRun();
+hero1.HasWeapon = false;
+hero1.HasSideWeapon = false;
+hero1.HeldSlot = 6;
+var bladeNode = new Node { Id = 9999, Pos = hero1.Pos, Dropped = true, DropKind = 1, DropId = (int)Weapon.ShadowBlades };
+pickupWorld.PickupNode(hero1, bladeNode);
+Check(hero1.HasWeapon && hero1.Weapon == Weapon.ShadowBlades && hero1.HeldSlot == 1, "picking up first weapon equips to main hand slot 1");
+
+var bowNode = new Node { Id = 10000, Pos = hero1.Pos, Dropped = true, DropKind = 1, DropId = (int)Weapon.Crossbow };
+pickupWorld.PickupNode(hero1, bowNode);
+Check(hero1.HasSideWeapon && hero1.SideWeapon == Weapon.Crossbow, "picking up second weapon equips to side weapon slot 7");
+
 // Test Scenario 2: Monster Trap Ambush (25%)
 var ambushWorld = new EmberWorld(102);
 var ambushPlayer = ambushWorld.AddPlayer(1, "Scout", Vessel.Wanderer);
@@ -1214,6 +1254,27 @@ axeWorld.Submit(2, new Command { Equip = 1, Attack = true });
 axeWorld.Tick();
 Check(!axeWorld.S.Projectiles.Any(p => p.Weapon == Weapon.ShadowBlades), "Shadow Blades is pure dual-wield melee and does not shoot shuriken projectile");
 Check(axeWorld.S.Effects.Any(e => e.Kind == 9), "Shadow Blades attack emits Song Trảm Chữ X effect kind 9");
+
+// 12. Enemy Projectile Impact Emits FX 0 (Impact Spark, not Kind 3 Boss Slash)
+var projSnap = new Snapshot
+{
+    Seed = 1,
+    Size = 50,
+    Phase = Phase.Explore,
+    Players = new[] { new Player { Id = 1, Pos = new V2(2f, 0f), HP = 100f, MaxHP = 100f, Vessel = Vessel.Wanderer, Bag = new int[5], Items = new int[4] } },
+    Projectiles = new[] { new Projectile { Id = 10, Pos = new V2(1.8f, 0f), Velocity = new V2(10f, 0f), FromEnemy = true, Damage = 10f, Life = 1f } },
+    Enemies = Array.Empty<Enemy>(),
+    Nodes = Array.Empty<Node>(),
+    Structures = Array.Empty<Structure>(),
+    Effects = Array.Empty<Effect>(),
+    BossTelegraphs = Array.Empty<BossTelegraph>(),
+    Lights = Array.Empty<TransientLight>(),
+    Disconnected = Array.Empty<DisconnectedSeat>()
+};
+var enemyProjWorld = EmberWorld.RestoreRun(new RunSaveData { Version = 1, Snapshot = projSnap, Chest = new int[5] });
+enemyProjWorld.Tick();
+Check(enemyProjWorld.S.Effects.Any(e => e.Kind == 0), "Enemy projectile impact on player emits FX 0 impact spark");
+Check(!enemyProjWorld.S.Effects.Any(e => e.Kind == 3), "Enemy projectile impact on player does not emit FX 3 boss slash");
 
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 

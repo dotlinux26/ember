@@ -371,7 +371,6 @@
             <div class="card-name" style="margin-top: 8px;">Kẻ Dệt Nhật Thực (Eclipse Weaver Boss)</div>
             <div class="card-desc">Kẻ Dệt Nhật Thực: hào quang vương miện nhật thực vàng tím, lõi Hắc Nhật bí ẩn, 6 mắt hoàng kim rực sáng và 6 chân lưỡi hái ma mị (4 Frame 64x64)</div>
         </div>
-        </div>
         <div class="anim-card">
             <canvas id="dualCanvas" class="anim-canvas" width="144" height="144"></canvas>
             <div class="card-name" style="margin-top: 8px;">Song Trảm Chữ X (Dual Blades Combo)</div>
@@ -531,6 +530,203 @@
                 style="background: #08060d; border: 1px solid #241d33; border-radius: 6px; image-rendering: pixelated;"></canvas>
             <div id="simInfo" style="flex: 1; min-width: 220px; font-size: 13px; color: #b8b0cc; line-height: 1.6;">
             </div>
+        </div>
+    </div>
+
+    
+    <!-- DEDICATED 23 CRAFTING RECIPES SECTION (Catalog.Recipes) -->
+    <div class="section-title">🔨 Bàn Chế Tạo [Tab] - Toàn Bộ 23 Công Thức Chế Tạo (Crafting Table [Tab] - Catalog.Recipes)</div>
+    <div class="section-desc">Hệ thống chế tạo đầy đủ 23 công thức chuẩn gameplay Ember Soul Knight, phân theo 3 danh mục chính (Dã ngoại, Công trình, Trang bị) kèm chi phí nguyên liệu và công dụng chi tiết.</div>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <button class="sim-btn craft-tab-btn active" onclick="filterCraft('all', this)">🌟 Tất Cả (23)</button>
+        <button class="sim-btn craft-tab-btn" onclick="filterCraft('survival', this)">🏕️ Dã Ngoại (9)</button>
+        <button class="sim-btn craft-tab-btn" onclick="filterCraft('build', this)">🧱 Công Trình (3)</button>
+        <button class="sim-btn craft-tab-btn" onclick="filterCraft('gear', this)">⚔️ Trang Bị (11)</button>
+    </div>
+    <div class="grid" id="craftGrid">
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #0</span>
+            <div class="sprite-box"><img src="zoomed_8x/torch.png" width="120" height="120" alt="Đuốc Cầm Tay"></div>
+            <div class="card-name">Đuốc Cầm Tay (Survival Torch)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 5 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 3 Gỗ</span></div>
+            <div class="card-desc">Vũ khí soi sáng cơ bản, tạo quầng sáng an toàn xua tan bóng tối và hoảng loạn. <em style="color:#a89fc0; display:block; margin-top:4px;">Illuminates dark areas & burns fuel for sanctuary safety</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Cầm tay / Cắm đất</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #1</span>
+            <div class="sprite-box"><img src="zoomed_8x/flare.png" width="120" height="120" alt="Pháo Sáng Tinh Tú"></div>
+            <div class="card-name">Pháo Sáng Tinh Tú (Signal Flare)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 8 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 2 Quặng Sắt</span></div>
+            <div class="card-desc">Bắn pháo sáng soi rộng bán kính 8 ô, duy trì tầm nhìn chiến thuật từ xa. <em style="color:#a89fc0; display:block; margin-top:4px;">Deploys 8-tile bright tactical flare</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Chiến thuật tầm xa</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #2</span>
+            <div class="sprite-box"><img src="zoomed_8x/sedative.png" width="120" height="120" alt="Thuốc An Thần"></div>
+            <div class="card-name">Thuốc An Thần (Sedative Elixir)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 10 Bụi Quang</span></div>
+            <div class="card-desc">Dược phẩm giảm 40% thanh Hoảng loạn (Dread), thanh tẩy ảo giác ma quái. <em style="color:#a89fc0; display:block; margin-top:4px;">Reduces Dread by 40% & purges mirages</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Thanh lọc tâm trí</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #3</span>
+            <div class="sprite-box"><img src="zoomed_8x/revival.png" width="120" height="120" alt="Đá Hồi Sinh"></div>
+            <div class="card-name">Đá Hồi Sinh (Revival Stone)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 15 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 2 Lõi Tinh Thể</span></div>
+            <div class="card-desc">Hồi sinh đồng đội gục ngã tại Hải Đăng với 100% HP và đẩy lùi màn đêm. <em style="color:#a89fc0; display:block; margin-top:4px;">Revives fallen ally beside Beacon with full HP</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Cứu rỗi đồng đội</div>
+        </div>
+        <div class="card craft-card" data-cat="build">
+            <span class="badge badge-weapon">CÔNG TRÌNH · #4</span>
+            <div class="sprite-box"><img src="zoomed_8x/wall.png" width="120" height="120" alt="Tường Đá Phòng Thủ"></div>
+            <div class="card-name">Tường Đá Phòng Thủ (Defensive Stone Wall)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 8 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 2 Quặng Sắt</span></div>
+            <div class="card-desc">Chắn lối quái vật với 150 HP, hiện thanh máu trực quan, có thể nhấc thu hồi [E] và không stack. <em style="color:#a89fc0; display:block; margin-top:4px;">Blocks enemy movement with 150 HP, retrievable & unstackable</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Chắn đường / 150 HP</div>
+        </div>
+        <div class="card craft-card" data-cat="build">
+            <span class="badge badge-weapon">CÔNG TRÌNH · #5</span>
+            <div class="sprite-box"><img src="zoomed_8x/trap.png" width="120" height="120" alt="Bẫy Điện Từ Trường"></div>
+            <div class="card-name">Bẫy Điện Từ Trường (Electric Shock Trap)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 4 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 4 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 4 Quặng Sắt</span></div>
+            <div class="card-desc">Giẫm phải phát nổ phóng điện cực mạnh: gây 45 sát thương và làm choáng quái vật. <em style="color:#a89fc0; display:block; margin-top:4px;">Electrocutes & stuns enemies for 45 damage</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Phục kích / Làm choáng</div>
+        </div>
+        <div class="card craft-card" data-cat="build">
+            <span class="badge badge-weapon">CÔNG TRÌNH · #6</span>
+            <div class="sprite-box"><img src="zoomed_8x/chest.png" width="120" height="120" alt="Rương Chung Đồng Đội"></div>
+            <div class="card-name">Rương Chung Đồng Đội (Shared Team Chest)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 12 Gỗ</span></div>
+            <div class="card-desc">Kho lưu trữ đồ dùng chung cho đồng đội, gỗ sồi nẹp đai sắt tán đinh và khóa đồng thau ấm cúng. <em style="color:#a89fc0; display:block; margin-top:4px;">Shared cooperative storage container for team resources</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Hợp tác đồng đội</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #7</span>
+            <div class="sprite-box"><img src="zoomed_8x/lantern_inferno.png" width="120" height="120" alt="Đèn Hỏa Ngục"></div>
+            <div class="card-name">Đèn Hỏa Ngục (Inferno Lantern)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 15 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 4 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 5 Quặng Sắt</span></div>
+            <div class="card-desc">Đèn lồng cổ đại ngọn lửa vĩnh cửu, tỏa quầng sáng rực rỡ bán kính cực đại xua tan bóng tối sâu. <em style="color:#a89fc0; display:block; margin-top:4px;">Huge radius persistent illumination lantern</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Ánh sáng vĩnh cửu</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #8</span>
+            <div class="sprite-box"><img src="zoomed_8x/lantern_relic.png" width="120" height="120" alt="Đèn Thánh Tích"></div>
+            <div class="card-name">Đèn Thánh Tích (Relic Lantern)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 20 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 5 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 3 Quặng Sắt</span></div>
+            <div class="card-desc">Thánh tích hộ mệnh của lữ khách, giảm 50% tốc độ tích tụ hoảng loạn khi bước ra ngoài ánh sáng. <em style="color:#a89fc0; display:block; margin-top:4px;">Relic beacon lantern reducing dread gain rate</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Kháng hoảng loạn</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #9</span>
+            <div class="sprite-box"><img src="zoomed_8x/crystal_axe.png" width="120" height="120" alt="Rìu Quang Tinh"></div>
+            <div class="card-name">Rìu Quang Tinh (Crystal Cleaver Axe)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 5 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 2 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 4 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 5 Quặng Sắt</span></div>
+            <div class="card-desc">36 sát thương, đánh lan 2.6 ô, phóng luồng Kiếm Khí bán nguyệt xé gió quét sạch bóng tối. <em style="color:#a89fc0; display:block; margin-top:4px;">36 cleave damage, 2.6 range, shoots blade wave projectiles</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ 36 DMG / Kiếm Khí</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #10</span>
+            <div class="sprite-box"><img src="zoomed_8x/shadow_blade_single.png" width="120" height="120" alt="Song Đao Bóng Đêm"></div>
+            <div class="card-name">Song Đao Bóng Đêm (Shadow Twin Blades)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🔮 5 Mảnh Tối</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 8 Quặng Sắt</span></div>
+            <div class="card-desc">Song thủ đoản kiếm tốc độ đánh siêu nhanh (0.2s/hit), tung chiêu Song Trảm Chữ X liên hoàn 2 nhịp. <em style="color:#a89fc0; display:block; margin-top:4px;">Ultra-fast dual wield blades with Song Trảm Chữ X cross-slash combo</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Song Thủ / Siêu Tốc</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #11</span>
+            <div class="sprite-box"><img src="zoomed_8x/crossbow.png" width="120" height="120" alt="Nỏ Tinh Thể"></div>
+            <div class="card-name">Nỏ Tinh Thể (Crystal Crossbow)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 3 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 8 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 3 Quặng Sắt</span></div>
+            <div class="card-desc">Vũ khí xạ kích tầm xa 7 ô, bắn tên năng lượng tinh thể xuyên thấu nhiều mục tiêu liên tiếp. <em style="color:#a89fc0; display:block; margin-top:4px;">Ranged 7-tile sniper crossbow with piercing crystal bolts</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Tầm xa 7 ô / Xuyên thấu</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #12</span>
+            <div class="sprite-box"><img src="zoomed_8x/lumen_gun.png" width="120" height="120" alt="Súng Quang Năng"></div>
+            <div class="card-name">Súng Quang Năng (Lumen Rapid Gun)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 10 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 4 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 10 Quặng Sắt</span></div>
+            <div class="card-desc">Băng đạn 8 viên quang năng, tốc độ bắn cực nhanh 0.32s/viên xả đạn áp chế bầy quái vật. <em style="color:#a89fc0; display:block; margin-top:4px;">8-round rapid energy shooter with 0.32s firing rate</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Liên thanh 8 viên</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-beacon">TRANG BỊ · #13</span>
+            <div class="sprite-box"><img src="zoomed_8x/mirror_shield.png" width="120" height="120" alt="Khiên Gương Phản Chiếu"></div>
+            <div class="card-name">Khiên Gương Phản Chiếu (Mirror Aegis Shield)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">💎 3 Lõi Tinh Thể</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 12 Quặng Sắt</span></div>
+            <div class="card-desc">Khiên quang học phản xạ đạn ma thuật và phản hồi tia năng lượng trừng phạt kẻ địch. <em style="color:#a89fc0; display:block; margin-top:4px;">Reflective defensive shield deflecting enemy projectiles with counter-bolts</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Phản xạ đạn / Chắn đỡ</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #14</span>
+            <div class="sprite-box"><img src="zoomed_8x/energy_drink.png" width="120" height="120" alt="Nước Tăng Lực"></div>
+            <div class="card-name">Nước Tăng Lực (Stamina Energy Drink)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 5 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 2 Quặng Sắt</span></div>
+            <div class="card-desc">Tăng 35% tốc độ di chuyển và cung cấp thể lực vô hạn trong 30 giây lướt né thần tốc. <em style="color:#a89fc0; display:block; margin-top:4px;">+35% move speed & infinite stamina surge for 30s</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ +35% Tốc / Vô hạn thể lực</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #15</span>
+            <div class="sprite-box"><img src="zoomed_8x/apple.png" width="120" height="120" alt="Quả Táo Rừng"></div>
+            <div class="card-name">Quả Táo Rừng (Wild Forest Apple)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 2 Gỗ</span></div>
+            <div class="card-desc">Táo tươi mọng nước hái từ cây rừng, ăn ngay hồi phục 25 HP khẩn cấp. <em style="color:#a89fc0; display:block; margin-top:4px;">Fresh apple picked from trees · Restores 25 HP</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Hồi 25 HP / Tươi ngon</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #16</span>
+            <div class="sprite-box"><img src="zoomed_8x/mushroom.png" width="120" height="120" alt="Nấm Rừng Hoang Dã"></div>
+            <div class="card-name">Nấm Rừng Hoang Dã (Glowing Forest Mushroom)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 3 Bụi Quang</span></div>
+            <div class="card-desc">Nấm tím phát quang thu hái tự nhiên, nguyên liệu thiết yếu cho các món hầm bổ dưỡng. <em style="color:#a89fc0; display:block; margin-top:4px;">Luminescent forest mushroom · Essential cooking ingredient</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Dược liệu / Nấu nướng</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #17</span>
+            <div class="sprite-box"><img src="zoomed_8x/roasted_apple.png" width="120" height="120" alt="Táo Nướng Lửa Hồng"></div>
+            <div class="card-name">Táo Nướng Lửa Hồng (Crisp Roasted Apple)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 2 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 2 Gỗ</span></div>
+            <div class="card-desc">Táo nướng than hồng thơm phức, hồi phục 45 HP và ban hiệu ứng No Ấm duy trì thể trạng. <em style="color:#a89fc0; display:block; margin-top:4px;">Roast apple · Restores 45 HP & grants Well Fed buff</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Hồi 45 HP / No Ấm</div>
+        </div>
+        <div class="card craft-card" data-cat="survival">
+            <span class="badge badge-nature">DÃ NGOẠI · #18</span>
+            <div class="sprite-box"><img src="zoomed_8x/mushroom_stew.png" width="120" height="120" alt="Súp Nấm Ấm Lòng"></div>
+            <div class="card-name">Súp Nấm Ấm Lòng (Warm Mushroom Stew)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🌟 4 Bụi Quang</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 3 Gỗ</span></div>
+            <div class="card-desc">Món súp hầm thảo dược nóng hổi, hồi 50 HP và kích hoạt dòng hồi phục thể lực nhanh chóng. <em style="color:#a89fc0; display:block; margin-top:4px;">Hearty warm stew · Restores 50 HP & regenerates stamina</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Hồi 50 HP / Hồi Thể Lực</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-weapon">TRANG BỊ · #19</span>
+            <div class="sprite-box"><img src="zoomed_8x/pickaxe.png" width="120" height="120" alt="Cuốc Sắt Tinh Luyện"></div>
+            <div class="card-name">Cuốc Sắt Tinh Luyện (Forged Iron Pickaxe)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 6 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 4 Quặng Sắt</span></div>
+            <div class="card-desc">Lưỡi cong 2 đầu đai đồng tán đinh, công cụ khai khoáng Cấp 1 đập vỡ đá tảng cuội và mỏ quặng giàu. <em style="color:#a89fc0; display:block; margin-top:4px;">Forged double-head iron pickaxe for Tier 1 mining</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Khai khoáng Cấp 1</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-weapon">TRANG BỊ · #20</span>
+            <div class="sprite-box"><img src="zoomed_8x/stone_pickaxe.png" width="120" height="120" alt="Cuốc Đá Nguyên Sơ"></div>
+            <div class="card-name">Cuốc Đá Nguyên Sơ (Primitive Stone Pickaxe)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 4 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 4 Quặng Sắt</span></div>
+            <div class="card-desc">Đầu đá hoa cương ghè đẽo buộc dây thừng gai chéo vào cành cây thô mộc, công cụ khai khoáng Cấp 0. <em style="color:#a89fc0; display:block; margin-top:4px;">Chipped flint pickaxe bound with hemp twine for Tier 0 rocks</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Khai khoáng Cấp 0</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-weapon">TRANG BỊ · #21</span>
+            <div class="sprite-box"><img src="zoomed_8x/axe.png" width="120" height="120" alt="Rìu Đốn Củi Sinh Tồn"></div>
+            <div class="card-name">Rìu Đốn Củi Sinh Tồn (Woodcutter Cleave Axe)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 5 Gỗ</span><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪨 2 Quặng Sắt</span></div>
+            <div class="card-desc">Lưỡi liềm rộng bản dũng mãnh, đốn hạ cây gỗ lấy củi và dùng như vũ khí chém cận chiến uy lực. <em style="color:#a89fc0; display:block; margin-top:4px;">Bearded woodcutter axe for fast tree felling & heavy melee strikes</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Đốn củi & Cận chiến</div>
+        </div>
+        <div class="card craft-card" data-cat="gear">
+            <span class="badge badge-weapon">TRANG BỊ · #22</span>
+            <div class="sprite-box"><img src="zoomed_8x/stick.png" width="120" height="120" alt="Gậy Gỗ Tự Vệ"></div>
+            <div class="card-name">Gậy Gỗ Tự Vệ (Survival Wooden Stick)</div>
+            <div style="margin: 6px 0;"><span style="display:inline-block; background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; margin:2px; font-size:11px; border:1px solid rgba(255,255,255,0.1);">🪵 3 Gỗ</span></div>
+            <div class="card-desc">Cành cây sinh tồn vót nhọn, 18 sát thương cơ bản, vũ khí tự vệ đầu tiên của mọi lữ khách. <em style="color:#a89fc0; display:block; margin-top:4px;">Basic 18-damage wooden branch for early survival defense</em></div>
+            <div style="margin-top: 8px; font-size: 11px; color: #f59e0b; font-weight: bold;">⚡ Vũ khí tự vệ cơ bản</div>
         </div>
     </div>
 
@@ -1159,20 +1355,31 @@
     \n
     <script>
         function setupAnim(canvasId, src, fw, fh, count, speed, dw, dh) {
-            const img = new Image();
-            img.src = src;
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
             let f = 0;
-            img.onload = () => {
-                setInterval(() => {
-                    ctx.clearRect(0, 0, dw, dh);
-                    ctx.drawImage(img, f * fw, 0, fw, fh, 0, 0, dw, dh);
-                    f = (f + 1) % count;
-                }, speed);
-            };
+            let timer = null;
+            const img = new Image();
+            function draw() {
+                ctx.clearRect(0, 0, dw, dh);
+                ctx.drawImage(img, f * fw, 0, fw, fh, 0, 0, dw, dh);
+            }
+            function start() {
+                draw();
+                if (!timer) {
+                    timer = setInterval(() => {
+                        f = (f + 1) % count;
+                        draw();
+                    }, speed);
+                }
+            }
+            img.onload = start;
+            img.src = src;
+            if (img.complete && img.naturalWidth > 0) {
+                start();
+            }
         }
 
         // Live Mob & Boss Animations
@@ -1557,6 +1764,21 @@
                 }
             }, 30);
         }
+    
+        // Crafting Category Filter
+        function filterCraft(cat, btn) {
+            document.querySelectorAll('.craft-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            const cards = document.querySelectorAll('.craft-card');
+            cards.forEach(card => {
+                if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
     </script>
 </body>
 

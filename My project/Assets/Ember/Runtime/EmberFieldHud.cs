@@ -280,8 +280,8 @@ namespace Ember
             GUI.contentColor=oldColor;
             if(GUI.Button(box,GUIContent.none,GUIStyle.none))
             {
-                bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,p.Pos)<2.0f))
-                    ||(State?.Nodes!=null&&State.Nodes.Any(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.0f));
+                bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==2||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,p.Pos)<2.5f))
+                    ||(State?.Nodes!=null&&State.Nodes.Any(n=>(n.Dropped||(!n.Dropped&&n.DropKind==2&&n.DropId==16))&&V2.Distance(n.Pos,p.Pos)<2.5f));
                 if(merchant!=null&&!EmberMerchant.DialogOpen)
                 {
                     EmberMerchant.DialogOpen=true;

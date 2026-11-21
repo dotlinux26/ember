@@ -13,7 +13,7 @@ namespace Ember
     // handles endpoints and opaque encrypted packets; it never receives the game key.
     public sealed class EmberRoomRoute
     {
-        public const int BrokerPort=27842;
+        public const int BrokerPort = 5454;
         public bool Host,Ready,Relay;public string Code,Error,Token;public IPEndPoint Server,Broker;
         public RouteMode Mode;public Action<string,string> Trace;
         public readonly List<IPEndPoint> Candidates=new List<IPEndPoint>();
@@ -28,7 +28,7 @@ namespace Ember
         public void Poll(double now,bool connected)
         {
             if(startedAt<0)startedAt=now;
-            if(!Ready&&now-startedAt>10)Error="Không thể kết nối broker. Kiểm tra IP và cổng UDP 27842.";
+            if(!Ready&&now-startedAt>10)Error="Không thể kết nối broker. Kiểm tra IP và cổng UDP "+(Broker!=null?Broker.Port:5454)+".";
             if(Ready&&now-lastReply>8){Ready=false;Token=null;nextControl=nextFallback=0;fallbackRequested=false;}
             if(now>=nextControl)
             {

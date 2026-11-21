@@ -160,6 +160,7 @@ namespace Ember
             if(p==null||!HasHarvestTool(p))return false;
             if(State==null||(State.Phase==Phase.Extraction&&p.Pos.Length<3))return false;
             if(State.Structures!=null&&State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
+            if(State.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.5f))return false;
             var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.8f)
                 .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
             if(node!=null&&!node.Dropped&&!(node.DropKind==2&&node.DropId==16))return true;

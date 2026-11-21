@@ -386,9 +386,9 @@ namespace Ember
                 else move=new Vector2(delta.X,delta.Y).normalized;
             }
             intent.X=move.x;intent.Y=move.y;
-            bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.isPressed&&!overUI))&&Local!=null&&!Local.Ghost;
-            bool isNearShroom=State?.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,Local.Pos)<2.4f);
-            bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom)&&Local.AttackCD<=0&&!Local.Reloading;
+            bool wantAttack=(Held(Key.K)||(Mouse.current!=null&&(Mouse.current.leftButton.isPressed||Mouse.current.leftButton.wasPressedThisFrame)&&!overUI))&&Local!=null&&!Local.Ghost;
+            bool isNearShroom=State?.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,Local.Pos)<2.5f);
+            bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom||heldSlot==6)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
             bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
             if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=selectedItem;
@@ -403,8 +403,8 @@ namespace Ember
                 else
                 {
                     var merchant=State?.Structures?.FirstOrDefault(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,Local.Pos)<=EmberMerchant.MerchantInteractionDistance);
-                    bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,Local.Pos)<2.0f))
-                        ||(State?.Nodes!=null&&State.Nodes.Any(n=>n.Dropped&&V2.Distance(n.Pos,Local.Pos)<2.0f));
+                    bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==2||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,Local.Pos)<2.5f))
+                        ||(State?.Nodes!=null&&State.Nodes.Any(n=>(n.Dropped||(!n.Dropped&&n.DropKind==2&&n.DropId==16))&&V2.Distance(n.Pos,Local.Pos)<2.5f));
                     if(merchant!=null)
                     {
                         EmberMerchant.DialogOpen=true;
@@ -2531,7 +2531,7 @@ namespace Ember
             DrawVesselPicker();
             if(selected==(int)Vessel.LittleMoone)
             {
-                if(!Profile.Vessels.Contains(selected))UiText(L("Bản Ngã Đặc Biệt · Tỷ lệ triệu hồi: 1%","Special Vessel · Summon rate: 1%"),small);
+                if(!Profile.Vessels.Contains(selected))UiText(L("Bản Ngã Đặc Biệt · Tỷ lệ triệu hồi: 0,1%","Special Vessel · Summon rate: 0.1%"),small);
                 else if(!Profile.LittleMooneAwake)
                 {
                     UiText(L("🌙 Ngủ sâu · Cần Đánh Thức để xuất trận","🌙 Deep Sleep · Requires Awakening to deploy"),small);

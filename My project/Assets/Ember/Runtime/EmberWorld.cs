@@ -430,7 +430,7 @@ namespace Ember
         public static readonly string[] VesselNames={"Lữ Hành Vô Danh","Y Sư Ánh Trăng","Kẻ Đặt Bẫy Hỏa Ngục","Hộ Vệ Cổ Ngữ","Bóng Ma Không Gian","Little Moone"};
         public static readonly string[] VesselRarities={"Phổ thông","Hiếm","Hiếm","Sử thi","Sử thi","Đặc biệt"};
         // Economy values not specified by the GDD are explicit test-build tuning.
-        public static readonly int[] VesselDrawWeights={49,20,20,5,5,1};
+        public static readonly int[] VesselDrawWeights={499,200,200,50,50,1};
         public static readonly string[] ResourceNames={"Bụi quang","Lõi","Mảnh tối","Gỗ","Quặng"};
         public static readonly string[] PerkNames={"Thần Kinh Thép","Lưng Trâu","Bước Chân Bóng Ma","Kẻ Phòng Xa","Thợ Mỏ Lão Luyện","Tia Sáng Cuối","Lương Y Bất Đắc Dĩ"};
         public static readonly string[] VesselDescriptions={"100 HP • 100 thể lực • Không có kỹ năng chủ động, bù lại chỉ số cân bằng và khai thác ổn định.","100 HP • 100 thể lực • Hồi 35 HP, xóa 40% hoảng loạn • Hồi chiêu 25 giây.","100 HP • 100 thể lực • Bom diện rộng, làm mù 3 giây • Hồi chiêu 20 giây.","100 HP • 100 thể lực • Đẩy lùi và tạo giáp ảo 4 giây • Hồi chiêu 18 giây.","100 HP • 100 thể lực • Đưa bản thân và một đồng đội sát cạnh về hải đăng • Hồi chiêu 60 giây.","100 HP • 100 thể lực • Mưa ánh sao trắng tự ngắm • Hồi chiêu 24 giây."};
@@ -1034,6 +1034,15 @@ namespace Ember
                 case 1:
                 {
                     int dropCount = rng.Next(2, 4);
+                    Weapon[] mysteryWeapons = {
+                        Weapon.ShadowBlades,
+                        Weapon.CrystalAxe,
+                        Weapon.Crossbow,
+                        Weapon.LumenGun,
+                        Weapon.MirrorShield,
+                        Weapon.Pickaxe
+                    };
+
                     for (int i = 0; i < dropCount; i++)
                     {
                         double lootRoll = rng.NextDouble();
@@ -1042,33 +1051,54 @@ namespace Ember
                         Resource res = Resource.Wood;
                         int amt = 1;
 
-                        if (lootRoll < 0.28)
+                        if (lootRoll < 0.35)
                         {
-                            dKind = 2; dId = 15; amt = 1; res = Resource.Wood;
+                            dKind = 1;
+                            Weapon chosenWeapon = mysteryWeapons[rng.Next(mysteryWeapons.Length)];
+                            dId = (int)chosenWeapon;
+                            amt = 1;
+                            res = (chosenWeapon == Weapon.CrystalAxe || chosenWeapon == Weapon.LumenGun) ? Resource.Core : Resource.Ore;
                         }
-                        else if (lootRoll < 0.52)
+                        else if (lootRoll < 0.50)
                         {
-                            dKind = 0; res = Resource.Wood; amt = rng.Next(2, 5);
+                            dKind = 2;
+                            amt = 1;
+                            double consRoll = rng.NextDouble();
+                            if (consRoll < 0.35) { dId = 14; res = Resource.Dust; }
+                            else if (consRoll < 0.65) { dId = 2; res = Resource.Dust; }
+                            else if (consRoll < 0.85) { dId = 18; res = Resource.Wood; }
+                            else { dId = 3; res = Resource.Core; }
                         }
-                        else if (lootRoll < 0.72)
+                        else if (lootRoll < 0.65)
                         {
-                            dKind = 0; res = Resource.Ore; amt = rng.Next(2, 4);
+                            dKind = 0;
+                            res = Resource.Core;
+                            amt = rng.Next(1, 3);
                         }
-                        else if (lootRoll < 0.86)
+                        else if (lootRoll < 0.78)
                         {
-                            dKind = 0; res = Resource.Dust; amt = rng.Next(3, 6);
+                            dKind = 0;
+                            res = Resource.Umbra;
+                            amt = rng.Next(2, 5);
                         }
-                        else if (lootRoll < 0.92)
+                        else if (lootRoll < 0.88)
                         {
-                            dKind = 2; dId = 14; amt = 1; res = Resource.Dust;
+                            dKind = 0;
+                            res = Resource.Dust;
+                            amt = rng.Next(4, 9);
                         }
-                        else if (lootRoll < 0.96)
+                        else if (lootRoll < 0.95)
                         {
-                            dKind = 1; dId = 8; amt = 1; res = Resource.Ore;
+                            dKind = 0;
+                            res = Resource.Ore;
+                            amt = rng.Next(2, 6);
                         }
                         else
                         {
-                            dKind = 2; dId = 0; amt = 1; res = Resource.Wood;
+                            dKind = 2;
+                            dId = (rng.NextDouble() < 0.6) ? 15 : 0;
+                            amt = 1;
+                            res = Resource.Wood;
                         }
 
                         double angle = rng.NextDouble() * Math.PI * 2.0;
@@ -1832,8 +1862,8 @@ namespace Ember
                 }
                 else
                 {
-                    var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.4f);
-                    var dropped=nodes.Where(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.2f).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+                    var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.5f);
+                    var dropped=nodes.Where(n=>n.Dropped&&V2.Distance(n.Pos,p.Pos)<2.5f).OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
                     if(dropped!=null)PickupNode(p,dropped);
                     else if(shroom!=null)
                     {
@@ -1886,46 +1916,46 @@ namespace Ember
             if(c.Push)PushEnemy(p);
             if(c.Attack&&p.AttackCD<=0&&p.CastTime<=0)
             {
-                if(!p.HoldingWeapon&&p.HeldSlot==6)
+                var nearShroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.5f);
+                if(nearShroom!=null&&(!p.HoldingWeapon||p.HeldSlot==6||Target(p,p.Range)==null))
                 {
-                    if(p.HasWeapon)p.HeldSlot=1;
-                    else if(p.HasPickaxe)p.HeldSlot=8;
-                    else if(p.HasSideWeapon)p.HeldSlot=7;
+                    nearShroom.Dropped=true;
+                    FX(nearShroom.Pos,nearShroom.Pos,7);
+                    Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
+                    p.AttackCD=0.35f;
+                    Publish();
                 }
-                if(p.HoldingWeapon)
+                else
                 {
-                    bool isHarvestTool=p.HeldSlot==8||(p.HeldSlot!=1&&p.ActiveWeapon==Weapon.Pickaxe);
-                    if(isHarvestTool)
+                    if(!p.HoldingWeapon&&p.HeldSlot==6)
                     {
-                        var enemyTarget=Target(p,p.Range);
-                        if(enemyTarget!=null)
+                        if(p.HasWeapon)p.HeldSlot=1;
+                        else if(p.HasPickaxe)p.HeldSlot=8;
+                        else if(p.HasSideWeapon)p.HeldSlot=7;
+                    }
+                    if(p.HoldingWeapon)
+                    {
+                        bool isHarvestTool=p.HeldSlot==8||(p.HeldSlot!=1&&p.ActiveWeapon==Weapon.Pickaxe);
+                        if(isHarvestTool)
                         {
-                            Attack(p);
-                        }
-                        else if(Harvest(p,2.8f))
-                        {
-                            p.AttackCD=p.HarvestCD;
+                            var enemyTarget=Target(p,p.Range);
+                            if(enemyTarget!=null)
+                            {
+                                Attack(p);
+                            }
+                            else if(Harvest(p,2.8f))
+                            {
+                                p.AttackCD=p.HarvestCD;
+                            }
+                            else
+                            {
+                                Attack(p);
+                            }
                         }
                         else
                         {
                             Attack(p);
                         }
-                    }
-                    else
-                    {
-                        Attack(p);
-                    }
-                }
-                else
-                {
-                    var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.4f);
-                    if(shroom!=null)
-                    {
-                        shroom.Dropped=true;
-                        FX(shroom.Pos,shroom.Pos,7);
-                        Announce(EmberLanguage.English?"Wild mushroom popped to the ground!":"Nấm rừng rơi ra mặt đất!",p.Name);
-                        p.AttackCD=0.35f;
-                        Publish();
                     }
                 }
             }
@@ -2094,9 +2124,23 @@ namespace Ember
                 }
                 else
                 {
-                    p.HasWeapon=true;
-                    p.Weapon=w;
-                    if(p.HeldSlot==6)p.HeldSlot=1;
+                    if(!p.HasWeapon)
+                    {
+                        p.HasWeapon=true;
+                        p.Weapon=w;
+                        if(p.HeldSlot==6)p.HeldSlot=1;
+                    }
+                    else if(!p.HasSideWeapon)
+                    {
+                        p.HasSideWeapon=true;
+                        p.SideWeapon=w;
+                        if(p.HeldSlot==6)p.HeldSlot=7;
+                    }
+                    else
+                    {
+                        p.Weapon=w;
+                        if(p.HeldSlot==6)p.HeldSlot=1;
+                    }
                     Announce((EmberLanguage.English?"Picked up: ":"Đã nhặt: ")+(EmberLanguage.English?Catalog.GetWeaponDef(w).NameEn:Catalog.GetWeaponDef(w).NameVi),p.Name);
                 }
                 FX(n.Pos,p.Pos,1);
@@ -2633,7 +2677,7 @@ namespace Ember
         {
             var weapon=p.ActiveWeapon;
             if(p.Ranged&&p.ReloadTimer>0)return;
-            var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<p.Range);
+            var shroom=nodes.FirstOrDefault(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<Math.Max(p.Range,2.5f));
             if(shroom!=null)
             {
                 shroom.Dropped=true;
@@ -2859,7 +2903,7 @@ namespace Ember
                 if(shot.FromEnemy)
                 {
                     var victim=players.Where(p=>!p.Ghost&&!p.Extracted&&SegmentDistance(p.Pos,start,shot.Pos)<.48f).OrderBy(p=>V2.Distance(start,p.Pos)).FirstOrDefault();
-                    if(victim!=null){Hurt(victim,shot.Damage);shot.Life=0;FX(start,victim.Pos,3);}
+                    if(victim!=null){Hurt(victim,shot.Damage);shot.Life=0;FX(start,victim.Pos,0);}
                     else if(!Walkable(shot.Pos, allowWater: true)||(S.BossArenaActive&&V2.Distance(shot.Pos,S.BossArenaCenter)>S.BossArenaRadius+.5f))shot.Life=0;
                     continue;
                 }

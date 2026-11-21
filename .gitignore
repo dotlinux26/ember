@@ -28,6 +28,7 @@
 /Builds/
 /dist/
 /tools/dotnet10/
+*.zip
 
 # .NET build artifacts (services, tests)
 **/bin/

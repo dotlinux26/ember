@@ -34,7 +34,7 @@ These are implementation tuning, not invented GDD quotations. They remain editab
 | Prepared upgrades | Rank 1: 2 flares/1 sedative; rank 2: 3/1; rank 3: 4/2 |
 | Miner upgrades | Pickaxe at every rank; gathering cap 3/4/5 per action |
 | Slots | Each additional perk slot costs 5 Memory, capped at 3 |
-| Gacha | 3 Tokens/draw. Duplicate grants 10 Ash. Vessel weights 49/20/20/5/5/1 for common/rare/rare/epic/epic/special; hats/pets uniform |
+| Gacha | 3 Tokens/draw. Duplicate grants 10 Ash. Vessel weights 499/200/200/50/50/1 for common/rare/rare/epic/epic/special (0.1% Little Moone); hats/pets uniform |
 | Exchange | 100 Ash → 1 Token |
 | Ash rewards | Time x 0.1 + max(gathered, carried) x 2 + 20; extracted share 100%, dead with successful teammate 50%; otherwise 25% consolation Ash |
 | Memory | Extraction base 4; dead with extraction 2; boss base 2, halved for a dead teammate when team extracts |
