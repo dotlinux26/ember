@@ -152,7 +152,7 @@ namespace Ember
             GUI.Box(rect,"");
             GUILayout.BeginArea(new Rect(rect.x+18,rect.y+16,rect.width-36,rect.height-32));
 
-            GUILayout.Label(L("🔒 BẢO MẬT HỆ THỐNG — ADMIN CONSOLE","🔒 SYSTEM SECURITY — ADMIN CONSOLE"),title??label);
+            GUILayout.Label(L("[Admin] BẢO MẬT HỆ THỐNG — ADMIN CONSOLE","[Admin] SYSTEM SECURITY — ADMIN CONSOLE"),title??label);
             GUILayout.Space(6);
             GUILayout.Label(L("Khu vực quản trị nội bộ. Vui lòng nhập mã bảo mật:","Restricted internal area. Enter authorization key:"),small??label);
             GUILayout.Space(8);
@@ -193,7 +193,7 @@ namespace Ember
                 }
                 else
                 {
-                    authError=L("❌ Mã truy cập không chính xác!","❌ Invalid authorization key!");
+                    authError=L("[!] Mã truy cập không chính xác!","[!] Invalid authorization key!");
                     authKeyInput="";
                 }
             }
@@ -221,8 +221,8 @@ namespace Ember
             GUILayout.BeginArea(new Rect(box.x+12,box.y+8,box.width-24,box.height-16));
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label(L("🛠️ BẢNG TEST & SPAWN VẬT PHẨM — F8 ĐÓNG","🛠️ DEBUG & ITEM SPAWNER — F8 TO CLOSE"));
-            if(UiButton(L("🔒 Khóa lại","🔒 Lock"),GUILayout.Width(100)))
+            GUILayout.Label(L("[Debug] BẢNG TEST & SPAWN VẬT PHẨM — F8 ĐÓNG","[Debug] DEBUG & ITEM SPAWNER — F8 TO CLOSE"));
+            if(UiButton(L("[Khóa] Khóa lại","[Lock] Lock"),GUILayout.Width(100)))
             {
                 debugUnlocked=false;
                 debugOpen=false;
@@ -245,11 +245,11 @@ namespace Ember
             }
 
             string[] tabNames=new[]{
-                L("⚔️ Trang Bị","⚔️ Weapons"),
-                L("🎒 Túi Đồ & Item","🎒 Items"),
-                L("🎩 Mũ & Pet","🎩 Hats & Pets"),
-                L("⚡ Quyền Năng & Boss","⚡ Cheats"),
-                L("🏛️ Lưu Trữ & Profile","🏛️ Save")
+                L("✦ Trang Bị","✦ Weapons"),
+                L("✦ Túi Đồ & Item","✦ Items"),
+                L("✦ Mũ & Pet","✦ Hats & Pets"),
+                L("✦ Quyền Năng & Boss","✦ Cheats"),
+                L("✦ Lưu Trữ & Profile","✦ Save")
             };
             debugTab=GUILayout.Toolbar(debugTab,tabNames);
 

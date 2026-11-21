@@ -266,7 +266,7 @@ namespace Ember
 
             Vector2 screen=ScreenPos(targetPos);
             string full="[E] "+caption;
-            float w=Mathf.Clamp(small.CalcSize(new GUIContent(full)).x+26,104,240);
+            float w=Mathf.Clamp(small.CalcSize(new GUIContent(full)).x+26,104,320);
             float h=26;
             var box=new Rect(Mathf.Round(screen.x-w/2),Mathf.Round(screen.y-h-8),w,h);
             PixelPanel(box,new Color(.12f,.09f,.20f,.94f));
@@ -384,7 +384,7 @@ namespace Ember
                 }
                 partyBubble.SetPixels(pixels);
                 partyBubble.Apply(false,true);
-                partyName=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,wordWrap=false,clipping=TextClipping.Clip};
+                partyName=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,wordWrap=false,clipping=TextClipping.Clip};
             }
             var members=State.Players??System.Array.Empty<Player>();
             var offline=State.Disconnected??System.Array.Empty<DisconnectedSeat>();
@@ -949,8 +949,8 @@ namespace Ember
                 RegisterHudRect(collRect);
                 bool hoverMap=collRect.Contains(Event.current.mousePosition);
                 PixelPanel(collRect,hoverMap?new Color(.38f,.26f,.58f,.98f):new Color(.16f,.12f,.25f,.95f));
-                var mapIconStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=22};
-                GUI.Label(collRect,"🗺️",mapIconStyle);
+                var mapIconStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=13,fontStyle=FontStyle.Bold,normal={textColor=Color.white}};
+                GUI.Label(collRect,"MAP",mapIconStyle);
                 if(GUI.Button(collRect,new GUIContent("",L("Mở bản đồ","Open minimap")),GUIStyle.none))
                     minimapCollapsed=false;
                 return;
@@ -1301,7 +1301,7 @@ namespace Ember
                     bool isSkillHit=pop.SubKind==1;
                     if(isSkillHit||pop.Amount>=32)
                     {
-                        text=isSkillHit?$"💥 -{pop.Amount}":$"-{pop.Amount}";
+                        text=isSkillHit?$"✦ -{pop.Amount}":$"-{pop.Amount}";
                         style=isSkillHit?popupHugeStyle:popupBigStyle;
                         tint=isSkillHit?new Color(1f,.86f,.25f,alpha):new Color(1f,.66f,.18f,alpha);
                     }
@@ -1352,7 +1352,7 @@ namespace Ember
             if(p!=null&&p.StaminaBuffTimer>0)
             {
                 float t=p.StaminaBuffTimer;
-                string text=L($"⚡ Nước Tăng Lực: Thể lực vô tận [{Mathf.CeilToInt(t)}s]",$"⚡ Energy Drink: Infinite Stamina [{Mathf.CeilToInt(t)}s]");
+                string text=L($"✦ Nước Tăng Lực: Thể lực vô tận [{Mathf.CeilToInt(t)}s]",$"✦ Energy Drink: Infinite Stamina [{Mathf.CeilToInt(t)}s]");
                 float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
                 Rect badgeRect=new Rect(curX,curY,badgeW,23);
                 PixelPanel(badgeRect,new Color(.08f,.28f,.36f,.95f));
@@ -1369,7 +1369,7 @@ namespace Ember
             if(p!=null&&p.WarmthBuffTimer>0)
             {
                 float t=p.WarmthBuffTimer;
-                string text=L($"🍲 No Ấm: Kháng sợ hãi +50% [{Mathf.CeilToInt(t)}s]",$"🍲 Well Fed: +50% Dread Resist [{Mathf.CeilToInt(t)}s]");
+                string text=L($"✦ No Ấm: Kháng sợ hãi +50% [{Mathf.CeilToInt(t)}s]",$"✦ Well Fed: +50% Dread Resist [{Mathf.CeilToInt(t)}s]");
                 float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
                 Rect badgeRect=new Rect(curX,curY,badgeW,23);
                 PixelPanel(badgeRect,new Color(.36f,.20f,.08f,.95f));
@@ -1388,7 +1388,7 @@ namespace Ember
                 float veilTime=EmberMerchant.GetInvisibilityDuration(p.Id);
                 if(veilTime>0)
                 {
-                    string text=L($"🌑 Áo Choàng Tàng Hình [{Mathf.CeilToInt(veilTime)}s]",$"🌑 Shadow Veil: Invisible [{Mathf.CeilToInt(veilTime)}s]");
+                    string text=L($"✦ Áo Choàng Tàng Hình [{Mathf.CeilToInt(veilTime)}s]",$"✦ Shadow Veil: Invisible [{Mathf.CeilToInt(veilTime)}s]");
                     float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+20,150,270);
                     Rect badgeRect=new Rect(curX,curY,badgeW,23);
                     PixelPanel(badgeRect,new Color(.22f,.10f,.32f,.95f));
@@ -1411,7 +1411,7 @@ namespace Ember
                     if(b.Duration<=0)continue;
                     var def=Catalog.GetBuffDef(b.Kind);
                     string valStr=def.FormatValue(b.Value,b.Stacks);
-                    string iconPrefix=b.Kind==BuffKind.Swiftness?"⚡ ":b.Kind==BuffKind.AttackPower?"⚔️ ":b.Kind==BuffKind.IronSkin?"🛡️ ":b.Kind==BuffKind.Regen?"💖 ":b.Kind==BuffKind.StaminaSurge?"🏃 ":"✦ ";
+                    string iconPrefix=b.Kind==BuffKind.Swiftness?"✦ ":b.Kind==BuffKind.AttackPower?"▲ ":b.Kind==BuffKind.IronSkin?"◆ ":b.Kind==BuffKind.Regen?"+ ":b.Kind==BuffKind.StaminaSurge?"★ ":"✦ ";
                     string text=$"{iconPrefix}{def.DisplayName} {valStr} [{Mathf.CeilToInt(b.Duration)}s]";
                     float badgeW=Mathf.Clamp(small.CalcSize(new GUIContent(text)).x+18,110,220);
                     Rect badgeRect=new Rect(curX,curY,badgeW,22);

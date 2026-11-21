@@ -442,7 +442,7 @@ namespace Ember
                     string prompt = EmberLanguage.English
                         ? "[E] Open Ancient Relic Chest"
                         : "[E] Khai Mở Hộp Cổ Thất Lạc";
-                    GUI.Label(promptRect, "✨  " + prompt + "  ✨", relicPromptStyle);
+                    GUI.Label(promptRect, "✦  " + prompt + "  ✦", relicPromptStyle);
 
                     // Check interaction key
                     if (Input.GetKeyDown(KeyCode.E) || (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.E))

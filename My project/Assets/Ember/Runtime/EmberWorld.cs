@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Ember
@@ -639,6 +640,557 @@ namespace Ember
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
         public static float GetBossEventInterval(Difficulty d)=>d==Difficulty.Hard?120f:d==Difficulty.Normal?300f:600f;
+        public static byte[] PackDelta(Snapshot s, uint ackedSeq)
+        {
+            if(s==null)return Array.Empty<byte>();
+            const int MaxPayloadBytes=1080;
+            using(var ms=new MemoryStream(1024))
+            using(var bw=new BinaryWriter(ms))
+            {
+                bw.Write((byte)0xEB);
+                bw.Write((byte)0x01);
+                bw.Write(s.Tick);
+                bw.Write(ackedSeq);
+                bw.Write((byte)s.Phase);
+                bw.Write(s.Time);
+                bw.Write(s.Fuel);
+                bw.Write(s.BeaconHP);
+                bw.Write(s.Charge);
+                bw.Write(s.Wave);
+                bw.Write(s.Seed);
+                bw.Write((short)s.Size);
+                bw.Write((short)s.TeamExtracted);
+                bw.Write(s.BossArenaActive);
+                if(s.BossArenaActive)
+                {
+                    bw.Write(s.BossId);
+                    bw.Write((byte)s.BossType);
+                    bw.Write(s.BossArenaCenter.X);
+                    bw.Write(s.BossArenaCenter.Y);
+                    bw.Write(s.BossArenaRadius);
+                }
+
+                // Players
+                int pCount=s.Players!=null?Math.Min(s.Players.Length,8):0;
+                bw.Write((byte)pCount);
+                for(int i=0;i<pCount;i++)
+                {
+                    var p=s.Players[i];
+                    bw.Write((byte)p.Id);
+                    bw.Write((byte)p.PartySlot);
+                    bw.Write((byte)p.Vessel);
+                    bw.Write(p.Pos.X);
+                    bw.Write(p.Pos.Y);
+                    bw.Write(p.Move.X);
+                    bw.Write(p.Move.Y);
+                    bw.Write(p.HP);
+                    bw.Write(p.MaxHP);
+                    bw.Write(p.Stamina);
+                    bw.Write(p.Dread);
+
+                    ushort flags=0;
+                    if(p.Right)flags|=(1<<0);
+                    if(p.Safe)flags|=(1<<1);
+                    if(p.Extracted)flags|=(1<<2);
+                    if(p.CarriesLantern)flags|=(1<<3);
+                    if(p.LampOn)flags|=(1<<4);
+                    if(p.Ready)flags|=(1<<5);
+                    if(p.Ghost)flags|=(1<<6);
+                    if(p.HasPickaxe)flags|=(1<<7);
+                    if(p.HoldingWeapon)flags|=(1<<8);
+                    if(p.Awake)flags|=(1<<9);
+                    if(p.HasWeapon)flags|=(1<<10);
+                    if(p.HasSideWeapon)flags|=(1<<11);
+                    bw.Write(flags);
+
+                    bw.Write((byte)p.HeldSlot);
+                    bw.Write((byte)p.PrevHeldSlot);
+                    bw.Write((byte)p.PickaxeTier);
+                    bw.Write((byte)Math.Max(0,Math.Min(255,p.PickaxeDurability)));
+                    bw.Write((byte)p.Weapon);
+                    bw.Write((byte)p.SideWeapon);
+                    bw.Write((byte)p.AmmoWeapon);
+                    bw.Write((short)p.Ammo);
+                    bw.Write(p.SkillCD);
+                    bw.Write(p.DashCD);
+                    bw.Write(p.DashTime);
+                    bw.Write(p.Shield);
+                    bw.Write((short)p.Hat);
+                    bw.Write((short)p.Pet);
+
+                    int bCount=p.Buffs!=null?Math.Min(p.Buffs.Count,4):0;
+                    bw.Write((byte)bCount);
+                    for(int b=0;b<bCount;b++)
+                    {
+                        bw.Write((byte)p.Buffs[b].Kind);
+                        bw.Write(p.Buffs[b].Duration);
+                        bw.Write(p.Buffs[b].Value);
+                    }
+                }
+
+                // Enemies: Prioritize nearest to players / active boss, clamped to budget (max 14)
+                int eTotal=s.Enemies!=null?s.Enemies.Length:0;
+                int eCount=0;
+                if(eTotal>0)
+                {
+                    var eCandidates=new (int Index,float DistSq)[eTotal];
+                    for(int i=0;i<eTotal;i++)
+                    {
+                        var e=s.Enemies[i];
+                        float minDistSq=float.MaxValue;
+                        if(s.Players!=null)
+                        {
+                            for(int p=0;p<s.Players.Length;p++)
+                            {
+                                var pl=s.Players[p];
+                                if(pl!=null)
+                                {
+                                    float dx=e.Pos.X-pl.Pos.X, dy=e.Pos.Y-pl.Pos.Y;
+                                    float d2=dx*dx+dy*dy;
+                                    if(d2<minDistSq)minDistSq=d2;
+                                }
+                            }
+                        }
+                        if(s.BossArenaActive)
+                        {
+                            float dx=e.Pos.X-s.BossArenaCenter.X, dy=e.Pos.Y-s.BossArenaCenter.Y;
+                            float d2=dx*dx+dy*dy;
+                            if(d2<minDistSq)minDistSq=d2;
+                        }
+                        if(e.IsWorldBoss)minDistSq-=1000000f;
+                        else if(e.Elite)minDistSq-=500000f;
+                        eCandidates[i]=(i,minDistSq);
+                    }
+                    Array.Sort(eCandidates,(a,b)=>a.DistSq.CompareTo(b.DistSq));
+                    int remE=MaxPayloadBytes-(int)ms.Position;
+                    int enemyBudget=Math.Max(0,remE-220); // Headroom for projectiles and transient events
+                    eCount=Math.Min(eTotal,Math.Min(14,enemyBudget/21));
+                    bw.Write((byte)eCount);
+                    for(int i=0;i<eCount;i++)
+                    {
+                        var e=s.Enemies[eCandidates[i].Index];
+                        bw.Write((ushort)e.Id);
+                        bw.Write((byte)e.Kind);
+                        bw.Write(e.Pos.X);
+                        bw.Write(e.Pos.Y);
+                        bw.Write(e.HP);
+                        bw.Write(e.MaxHP);
+                        byte eFlags=0;
+                        if(e.Elite)eFlags|=1;
+                        if(e.IsWorldBoss)eFlags|=2;
+                        bw.Write(eFlags);
+                        bw.Write((byte)e.BossType);
+                    }
+                }
+                else bw.Write((byte)0);
+
+                // Projectiles: Prioritize nearest to players, clamped to budget (max 10)
+                int prTotal=s.Projectiles!=null?s.Projectiles.Length:0;
+                int sCount=0;
+                if(prTotal>0)
+                {
+                    var prCandidates=new (int Index,float DistSq)[prTotal];
+                    for(int i=0;i<prTotal;i++)
+                    {
+                        var pr=s.Projectiles[i];
+                        float minDistSq=float.MaxValue;
+                        if(s.Players!=null)
+                        {
+                            for(int p=0;p<s.Players.Length;p++)
+                            {
+                                var pl=s.Players[p];
+                                if(pl!=null)
+                                {
+                                    float dx=pr.Pos.X-pl.Pos.X, dy=pr.Pos.Y-pl.Pos.Y;
+                                    float d2=dx*dx+dy*dy;
+                                    if(d2<minDistSq)minDistSq=d2;
+                                }
+                            }
+                        }
+                        prCandidates[i]=(i,minDistSq);
+                    }
+                    Array.Sort(prCandidates,(a,b)=>a.DistSq.CompareTo(b.DistSq));
+                    int remPr=MaxPayloadBytes-(int)ms.Position;
+                    int prBudget=Math.Max(0,remPr-40);
+                    sCount=Math.Min(prTotal,Math.Min(10,prBudget/22));
+                    bw.Write((byte)sCount);
+                    for(int i=0;i<sCount;i++)
+                    {
+                        var pr=s.Projectiles[prCandidates[i].Index];
+                        bw.Write((ushort)pr.Id);
+                        bw.Write((byte)pr.Owner);
+                        bw.Write(pr.Pos.X);
+                        bw.Write(pr.Pos.Y);
+                        bw.Write(pr.Velocity.X);
+                        bw.Write(pr.Velocity.Y);
+                        bw.Write((byte)pr.Weapon);
+                        bw.Write(pr.FromEnemy);
+                        bw.Write((byte)pr.ColorKind);
+                    }
+                }
+                else bw.Write((byte)0);
+
+                // Combat Popups: Prioritize only if remaining byte budget permits (max 4)
+                int popTotal=s.Popups!=null?s.Popups.Length:0;
+                int remPop=MaxPayloadBytes-(int)ms.Position;
+                int popReserve=(s.BossTelegraphs!=null&&s.BossTelegraphs.Length>0)?36:10;
+                int popCount=Math.Min(popTotal,Math.Min(4,Math.Max(0,remPop-popReserve)/23));
+                bw.Write((byte)popCount);
+                for(int i=0;i<popCount;i++)
+                {
+                    var pop=s.Popups[i];
+                    bw.Write((ushort)pop.Id);
+                    bw.Write((byte)pop.Kind);
+                    bw.Write(pop.Amount);
+                    bw.Write(pop.Pos.X);
+                    bw.Write(pop.Pos.Y);
+                    bw.Write(pop.Life);
+                    bw.Write(pop.MaxLife);
+                }
+
+                // Boss Telegraphs: Prioritize only if remaining byte budget permits (max 2)
+                int telTotal=s.BossTelegraphs!=null?s.BossTelegraphs.Length:0;
+                int remTel=MaxPayloadBytes-(int)ms.Position;
+                int telCount=Math.Min(telTotal,Math.Min(2,Math.Max(0,remTel-10)/35));
+                bw.Write((byte)telCount);
+                for(int i=0;i<telCount;i++)
+                {
+                    var tel=s.BossTelegraphs[i];
+                    bw.Write((ushort)tel.Id);
+                    bw.Write((byte)tel.Kind);
+                    bw.Write(tel.Pos.X);
+                    bw.Write(tel.Pos.Y);
+                    bw.Write(tel.Dir.X);
+                    bw.Write(tel.Dir.Y);
+                    bw.Write(tel.Radius);
+                    bw.Write(tel.Length);
+                    bw.Write(tel.Timer);
+                    bw.Write(tel.Duration);
+                }
+
+                // Transient Lights: Prioritize only if remaining byte budget permits (max 2)
+                int lightTotal=s.Lights!=null?s.Lights.Length:0;
+                int remLight=MaxPayloadBytes-(int)ms.Position;
+                int lightCount=Math.Min(lightTotal,Math.Min(2,Math.Max(0,remLight-10)/28));
+                bw.Write((byte)lightCount);
+                for(int i=0;i<lightCount;i++)
+                {
+                    var l=s.Lights[i];
+                    bw.Write((ushort)l.Id);
+                    bw.Write((byte)l.ColorKind);
+                    bw.Write(l.Pos.X);
+                    bw.Write(l.Pos.Y);
+                    bw.Write(l.Radius);
+                    bw.Write(l.Intensity);
+                    bw.Write(l.Life);
+                    bw.Write(l.MaxLife);
+                    bw.Write(l.GrantsSafety);
+                }
+
+                // Effects: Prioritize only if remaining byte budget permits (max 2)
+                int fxTotal=s.Effects!=null?s.Effects.Length:0;
+                int remFx=MaxPayloadBytes-(int)ms.Position;
+                int fxCount=Math.Min(fxTotal,Math.Min(2,Math.Max(0,remFx-10)/21));
+                bw.Write((byte)fxCount);
+                for(int i=0;i<fxCount;i++)
+                {
+                    var fx=s.Effects[i];
+                    bw.Write(fx.From.X);
+                    bw.Write(fx.From.Y);
+                    bw.Write(fx.To.X);
+                    bw.Write(fx.To.Y);
+                    bw.Write((byte)fx.Kind);
+                    bw.Write(fx.Life);
+                }
+
+                // Dropped Nodes: Prioritize only if remaining byte budget permits (max 4)
+                int droppedNodeCount=0;
+                if(s.Nodes!=null)
+                {
+                    for(int i=0;i<s.Nodes.Length;i++)
+                        if(s.Nodes[i].Dropped)droppedNodeCount++;
+                }
+                int remNode=MaxPayloadBytes-(int)ms.Position;
+                int writeNodes=Math.Min(droppedNodeCount,Math.Min(4,Math.Max(0,remNode-1)/16));
+                bw.Write((byte)writeNodes);
+                if(s.Nodes!=null&&writeNodes>0)
+                {
+                    int written=0;
+                    for(int i=0;i<s.Nodes.Length&&written<writeNodes;i++)
+                    {
+                        var n=s.Nodes[i];
+                        if(!n.Dropped)continue;
+                        bw.Write((ushort)n.Id);
+                        bw.Write(n.Pos.X);
+                        bw.Write(n.Pos.Y);
+                        bw.Write((byte)n.Resource);
+                        bw.Write((ushort)n.Amount);
+                        bw.Write((byte)n.DropKind);
+                        bw.Write((short)n.DropId);
+                        written++;
+                    }
+                }
+
+                bw.Flush();
+                return ms.ToArray();
+            }
+        }
+
+        public static bool UnpackDelta(byte[] data, int offset, int length, ref Snapshot s, out uint ackedSeq)
+        {
+            ackedSeq=0;
+            if(data==null||length<20||data[offset]!=0xEB||data[offset+1]!=0x01)return false;
+            try
+            {
+                using(var ms=new MemoryStream(data,offset,length,false))
+                using(var br=new BinaryReader(ms))
+                {
+                    br.ReadByte(); // 0xEB
+                    br.ReadByte(); // 0x01
+                    int tick=br.ReadInt32();
+                    ackedSeq=br.ReadUInt32();
+                    if(s==null)s=new Snapshot();
+                    s.Tick=tick;
+                    s.Phase=(Phase)br.ReadByte();
+                    s.Time=br.ReadSingle();
+                    s.Fuel=br.ReadSingle();
+                    s.BeaconHP=br.ReadSingle();
+                    s.Charge=br.ReadSingle();
+                    s.Wave=br.ReadSingle();
+                    s.Seed=br.ReadInt32();
+                    s.Size=br.ReadInt16();
+                    s.TeamExtracted=br.ReadInt16();
+                    s.BossArenaActive=br.ReadBoolean();
+                    if(s.BossArenaActive)
+                    {
+                        s.BossId=br.ReadInt32();
+                        s.BossType=(BossType)br.ReadByte();
+                        s.BossArenaCenter=new V2(br.ReadSingle(),br.ReadSingle());
+                        s.BossArenaRadius=br.ReadSingle();
+                    }
+
+                    // Players
+                    int pCount=br.ReadByte();
+                    if(s.Players==null||s.Players.Length!=pCount)
+                    {
+                        var oldPlayers=s.Players;
+                        s.Players=new Player[pCount];
+                        for(int i=0;i<pCount;i++)
+                            s.Players[i]=oldPlayers!=null&&i<oldPlayers.Length?oldPlayers[i]:new Player();
+                    }
+                    for(int i=0;i<pCount;i++)
+                    {
+                        var p=s.Players[i]??(s.Players[i]=new Player());
+                        p.Id=br.ReadByte();
+                        p.PartySlot=br.ReadByte();
+                        p.Vessel=(Vessel)br.ReadByte();
+                        p.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        p.Move=new V2(br.ReadSingle(),br.ReadSingle());
+                        p.HP=br.ReadSingle();
+                        p.MaxHP=br.ReadSingle();
+                        p.Stamina=br.ReadSingle();
+                        p.Dread=br.ReadSingle();
+
+                        ushort flags=br.ReadUInt16();
+                        p.Right=(flags&(1<<0))!=0;
+                        p.Safe=(flags&(1<<1))!=0;
+                        p.Extracted=(flags&(1<<2))!=0;
+                        p.CarriesLantern=(flags&(1<<3))!=0;
+                        p.LampOn=(flags&(1<<4))!=0;
+                        p.Ready=(flags&(1<<5))!=0;
+                        p.HasPickaxe=(flags&(1<<7))!=0;
+                        p.Awake=(flags&(1<<9))!=0;
+                        p.HasWeapon=(flags&(1<<10))!=0;
+                        p.HasSideWeapon=(flags&(1<<11))!=0;
+
+                        p.HeldSlot=br.ReadByte();
+                        p.PrevHeldSlot=br.ReadByte();
+                        p.PickaxeTier=br.ReadByte();
+                        p.PickaxeDurability=br.ReadByte();
+                        p.Weapon=(Weapon)br.ReadByte();
+                        p.SideWeapon=(Weapon)br.ReadByte();
+                        p.AmmoWeapon=(Weapon)br.ReadByte();
+                        p.Ammo=br.ReadInt16();
+                        p.SkillCD=br.ReadSingle();
+                        p.DashCD=br.ReadSingle();
+                        p.DashTime=br.ReadSingle();
+                        p.Shield=br.ReadSingle();
+                        p.Hat=br.ReadInt16();
+                        p.Pet=br.ReadInt16();
+
+                        int bCount=br.ReadByte();
+                        if(bCount>0)
+                        {
+                            if(p.Buffs==null)p.Buffs=new List<ActiveBuff>();
+                            else p.Buffs.Clear();
+                            for(int b=0;b<bCount;b++)
+                            {
+                                var kind=(BuffKind)br.ReadByte();
+                                float dur=br.ReadSingle();
+                                float val=br.ReadSingle();
+                                p.Buffs.Add(new ActiveBuff{Kind=kind,Duration=dur,MaxDuration=dur,Value=val,Stacks=1});
+                            }
+                        }
+                    }
+
+                    // Enemies
+                    int eCount=br.ReadByte();
+                    if(s.Enemies==null||s.Enemies.Length!=eCount)
+                        s.Enemies=new Enemy[eCount];
+                    for(int i=0;i<eCount;i++)
+                    {
+                        var e=s.Enemies[i]??(s.Enemies[i]=new Enemy());
+                        e.Id=br.ReadUInt16();
+                        e.Kind=(EnemyKind)br.ReadByte();
+                        e.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        e.HP=br.ReadSingle();
+                        e.MaxHP=br.ReadSingle();
+                        byte eFlags=br.ReadByte();
+                        e.Elite=(eFlags&1)!=0;
+                        e.IsWorldBoss=(eFlags&2)!=0;
+                        e.BossType=(BossType)br.ReadByte();
+                    }
+
+                    // Projectiles
+                    int sCount=br.ReadByte();
+                    if(s.Projectiles==null||s.Projectiles.Length!=sCount)
+                        s.Projectiles=new Projectile[sCount];
+                    for(int i=0;i<sCount;i++)
+                    {
+                        var pr=s.Projectiles[i]??(s.Projectiles[i]=new Projectile());
+                        pr.Id=br.ReadUInt16();
+                        pr.Owner=br.ReadByte();
+                        pr.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        pr.Velocity=new V2(br.ReadSingle(),br.ReadSingle());
+                        pr.Weapon=(Weapon)br.ReadByte();
+                        pr.FromEnemy=br.ReadBoolean();
+                        pr.ColorKind=br.ReadByte();
+                    }
+
+                    // Popups
+                    int popCount=br.ReadByte();
+                    if(s.Popups==null||s.Popups.Length!=popCount)
+                        s.Popups=new CombatPopup[popCount];
+                    for(int i=0;i<popCount;i++)
+                    {
+                        var pop=s.Popups[i]??(s.Popups[i]=new CombatPopup());
+                        pop.Id=br.ReadUInt16();
+                        pop.Kind=br.ReadByte();
+                        pop.Amount=br.ReadInt32();
+                        pop.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        pop.Life=br.ReadSingle();
+                        pop.MaxLife=br.ReadSingle();
+                    }
+
+                    // Telegraphs
+                    int telCount=br.ReadByte();
+                    if(s.BossTelegraphs==null||s.BossTelegraphs.Length!=telCount)
+                        s.BossTelegraphs=new BossTelegraph[telCount];
+                    for(int i=0;i<telCount;i++)
+                    {
+                        var tel=s.BossTelegraphs[i]??(s.BossTelegraphs[i]=new BossTelegraph());
+                        tel.Id=br.ReadUInt16();
+                        tel.Kind=br.ReadByte();
+                        tel.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        tel.Dir=new V2(br.ReadSingle(),br.ReadSingle());
+                        tel.Radius=br.ReadSingle();
+                        tel.Length=br.ReadSingle();
+                        tel.Timer=br.ReadSingle();
+                        tel.Duration=br.ReadSingle();
+                    }
+
+                    // Lights
+                    int lightCount=br.ReadByte();
+                    if(s.Lights==null||s.Lights.Length!=lightCount)
+                        s.Lights=new TransientLight[lightCount];
+                    for(int i=0;i<lightCount;i++)
+                    {
+                        var l=s.Lights[i]??(s.Lights[i]=new TransientLight());
+                        l.Id=br.ReadUInt16();
+                        l.ColorKind=(LightColorKind)br.ReadByte();
+                        l.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                        l.Radius=br.ReadSingle();
+                        l.Intensity=br.ReadSingle();
+                        l.Life=br.ReadSingle();
+                        l.MaxLife=br.ReadSingle();
+                        l.GrantsSafety=br.ReadBoolean();
+                    }
+
+                    // Effects
+                    int fxCount=br.ReadByte();
+                    if(s.Effects==null||s.Effects.Length!=fxCount)
+                        s.Effects=new Effect[fxCount];
+                    for(int i=0;i<fxCount;i++)
+                    {
+                        var fx=s.Effects[i]??(s.Effects[i]=new Effect());
+                        fx.From=new V2(br.ReadSingle(),br.ReadSingle());
+                        fx.To=new V2(br.ReadSingle(),br.ReadSingle());
+                        fx.Kind=br.ReadByte();
+                        fx.Life=br.ReadSingle();
+                    }
+
+                    // Dropped Nodes: when nodeCount == 0, ensure dropped nodes are cleared from s.Nodes
+                    int nodeCount=br.ReadByte();
+                    if(nodeCount>0)
+                    {
+                        int nonDroppedCount=0;
+                        if(s.Nodes!=null)
+                        {
+                            for(int i=0;i<s.Nodes.Length;i++)
+                                if(!s.Nodes[i].Dropped)nonDroppedCount++;
+                        }
+                        var combined=new Node[nonDroppedCount+nodeCount];
+                        int idx=0;
+                        if(s.Nodes!=null&&nonDroppedCount>0)
+                        {
+                            for(int i=0;i<s.Nodes.Length;i++)
+                                if(!s.Nodes[i].Dropped)combined[idx++]=s.Nodes[i];
+                        }
+                        for(int i=0;i<nodeCount;i++)
+                        {
+                            var n=new Node
+                            {
+                                Id=br.ReadUInt16(),
+                                Pos=new V2(br.ReadSingle(),br.ReadSingle()),
+                                Resource=(Resource)br.ReadByte(),
+                                Amount=br.ReadUInt16(),
+                                Dropped=true,
+                                DropKind=br.ReadByte(),
+                                DropId=br.ReadInt16()
+                            };
+                            combined[idx++]=n;
+                        }
+                        s.Nodes=combined;
+                    }
+                    else
+                    {
+                        if(s.Nodes!=null)
+                        {
+                            int nonDroppedCount=0;
+                            for(int i=0;i<s.Nodes.Length;i++)
+                                if(!s.Nodes[i].Dropped)nonDroppedCount++;
+                            if(nonDroppedCount==0)
+                            {
+                                s.Nodes=Array.Empty<Node>();
+                            }
+                            else if(nonDroppedCount!=s.Nodes.Length)
+                            {
+                                var remaining=new Node[nonDroppedCount];
+                                int idx=0;
+                                for(int i=0;i<s.Nodes.Length;i++)
+                                    if(!s.Nodes[i].Dropped)remaining[idx++]=s.Nodes[i];
+                                s.Nodes=remaining;
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
         public const float SimActiveRadius=36f,DespawnRadius=56f;
         static readonly V2 BeaconColliderPos=new V2(0,.35f);
         const float BeaconColliderRadius=1.35f;
@@ -1176,8 +1728,8 @@ namespace Ember
                         });
                     }
                     FX(chest.Pos, chest.Pos, 3);
-                    string msgVi = "💥 Rương bẫy phát nổ chùm đạn ma thuật!";
-                    string msgEn = "💥 Trap chest explodes with magical projectiles!";
+                    string msgVi = "✦ Rương bẫy phát nổ chùm đạn ma thuật!";
+                    string msgEn = "✦ Trap chest explodes with magical projectiles!";
                     Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
                     S.Event = msgVi + "|" + msgEn;
                     S.EventActor = p.Name;
@@ -1189,8 +1741,8 @@ namespace Ember
                     FX(p.Pos, p.Pos, 3);
                     p.Pos = new V2(0f, -1.8f);
                     FX(p.Pos, p.Pos, 1);
-                    string msgVi = "🌀 Ma thuật cổ xưa đá bay bạn về Trụ Khởi Sinh!";
-                    string msgEn = "🌀 Ancient magic kicks you back to the Beacon!";
+                    string msgVi = "✦ Ma thuật cổ xưa đá bay bạn về Trụ Khởi Sinh!";
+                    string msgEn = "✦ Ancient magic kicks you back to the Beacon!";
                     Announce(EmberLanguage.English ? msgEn : msgVi, p.Name);
                     S.Event = msgVi + "|" + msgEn;
                     S.EventActor = p.Name;
@@ -1407,7 +1959,7 @@ namespace Ember
             if((tile==1&&!allowWater)||tile==3||tile==4||tile==7)return false;
             return !structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f);
         }
-        V2 Move(V2 from,V2 delta,Player body=null,Enemy monster=null,bool ignoreEnemies=false)
+        public V2 Move(V2 from,V2 delta,Player body=null,Enemy monster=null,bool ignoreEnemies=false)
         {
             // Substeps prevent dash tunneling through 1-tile obstacles.
             int n=Math.Max(1,(int)Math.Ceiling(delta.Length/.2f));V2 step=delta/n;
@@ -1550,7 +2102,7 @@ namespace Ember
             if((!DebugEnabled||!DebugNoEnemies)&&S.Phase==Phase.Explore&&S.Time>=S.PeriodicWave*60f)
             {
                 S.PeriodicWave++;
-                Announce(EmberLanguage.English?$"⚔️ WAVE {S.PeriodicWave}: Shadow swarm rises!":$"⚔️ ĐỢT {S.PeriodicWave}: Bầy quái bóng tối trỗi dậy!");
+                Announce(EmberLanguage.English?$"[WAVE {S.PeriodicWave}] Shadow swarm rises!":$"[ĐỢT {S.PeriodicWave}] Bầy quái bóng tối trỗi dậy!");
                 FX(new V2(),new V2(0,1),2);
                 foreach(var lp in players.Where(p=>!p.Ghost&&!p.Extracted))
                 {
@@ -1572,7 +2124,7 @@ namespace Ember
                         if(Walkable(spos, allowWater: true))
                         {
                             enemies.Add(new Enemy{Id=nextId++,Kind=EnemyKind.Sentinel,Elite=true,Pos=spos,HP=140,MaxHP=140,AttackCD=2f,SkillCD=0f});
-                            Announce(EmberLanguage.English?"💠 An Elite Crystal Sentinel has descended! Slay it to claim its Energy Core!":"💠 Hộ Vệ Tinh Thể đã giáng lâm! Hãy tiêu diệt để đoạt Lõi Năng Lượng!");
+                            Announce(EmberLanguage.English?"✦ An Elite Crystal Sentinel has descended! Slay it to claim its Energy Core!":"✦ Hộ Vệ Tinh Thể đã giáng lâm! Hãy tiêu diệt để đoạt Lõi Năng Lượng!");
                             FX(spos,new V2(0,1),3);
                         }
                     }
@@ -2326,7 +2878,7 @@ namespace Ember
                                 int woodBurst=rng.Next(2,5);
                                 V2 wScatter=new V2((float)(rng.NextDouble()*1.2-0.6),(float)(rng.NextDouble()*1.2-0.6));
                                 nodes.Add(new Node{Id=nextId++,Pos=blockPos+wScatter,Resource=Resource.Wood,Amount=woodBurst,MaxAmount=woodBurst,Dropped=true});
-                                Announce(EmberLanguage.English?"🌲 Ancient Giant Tree felled! Rare Sap and Fresh Apples burst forth!":"🌲 Đã đốn hạ Cây Cổ Thụ! Rơi nhiều Táo rừng và Nhựa quang!",p.Name);
+                                Announce(EmberLanguage.English?"✦ Ancient Giant Tree felled! Rare Sap and Fresh Apples burst forth!":"✦ Đã đốn hạ Cây Cổ Thụ! Rơi nhiều Táo rừng và Nhựa quang!",p.Name);
                             }
                             else if(def.Tier==0) // Small Tree / Sapling
                             {
@@ -2363,11 +2915,11 @@ namespace Ember
                                 {
                                     V2 cScatter=new V2((float)(rng.NextDouble()*1.0-0.5),(float)(rng.NextDouble()*1.0-0.5));
                                     nodes.Add(new Node{Id=nextId++,Pos=blockPos+cScatter,Resource=Resource.Core,Amount=1,MaxAmount=1,Dropped=true});
-                                    Announce(EmberLanguage.English?"💎 Rich Vein shattered! Extracted a pure Energy Core!":"💎 Mỏ Quặng Giàu vỡ vụn! Khai thác được Lõi Tinh Thể quý giá!",p.Name);
+                                    Announce(EmberLanguage.English?"✦ Rich Vein shattered! Extracted a pure Energy Core!":"✦ Mỏ Quặng Giàu vỡ vụn! Khai thác được Lõi Tinh Thể quý giá!",p.Name);
                                 }
                                 else
                                 {
-                                    Announce(EmberLanguage.English?"⛏️ Rich Ore Vein depleted!":"⛏️ Đã khai thác cạn Mỏ Quặng Giàu!",p.Name);
+                                    Announce(EmberLanguage.English?"✦ Rich Ore Vein depleted!":"✦ Đã khai thác cạn Mỏ Quặng Giàu!",p.Name);
                                 }
                             }
                             else if(def.Tier==0) // Small Gravel
@@ -2949,7 +3501,7 @@ namespace Ember
                     nodes.Add(new Node{Id=nextId++,Pos=e.Pos+new V2(.35f,-.25f),Resource=Resource.Dust,Amount=3,Dropped=true});
                     EmitPopup(e.Pos+new V2(0,.75f),3,2,(int)Resource.Core,1.5f);
                     EmitPopup(e.Pos+new V2(.35f,.3f),3,3,(int)Resource.Dust,1.4f);
-                    Announce(EmberLanguage.English?"💎 Crystal Sentinel shattered! Dropped 2 Energy Cores.":"💎 Hộ Vệ Tinh Thể vỡ tan! Rơi 2 Lõi Năng Lượng.");
+                    Announce(EmberLanguage.English?"✦ Crystal Sentinel shattered! Dropped 2 Energy Cores.":"✦ Hộ Vệ Tinh Thể vỡ tan! Rơi 2 Lõi Năng Lượng.");
                     FX(e.Pos,new V2(0,1),3);
                 }
                 else

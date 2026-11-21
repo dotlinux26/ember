@@ -37,7 +37,7 @@ namespace Ember
         readonly Dictionary<int,Outbound> outgoing=new Dictionary<int,Outbound>();
         sealed class Outbound{public string Type,Payload;public double Next;public int Tries;}
         int nextPlayer=2,sequence;long accepted=-1;double now;
-        public Action<int,string> Joined;public Action<int> Left;public Action<int,string> Input;public Action<string> State;public Action<int,bool> ReadyChanged;
+        public Action<int,string> Joined;public Action<int> Left;public Action<int,string> Input;public Action<int,Command> CommandInput;public Action<string> State;public Action<byte[]> BinaryState;public Action<int,bool> ReadyChanged;
         public Func<string,bool> CanRejoin;
         sealed class Peer{public int Id;public IPEndPoint Address;public string Handshake;public double Seen,RepairAt;public int RepairBudget;public int Sequence=-1,HighestAction=-1;public HashSet<int> Actions=new HashSet<int>();public HashSet<ulong> Packets=new HashSet<ulong>();public ulong HighestPacket;}
         sealed class Assembly{public byte[][] Parts;public double Since,NextRepair;}
@@ -72,9 +72,15 @@ namespace Ember
                     ReceivedPackets++;ReceivedBytes+=packet.Length;
                     if(stunServer!=null&&from.Equals(stunServer)){try{PublicEndpoint=EmberStunClient.Parse(packet,stunTransaction);route?.SetPublicEndpoint(PublicEndpoint);Trace?.Invoke("stun.mapped","public endpoint discovered");}catch(FormatException){RejectedPackets++;}continue;}
                     if(route!=null&&route.Handle(ref packet,ref from,now))continue;
-                    if(packet.Length<33||packet.Length>1400){RejectedPackets++;continue;}bool encrypted=packet[0]==69&&packet[1]==66&&packet[2]==50;byte[] body;
+                    if(packet.Length<33||packet.Length>2048){RejectedPackets++;continue;}bool encrypted=packet[0]==69&&packet[1]==66&&packet[2]==50;byte[] body;
                     if(encrypted){body=Decrypt(packet,from);if(body==null)continue;}
                     else {body=packet.Take(packet.Length-32).ToArray();byte[] tag;using(var hmac=new HMACSHA256(secret))tag=hmac.ComputeHash(body);int diff=0;for(int i=0;i<32;i++)diff|=tag[i]^packet[body.Length+i];if(diff!=0)continue;}
+                    if(body.Length>=2&&body[0]==0xEB)
+                    {
+                        if(Host)ReceiveHostBinary(from,body);
+                        else if(from.Equals(server))ReceiveClientBinary(body);
+                        continue;
+                    }
                     string text=Encoding.UTF8.GetString(body);var split=text.Split(new[]{'|'},3);if(split.Length<3)continue;
                     if(!encrypted&&split[0]!="JOIN"&&split[0]!="ID"&&split[0]!="REJECT")continue;
                     if(Host)ReceiveHost(from,split);else if(from.Equals(server))ReceiveClient(split);
@@ -102,6 +108,50 @@ namespace Ember
                 Send(server,"PING|"+pingSeq+"|0");
             }
             if(!Host&&now-openedAt>12&&(LocalId==0||now-LastStateTime>12)&&Error==null)Error="Mất kết nối host. Hãy kiểm tra địa chỉ và mật khẩu phòng.";
+        }
+        void ReceiveHostBinary(IPEndPoint from,byte[] body)
+        {
+            string key=from.ToString();
+            if(body[1]==0x02&&peers.TryGetValue(key,out var p)&&body.Length>=16)
+            {
+                int seq=body[2]|(body[3]<<8)|(body[4]<<16)|(body[5]<<24);
+                if(seq>p.Sequence)
+                {
+                    p.Sequence=seq;p.Seen=now;
+                    float x=BitConverter.ToSingle(body,6);
+                    float y=BitConverter.ToSingle(body,10);
+                    ushort act=BitConverter.ToUInt16(body,14);
+                    var cmd=new Command{X=x,Y=y};
+                    if((act&(1<<0))!=0)cmd.Attack=true;
+                    if((act&(1<<1))!=0)cmd.Skill=true;
+                    if((act&(1<<2))!=0)cmd.Dash=true;
+                    if((act&(1<<3))!=0)cmd.Interact=true;
+                    if((act&(1<<4))!=0)cmd.Refuel=true;
+                    if((act&(1<<5))!=0)cmd.Deposit=true;
+                    if((act&(1<<6))!=0)cmd.ToggleLamp=true;
+                    if((act&(1<<7))!=0)cmd.PassLamp=true;
+                    if((act&(1<<8))!=0)cmd.Push=true;
+                    if((act&(1<<9))!=0)cmd.Revive=true;
+                    if((act&(1<<10))!=0)cmd.Reload=true;
+                    if(CommandInput!=null)CommandInput(p.Id,cmd);
+#if UNITY_5_3_OR_NEWER || UNITY_EDITOR
+                    else Input?.Invoke(p.Id,UnityEngine.JsonUtility.ToJson(cmd));
+#endif
+                }
+            }
+        }
+        void ReceiveClientBinary(byte[] body)
+        {
+            if(body[1]==0x01)
+            {
+                if(body.Length>=6)
+                {
+                    int serverTick=BitConverter.ToInt32(body,2);
+                    if(serverTick>accepted)accepted=serverTick;
+                }
+                LastStateTime=now;
+                BinaryState?.Invoke(body);
+            }
         }
         void ReceiveHost(IPEndPoint from,string[] message)
         {
@@ -177,6 +227,29 @@ namespace Ember
         }
         public void Join(string identity){if(!Host&&udp!=null&&(route==null||route.Ready))Send(server,"JOIN|0|"+handshake+"."+identity);}
         public void SendInput(string input){if(!Host&&udp!=null&&LocalId>0)Send(server,"INPUT|"+(++sequence)+"|"+input);}
+        public void SendInputBinary(uint seq,Command cmd)
+        {
+            if(Host||udp==null||LocalId<=0||cmd==null)return;
+            byte[] b=new byte[16];
+            b[0]=0xEB;b[1]=0x02;
+            b[2]=(byte)seq;b[3]=(byte)(seq>>8);b[4]=(byte)(seq>>16);b[5]=(byte)(seq>>24);
+            Buffer.BlockCopy(BitConverter.GetBytes(cmd.X),0,b,6,4);
+            Buffer.BlockCopy(BitConverter.GetBytes(cmd.Y),0,b,10,4);
+            ushort act=0;
+            if(cmd.Attack)act|=(1<<0);
+            if(cmd.Skill)act|=(1<<1);
+            if(cmd.Dash)act|=(1<<2);
+            if(cmd.Interact)act|=(1<<3);
+            if(cmd.Refuel)act|=(1<<4);
+            if(cmd.Deposit)act|=(1<<5);
+            if(cmd.ToggleLamp)act|=(1<<6);
+            if(cmd.PassLamp)act|=(1<<7);
+            if(cmd.Push)act|=(1<<8);
+            if(cmd.Revive)act|=(1<<9);
+            if(cmd.Reload)act|=(1<<10);
+            b[14]=(byte)act;b[15]=(byte)(act>>8);
+            SendRaw(server,b);
+        }
         public void SendAction(string input)=>Reliable("ACTION",input);
         public void SetReady(bool ready)=>Reliable("READY",ready?"1":"0");
         void Reliable(string type,string payload)
@@ -187,10 +260,32 @@ namespace Ember
         {
             if(udp!=null){if(Host)foreach(var p in peers.Values)Send(p.Address,"CLOSED|0|bye");else if(LocalId>0)Send(server,"LEAVE|0|bye");route?.Close();}Dispose();
         }
+        public void BroadcastSnapshot(byte[] data)
+        {
+            if(!Host||udp==null||peers.Count==0||data==null)return;
+            var destinations=route?.Relay==true?peers.Values.Take(1):peers.Values;
+            broadcasting=route?.Relay==true;
+            try
+            {
+                foreach(var p in destinations)
+                {
+                    if(data.Length>=10)
+                    {
+                        uint ack=(uint)Math.Max(0,p.Sequence);
+                        data[6]=(byte)ack;
+                        data[7]=(byte)(ack>>8);
+                        data[8]=(byte)(ack>>16);
+                        data[9]=(byte)(ack>>24);
+                    }
+                    SendRaw(p.Address,data);
+                }
+            }
+            finally{broadcasting=false;}
+        }
         public void Broadcast(string json,int tick)
         {
             if(!Host||udp==null||peers.Count==0)return;byte[] data;
-            using(var ms=new MemoryStream()){using(var zip=new DeflateStream(ms,CompressionLevel.Fastest,true)){var raw=Encoding.UTF8.GetBytes(json);zip.Write(raw,0,raw.Length);}data=ms.ToArray();}
+            using(var ms=new MemoryStream()){using(var zip=new DeflateStream(ms,System.IO.Compression.CompressionLevel.Fastest,true)){var raw=Encoding.UTF8.GetBytes(json);zip.Write(raw,0,raw.Length);}data=ms.ToArray();}
             const int chunk=850;int count=(data.Length+chunk-1)/chunk;
             if(count>1024)throw new InvalidDataException("Compressed snapshot exceeds transport limit");
             var messages=new string[count];for(int i=0;i<count;i++)messages[i]="STATE|"+tick+"|"+i+","+count+","+Convert.ToBase64String(data,i*chunk,Math.Min(chunk,data.Length-i*chunk));
@@ -199,20 +294,25 @@ namespace Ember
             broadcasting=route?.Relay==true;
             try{foreach(var p in destinations)foreach(string message in messages)Send(p.Address,message);}finally{broadcasting=false;}
         }
-        void Send(IPEndPoint to,string text)
+        public void SendRaw(IPEndPoint to,byte[] body)
         {
-            if(to==null)return;
-            byte[] body=Encoding.UTF8.GetBytes(text),packet;
-            if(text.StartsWith("JOIN|")||text.StartsWith("ID|")||text.StartsWith("REJECT|"))
-            {byte[] tag;using(var hmac=new HMACSHA256(secret))tag=hmac.ComputeHash(body);packet=body.Concat(tag).ToArray();}
-            else
-            {
-                if(sessionKey==null)return;var header=new byte[31];header[0]=69;header[1]=66;header[2]=50;Buffer.BlockCopy(epoch,0,header,3,16);int id=Host?1:LocalId;header[19]=(byte)(id>>24);header[20]=(byte)(id>>16);header[21]=(byte)(id>>8);header[22]=(byte)id;EmberCrypto.Write64(header,23,++packetCounter);
-                var nonce=header.Skip(19).Take(12).ToArray();packet=header.Concat(EmberCrypto.Seal(sessionKey,nonce,body,header)).ToArray();
-            }
+            if(to==null||body==null||sessionKey==null)return;
+            var header=new byte[31];header[0]=69;header[1]=66;header[2]=50;Buffer.BlockCopy(epoch,0,header,3,16);
+            int id=Host?1:LocalId;header[19]=(byte)(id>>24);header[20]=(byte)(id>>16);header[21]=(byte)(id>>8);header[22]=(byte)id;
+            EmberCrypto.Write64(header,23,++packetCounter);
+            var nonce=header.Skip(19).Take(12).ToArray();
+            byte[] packet=header.Concat(EmberCrypto.Seal(sessionKey,nonce,body,header)).ToArray();
             SentPackets++;SentBytes+=packet.Length;
             if(DebugDropPercent>0&&(SentPackets*37)%100<Math.Min(90,DebugDropPercent)){DroppedPackets++;return;}
             if(route!=null)route.Send(to,packet,broadcasting);else udp.Send(packet,packet.Length,to);
+        }
+        void Send(IPEndPoint to,string text)
+        {
+            if(to==null)return;
+            byte[] body=Encoding.UTF8.GetBytes(text);
+            if(text.StartsWith("JOIN|")||text.StartsWith("ID|")||text.StartsWith("REJECT|"))
+            {byte[] tag;using(var hmac=new HMACSHA256(secret))tag=hmac.ComputeHash(body);byte[] packet=body.Concat(tag).ToArray();SentPackets++;SentBytes+=packet.Length;if(DebugDropPercent>0&&(SentPackets*37)%100<Math.Min(90,DebugDropPercent)){DroppedPackets++;return;}if(route!=null)route.Send(to,packet,broadcasting);else udp.Send(packet,packet.Length,to);}
+            else SendRaw(to,body);
         }
         byte[] Decrypt(byte[] packet,IPEndPoint from)
         {

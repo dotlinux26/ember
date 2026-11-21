@@ -189,13 +189,13 @@ namespace Ember
             if(v==(int)Vessel.LittleMoone)
             {
                 return Profile.LittleMooneAwake
-                    ?L("Đặc biệt · ⭐ Đã thức tỉnh","Special · ⭐ Awakened")
-                    :L("Đặc biệt · 🌙 Ngủ sâu","Special · 🌙 Deep Sleep");
+                    ?L("Đặc biệt · ★ Đã thức tỉnh","Special · ★ Awakened")
+                    :L("Đặc biệt · [Ngủ sâu]","Special · [Deep Sleep]");
             }
             if(v==(int)Vessel.Wanderer)
             {
                 return Profile.WandererAwake
-                    ?L("Phổ thông · ⭐ Đã thức tỉnh","Common · ⭐ Awakened")
+                    ?L("Phổ thông · ★ Đã thức tỉnh","Common · ★ Awakened")
                     :L("Phổ thông · Chưa thức tỉnh","Common · Unawakened");
             }
             return EmberLanguage.Text(Catalog.VesselRarities[v]);
@@ -237,7 +237,7 @@ namespace Ember
             {
                 if(Profile.WandererAwake)
                 {
-                    UiText(L("100 HP • 100 thể lực • ⭐ Gia Tốc Gió Đêm: Tăng 45% tốc chạy cho bản thân và đồng đội trong 8 ô trong 10 giây. Hồi chiêu 22 giây.","100 HP • 100 Stamina • ⭐ Swiftwind Aura: Grants +45% movement speed to self and allies within 8 tiles for 10s. Cooldown 22s."),label);
+                    UiText(L("100 HP • 100 thể lực • ★ Gia Tốc Gió Đêm: Tăng 45% tốc chạy cho bản thân và đồng đội trong 8 ô trong 10 giây. Hồi chiêu 22 giây.","100 HP • 100 Stamina • ★ Swiftwind Aura: Grants +45% movement speed to self and allies within 8 tiles for 10s. Cooldown 22s."),label);
                     UiText(L("Thước 2 · Bán kính tăng tốc đồng đội: 8.0 ô   ·   Hồi chiêu: 22s","Range 2 · Ally speedup radius: 8.0 tiles   ·   Cooldown: 22s"),small);
                 }
                 else
@@ -249,12 +249,12 @@ namespace Ember
             {
                 if(Profile.LittleMooneAwake)
                 {
-                    UiText(L("100 HP • 100 thể lực • ⭐ Mưa Sao Băng: 12 thiên thạch ánh sáng tự ngắm diện rộng. Hồi chiêu 24 giây.","100 HP • 100 Stamina • ⭐ Starlight Meteors: 12 auto-aimed light meteors. Cooldown 24s."),label);
+                    UiText(L("100 HP • 100 thể lực • ★ Mưa Sao Băng: 12 thiên thạch ánh sáng tự ngắm diện rộng. Hồi chiêu 24 giây.","100 HP • 100 Stamina • ★ Starlight Meteors: 12 auto-aimed light meteors. Cooldown 24s."),label);
                     UiText(SkillRangeText((Vessel)selected),small);
                 }
                 else
                 {
-                    UiText(L("100 HP • 100 thể lực • 🌙 Ngủ sâu: Cần dùng 1 Đá Ký Ức Thức Tỉnh để đánh thức Bản Ngã này xuất trận.","100 HP • 100 Stamina • 🌙 Deep Sleep: Requires 1 Awakening Stone to awaken this Vessel for battle."),label);
+                    UiText(L("100 HP • 100 thể lực • [Ngủ sâu]: Cần dùng 1 Đá Ký Ức Thức Tỉnh để đánh thức Bản Ngã này xuất trận.","100 HP • 100 Stamina • [Deep Sleep]: Requires 1 Awakening Stone to awaken this Vessel for battle."),label);
                     UiText(L("Bản ngã đặc biệt đang ngủ say, màu sắc chìm vào màn đêm cho đến khi được đánh thức.","Special Vessel is in deep slumber, shrouded in night veil until awakened."),small);
                 }
             }
@@ -545,7 +545,7 @@ namespace Ember
                 sleeping:isSleeping);
             string stageName=Catalog.VesselNames[selected];
             if(mooneSleeping&&Profile.Vessels.Contains(selected))
-                stageName+="   ·   "+L("🌙 Ngủ sâu","🌙 Deep Sleep");
+                stageName+="   ·   "+L("[Ngủ sâu]","[Deep Sleep]");
             UiLabel(new Rect(area.x+18,area.yMax-65,area.width-36,45),stageName,label);
         }
 

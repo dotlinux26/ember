@@ -14,8 +14,7 @@ namespace Ember
         void SetupLighting()
         {
             var ambient=new GameObject("Night ambient").AddComponent<Light2D>();ambient.lightType=Light2D.LightType.Global;ambient.targetSortingLayers=new[]{0};ambient.intensity=.12f;ambient.color=new Color(.48f,.55f,.8f);
-            outlineMaterial=Resources.Load<Material>("Ember/EmberOutline");emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
-            var cShader=Shader.Find("Ember/CrystalFill");if(cShader!=null)crystalFillMaterial=new Material(cShader);
+            EnsureLightingMaterials();
         }
         void Illuminate(string key,V2 pos,float radius,Color color,float intensity)
         {
@@ -54,6 +53,7 @@ namespace Ember
             var focus=CameraTarget();
             float beaconRadius=5.5f+(State.Charge/100f)*2.4f;
             if(State.Charge>0||State.BeaconHP>0)Illuminate("beacon",new V2(),beaconRadius,new Color(.72f,.95f,1f),1.15f);
+            else Illuminate("beacon_dormant",new V2(),5.5f,new Color(.35f,.55f,.75f),.45f);
             if(State.BossArenaActive)
             {
                 Color accent=BossAccentColor(State.BossType);
@@ -106,23 +106,52 @@ namespace Ember
         }
         void EnsureLightingMaterials()
         {
-            if(outlineMaterial==null)outlineMaterial=Resources.Load<Material>("Ember/EmberOutline");
-            if(emissionMaterial==null)emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
-            if(crystalFillMaterial==null)
+            if(outlineMaterial==null||outlineMaterial.shader==null||!outlineMaterial.shader.isSupported)
+                outlineMaterial=Resources.Load<Material>("Ember/EmberOutline");
+
+            if(emissionMaterial==null||emissionMaterial.shader==null||!emissionMaterial.shader.isSupported)
             {
-                var cShader=Shader.Find("Ember/CrystalFill");
-                if(cShader!=null)crystalFillMaterial=new Material(cShader);
+                emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
+                if(emissionMaterial==null||emissionMaterial.shader==null||!emissionMaterial.shader.isSupported)
+                {
+                    var s=Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+                    if(s==null||!s.isSupported)s=Shader.Find("Sprites/Default");
+                    if(s==null||!s.isSupported)s=Shader.Find("Unlit/Texture");
+                    if(s!=null)emissionMaterial=new Material(s);
+                }
+            }
+
+            if(crystalFillMaterial==null||crystalFillMaterial.shader==null||!crystalFillMaterial.shader.isSupported)
+            {
+                crystalFillMaterial=Resources.Load<Material>("Ember/EmberCrystalFill");
+                if(crystalFillMaterial==null||crystalFillMaterial.shader==null||!crystalFillMaterial.shader.isSupported)
+                {
+                    var cShader=Shader.Find("Ember/CrystalFill");
+                    if(cShader!=null&&cShader.isSupported)
+                        crystalFillMaterial=new Material(cShader);
+                    else if(emissionMaterial!=null)
+                        crystalFillMaterial=emissionMaterial;
+                }
             }
         }
         void ApplyCrystalFill(SpriteRenderer renderer,float fillLevel,float timeVal)
         {
+            if(renderer==null)return;
             EnsureLightingMaterials();
-            if(crystalFillMaterial==null)return;
-            renderer.sharedMaterial=crystalFillMaterial;
-            if(crystalProperties==null)crystalProperties=new MaterialPropertyBlock();
-            crystalProperties.SetFloat("_FillLevel",Mathf.Clamp01(fillLevel));
-            crystalProperties.SetFloat("_TimeVal",timeVal);
-            renderer.SetPropertyBlock(crystalProperties);
+            var mat=(crystalFillMaterial!=null&&crystalFillMaterial.shader!=null&&crystalFillMaterial.shader.isSupported)?crystalFillMaterial:emissionMaterial;
+            if(mat==null)return;
+            renderer.sharedMaterial=mat;
+            if(mat.HasProperty("_FillLevel"))
+            {
+                if(crystalProperties==null)crystalProperties=new MaterialPropertyBlock();
+                crystalProperties.SetFloat("_FillLevel",Mathf.Clamp01(fillLevel));
+                crystalProperties.SetFloat("_TimeVal",timeVal);
+                renderer.SetPropertyBlock(crystalProperties);
+            }
+            else
+            {
+                renderer.SetPropertyBlock(null);
+            }
         }
     }
 }

@@ -30,6 +30,15 @@ namespace Ember
         readonly Stack<SpriteRenderer> decorPool=new Stack<SpriteRenderer>();
         readonly List<int> keepDecor=new List<int>(),dropDecor=new List<int>();
         readonly Dictionary<int,V2> prevPlayerPos=new Dictionary<int,V2>(),prevEnemyPos=new Dictionary<int,V2>(),prevProjPos=new Dictionary<int,V2>();
+        readonly EntityInterpolationBuffer jitterBuffer=new EntityInterpolationBuffer();
+        uint localInputSeq;
+        V2 localPredictedPos;
+        bool localPredictedPosInitialized;
+        float localDashCD,localDashTime;
+        V2 localDashDir;
+        struct PendingInput{public uint Seq;public float Dt;public V2 Move;public bool Dash;public V2 DashDir;public V2 PredictedPos;}
+        readonly List<PendingInput> pendingInputs=new List<PendingInput>(128);
+        Phase lastObservedPhase;
         float renderInterp=1f;
         Vector2Int visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
         int lastTreeRespawnCount=-1;
@@ -88,6 +97,17 @@ namespace Ember
             cam.orthographic=true;cam.orthographicSize=10;cam.backgroundColor=new Color(.04f,.05f,.09f);cam.clearFlags=CameraClearFlags.SolidColor;
             entityRoot=new GameObject("Ember entities");mapRoot=new GameObject("Ember map");
             spriteMaterial=Resources.Load<Material>("Ember/EmberSprites");
+            if(spriteMaterial==null||spriteMaterial.shader==null||!spriteMaterial.shader.isSupported)
+            {
+                var litShader=Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
+                if(litShader!=null&&litShader.isSupported)
+                    spriteMaterial=new Material(litShader);
+                else
+                {
+                    var defShader=Shader.Find("Sprites/Default");
+                    if(defShader!=null)spriteMaterial=new Material(defShader);
+                }
+            }
             SetupLighting();
             audioSource=gameObject.AddComponent<AudioSource>();tone=MakeTone(440,.12f);footstep=MakeTone(90,.08f);
             InitializeSettings();
@@ -148,7 +168,7 @@ namespace Ember
                 network=true;host=true;localId=1;NewWorld(Environment.TickCount);
                 lan.CanRejoin=json=>{try{var info=JsonUtility.FromJson<JoinInfo>(json);return info!=null&&!(info.Sandbox&&!debugSession)&&World!=null&&World.CanRejoin(info.PlayerId);}catch{return false;}};
                 lan.Joined=(id,json)=>{var info=JsonUtility.FromJson<JoinInfo>(json);if(info==null||(info.Sandbox&&!debugSession))throw new InvalidDataException();if(World.CanRejoin(info.PlayerId)){World.RejoinPlayer(id,info.PlayerId);return;}World.AddPlayer(id,info.Name,(Vessel)Mathf.Clamp(info.Vessel,0,Catalog.VesselNames.Length-1),(info.Perks??Array.Empty<int>()).Where(p=>p>=0&&p<7).Distinct().Take(3).ToArray(),Mathf.Clamp(info.Hat,-1,3),Mathf.Clamp(info.Pet,-1,3),(info.Ranks??new int[7]).Take(7).Select(r=>Mathf.Clamp(r,0,3)).ToArray(),(info.Recipes??Enumerable.Range(0,7).ToArray()).Where(r=>r>=0&&r<14).Distinct().Take(14).ToArray(),info.PlayerId,awake:info.Awake);};
-                lan.Left=id=>World.RemovePlayer(id);lan.Input=(id,json)=>World.Submit(id,JsonUtility.FromJson<Command>(json));
+                lan.Left=id=>World.RemovePlayer(id);lan.Input=(id,json)=>World.Submit(id,JsonUtility.FromJson<Command>(json));lan.CommandInput=(id,cmd)=>World.Submit(id,cmd);
                 lan.ReadyChanged=(id,ready)=>World.SetReady(id,ready);
                 menu=false;notice="Phòng đã mở. Có thể bắt đầu với 1 người hoặc chờ bạn bè.";
             }catch(Exception ex){notice=ex.Message;}
@@ -158,10 +178,87 @@ namespace Ember
             try{lan?.Leave();lan=new EmberLan{Mode=routeMode,Trace=Trace};
                 if(usePublicBroker){joinRoomCode=joinRoomCode.Trim().ToUpperInvariant();if(joinRoomCode.Length!=6)throw new ArgumentException("Mã phòng gồm 6 ký tự.");lan.OpenPublic(false,brokerAddress,joinRoomCode,password);}else lan.Open(false,address,password);
                 network=true;host=false;localId=0;menu=false;State=null;readyWanted=false;
+                prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
+                teleportFadeTimer=0f;localPredictedPosInitialized=false;pendingInputs.Clear();jitterBuffer.Clear();
                 SaveLastCoopSession();
-                lan.State=json=>{var snapshot=JsonUtility.FromJson<Snapshot>(json);if(snapshot?.Players!=null){if(snapshot.Sandbox&&!debugSession){debugSession=true;Profile=SandboxProfile();Trace("debug.remote_sandbox","host test room: local profile writes disabled");}bool firstState=State==null;State=snapshot;localId=lan.LocalId;if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=8)heldSlot=Local.HeldSlot;}};
+                lan.BinaryState=data=>
+                {
+                    uint ackedSeq;
+                    if(EmberWorld.UnpackDelta(data,0,data.Length,ref State,out ackedSeq))
+                    {
+                        localId=lan.LocalId;
+                        if(World==null&&State!=null)
+                        {
+                            World=new EmberWorld(State.Seed,State.Size,State.Difficulty);
+                            World.S=State;
+                        }
+                        jitterBuffer.Push(Time.realtimeSinceStartupAsDouble,State,localId);
+                        if(Local!=null)ReconcileServerState(Local,ackedSeq);
+                    }
+                };
+                lan.State=json=>
+                {
+                    var snapshot=JsonUtility.FromJson<Snapshot>(json);
+                    if(snapshot?.Players!=null)
+                    {
+                        if(snapshot.Sandbox&&!debugSession)
+                        {
+                            debugSession=true;Profile=SandboxProfile();
+                            Trace("debug.remote_sandbox","host test room: local profile writes disabled");
+                        }
+                        bool firstState=State==null;
+                        State=snapshot;
+                        localId=lan.LocalId;
+                        if(World==null)
+                        {
+                            World=new EmberWorld(State.Seed,State.Size,State.Difficulty);
+                            World.S=State;
+                        }
+                        if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=8)heldSlot=Local.HeldSlot;
+                        jitterBuffer.Push(Time.realtimeSinceStartupAsDouble,State,localId);
+                    }
+                };
                 joinClock=0;notice="Đang kết nối LAN/VPN...";
             }catch(Exception ex){notice=ex.Message;}
+        }
+        void ReconcileServerState(Player serverLocal,uint ackedSeq)
+        {
+            if(serverLocal==null)return;
+            if(!localPredictedPosInitialized)
+            {
+                localPredictedPos=serverLocal.Pos;
+                localPredictedPosInitialized=true;
+                pendingInputs.Clear();
+                return;
+            }
+            int ackIndex=pendingInputs.FindIndex(p=>p.Seq==ackedSeq);
+            if(ackIndex>=0)
+            {
+                var ackedInput=pendingInputs[ackIndex];
+                float dev=V2.Distance(serverLocal.Pos,ackedInput.PredictedPos);
+                if(dev>0.05f)
+                {
+                    V2 replayPos=serverLocal.Pos;
+                    float speed=Local!=null?Local.Stats.MoveSpeed:6f;
+                    for(int i=ackIndex+1;i<pendingInputs.Count;i++)
+                    {
+                        var cmd=pendingInputs[i];
+                        if(cmd.Dash)replayPos=World!=null?World.Move(replayPos,cmd.DashDir*17*cmd.Dt,Local,ignoreEnemies:true):replayPos+cmd.DashDir*17*cmd.Dt;
+                        else replayPos=World!=null?World.Move(replayPos,cmd.Move*speed*cmd.Dt,Local):replayPos+cmd.Move*speed*cmd.Dt;
+                        cmd.PredictedPos=replayPos;
+                        pendingInputs[i]=cmd;
+                    }
+                    localPredictedPos=replayPos;
+                    if(Local!=null)Local.Pos=localPredictedPos;
+                }
+                pendingInputs.RemoveRange(0,ackIndex+1);
+            }
+            else if(ackedSeq>0&&pendingInputs.Count>0&&ackedSeq>=pendingInputs[pendingInputs.Count-1].Seq)
+            {
+                localPredictedPos=serverLocal.Pos;
+                if(Local!=null)Local.Pos=localPredictedPos;
+                pendingInputs.Clear();
+            }
         }
         [Serializable] sealed class JoinInfo{public string Name,PlayerId;public bool Sandbox;public int Vessel,Hat=-1,Pet=-1;public int[] Perks,Ranks,Recipes;public bool Awake;}
         void CapturePrevPositions()
@@ -179,9 +276,29 @@ namespace Ember
             if(V2.Distance(prev,curr)>=3.5f)return curr;
             return new V2(Mathf.Lerp(prev.X,curr.X,t),Mathf.Lerp(prev.Y,curr.Y,t));
         }
-        V2 VisualPlayerPos(Player p)=>prevPlayerPos.TryGetValue(p.Id,out var prev)?SmoothPos(prev,p.Pos,renderInterp):p.Pos;
-        V2 VisualEnemyPos(Enemy e)=>prevEnemyPos.TryGetValue(e.Id,out var prev)?SmoothPos(prev,e.Pos,renderInterp):e.Pos;
-        V2 VisualProjectilePos(Projectile s)=>prevProjPos.TryGetValue(s.Id,out var prev)?SmoothPos(prev,s.Pos,renderInterp):s.Pos;
+        V2 VisualPlayerPos(Player p)
+        {
+            if(p==null)return default;
+            if(network&&!host&&p.Id==localId)
+                return localPredictedPosInitialized?localPredictedPos:p.Pos;
+            if(network&&!host)
+                return jitterBuffer.GetPlayerPos(p.Id,Time.realtimeSinceStartupAsDouble,p.Pos);
+            return prevPlayerPos.TryGetValue(p.Id,out var prev)?SmoothPos(prev,p.Pos,renderInterp):p.Pos;
+        }
+        V2 VisualEnemyPos(Enemy e)
+        {
+            if(e==null)return default;
+            if(network&&!host)
+                return jitterBuffer.GetEnemyPos(e.Id,Time.realtimeSinceStartupAsDouble,e.Pos);
+            return prevEnemyPos.TryGetValue(e.Id,out var prev)?SmoothPos(prev,e.Pos,renderInterp):e.Pos;
+        }
+        V2 VisualProjectilePos(Projectile s)
+        {
+            if(s==null)return default;
+            if(network&&!host)
+                return jitterBuffer.GetProjectilePos(s.Id,Time.realtimeSinceStartupAsDouble,s.Pos);
+            return prevProjPos.TryGetValue(s.Id,out var prev)?SmoothPos(prev,s.Pos,renderInterp):s.Pos;
+        }
 
         void Update()
         {
@@ -218,20 +335,82 @@ namespace Ember
                 while(accumulator>=EmberWorld.Step){CapturePrevPositions();World.Submit(localId,intent);World.Tick();accumulator-=EmberWorld.Step;ClearActions();}
                 State=World.S;
                 renderInterp=Mathf.Clamp01(accumulator/EmberWorld.Step);
-                sendClock-=Time.deltaTime;if(network&&sendClock<=0){lan.Broadcast(JsonUtility.ToJson(State),++snapshotSequence);sendClock=.1f;}
+                sendClock-=Time.deltaTime;
+                if(network&&sendClock<=0)
+                {
+                    snapshotSequence++;
+                    byte[] deltaData=EmberWorld.PackDelta(State,0);
+                    lan.BroadcastSnapshot(deltaData);
+                    if(snapshotSequence%90==0)lan.Broadcast(JsonUtility.ToJson(State),snapshotSequence);
+                    sendClock=1f/30f;
+                }
             }
             else if(network&&!host)
             {
                 renderInterp=1f;
-                sendClock-=Time.deltaTime;if(sendClock<=0){if(intent.HasActions&&State?.Phase!=Phase.Sanctuary)lan.SendAction(JsonUtility.ToJson(intent));lan.SendInput(JsonUtility.ToJson(new Command{X=intent.X,Y=intent.Y}));sendClock=1f/30;ClearActions();}
+                if(State!=null&&State.Phase!=lastObservedPhase)
+                {
+                    lastObservedPhase=State.Phase;
+                    prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
+                    teleportFadeTimer=0f;localPredictedPosInitialized=false;
+                    pendingInputs.Clear();jitterBuffer.Clear();
+                }
+                if(Local!=null&&!Local.Ghost)
+                {
+                    if(!localPredictedPosInitialized)
+                    {
+                        localPredictedPos=Local.Pos;
+                        localPredictedPosInitialized=true;
+                    }
+                    float dt=Time.deltaTime;
+                    localDashCD=Mathf.Max(0f,localDashCD-dt);
+                    V2 inputDir=new V2(intent.X,intent.Y);
+                    if(inputDir.Length>1)inputDir=inputDir.Normal;
+                    float speed=Local.Stats.MoveSpeed;
+                    if(Local.StaminaBuffTimer>0&&!Local.HasBuff(BuffKind.Swiftness))speed*=1.35f;
+                    if(Local.HasBuff(BuffKind.Swiftness))speed*=(1f+Local.BuffValue(BuffKind.Swiftness));
+                    if(Local.Load>Local.Capacity)speed*=.55f;
+
+                    localInputSeq++;
+                    bool doDash=intent.Dash&&localDashCD<=0&&Local.Stamina>=20;
+                    V2 newPredicted=localPredictedPos;
+                    bool isDashing=false;
+                    V2 activeDashDir=localDashDir;
+                    if(localDashTime>0)
+                    {
+                        isDashing=true;
+                        localDashTime-=dt;
+                        newPredicted=World!=null?World.Move(localPredictedPos,localDashDir*17*dt,Local,ignoreEnemies:true):localPredictedPos+localDashDir*17*dt;
+                    }
+                    else if(doDash)
+                    {
+                        localDashDir=EmberWorld.EightWay(inputDir.Length>.1f?inputDir:new V2(Local.Right?1:-1,0));
+                        activeDashDir=localDashDir;
+                        localDashCD=Local.Stats.DashCooldown;
+                        localDashTime=.16f;
+                        isDashing=true;
+                        newPredicted=World!=null?World.Move(localPredictedPos,localDashDir*17*dt,Local,ignoreEnemies:true):localPredictedPos+localDashDir*17*dt;
+                    }
+                    else
+                    {
+                        newPredicted=World!=null?World.Move(localPredictedPos,inputDir*speed*dt,Local):localPredictedPos+inputDir*speed*dt;
+                    }
+                    localPredictedPos=newPredicted;
+                    Local.Pos=localPredictedPos;
+
+                    if(pendingInputs.Count>=120)pendingInputs.RemoveAt(0);
+                    pendingInputs.Add(new PendingInput{Seq=localInputSeq,Dt=dt,Move=inputDir,Dash=isDashing,DashDir=activeDashDir,PredictedPos=localPredictedPos});
+                }
+                sendClock-=Time.deltaTime;
+                if(sendClock<=0)
+                {
+                    if(intent.HasActions&&State?.Phase!=Phase.Sanctuary)lan.SendAction(JsonUtility.ToJson(intent));
+                    lan.SendInputBinary(localInputSeq,new Command{X=intent.X,Y=intent.Y,Dash=intent.Dash});
+                    sendClock=1f/30f;
+                    ClearActions();
+                }
             }
             else renderInterp=1f;
-            if(Local!=null&&prevPlayerPos.TryGetValue(localId,out var prevPos)&&V2.Distance(prevPos,Local.Pos)>=4.5f)
-            {
-                path.Clear();
-                intent.X=intent.Y=0;
-                if(teleportFadeTimer<=.1f)TriggerTeleportFade();
-            }
             if(State==null)return;
             if(renderedSeed!=State.Seed)BuildMap();
             EnsureFogOfWar();
@@ -271,7 +450,17 @@ namespace Ember
             if(index<0)index=0;
             spectateId=alive[(index+delta+alive.Length)%alive.Length].Id;
         }
-        void BeginRoomRun(){if(World.StartRun(true,liveMatch:true)){lan.AcceptingJoins=false;ClearActions();}}
+        void BeginRoomRun()
+        {
+            if(World.StartRun(true,liveMatch:true))
+            {
+                lan.AcceptingJoins=false;
+                prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
+                teleportFadeTimer=0f;localPredictedPosInitialized=false;
+                pendingInputs.Clear();jitterBuffer.Clear();
+                ClearActions();
+            }
+        }
         void LeaveRoom()
         {
             coopReconnectArmed=false;
@@ -280,7 +469,11 @@ namespace Ember
             ClearLastCoopSession();
             joinRoomCode="";
             try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}
-            network=false;host=true;localId=1;menu=true;State=null;path.Clear();ClearActions();
+            network=false;host=true;localId=1;menu=true;State=null;path.Clear();
+            prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
+            teleportFadeTimer=0f;localPredictedPosInitialized=false;
+            pendingInputs.Clear();jitterBuffer.Clear();
+            ClearActions();
         }
         static AudioClip MakeTone(float hz,float seconds)
         {
@@ -971,9 +1164,18 @@ namespace Ember
                 r=new GameObject(key).AddComponent<SpriteRenderer>();
                 r.transform.SetParent(entityRoot.transform);
                 if(spriteMaterial!=null)r.sharedMaterial=spriteMaterial;
+                else if(emissionMaterial!=null)r.sharedMaterial=emissionMaterial;
                 renderers[key]=r;
             }
-            r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(5000-Mathf.RoundToInt(pos.Y*10));return r;
+            r.enabled=true;r.sprite=sprite;r.color=color;r.flipX=flip;r.transform.position=new Vector3(pos.X,pos.Y,0);r.transform.localScale=Vector3.one*scale;r.sortingOrder=order??(5000-Mathf.RoundToInt(pos.Y*10));
+            if(emissionMaterial!=null)
+            {
+                if(sprite==Primitive("diamond")||key.StartsWith("beacon_crystal")||key.StartsWith("sentinelRing")||key.StartsWith("richVeinSpark")||key.StartsWith("dropBeam")||key.StartsWith("dropAura")||key.StartsWith("swift_trail")||key.StartsWith("projectile")||key=="portal"||key=="mirage")
+                {
+                    r.sharedMaterial=emissionMaterial;
+                }
+            }
+            return r;
         }
         void Render()
         {
@@ -998,27 +1200,27 @@ namespace Ember
                 bool hasEnergy=fillRatio>0.001f||State.Charge>0||State.BeaconHP>0;
                 string lakeArt=hasEnergy?"beacon_lit":"beacon_dark";
                 var lake=Put("beacon",Primitive(lakeArt),new V2(0,.35f),Color.white,1.45f,10);
-                if(hasEnergy&&emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
+                if(emissionMaterial!=null)lake.sharedMaterial=emissionMaterial;
 
                 // Central Floating Monolith Crystal (Cách không lơ lửng trên mặt hồ)
                 Color shadowCol=hasEnergy?new Color(.12f,.65f,.88f,.45f):new Color(0,0,0,.32f);
                 var sr=Put("beacon_water_shadow",Primitive("circle"),new V2(0,.38f),shadowCol,hasEnergy?.85f:.65f,12);
-                if(hasEnergy&&emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
+                if(emissionMaterial!=null)sr.sharedMaterial=emissionMaterial;
 
                 float floatY=Mathf.Sin(clock*2.0f)*.14f;
                 Color crystalColor=hasEnergy?Color.white:new Color(.65f,.70f,.82f,.95f);
                 float crystalY=1.05f+floatY; // Cách không: hovers gracefully above the lake
 
                 // Base dark crystal monolith frame
-                Put("beacon_crystal_dark_core",Primitive("beacon_crystal_dark"),new V2(0,crystalY),new Color(.6f,.65f,.75f,.9f),1.45f,1004);
+                var coreDark=Put("beacon_crystal_dark_core",Primitive("beacon_crystal_dark"),new V2(0,crystalY),new Color(.6f,.65f,.75f,.9f),1.45f,1004);
+                if(emissionMaterial!=null)coreDark.sharedMaterial=emissionMaterial;
                 // Glowing cyan energy liquid rising/falling along Y-axis matching exact charge level
                 if(hasEnergy&&fillRatio>0.001f)
                 {
                     var coreLit=Put("beacon_crystal_core",Primitive("beacon_crystal_lit"),new V2(0,crystalY),crystalColor,1.45f,1005);
-                    if(crystalFillMaterial!=null)ApplyCrystalFill(coreLit,fillRatio,clock);
-                    else if(emissionMaterial!=null)
+                    ApplyCrystalFill(coreLit,fillRatio,clock);
+                    if(crystalFillMaterial==null||crystalFillMaterial.shader==null||!crystalFillMaterial.HasProperty("_FillLevel"))
                     {
-                        coreLit.sharedMaterial=emissionMaterial;
                         coreLit.transform.localScale=new Vector3(1.45f,1.45f*fillRatio,1f);
                         coreLit.transform.position=new Vector3(0,crystalY-(1f-fillRatio)*.3f,0);
                     }
@@ -1047,12 +1249,12 @@ namespace Ember
                     float depthY=Mathf.Sin(angle)*.35f;
                     float ry=crystalY+depthY+floatYOrb;
                     int sOrder=depthY<0?5006:5004;
-                    Put("beacon_crystal_dark_"+ci,Primitive("beacon_crystal_dark"),new V2(rx,ry),new Color(.6f,.65f,.75f,.9f),.75f,sOrder-1);
+                    var darkShard=Put("beacon_crystal_dark_"+ci,Primitive("beacon_crystal_dark"),new V2(rx,ry),new Color(.6f,.65f,.75f,.9f),.75f,sOrder-1);
+                    if(emissionMaterial!=null)darkShard.sharedMaterial=emissionMaterial;
                     if(hasEnergy&&fillRatio>0.001f)
                     {
                         var crLit=Put("beacon_crystal_"+ci,Primitive("beacon_crystal_lit"),new V2(rx,ry),crystalColor,.75f,sOrder);
-                        if(crystalFillMaterial!=null)ApplyCrystalFill(crLit,fillRatio,clock);
-                        else if(emissionMaterial!=null)crLit.sharedMaterial=emissionMaterial;
+                        ApplyCrystalFill(crLit,fillRatio,clock);
                     }
                 }
             }
@@ -1398,7 +1600,8 @@ namespace Ember
                             float wOffset=(wi+1)*0.22f;
                             V2 streakPos=pPos-p.Move*wOffset+new V2(0,Mathf.Sin(clock*14f+wi)*0.10f);
                             float alpha=(1f-wi*0.3f)*0.40f;
-                            Put($"swift_trail_{p.Id}_{wi}",Primitive("diamond"),streakPos,new Color(.4f,.95f,.8f,alpha),.25f-wi*.05f);
+                            var st=Put($"swift_trail_{p.Id}_{wi}",Primitive("diamond"),streakPos,new Color(.4f,.95f,.8f,alpha),.25f-wi*.05f);
+                            if(emissionMaterial!=null)st.sharedMaterial=emissionMaterial;
                         }
                     }
                 }
@@ -1925,7 +2128,14 @@ namespace Ember
         }
         void InitStyles()
         {
-            if(title!=null)return;title=new GUIStyle(GUI.skin.label){fontSize=27,fontStyle=FontStyle.Bold,normal={textColor=new Color(1,.92f,.78f)}};
+            if(title!=null)return;
+            try
+            {
+                var osFont=Font.CreateDynamicFontFromOSFont(new[]{"Segoe UI","Arial","Tahoma"},14);
+                if(osFont!=null)GUI.skin.font=osFont;
+            }
+            catch{}
+            title=new GUIStyle(GUI.skin.label){fontSize=27,fontStyle=FontStyle.Bold,normal={textColor=new Color(1,.92f,.78f)}};
             label=new GUIStyle(GUI.skin.label){fontSize=15,wordWrap=true,normal={textColor=new Color(.88f,.91f,.94f)}};
             small=new GUIStyle(label){fontSize=12};GUI.skin.button.fontSize=14;GUI.skin.button.padding=new RectOffset(12,12,8,8);
         }
@@ -2402,8 +2612,8 @@ namespace Ember
             int size=State.Size;
             if(size<=0)return;
 
-            if(emissionMaterial==null)
-                emissionMaterial=Resources.Load<Material>("Ember/EmberUnlit");
+            if(emissionMaterial==null||emissionMaterial.shader==null||!emissionMaterial.shader.isSupported)
+                EnsureLightingMaterials();
 
             if(mapRoot==null)
             {
@@ -2559,7 +2769,7 @@ namespace Ember
                 if(!Profile.Vessels.Contains(selected))UiText(L("Bản Ngã Đặc Biệt · Tỷ lệ triệu hồi: 0,1%","Special Vessel · Summon rate: 0.1%"),small);
                 else if(!Profile.LittleMooneAwake)
                 {
-                    UiText(L("🌙 Ngủ sâu · Cần Đánh Thức để xuất trận","🌙 Deep Sleep · Requires Awakening to deploy"),small);
+                    UiText(L("[Ngủ sâu] · Cần Đánh Thức để xuất trận","[Deep Sleep] · Requires Awakening to deploy"),small);
                     UiText(EmberLanguage.Text("Đá Ký Ức Thức Tỉnh")+": "+Profile.AwakeningStones,small);
                     GUI.enabled=Profile.AwakeningStones>0;
                     if(UiButton(L("Đánh thức Little Moone (1 Đá)","Awaken Little Moone (1 Stone)"))&&Profile.AwakenLittleMoone())SaveProfile();
@@ -2567,7 +2777,7 @@ namespace Ember
                 }
                 else
                 {
-                    UiText(L("⭐ Đã Thức Tỉnh: Mưa Sao Băng Trắng [J] (12 thiên thạch tự ngắm, 24s)","⭐ Awakened: Starlight Meteors [J] (12 auto-aimed meteors, 24s)"),small);
+                    UiText(L("★ Đã Thức Tỉnh: Mưa Sao Băng Trắng [J] (12 thiên thạch tự ngắm, 24s)","★ Awakened: Starlight Meteors [J] (12 auto-aimed meteors, 24s)"),small);
                 }
             }
             if(selected==(int)Vessel.Wanderer)
@@ -2582,7 +2792,7 @@ namespace Ember
                 }
                 else
                 {
-                    UiText(L("⭐ Đã Thức Tỉnh: Gia Tốc Gió Đêm [J] (+45% Tốc chạy, 10s)","⭐ Awakened: Swiftwind Aura [J] (+45% Speed, 10s)"),small);
+                    UiText(L("★ Đã Thức Tỉnh: Gia Tốc Gió Đêm [J] (+45% Tốc chạy, 10s)","★ Awakened: Swiftwind Aura [J] (+45% Speed, 10s)"),small);
                 }
             }
             GUILayout.Space(10);
@@ -2752,5 +2962,301 @@ namespace Ember
         void OnApplicationPause(bool paused){if(paused&&!netSmoke){SaveActiveRun(false);SaveProfile(false);PlayerPrefs.Save();}}
         void OnApplicationQuit(){if(!netSmoke){SaveActiveRun(false);SaveProfile(false);PlayerPrefs.Save();}try{lan?.Leave();}catch(Exception ex){Debug.LogWarning(ex.Message);}}
         void OnDestroy(){lan?.Dispose();CloseDiagnostics();}
+    }
+
+    public sealed class EntityInterpolationBuffer
+    {
+        public struct EntityState
+        {
+            public V2 Pos;
+            public V2 Vel;
+        }
+
+        public sealed class Frame
+        {
+            public double Timestamp;
+            public readonly Dictionary<int, EntityState> Players = new Dictionary<int, EntityState>();
+            public readonly Dictionary<int, EntityState> Enemies = new Dictionary<int, EntityState>();
+            public readonly Dictionary<int, EntityState> Projectiles = new Dictionary<int, EntityState>();
+        }
+
+        readonly List<Frame> frames = new List<Frame>();
+        readonly Dictionary<int, V2> playerErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> enemyErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> projErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedPlayer = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedEnemy = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedProj = new Dictionary<int, V2>();
+        readonly HashSet<int> extrapolatingPlayers = new HashSet<int>();
+        readonly HashSet<int> extrapolatingEnemies = new HashSet<int>();
+        readonly HashSet<int> extrapolatingProjs = new HashSet<int>();
+
+        double lastArrival = -1;
+        double smoothedJitter = 0.010;
+        double targetDelay = 0.066;
+
+        public void Clear()
+        {
+            frames.Clear();
+            playerErrors.Clear();
+            enemyErrors.Clear();
+            projErrors.Clear();
+            lastRenderedPlayer.Clear();
+            lastRenderedEnemy.Clear();
+            lastRenderedProj.Clear();
+            extrapolatingPlayers.Clear();
+            extrapolatingEnemies.Clear();
+            extrapolatingProjs.Clear();
+            lastArrival = -1;
+            smoothedJitter = 0.010;
+            targetDelay = 0.066;
+        }
+
+        public void Push(double arrivalTime, Snapshot s, int localId)
+        {
+            if(s == null) return;
+            if(lastArrival > 0)
+            {
+                double interval = arrivalTime - lastArrival;
+                double jitter = Math.Abs(interval - (1.0 / 30.0));
+                smoothedJitter = smoothedJitter * 0.9 + jitter * 0.1;
+                targetDelay = Math.Max(0.060, Math.Min(0.080, smoothedJitter * 2.0 + 2.0 * (1.0 / 30.0)));
+            }
+            lastArrival = arrivalTime;
+
+            var prevFrame = frames.Count > 0 ? frames[frames.Count - 1] : null;
+            var frame = new Frame { Timestamp = arrivalTime };
+
+            if(s.Players != null)
+            {
+                foreach(var p in s.Players)
+                {
+                    if(p == null || p.Id == localId) continue;
+                    V2 vel = p.Move * p.Stats.MoveSpeed;
+                    if(prevFrame != null && prevFrame.Players.TryGetValue(p.Id, out var prev))
+                    {
+                        float dt = (float)(arrivalTime - prevFrame.Timestamp);
+                        if(dt > 0.001f && V2.Distance(prev.Pos, p.Pos) < 4.5f)
+                        {
+                            V2 derivedVel = (p.Pos - prev.Pos) / dt;
+                            if(derivedVel.Length > 0.1f) vel = derivedVel;
+                        }
+                    }
+                    frame.Players[p.Id] = new EntityState { Pos = p.Pos, Vel = vel };
+                }
+            }
+
+            if(s.Enemies != null)
+            {
+                foreach(var e in s.Enemies)
+                {
+                    if(e == null) continue;
+                    V2 vel = new V2();
+                    if(prevFrame != null && prevFrame.Enemies.TryGetValue(e.Id, out var prev))
+                    {
+                        float dt = (float)(arrivalTime - prevFrame.Timestamp);
+                        if(dt > 0.001f && V2.Distance(prev.Pos, e.Pos) < 4.5f)
+                        {
+                            vel = (e.Pos - prev.Pos) / dt;
+                        }
+                    }
+                    frame.Enemies[e.Id] = new EntityState { Pos = e.Pos, Vel = vel };
+                }
+            }
+
+            if(s.Projectiles != null)
+            {
+                foreach(var pr in s.Projectiles)
+                {
+                    if(pr == null) continue;
+                    frame.Projectiles[pr.Id] = new EntityState { Pos = pr.Pos, Vel = pr.Velocity };
+                }
+            }
+
+            frames.Add(frame);
+            while(frames.Count > 15 && arrivalTime - frames[0].Timestamp > 0.5)
+                frames.RemoveAt(0);
+        }
+
+        public V2 GetPlayerPos(int id, double now, V2 fallback)
+        {
+            bool wasExtrap = extrapolatingPlayers.Contains(id);
+            V2 pos = InterpolateEntity(id, now, f => f.Players, fallback, out bool isExtrap);
+            if(isExtrap)
+            {
+                extrapolatingPlayers.Add(id);
+            }
+            else
+            {
+                if(wasExtrap)
+                {
+                    extrapolatingPlayers.Remove(id);
+                    if(lastRenderedPlayer.TryGetValue(id, out var lastVis))
+                    {
+                        V2 err = lastVis - pos;
+                        if(err.Length > 0.03f && err.Length < 4.0f) playerErrors[id] = err;
+                    }
+                }
+                else if(lastRenderedPlayer.TryGetValue(id, out var lastVis))
+                {
+                    float snapDist = V2.Distance(pos, lastVis);
+                    if(snapDist > 0.8f && snapDist < 4.0f)
+                    {
+                        playerErrors[id] = lastVis - pos;
+                    }
+                }
+            }
+            pos = ApplyErrorBlending(id, pos, playerErrors);
+            lastRenderedPlayer[id] = pos;
+            return pos;
+        }
+
+        public V2 GetEnemyPos(int id, double now, V2 fallback)
+        {
+            bool wasExtrap = extrapolatingEnemies.Contains(id);
+            V2 pos = InterpolateEntity(id, now, f => f.Enemies, fallback, out bool isExtrap);
+            if(isExtrap)
+            {
+                extrapolatingEnemies.Add(id);
+            }
+            else
+            {
+                if(wasExtrap)
+                {
+                    extrapolatingEnemies.Remove(id);
+                    if(lastRenderedEnemy.TryGetValue(id, out var lastVis))
+                    {
+                        V2 err = lastVis - pos;
+                        if(err.Length > 0.03f && err.Length < 4.0f) enemyErrors[id] = err;
+                    }
+                }
+                else if(lastRenderedEnemy.TryGetValue(id, out var lastVis))
+                {
+                    float snapDist = V2.Distance(pos, lastVis);
+                    if(snapDist > 0.8f && snapDist < 4.0f)
+                    {
+                        enemyErrors[id] = lastVis - pos;
+                    }
+                }
+            }
+            pos = ApplyErrorBlending(id, pos, enemyErrors);
+            lastRenderedEnemy[id] = pos;
+            return pos;
+        }
+
+        public V2 GetProjectilePos(int id, double now, V2 fallback)
+        {
+            bool wasExtrap = extrapolatingProjs.Contains(id);
+            V2 pos = InterpolateEntity(id, now, f => f.Projectiles, fallback, out bool isExtrap);
+            if(isExtrap)
+            {
+                extrapolatingProjs.Add(id);
+            }
+            else
+            {
+                if(wasExtrap)
+                {
+                    extrapolatingProjs.Remove(id);
+                    if(lastRenderedProj.TryGetValue(id, out var lastVis))
+                    {
+                        V2 err = lastVis - pos;
+                        if(err.Length > 0.03f && err.Length < 4.0f) projErrors[id] = err;
+                    }
+                }
+                else if(lastRenderedProj.TryGetValue(id, out var lastVis))
+                {
+                    float snapDist = V2.Distance(pos, lastVis);
+                    if(snapDist > 0.8f && snapDist < 4.0f)
+                    {
+                        projErrors[id] = lastVis - pos;
+                    }
+                }
+            }
+            pos = ApplyErrorBlending(id, pos, projErrors);
+            lastRenderedProj[id] = pos;
+            return pos;
+        }
+
+        static float GetDeltaTime()
+        {
+            try
+            {
+                var prop = typeof(Time).GetProperty("deltaTime", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if(prop != null)
+                {
+                    object v = prop.GetValue(null);
+                    if(v is float f && f > 0.0001f && f < 0.1f) return f;
+                }
+            }
+            catch(Exception) {}
+            return 0.016f;
+        }
+
+        V2 ApplyErrorBlending(int id, V2 pos, Dictionary<int, V2> errors)
+        {
+            if(errors.TryGetValue(id, out var err))
+            {
+                float dt = GetDeltaTime();
+                float decay = (float)Math.Exp(-15.0 * dt);
+                err *= decay;
+                if(err.Length < 0.005f) errors.Remove(id);
+                else errors[id] = err;
+                return pos + err;
+            }
+            return pos;
+        }
+
+        V2 InterpolateEntity(int id, double now, Func<Frame, Dictionary<int, EntityState>> getDict, V2 fallback, out bool isExtrapolating)
+        {
+            isExtrapolating = false;
+            if(frames.Count == 0) return fallback;
+            double renderTime = now - targetDelay;
+
+            var newest = frames[frames.Count - 1];
+            var newestDict = getDict(newest);
+            if(!newestDict.TryGetValue(id, out var newestState)) return fallback;
+
+            if(frames.Count == 1 || renderTime >= newest.Timestamp)
+            {
+                isExtrapolating = true;
+                float dtExtrap = Mathf.Clamp((float)(renderTime - newest.Timestamp), 0f, 0.25f);
+                return newestState.Pos + newestState.Vel * dtExtrap;
+            }
+
+            var oldest = frames[0];
+            if(renderTime <= oldest.Timestamp)
+            {
+                var oldestDict = getDict(oldest);
+                return oldestDict.TryGetValue(id, out var oldState) ? oldState.Pos : newestState.Pos;
+            }
+
+            for(int i = 0; i < frames.Count - 1; i++)
+            {
+                var f0 = frames[i];
+                var f1 = frames[i + 1];
+                if(f0.Timestamp <= renderTime && renderTime <= f1.Timestamp)
+                {
+                    var d0 = getDict(f0);
+                    var d1 = getDict(f1);
+                    bool has0 = d0.TryGetValue(id, out var s0);
+                    bool has1 = d1.TryGetValue(id, out var s1);
+                    if(has0 && has1)
+                    {
+                        float dt = (float)(f1.Timestamp - f0.Timestamp);
+                        if(dt <= 0.0001f || V2.Distance(s0.Pos, s1.Pos) >= 4.5f) return s1.Pos;
+                        float t = Mathf.Clamp01((float)((renderTime - f0.Timestamp) / dt));
+                        float oneMinusT = 1f - t;
+                        float h00 = (1f + 2f * t) * oneMinusT * oneMinusT;
+                        float h10 = t * oneMinusT * oneMinusT;
+                        float h01 = t * t * (3f - 2f * t);
+                        float h11 = t * t * (t - 1f);
+                        return s0.Pos * h00 + s0.Vel * (h10 * dt) + s1.Pos * h01 + s1.Vel * (h11 * dt);
+                    }
+                    if(has1) return s1.Pos;
+                    if(has0) return s0.Pos;
+                }
+            }
+            return newestState.Pos;
+        }
     }
 }

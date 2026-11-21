@@ -61,7 +61,7 @@ namespace Ember
                 float rW=(width-40-12)/3f;
                 var vCard=new Rect(x+20+col*(rW+6),curY+row*40,rW,36);
                 PixelPanel(vCard,hasV?new Color(.18f,.24f,.38f):new Color(.15f,.12f,.18f,.6f));
-                string vText=Catalog.VesselNames[vi]+(isAwake?" ⭐":!hasV?" (Khóa)":"");
+                string vText=Catalog.VesselNames[vi]+(isAwake?" ★":!hasV?" (Khóa)":"");
                 UiLabel(new Rect(vCard.x+6,vCard.y+6,vCard.width-12,24),vText,small);
             }
             curY+=86;

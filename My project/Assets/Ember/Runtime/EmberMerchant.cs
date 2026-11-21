@@ -515,7 +515,7 @@ namespace Ember
             {
                 Vector2 sp = ScreenPos(merchant.Pos + new V2(0f, 1.35f));
                 float pulse = 0.85f + 0.15f * Mathf.Sin(clock * 5f);
-                string text = EmberLanguage.English ? $"⏳ Depart: {merchant.Life:0}s" : $"⏳ Còn lại: {merchant.Life:0}s";
+                string text = EmberLanguage.English ? $"[TG] Depart: {merchant.Life:0}s" : $"[TG] Còn lại: {merchant.Life:0}s";
                 float tw = Mathf.Clamp(small.CalcSize(new GUIContent(text)).x + 18, 96, 160);
                 var tRect = new Rect(sp.x - tw * 0.5f, sp.y - 12f, tw, 22f);
 
@@ -606,8 +606,8 @@ namespace Ember
             var repRect = new Rect(box.x + 16, box.y + 36, box.width - 32, 28);
             Panel(repRect, new Color(0.16f, 0.13f, 0.25f, 0.88f));
             string repText = EmberLanguage.English
-                ? $"⭐ Merchant Reputation: {rep} pts ({tierName}) · [Secret Stash: {(secretUnlocked ? "UNLOCKED" : "LOCKED (Requires 50 pts)")}]"
-                : $"⭐ Điểm Danh Vọng: {rep} ({tierName}) · [Cửa Hàng Bí Mật: {(secretUnlocked ? "ĐÃ MỞ KHÓA" : "CHƯA MỞ (Cần 50 điểm)")}]";
+                ? $"★ Merchant Reputation: {rep} pts ({tierName}) · [Secret Stash: {(secretUnlocked ? "UNLOCKED" : "LOCKED (Requires 50 pts)")}]"
+                : $"★ Điểm Danh Vọng: {rep} ({tierName}) · [Cửa Hàng Bí Mật: {(secretUnlocked ? "ĐÃ MỞ KHÓA" : "CHƯA MỞ (Cần 50 điểm)")}]";
             GUI.Label(repRect, repText, merchantRepStyle);
 
             // Catalog Items List
@@ -631,8 +631,8 @@ namespace Ember
                 {
                     // Locked Secret Ware Banner
                     GUI.Label(new Rect(card.x + 10, card.y + 18, card.width - 140, 24),
-                        L($"🔒 CỬA HÀNG BÍ MẬT: {trade.NameVi} (Cần {trade.RequiredReputation} Danh vọng)",
-                          $"🔒 SECRET STASH: {trade.NameEn} (Requires {trade.RequiredReputation} Rep)"),
+                        L($"[KHÓA] CỬA HÀNG BÍ MẬT: {trade.NameVi} (Cần {trade.RequiredReputation} Danh vọng)",
+                          $"[LOCKED] SECRET STASH: {trade.NameEn} (Requires {trade.RequiredReputation} Rep)"),
                         merchantSubStyle);
                 }
                 else
@@ -707,7 +707,7 @@ namespace Ember
             string arrow = GetCompassArrow(angle);
             string distText = $"{distance:F1}m";
             GUI.Label(new Rect(cRect.x + 8, cRect.y + 4, cRect.width - 16, 20),
-                $"🧭 <b>{arrow} {name}</b>", merchantRepStyle);
+                $"✦ <b>{arrow} {name}</b>", merchantRepStyle);
             GUI.Label(new Rect(cRect.x + 8, cRect.y + 24, cRect.width - 16, 18),
                 L($"Khoảng cách: {distText}", $"Distance: {distText}"), merchantSubStyle);
         }
