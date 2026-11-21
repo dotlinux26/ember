@@ -2048,16 +2048,20 @@ namespace Ember
                 new Color(.96f,.45f,.73f,alpha*.80f),
                 new Color(1f,1f,1f,alpha*.95f));
 
-            // Tâm điểm giao nhau hình chữ X: Vẽ sprite shadow_cross_slash phát quang sắc nét
+            // Tâm điểm giao nhau hình chữ X: Vẽ sprite shadow_cross_slash xoay theo hướng chém và phát quang sắc nét
             var slashSprite=Primitive("shadow_cross_slash");
             if(slashSprite!=null&&slashSprite.texture!=null)
             {
-                float slashSize=32f+prog*14f;
+                float slashSize=28f+prog*14f;
                 var slashRect=new Rect(center.x-slashSize/2,center.y-slashSize/2,slashSize,slashSize);
+                var oldMatrix=GUI.matrix;
+                float slashAngle=Mathf.Atan2(fwd.y,fwd.x)*Mathf.Rad2Deg;
+                GUIUtility.RotateAroundPivot(slashAngle,center);
                 var oldCol=GUI.color;
                 GUI.color=new Color(1f,1f,1f,alpha*.95f);
                 GUI.DrawTexture(slashRect,slashSprite.texture);
                 GUI.color=oldCol;
+                GUI.matrix=oldMatrix;
             }
         }
         void DrawCrescentArc(Vector2 center,Vector2 forward,Vector2 perp,float rx,float ry,Color outerGlow,Color bodyColor,Color coreColor)

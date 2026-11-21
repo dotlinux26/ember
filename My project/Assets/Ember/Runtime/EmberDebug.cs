@@ -9,18 +9,49 @@ namespace Ember
 {
     public sealed partial class EmberGame
     {
-        bool debugSession,debugOpen,debugGod,debugFreeze,debugFuel,debugNoEnemies;
+        bool debugSession,debugOpen,debugGod,debugFreeze,debugFuel,debugNoEnemies,debugUnlocked;
         RouteMode routeMode;int debugTarget=1,debugDrop,debugTab;float nextDiagnostic;
+        string authKeyInput="",authError="";
         StreamWriter diagnosticFile;string diagnosticPath,lastNetError;Phase loggedPhase=(Phase)(-1);int loggedEvent=-1,diagnosticSegment;
         readonly Queue<string> diagnosticTail=new Queue<string>();readonly Dictionary<int,string> playerFlags=new Dictionary<int,string>();
         Vector2 debugScroll;
         [Serializable] sealed class TraceRecord{public string utc,category,message;public int tick,localId;public bool host,sandbox;}
         string L(string vi,string en)=>EmberLanguage.English?en:vi;
+
+        static bool VerifyConsoleAuth(string input)
+        {
+            if(string.IsNullOrEmpty(input))return false;
+            try
+            {
+                byte[] salt=new byte[]{0x45,0x6d,0x62,0x65,0x72,0x56,0x6f,0x69,0x64,0x32,0x30,0x32,0x36};
+                byte[] h=System.Text.Encoding.UTF8.GetBytes(input);
+                using(var sha=System.Security.Cryptography.SHA256.Create())
+                {
+                    byte[] roundBuf=new byte[h.Length+salt.Length+1];
+                    for(int i=0;i<2026;i++)
+                    {
+                        if(roundBuf.Length!=h.Length+salt.Length+1)roundBuf=new byte[h.Length+salt.Length+1];
+                        Buffer.BlockCopy(h,0,roundBuf,0,h.Length);
+                        Buffer.BlockCopy(salt,0,roundBuf,h.Length,salt.Length);
+                        roundBuf[roundBuf.Length-1]=(byte)((i*7+13)&0xFF);
+                        h=sha.ComputeHash(roundBuf);
+                    }
+                }
+                byte[] expected=new byte[]{134,141,103,112,199,8,125,228,216,61,95,121,150,134,53,113,134,207,35,15,152,49,62,152,127,33,225,174,238,121,239,217};
+                if(h.Length!=expected.Length)return false;
+                int diff=0;
+                for(int i=0;i<h.Length;i++)diff|=(h[i]^(expected[i]^0x5A));
+                return diff==0;
+            }
+            catch{return false;}
+        }
+
         void InitializeDiagnostics()
         {
             Application.SetStackTraceLogType(LogType.Log,StackTraceLogType.None);
             var args=Environment.GetCommandLineArgs();debugSession=args.Contains("--ember-debug")||args.Any(a=>a.StartsWith("--ember-smoke")||a.StartsWith("--ember-net-"));
             debugOpen=args.Contains("--ember-debug");
+            debugUnlocked=args.Contains("--ember-debug");
             if(args.Contains("--ember-route=direct"))routeMode=RouteMode.DirectOnly;if(args.Contains("--ember-route=relay"))routeMode=RouteMode.RelayOnly;
             string directory=Path.Combine(Application.persistentDataPath,"Logs");Directory.CreateDirectory(directory);
             diagnosticPath=Path.Combine(directory,"ember_"+DateTime.UtcNow.ToString("yyyyMMdd_HHmmss_fff")+"_"+System.Diagnostics.Process.GetCurrentProcess().Id+".jsonl");
@@ -108,14 +139,94 @@ namespace Ember
             World.Publish();
             Trace("debug.god_loadout","equipped ShadowBlades + CrystalAxe + RelicLantern + PickaxeT3 + full items/resources");
         }
+        void DrawAuthModal()
+        {
+            float modalW=Mathf.Min(430,Screen.width-32);
+            float modalH=210;
+            var rect=new Rect((Screen.width-modalW)/2,(Screen.height-modalH)/2-30,modalW,modalH);
+
+            GUI.color=new Color(0,0,0,0.85f);
+            GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),white);
+            GUI.color=Color.white;
+
+            GUI.Box(rect,"");
+            GUILayout.BeginArea(new Rect(rect.x+18,rect.y+16,rect.width-36,rect.height-32));
+
+            GUILayout.Label(L("🔒 BẢO MẬT HỆ THỐNG — ADMIN CONSOLE","🔒 SYSTEM SECURITY — ADMIN CONSOLE"),title??label);
+            GUILayout.Space(6);
+            GUILayout.Label(L("Khu vực quản trị nội bộ. Vui lòng nhập mã bảo mật:","Restricted internal area. Enter authorization key:"),small??label);
+            GUILayout.Space(8);
+
+            GUI.SetNextControlName("AdminPasswordField");
+            authKeyInput=GUILayout.PasswordField(authKeyInput??"",'*',32);
+
+            if(!string.IsNullOrEmpty(authError))
+            {
+                var prevCol=GUI.color;
+                GUI.color=new Color(1f,0.35f,0.35f);
+                GUILayout.Label(authError,small??label);
+                GUI.color=prevCol;
+            }
+            else
+            {
+                GUILayout.Space(12);
+            }
+
+            GUILayout.BeginHorizontal();
+            bool submit=GUILayout.Button(L("Xác Nhận (Enter)","Unlock (Enter)"),GUILayout.Height(32));
+            bool cancel=GUILayout.Button(L("Đóng (ESC)","Close (ESC)"),GUILayout.Height(32));
+            GUILayout.EndHorizontal();
+
+            if(Event.current.type==EventType.KeyDown&&(Event.current.keyCode==KeyCode.Return||Event.current.keyCode==KeyCode.KeypadEnter))
+            {
+                submit=true;
+                Event.current.Use();
+            }
+
+            if(submit)
+            {
+                if(VerifyConsoleAuth(authKeyInput))
+                {
+                    debugUnlocked=true;
+                    authKeyInput="";
+                    authError="";
+                }
+                else
+                {
+                    authError=L("❌ Mã truy cập không chính xác!","❌ Invalid authorization key!");
+                    authKeyInput="";
+                }
+            }
+            if(cancel)
+            {
+                debugOpen=false;
+                authKeyInput="";
+                authError="";
+            }
+
+            GUILayout.EndArea();
+            GUI.FocusControl("AdminPasswordField");
+        }
         void DrawDebugPanel()
         {
             if(!debugOpen)return;InitStyles();GUI.depth=-100;
+            if(!debugUnlocked)
+            {
+                DrawAuthModal();
+                GUI.depth=0;
+                return;
+            }
+
             var box=new Rect(14,50,Mathf.Min(780,Screen.width-28),Mathf.Min(700,Screen.height-65));GUI.Box(box,"");
             GUILayout.BeginArea(new Rect(box.x+12,box.y+8,box.width-24,box.height-16));
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(L("🛠️ BẢNG TEST & SPAWN VẬT PHẨM — F8 ĐÓNG","🛠️ DEBUG & ITEM SPAWNER — F8 TO CLOSE"));
+            if(UiButton(L("🔒 Khóa lại","🔒 Lock"),GUILayout.Width(100)))
+            {
+                debugUnlocked=false;
+                debugOpen=false;
+            }
             if(UiButton(L("Pivot bàn tay","Hand pivots"),GUILayout.Width(130)))
             {
                 handPivotEditorOpen=!handPivotEditorOpen;
@@ -309,7 +420,7 @@ namespace Ember
                         L("Hàn Nguyệt (Moon Mender)","Moon Mender"),
                         L("Kẻ Đặt Bẫy (Bomb Trapper)","Bomb Trapper"),
                         L("Hộ Vệ Cổ Tự (Rune Warden)","Rune Warden"),
-                        L("Bóng Ma (Space Wraith)","Space Wraith"),
+                        L("Bóng Ma Không Gian (Space Wraith)","Space Wraith"),
                         L("Bé Moone (Little Moone)","Little Moone")
                     };
                     int curV=(int)targetP.Vessel;

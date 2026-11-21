@@ -516,39 +516,6 @@ namespace Ember
                 GUILayout.Space(6);
                 return;
             }
-            if(!Application.isEditor&&!Debug.isDebugBuild)return;
-            GUILayout.BeginHorizontal();
-            if(UiButton(L("Test · Mở hết Bản Ngã (Lưu)","Test · Unlock vessels (Save)")))
-            {
-                Profile.Vessels=System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Range(0,Catalog.VesselNames.Length));
-                Profile.LittleMooneAwake=true;
-                Profile.WandererAwake=true;
-                SaveProfile();
-                notice=L("Đã mở toàn bộ Bản Ngã và lưu vào profile.ember.","Unlocked all vessels and saved to profile.ember.");
-                Trace("debug.unlock_vessels_saved",notice);
-            }
-            GUILayout.Space(6);
-            if(UiButton(L("Test · +Tài nguyên (Lưu)","Test · +Resources (Save)")))
-            {
-                Profile.Ash+=1000;
-                Profile.Memory+=50;
-                Profile.Tokens+=20;
-                Profile.AwakeningStones+=5;
-                SaveProfile();
-                notice=L("Đã cộng +1000 Tro, +50 Ký ức, +20 Định Mệnh, +5 Thức tỉnh (đã lưu).","Added test currencies and saved to profile.ember.");
-                Trace("debug.grant_currencies_saved",notice);
-            }
-            GUILayout.EndHorizontal();
-            if(selected==(int)Vessel.LittleMoone&&Profile.Vessels.Contains((int)Vessel.LittleMoone))
-            {
-                GUILayout.Space(4);
-                if(UiButton(Profile.LittleMooneAwake?L("Test · Đặt Moone vào Ngủ Sâu (Lưu)","Test · Put Moone to Deep Sleep (Save)"):L("Test · Thức Tỉnh Moone (Lưu)","Test · Awaken Moone (Save)")))
-                {
-                    Profile.LittleMooneAwake=!Profile.LittleMooneAwake;
-                    SaveProfile();
-                }
-            }
-            GUILayout.Space(4);
         }
 
         void DrawSanctuaryBackdrop()
