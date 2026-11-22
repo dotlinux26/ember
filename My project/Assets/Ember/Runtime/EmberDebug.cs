@@ -145,8 +145,10 @@ namespace Ember
         void DrawAuthModal()
         {
             Event e = Event.current;
-            bool enterPressed = e.type == EventType.KeyDown && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter);
-            bool escPressed = e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape;
+            bool enterPressed = (e.isKey && (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter || e.character == '\n' || e.character == '\r'))
+                || (Keyboard.current != null && (Keyboard.current[Key.Enter].wasPressedThisFrame || Keyboard.current[Key.NumpadEnter].wasPressedThisFrame));
+            bool escPressed = (e.isKey && e.keyCode == KeyCode.Escape)
+                || (Keyboard.current != null && Keyboard.current[Key.Escape].wasPressedThisFrame);
 
             float modalW = Mathf.Min(480, Screen.width - 32);
             float modalH = 280;
@@ -194,17 +196,18 @@ namespace Ember
             if (enterPressed)
             {
                 submit = true;
-                e.Use();
+                if (e.type != EventType.Repaint && e.type != EventType.Layout) e.Use();
             }
             if (escPressed)
             {
                 cancel = true;
-                e.Use();
+                if (e.type != EventType.Repaint && e.type != EventType.Layout) e.Use();
             }
 
             if (submit)
             {
-                if (VerifyConsoleAuth(authKeyInput))
+                string key = (authKeyInput ?? "").Replace("\n", "").Replace("\r", "").Trim();
+                if (VerifyConsoleAuth(key))
                 {
                     debugUnlocked = true;
                     authKeyInput = "";

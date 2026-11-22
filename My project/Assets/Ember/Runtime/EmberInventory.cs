@@ -76,42 +76,27 @@ namespace Ember
                 }
             }
 
-            // 2. Auto-assign any newly acquired item to first empty quickslot
-            void TryAssign(int slot)
+            // 2. Only auto-fill presets if all 4 quickslots are completely empty (first time / clean reset)
+            bool allEmpty = quickSlots.All(s => s == 0);
+            if (allEmpty)
             {
-                if (!HasSlotItem(p, slot)) return;
-                for (int i = 0; i < quickSlots.Length; i++)
+                int q = 0;
+                if (p.HasPickaxe && q < 4) quickSlots[q++] = 8;
+                if (p.HasWeapon && q < 4) quickSlots[q++] = 1;
+                if (p.HasSideWeapon && q < 4) quickSlots[q++] = 7;
+                if (p.Items != null)
                 {
-                    if (quickSlots[i] == slot) return;
-                }
-                for (int i = 0; i < quickSlots.Length; i++)
-                {
-                    if (quickSlots[i] == 0)
+                    for (int c = 0; c < p.Items.Length && q < 4; c++)
                     {
-                        quickSlots[i] = slot;
-                        SaveQuickSlots();
-                        if (i == 0 && heldSlot == 6)
+                        if (p.Items[c] > 0)
                         {
-                            EquipSlot(slot);
+                            int s = c < 4 ? c + 2 : 10 + c;
+                            if (!quickSlots.Contains(s)) quickSlots[q++] = s;
                         }
-                        return;
                     }
                 }
-            }
-
-            if (p.HasPickaxe) TryAssign(8);
-            if (p.HasWeapon) TryAssign(1);
-            if (p.HasSideWeapon) TryAssign(7);
-            if (p.Items != null)
-            {
-                for (int c = 0; c < 4 && c < p.Items.Length; c++)
-                {
-                    if (p.Items[c] > 0) TryAssign(c + 2);
-                }
-                for (int c = 4; c < p.Items.Length; c++)
-                {
-                    if (p.Items[c] > 0) TryAssign(10 + c);
-                }
+                SaveQuickSlots();
+                if (heldSlot == 6 && quickSlots[0] > 0) EquipSlot(quickSlots[0]);
             }
         }
 
@@ -247,6 +232,48 @@ namespace Ember
             intent.Equip=slot;
         }
 
+        void ActivateQuickSlot(int q)
+        {
+            if(q<0||q>=quickSlots.Length)return;
+            int slot=quickSlots[q];
+            if(slot<=0)return;
+
+            if(heldSlot!=slot)
+            {
+                EquipSlot(slot,toggle:false);
+            }
+            else
+            {
+                if(slot>=2&&slot<=5)
+                {
+                    int itm=slot-2;
+                    if(Local!=null&&Local.Items!=null&&itm<Local.Items.Length&&Local.Items[itm]>0)
+                        intent.Use=itm;
+                    else
+                        EquipSlot(6);
+                }
+                else if(slot>=10&&slot<40)
+                {
+                    int itm=slot-10;
+                    if(Local!=null&&Local.Items!=null&&itm<Local.Items.Length&&Local.Items[itm]>0)
+                        intent.Use=itm;
+                    else
+                        EquipSlot(6);
+                }
+                else if(slot>=50&&slot<60)
+                {
+                    int resId=slot-50;
+                    if(resId==0)intent.Refuel=true;
+                    else if(resId==1&&Local!=null&&Local.Pos.Length<=4.5f)intent.Deposit=true;
+                    else EquipSlot(6);
+                }
+                else
+                {
+                    EquipSlot(6);
+                }
+            }
+        }
+
         void DrawHands(Player player,SpriteRenderer body,V2 visualPos)
         {
             int slot=player.Id==localId?heldSlot:player.HeldSlot;
@@ -255,6 +282,8 @@ namespace Ember
             bool weapon=IsHoldingWeaponSlot(slot)&&(harvesting||hasWeaponItem);
             int heldItemIdx=(slot>=2&&slot<=5)?(slot-2):(slot>=10&&slot<40)?(slot-10):-1;
             bool consumable=!weapon&&heldItemIdx>=0&&player.Items!=null&&heldItemIdx<player.Items.Length&&player.Items[heldItemIdx]>0;
+            int heldResIdx=(slot>=50&&slot<60)?(slot-50):-1;
+            bool holdingResource=!weapon&&heldResIdx>=0&&player.Bag!=null&&heldResIdx<player.Bag.Length&&player.Bag[heldResIdx]>0;
             float sign=player.Right?1:-1;
             int handOrder=body.sortingOrder+4;
             int heldOrder=handOrder-1;
@@ -482,6 +511,13 @@ namespace Ember
                     held.flipY=false;
                 }
             }
+            else if(holdingResource)
+            {
+                var held=Put("heldItem"+player.Id,MaterialSprite(ResourceIcons[Mathf.Clamp(heldResIdx,0,ResourceIcons.Length-1)]),
+                    holdingHand+new V2(sign*.055f,.105f),Color.white,.62f,heldOrder,!player.Right);
+                held.transform.rotation=Quaternion.identity;
+                held.flipY=false;
+            }
         }
 
         Sprite HeldItemSprite(int index)
@@ -561,7 +597,7 @@ namespace Ember
         }
         readonly BackpackCell[] backpackCells=new BackpackCell[BackpackCapacity];
         Vector2 inventoryScroll;
-        int dragFromCell=-1,inspectedCell=-1;
+        int dragFromCell=-1,dragFromQuick=-1,inspectedCell=-1;
         Vector2 dragStartMouse;
         bool draggingItem;
         bool contextMenuOpen;
@@ -833,18 +869,19 @@ namespace Ember
             RegisterHudRect(box);
 
             int usedSlots=UsedBackpackSlots();
-            UiLabel(new Rect(box.x+14,box.y+6,120,34),L("Kho đồ","Inventory"),title);
-            var countChip=new Rect(box.x+132,box.y+11,148,26);
+            var titleStyle=new GUIStyle(title){wordWrap=false};
+            UiLabel(new Rect(box.x+14,box.y+6,160,34),L("Kho Đồ","Inventory"),titleStyle);
+            var countChip=new Rect(box.x+152,box.y+11,148,26);
             PixelPanel(countChip,new Color(.19f,.13f,.30f));
-            UiLabel(new Rect(countChip.x+8,countChip.y+3,countChip.width-12,20),
-                L("Ô đồ: ","Slots: ")+usedSlots+"/"+BackpackCapacity+"  ·  "+p.Load+"/"+Mathf.FloorToInt(p.Capacity),small);
+            UiLabel(new Rect(countChip.x+6,countChip.y+3,countChip.width-12,20),
+                L("Ô: ","Slots: ")+usedSlots+"/"+BackpackCapacity+"  ·  "+p.Load+"/"+Mathf.FloorToInt(p.Capacity),small);
 
-            if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Xếp","Sort")))SortBackpack(p);
-            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;contextMenuOpen=false;}
+            if(UiButton(new Rect(box.xMax-138,box.y+9,66,30),L("Sắp xếp","Sort")))SortBackpack(p);
+            if(UiButton(new Rect(box.xMax-68,box.y+9,54,30),L("Đóng","Close"))){inventoryOpen=false;pendingQuickAssign=0;dragFromCell=-1;dragFromQuick=-1;draggingItem=false;contextMenuOpen=false;}
 
             UiLabel(new Rect(box.x+14,box.y+40,width-28,24),
-                L("Kéo vào ô 1–4 để gán · Nhấn để cầm/cất · Chuột phải mở menu vứt đồ & gán ô",
-                  "Drag onto slots 1–4 to bind · Click to equip/unequip · Right-click for drop & bind menu"),small);
+                L("Kéo vào ô 1–4 để gán · Phím 1–4 gán nhanh · Bấm để cầm/dùng · Chuột phải để gán & dùng",
+                  "Drag onto 1–4 · Press 1–4 to bind · Click to equip/use · Right-click for menu"),small);
 
             float gridTop=box.y+64;
             var scrollFrame=new Rect(box.x+12,gridTop,width-24,viewHeight);
@@ -907,6 +944,21 @@ namespace Ember
                     UiLabel(new Rect(tile.x+5,tile.y+3,24,16),(i+1).ToString(),small);
                 }
 
+                if(hovered&&!cell.Empty&&ev.type==EventType.KeyDown)
+                {
+                    int kKey=-1;
+                    if(ev.keyCode==KeyCode.Alpha1||ev.keyCode==KeyCode.Keypad1)kKey=0;
+                    else if(ev.keyCode==KeyCode.Alpha2||ev.keyCode==KeyCode.Keypad2)kKey=1;
+                    else if(ev.keyCode==KeyCode.Alpha3||ev.keyCode==KeyCode.Keypad3)kKey=2;
+                    else if(ev.keyCode==KeyCode.Alpha4||ev.keyCode==KeyCode.Keypad4)kKey=3;
+                    if(kKey>=0&&eqSlot>0)
+                    {
+                        BindQuickSlot(kKey,eqSlot);
+                        notice=(EmberLanguage.English?"Bound to Slot ":"Đã gán vào Ô ")+(kKey+1)+": "+CellTitle(p,cell);
+                        ev.Use();
+                    }
+                }
+
                 if(hovered&&ev.type==EventType.MouseDown)
                 {
                     if(ev.button==1&&!cell.Empty)
@@ -930,7 +982,7 @@ namespace Ember
             }
             GUI.EndScrollView();
 
-            if(dragFromCell>=0&&ev.type==EventType.MouseDrag&&Vector2.Distance(globalMouse,dragStartMouse)>6f)
+            if((dragFromCell>=0||dragFromQuick>=0)&&ev.type==EventType.MouseDrag&&Vector2.Distance(globalMouse,dragStartMouse)>6f)
                 draggingItem=true;
 
             // Detail marquee bar.
@@ -963,7 +1015,8 @@ namespace Ember
                 var qTile=new Rect(box.center.x-qGridW/2+q*(qSize+6),qY,qSize,qSize);
                 bool qHover=qTile.Contains(globalMouse);
                 if(qHover)hoveredQuick=q;
-                bool dragAcceptable=draggingItem&&dragFromCell>=0&&EquipSlotForCell(backpackCells[dragFromCell])>0;
+                bool dragAcceptable=(draggingItem&&dragFromCell>=0&&EquipSlotForCell(backpackCells[dragFromCell])>0)
+                    ||(dragFromQuick>=0&&dragFromQuick!=q);
                 Color qBg=(dragAcceptable&&qHover)?new Color(.38f,.65f,.80f):
                     (qHover&&!draggingItem)?new Color(.28f,.22f,.42f):
                     pendingQuickAssign>0?new Color(.42f,.28f,.60f):
@@ -971,52 +1024,121 @@ namespace Ember
                 PixelPanel(qTile,qBg);
                 DrawSpritePreview(new Rect(qTile.center.x-16,qTile.y+5,32,32),SlotIconSprite(p,boundSlot));
                 UiLabel(new Rect(qTile.x+4,qTile.yMax-21,qSize-8,20),(q+1)+" · "+SlotShortValue(p,boundSlot),small);
-                if(!draggingItem&&qHover&&ev.type==EventType.MouseDown&&ev.button==0)
+                if(qHover&&ev.type==EventType.MouseDown)
                 {
-                    if(pendingQuickAssign>0)BindQuickSlot(q,pendingQuickAssign);
-                    else EquipSlot(boundSlot);
-                    ev.Use();
+                    if(ev.button==1&&boundSlot>0)
+                    {
+                        // Right-click to unbind/clear quickslot
+                        quickSlots[q]=0;
+                        SaveQuickSlots();
+                        ev.Use();
+                    }
+                    else if(ev.button==0)
+                    {
+                        if(pendingQuickAssign>0)BindQuickSlot(q,pendingQuickAssign);
+                        else if(boundSlot>0)
+                        {
+                            dragFromQuick=q;
+                            dragStartMouse=globalMouse;
+                            draggingItem=false;
+                        }
+                        ev.Use();
+                    }
                 }
             }
 
             // Finish click or drag-and-drop on mouse up.
-            if(ev.type==EventType.MouseUp&&ev.button==0&&dragFromCell>=0)
+            if(ev.type==EventType.MouseUp&&ev.button==0)
             {
-                if(draggingItem)
+                if(dragFromQuick>=0)
                 {
-                    if(hoveredCell>=0)
+                    if(draggingItem)
                     {
-                        MoveOrSwapBackpackCells(dragFromCell,hoveredCell);
-                        inspectedCell=hoveredCell;
-                    }
-                    else if(hoveredQuick>=0)
-                    {
-                        int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
-                        if(eqSlot>0)
+                        if(hoveredQuick>=0&&hoveredQuick!=dragFromQuick)
                         {
-                            BindQuickSlot(hoveredQuick,eqSlot);
-                            notice=(EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hoveredQuick+1)+": "+InventorySlotName(p,eqSlot);
+                            // Swap quickslots
+                            int tmp=quickSlots[hoveredQuick];
+                            quickSlots[hoveredQuick]=quickSlots[dragFromQuick];
+                            quickSlots[dragFromQuick]=tmp;
+                            SaveQuickSlots();
+                        }
+                        else if(hoveredQuick<0)
+                        {
+                            // Dragged outside quickslots -> unbind
+                            quickSlots[dragFromQuick]=0;
+                            SaveQuickSlots();
                         }
                     }
+                    else
+                    {
+                        ActivateQuickSlot(dragFromQuick);
+                    }
+                    dragFromQuick=-1;
+                    draggingItem=false;
+                    ev.Use();
                 }
-                else
+                else if(dragFromCell>=0)
                 {
-                    int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
-                    if(eqSlot>0){pendingQuickAssign=0;EquipSlot(eqSlot);}
+                    if(draggingItem)
+                    {
+                        if(hoveredCell>=0)
+                        {
+                            MoveOrSwapBackpackCells(dragFromCell,hoveredCell);
+                            inspectedCell=hoveredCell;
+                        }
+                        else if(hoveredQuick>=0)
+                        {
+                            int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
+                            if(eqSlot>0)
+                            {
+                                BindQuickSlot(hoveredQuick,eqSlot);
+                                notice=(EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hoveredQuick+1)+": "+InventorySlotName(p,eqSlot);
+                            }
+                        }
+                        else if(globalMouse.y>=Screen.height-90f)
+                        {
+                            float hudCell=Mathf.Min(68,(Screen.width-40)/5f);
+                            float hudStart=(Screen.width-5*hudCell)/2f;
+                            int hudIdx=Mathf.FloorToInt((globalMouse.x-hudStart)/hudCell);
+                            if(hudIdx>=0&&hudIdx<4)
+                            {
+                                int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
+                                if(eqSlot>0)
+                                {
+                                    BindQuickSlot(hudIdx,eqSlot);
+                                    notice=(EmberLanguage.English?"Bound slot ":"Đã gán ô ")+(hudIdx+1)+": "+InventorySlotName(p,eqSlot);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        int eqSlot=EquipSlotForCell(backpackCells[dragFromCell]);
+                        if(eqSlot>0){pendingQuickAssign=0;EquipSlot(eqSlot);}
+                    }
+                    dragFromCell=-1;
+                    draggingItem=false;
+                    ev.Use();
                 }
-                dragFromCell=-1;
-                draggingItem=false;
-                ev.Use();
             }
 
             // Floating ghost icon following the cursor while dragging.
-            if(draggingItem&&dragFromCell>=0&&!backpackCells[dragFromCell].Empty&&ev.type==EventType.Repaint)
+            if(draggingItem&&ev.type==EventType.Repaint)
             {
-                var ghost=new Rect(globalMouse.x-26,globalMouse.y-26,52,52);
-                GUI.color=new Color(1,1,1,.88f);
-                PixelPanel(ghost,new Color(.38f,.28f,.58f,.92f));
-                DrawSpritePreview(new Rect(ghost.x+7,ghost.y+7,38,38),CellSprite(p,backpackCells[dragFromCell]));
-                GUI.color=Color.white;
+                Sprite ghostSp=null;
+                if(dragFromQuick>=0&&quickSlots[dragFromQuick]>0)
+                    ghostSp=SlotIconSprite(p,quickSlots[dragFromQuick]);
+                else if(dragFromCell>=0&&!backpackCells[dragFromCell].Empty)
+                    ghostSp=CellSprite(p,backpackCells[dragFromCell]);
+
+                if(ghostSp!=null)
+                {
+                    var ghost=new Rect(globalMouse.x-26,globalMouse.y-26,52,52);
+                    GUI.color=new Color(1,1,1,.88f);
+                    PixelPanel(ghost,new Color(.38f,.28f,.58f,.92f));
+                    DrawSpritePreview(new Rect(ghost.x+7,ghost.y+7,38,38),ghostSp);
+                    GUI.color=Color.white;
+                }
             }
 
             DrawContextMenu(p,box);
@@ -1029,7 +1151,7 @@ namespace Ember
             if(cell.Empty){contextMenuOpen=false;return;}
             int eqSlot=EquipSlotForCell(cell);
             float mw=256;
-            float mh=eqSlot>0?220:cell.Kind==2?135:cell.Kind==3?105:(cell.Kind==1&&cell.Id==8)?105:75;
+            float mh=eqSlot>0?(cell.Kind==2||(cell.Kind==3&&(cell.Id==0||(cell.Id==1&&p.Pos.Length<=4.5f)))?240:210):cell.Kind==2?135:cell.Kind==3?105:(cell.Kind==1&&cell.Id==8)?105:75;
             float mx=Mathf.Clamp(contextMenuPos.x,parentBox.x+10,parentBox.xMax-mw-10);
             float my=Mathf.Clamp(contextMenuPos.y,parentBox.y+10,parentBox.yMax-mh-10);
             var menuRect=new Rect(mx,my,mw,mh);
@@ -1054,6 +1176,27 @@ namespace Ember
                     contextMenuOpen=false;
                 }
                 curY+=30;
+            }
+            else if(cell.Kind==3)
+            {
+                if(cell.Id==0)
+                {
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),L("Nạp đèn pin (Q)","Refuel Lamp (Q)"),menuBtnStyle))
+                    {
+                        intent.Refuel=true;
+                        contextMenuOpen=false;
+                    }
+                    curY+=30;
+                }
+                else if(cell.Id==1&&p.Pos.Length<=4.5f)
+                {
+                    if(GUI.Button(new Rect(menuRect.x+8,curY,mw-16,26),L("Nạp Hải Đăng (+50 NL)","Deposit to Beacon"),menuBtnStyle))
+                    {
+                        intent.Deposit=true;
+                        contextMenuOpen=false;
+                    }
+                    curY+=30;
+                }
             }
             if(eqSlot>0)
             {

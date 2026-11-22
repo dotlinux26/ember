@@ -92,7 +92,13 @@ namespace Ember
         void Awake()
         {
             InitializeDiagnostics();
-            EmberLanguage.English=PlayerPrefs.GetInt("Ember.Language",0)==1;Application.runInBackground=true;QualitySettings.vSyncCount=0;
+            EmberLanguage.English=PlayerPrefs.GetInt("Ember.Language",0)==1;
+            if(!Environment.GetCommandLineArgs().Contains("--ember-lang=en"))
+            {
+                EmberLanguage.English=false; // Default to Vietnamese!
+                PlayerPrefs.SetInt("Ember.Language",0);
+            }
+            Application.runInBackground=true;QualitySettings.vSyncCount=0;
             cam=Camera.main;if(cam==null)cam=new GameObject("Ember camera").AddComponent<Camera>();
             cam.orthographic=true;cam.orthographicSize=10;cam.backgroundColor=new Color(.04f,.05f,.09f);cam.clearFlags=CameraClearFlags.SolidColor;
             entityRoot=new GameObject("Ember entities");mapRoot=new GameObject("Ember map");
@@ -534,10 +540,10 @@ namespace Ember
             }
             if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}craftOpen=false;beaconDepositOpen=false;path.Clear();}
             if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;beaconDepositOpen=false;pendingQuickAssign=0;}
-            if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
-            if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}
-            if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else EquipSlot(quickSlots[2]);}
-            if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else EquipSlot(quickSlots[3]);}
+            if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else ActivateQuickSlot(0);}
+            if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else ActivateQuickSlot(1);}
+            if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else ActivateQuickSlot(2);}
+            if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else ActivateQuickSlot(3);}
             if(Press(Key.B)&&beaconDepositOpen){beaconDepositOpen=false;}
             if(inventoryOpen||beaconDepositOpen){intent.X=intent.Y=0;return;}
             if(Press(Key.R))ranges=!ranges;
@@ -592,7 +598,7 @@ namespace Ember
             bool isNearShroom=State?.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,Local.Pos)<2.5f);
             bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom||heldSlot==6)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
-            bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
+            bool wantUse=(Press(Key.K)||(Mouse.current!=null&&(Mouse.current.leftButton.wasPressedThisFrame||Mouse.current.rightButton.wasPressedThisFrame)&&!overUI));
             int itmToUse=(heldSlot>=2&&heldSlot<=5)?(heldSlot-2):(heldSlot>=10&&heldSlot<40)?(heldSlot-10):selectedItem;
             if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=itmToUse;
             bool pressedInteract=Press(Key.E);
@@ -1691,8 +1697,8 @@ namespace Ember
             }
             if(buildItem<0||buildItem>=p.Items.Length||p.Items[buildItem]<=0)return;
 
-            float offsetDist=(buildItem==4||buildItem==6)?1.2f:1.0f;
-            V2 ghostPos=p.Pos+new V2(p.Right?offsetDist:-offsetDist,0f);
+            float offsetDist=(buildItem==4||buildItem==6)?1.2f:buildItem==5?1.0f:0f;
+            V2 ghostPos=buildItem==0?p.Pos:p.Pos+new V2(p.Right?offsetDist:-offsetDist,0f);
 
             byte[] tiles = currentTiles ?? (host && World != null ? World.Tiles : (State != null ? EmberWorld.MakeTiles(State.Seed, State.Size) : null));
             int mapSize = State?.Size ?? 64;

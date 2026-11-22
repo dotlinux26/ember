@@ -1569,11 +1569,20 @@ namespace Ember
                 string tooltip=skill?L("Kỹ năng","Skill"):InventorySlotName(p,slot);
                 if(tile.Contains(Event.current.mousePosition)&&!inventoryOpen&&!craftOpen&&!beaconDepositOpen)
                     GUI.tooltip=tooltip;
+                if(tile.Contains(Event.current.mousePosition)&&Event.current.type==EventType.MouseDown)
+                {
+                    if(Event.current.button==1&&!skill&&quickSlots[i]>0)
+                    {
+                        quickSlots[i]=0;
+                        SaveQuickSlots();
+                        Event.current.Use();
+                    }
+                }
                 GUI.enabled=enabled;
                 if(GUI.Button(tile,GUIContent.none,GUIStyle.none))
                 {
                     if(skill)intent.Skill=true;
-                    else EquipSlot(slot);
+                    else ActivateQuickSlot(i);
                 }
                 GUI.enabled=true;
             }

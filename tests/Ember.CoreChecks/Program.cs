@@ -1341,6 +1341,30 @@ Check(builtChest != null, "Shared Chest structure successfully placed");
 Check(Math.Abs(builtChest.Pos.X - (10f + 1.2f)) < 0.05f, "Shared Chest placed 1.2f in front of player");
 Check(builder.HeldSlot == 6, "Held slot resets to empty hands after chest placement");
 
+// 15. Consumable and Resource HeldSlot Checks
+builder.Items[14] = 2; // Energy drinks
+builder.Items[15] = 3; // Apples
+builder.Bag = new int[5] { 50, 10, 5, 20, 15 };
+
+// Equip Resource (Wood = slot 53)
+buildWorld.Submit(1, new Command { Equip = 53 });
+buildWorld.Tick();
+Check(builder.HeldSlot == 53, "Player successfully equips raw resource (Wood) to hand");
+
+// Drink Energy Drink via Use=14
+buildWorld.Submit(1, new Command { Equip = 24, Use = 14 }); // slot 10+14=24
+buildWorld.Tick();
+Check(builder.StaminaBuffTimer == 30f, "Energy drink activates 30s infinite stamina buff");
+Check(builder.HasBuff(BuffKind.Swiftness), "Energy drink grants Swiftness movement speed buff");
+Check(builder.Items[14] == 1, "Energy drink consumed from inventory");
+
+// Eat Apple via Use=15
+builder.HP = 50f;
+buildWorld.Submit(1, new Command { Equip = 25, Use = 15 }); // slot 10+15=25
+buildWorld.Tick();
+Check(builder.HP == 75f, "Apple restores +25 HP");
+Check(builder.Items[15] == 2, "Apple consumed from inventory");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random
