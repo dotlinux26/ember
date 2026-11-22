@@ -1276,6 +1276,71 @@ enemyProjWorld.Tick();
 Check(enemyProjWorld.S.Effects.Any(e => e.Kind == 0), "Enemy projectile impact on player emits FX 0 impact spark");
 Check(!enemyProjWorld.S.Effects.Any(e => e.Kind == 3), "Enemy projectile impact on player does not emit FX 3 boss slash");
 
+// 13. Wandering Merchant Trade Integrity Checks
+var merchantPlayer = new Player
+{
+    Id = 1,
+    Name = "Buyer",
+    Bag = new int[] { 0, 0, 0, 0, 0 },
+    Items = new int[24]
+};
+Check(!EmberMerchant.CanTrade(merchantPlayer, 3), "Merchant trade rejected when player has 0 currency/cores");
+Check(!EmberMerchant.ExecuteTrade(null, merchantPlayer, 3), "ExecuteTrade fails when player cannot afford cost");
+Check(merchantPlayer.Items[3] == 0, "No wares delivered on failed trade");
+
+// Grant exactly 1 Core
+merchantPlayer.Bag[1] = 1;
+Check(EmberMerchant.CanTrade(merchantPlayer, 3), "Merchant trade approved when player has required core");
+bool tradeSuccess = EmberMerchant.ExecuteTrade(null, merchantPlayer, 3);
+Check(tradeSuccess, "ExecuteTrade succeeds with exact currency");
+Check(merchantPlayer.Bag[1] == 0, "Core deducted from player bag");
+Check(merchantPlayer.Items[3] == 2, "Exactly 2 Revival Stones delivered for 1 Core");
+Check(!EmberMerchant.CanTrade(merchantPlayer, 3), "Subsequent trade attempt rejected because player has 0 cores left (no duplication)");
+Check(!EmberMerchant.ExecuteTrade(null, merchantPlayer, 3), "Second trade execution rejected without duping items");
+Check(merchantPlayer.Items[3] == 2, "Items count remains strictly 2 (no duped 3-4 stones)");
+
+// 14. Universal Quick-Slot & Structure Construction Checks
+var buildWorld = new EmberWorld(42, 60, Difficulty.Normal);
+var builder = buildWorld.AddPlayer(1, "Builder", Vessel.Wanderer);
+buildWorld.StartRun();
+builder.Items = new int[24];
+builder.Items[4] = 1; // 1 Wall
+builder.Items[5] = 1; // 1 Trap
+builder.Items[6] = 1; // 1 Chest
+builder.Pos = new V2(10f, 10f);
+builder.Right = true;
+
+// Equip Wall slot 14 (slot 10 + 4)
+buildWorld.Submit(1, new Command { Equip = 14 });
+buildWorld.Tick();
+Check(builder.HeldSlot == 14, "Player equips Wall to held slot 14 (slot 10+4)");
+
+// Build Wall via Use=4
+buildWorld.Submit(1, new Command { Use = 4 });
+buildWorld.Tick();
+var builtWall = buildWorld.S.Structures.FirstOrDefault(s => s.Kind == 2);
+Check(builtWall != null, "Stone Wall structure successfully constructed in world");
+Check(Math.Abs(builtWall.Pos.X - (10f + 1.2f)) < 0.05f && Math.Abs(builtWall.Pos.Y - 10f) < 0.05f, "Stone Wall placed exactly 1.2f in front of player");
+Check(builtWall.HP == 150f, "Stone Wall starts with 150 HP");
+Check(builder.Items[4] == 0, "Wall consumed from player inventory");
+Check(builder.HeldSlot == 6, "Held slot resets to 6 (empty hands) when last wall is placed");
+
+// Equip & Build Trap via Use=5
+buildWorld.Submit(1, new Command { Equip = 15, Use = 5 });
+buildWorld.Tick();
+var builtTrap = buildWorld.S.Structures.FirstOrDefault(s => s.Kind == 3);
+Check(builtTrap != null, "Shock Trap structure successfully placed");
+Check(Math.Abs(builtTrap.Pos.X - (10f + 1.0f)) < 0.05f, "Shock Trap placed 1.0f in front of player matching blueprint");
+Check(builder.HeldSlot == 6, "Held slot resets to empty hands after trap placement");
+
+// Equip & Build Chest via Use=6
+buildWorld.Submit(1, new Command { Equip = 16, Use = 6 });
+buildWorld.Tick();
+var builtChest = buildWorld.S.Structures.FirstOrDefault(s => s.Kind == 4);
+Check(builtChest != null, "Shared Chest structure successfully placed");
+Check(Math.Abs(builtChest.Pos.X - (10f + 1.2f)) < 0.05f, "Shared Chest placed 1.2f in front of player");
+Check(builder.HeldSlot == 6, "Held slot resets to empty hands after chest placement");
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

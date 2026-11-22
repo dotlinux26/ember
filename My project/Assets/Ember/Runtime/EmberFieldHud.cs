@@ -24,8 +24,11 @@ namespace Ember
 
         bool CanUseSelectedItem(Player p)
         {
-            return heldSlot>=2&&heldSlot<=5&&p!=null&&!p.Ghost&&!p.Extracted&&p.Items!=null&&selectedItem>=0&&selectedItem<p.Items.Length&&p.Items[selectedItem]>0&&
-                (selectedItem!=3||(p.Pos.Length<=5&&State?.Players!=null&&System.Array.Exists(State.Players,q=>q.Ghost)));
+            if(p==null||p.Ghost||p.Extracted||p.Items==null)return false;
+            int itm=(heldSlot>=2&&heldSlot<=5)?(heldSlot-2):(heldSlot>=10&&heldSlot<40)?(heldSlot-10):selectedItem;
+            if(itm<0||itm>=p.Items.Length||p.Items[itm]<=0)return false;
+            if(itm==3)return p.Pos.Length<=5&&State?.Players!=null&&System.Array.Exists(State.Players,q=>q.Ghost);
+            return true;
         }
 
         GUIStyle overheadName,overheadGlow;
@@ -1231,19 +1234,45 @@ namespace Ember
                 return L("Tay không · Không đốt nhiên liệu đèn · Phím 1–4 đổi trang bị nhanh · [E] Tự cầm cuốc đào mỏ hoặc nhặt đồ",
                     "Empty hands · Saves torch fuel · Keys 1–4 swap quick slots · [E] Auto-equip pickaxe to mine or loot");
 
+            if(heldSlot>=10&&heldSlot<40)
+            {
+                int itmId=heldSlot-10;
+                string itmName=Catalog.GetItemDisplayName(itmId);
+                int itmCount=(p.Items!=null&&itmId<p.Items.Length)?p.Items[itmId]:0;
+                string itmQty=itmCount>0?L("Còn x","x")+itmCount:L("Đã hết","Empty");
+                string itmDesc=itmId==4?L("Chuột trái hoặc [U] để xây Tường Đá chặn đường quái vật (Khối ảo mờ xem trước)","L-Click or [U] to build Stone Wall (Ghost preview)")
+                    :itmId==5?L("Chuột trái hoặc [U] để đặt Bẫy Điện làm chậm & choáng quái","L-Click or [U] to place Shock Trap (stuns monsters)")
+                    :itmId==6?L("Chuột trái hoặc [U] để đặt Rương Chung chia sẻ tài nguyên","L-Click or [U] to place Shared Chest")
+                    :itmId==14?L("Chuột trái hoặc [U] uống: +35% Tốc chạy & Thể lực vô tận [30s]","L-Click or [U] Drink: +35% Speed & Infinite Stamina [30s]")
+                    :itmId==15?L("Chuột trái hoặc [U] ăn: Hồi 25 HP","L-Click or [U] Eat: Restores 25 HP")
+                    :itmId==16?L("Chuột trái hoặc [U] ăn: Hồi 15 HP","L-Click or [U] Eat: Restores 15 HP")
+                    :itmId==17?L("Chuột trái hoặc [U] ăn: Hồi 45 HP & No Ấm (Kháng hoảng loạn)","L-Click or [U] Eat: Restores 45 HP & Well Fed")
+                    :itmId==18?L("Chuột trái hoặc [U] ăn: Hồi 50 HP & Hồi phục thể lực","L-Click or [U] Eat: Restores 50 HP & Regen")
+                    :L("Chuột trái hoặc [U] để sử dụng","L-Click or [U] to use");
+                return itmName+" ("+itmQty+") · "+itmDesc;
+            }
+            if(heldSlot>=50&&heldSlot<60)
+            {
+                int resId=heldSlot-50;
+                string[] resEn={"Lumen Dust","Core","Umbra Shard","Wood","Ore"};
+                string resName=(EmberLanguage.English?resEn:Catalog.ResourceNames)[Mathf.Clamp(resId,0,4)];
+                int resCount=(p.Bag!=null&&resId<p.Bag.Length)?p.Bag[resId]:0;
+                return resName+" (x"+resCount+") · "+L("Tài nguyên thô dùng để chế tạo hoặc nộp vào Hải Đăng [Q]","Raw resource used to craft or deposit into Beacon [Q]");
+            }
+
             int idx=Mathf.Clamp(heldSlot-2,0,3);
             string itemName=(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[idx];
-            int count=p.Items[idx];
+            int count=(p.Items!=null&&idx<p.Items.Length)?p.Items[idx]:0;
             string qty=count>0?L("Còn x","x")+count:L("Đã hết","Empty");
             string detail;
-            if(idx==0)detail=L("Cầm tay soi sáng (tốn nhiên liệu) · [F] Đặt xuống đất sáng 45s (mất 1 đuốc) · [L] Tắt/Bật lửa",
-                "Hold to light area (uses fuel) · [F] Place on ground for 45s (consumes 1) · [L] Toggle flame");
-            else if(idx==1)detail=L("[F] Ném pháo sáng soi rộng 8 ô trong 12s · Xua bóng tối & chống Hoảng loạn",
-                "[F] Deploy 8-tile flare for 12s · Banishes dark & prevents Dread");
-            else if(idx==2)detail=L("[F] Uống giảm ngay 40% Hoảng loạn để tránh ảo giác & đánh nhầm đồng đội",
-                "[F] Drink to calm 40% Dread and prevent hallucinations");
-            else detail=L("Đứng gần Hải Đăng bấm [F] để hồi sinh đồng đội gục với 50% HP & 3s bất tử",
-                "Stand near Beacon and press [F] to revive a downed ally at 50% HP");
+            if(idx==0)detail=L("Cầm tay soi sáng (tốn nhiên liệu) · [U]/Chuột trái để cắm đuốc xuống đất (45s) · [T] Tắt/Bật lửa",
+                "Hold to light area (uses fuel) · [U]/L-Click to place torch on ground (45s) · [T] Toggle flame");
+            else if(idx==1)detail=L("[U]/Chuột trái: Bắn pháo sáng soi rộng 8 ô trong 12s · Xua bóng tối & chống Hoảng loạn",
+                "[U]/L-Click: Deploy 8-tile flare for 12s · Banishes dark & prevents Dread");
+            else if(idx==2)detail=L("[U]/Chuột trái: Uống giảm ngay 40% Hoảng loạn để tránh ảo giác & đánh nhầm đồng đội",
+                "[U]/L-Click: Drink to calm 40% Dread and prevent hallucinations");
+            else detail=L("Đứng gần Hải Đăng bấm [U]/Chuột trái để hồi sinh đồng đội gục với 50% HP & 3s bất tử",
+                "Stand near Beacon and press [U]/L-Click to revive a downed ally at 50% HP");
             return itemName+" ("+qty+") · "+detail;
         }
 

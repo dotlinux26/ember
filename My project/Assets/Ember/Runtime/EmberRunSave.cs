@@ -130,7 +130,7 @@ namespace Ember
                 if(local!=null)
                 {
                     selected=Mathf.Clamp((int)local.Vessel,0,Catalog.VesselNames.Length-1);
-                    heldSlot=data.HeldSlot>=1&&data.HeldSlot<=8?data.HeldSlot:Mathf.Clamp(local.HeldSlot,1,8);
+                    heldSlot=data.HeldSlot>=1&&data.HeldSlot<=60?data.HeldSlot:Mathf.Clamp(local.HeldSlot,1,60);
                     local.HeldSlot=heldSlot;
                 }
                 else heldSlot=1;

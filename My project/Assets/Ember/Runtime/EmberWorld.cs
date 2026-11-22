@@ -2423,6 +2423,7 @@ namespace Ember
                     if(p.Items[4]<99)
                     {
                         p.Items[4]++;
+                        if(p.HeldSlot==6)p.HeldSlot=14;
                     }
                     else
                     {
@@ -2475,7 +2476,7 @@ namespace Ember
                 if(merchant!=null)ExecuteTrade(p,c.Trade);
             }
             if(c.Craft>=0&&c.Craft<Catalog.Recipes.Length)Craft(p,(Recipe)c.Craft);
-            if(c.Equip>=1&&c.Equip<=8)
+            if(c.Equip>=1&&c.Equip<=60)
             {
                 if(p.HeldSlot!=c.Equip){p.HeldSlot=c.Equip;p.ReloadTimer=0;}
             }
@@ -3055,6 +3056,7 @@ namespace Ember
             {
                 p.Items[4]++;
                 if(p.WallHP<=0)p.WallHP=150f;
+                if(p.HeldSlot==6)p.HeldSlot=14;
             }
             else if(index<7)
             {
@@ -3147,12 +3149,12 @@ namespace Ember
             }
             else if(effectiveItem==5)
             {
-                structures.Add(new Structure{Id=nextId++,Kind=3,Pos=p.Pos,Life=90f,MaxLife=90f,HP=100f});
+                structures.Add(new Structure{Id=nextId++,Kind=3,Pos=p.Pos+new V2(p.Right?1.0f:-1.0f,0),Life=90f,MaxLife=90f,HP=100f});
                 Announce(EmberLanguage.English?"Shock Trap placed!":"Đã đặt Bẫy điện!",p.Name);
             }
             else if(effectiveItem==6)
             {
-                structures.Add(new Structure{Id=nextId++,Kind=4,Pos=p.Pos,Life=999999f,MaxLife=999999f,HP=200f});
+                structures.Add(new Structure{Id=nextId++,Kind=4,Pos=p.Pos+new V2(p.Right?1.2f:-1.2f,0),Life=999999f,MaxLife=999999f,HP=200f});
                 Announce(EmberLanguage.English?"Shared Chest placed!":"Đã đặt Rương chung!",p.Name);
             }
             else if(effectiveItem==14)
@@ -3199,7 +3201,7 @@ namespace Ember
                 Announce(EmberLanguage.English?"Ate Mushroom Stew: +50 HP, Well Fed & Regen [45s]!":"Ăn Súp Nấm: +50 HP, No Ấm & Hồi phục [45s]!",p.Name);
             }
             p.Items[effectiveItem]--;
-            if(p.Items[effectiveItem]<=0&&(p.HeldSlot==effectiveItem+2||(item>=2&&item<=5&&p.HeldSlot==item)))p.HeldSlot=6;
+            if(p.Items[effectiveItem]<=0&&(p.HeldSlot==effectiveItem+2||p.HeldSlot==10+effectiveItem||(item>=2&&item<=5&&p.HeldSlot==item)))p.HeldSlot=6;
             Publish();
         }
         public Enemy Target(Player p,float range)

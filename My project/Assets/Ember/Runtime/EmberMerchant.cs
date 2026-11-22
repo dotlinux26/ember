@@ -302,6 +302,7 @@ namespace Ember
             for (int r = 0; r < 5; r++)
             {
                 p.Bag[r] -= trade.Cost[r];
+                if (p.Bag[r] < 0) p.Bag[r] = 0;
             }
 
             // 2. Deliver reward
@@ -657,10 +658,6 @@ namespace Ember
                     string btnLabel = EmberLanguage.English ? "Trade" : "Giao Dịch";
                     if (GUI.Button(btnRect, btnLabel, merchantBtnStyle))
                     {
-                        if (World != null)
-                        {
-                            EmberMerchant.ExecuteTrade(World, p, i, Profile);
-                        }
                         intent.Trade = i;
                     }
                     GUI.enabled = true;

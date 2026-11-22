@@ -24,7 +24,7 @@ namespace Ember
             string[] parts=raw.Split(',');
             if(parts.Length!=4)return;
             for(int i=0;i<4;i++)
-                if(int.TryParse(parts[i],out int slot)&&slot>=1&&slot<=8)quickSlots[i]=slot;
+                if(int.TryParse(parts[i],out int slot)&&slot>=1&&slot<=60)quickSlots[i]=slot;
         }
 
         void SaveQuickSlots()
@@ -34,7 +34,7 @@ namespace Ember
 
         void BindQuickSlot(int quickIndex,int slot)
         {
-            if(quickIndex<0||quickIndex>=quickSlots.Length||slot<1||slot>8)return;
+            if(quickIndex<0||quickIndex>=quickSlots.Length||slot<1||slot>60)return;
             int existing=System.Array.IndexOf(quickSlots,slot);
             if(existing>=0&&existing!=quickIndex)quickSlots[existing]=quickSlots[quickIndex];
             quickSlots[quickIndex]=slot;
@@ -49,6 +49,16 @@ namespace Ember
             if (slot == 7) return p.HasSideWeapon;
             if (slot == 8) return p.HasPickaxe;
             if (slot >= 2 && slot <= 5) return p.Items != null && slot - 2 < p.Items.Length && p.Items[slot - 2] > 0;
+            if (slot >= 10 && slot < 40)
+            {
+                int itemId = slot - 10;
+                return p.Items != null && itemId < p.Items.Length && p.Items[itemId] > 0;
+            }
+            if (slot >= 50 && slot < 60)
+            {
+                int resId = slot - 50;
+                return p.Bag != null && resId < p.Bag.Length && p.Bag[resId] > 0;
+            }
             return false;
         }
 
@@ -98,6 +108,10 @@ namespace Ember
                 {
                     if (p.Items[c] > 0) TryAssign(c + 2);
                 }
+                for (int c = 4; c < p.Items.Length; c++)
+                {
+                    if (p.Items[c] > 0) TryAssign(10 + c);
+                }
             }
         }
 
@@ -108,6 +122,16 @@ namespace Ember
             if(slot==7)return p.HasSideWeapon?Primitive(InventoryWeaponArt[(int)WeaponForSlot(p,slot)]):null;
             if(slot==8)return p.HasPickaxe?Primitive(p.PickaxeTier>0?"pickaxe":"stone_pickaxe"):null;
             if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?HeldItemSprite(slot-2):null;
+            if(slot>=10&&slot<40)
+            {
+                int itemId=slot-10;
+                return (p.Items!=null&&itemId<p.Items.Length&&p.Items[itemId]>0)?HeldItemSprite(itemId):null;
+            }
+            if(slot>=50&&slot<60)
+            {
+                int resId=slot-50;
+                return (p.Bag!=null&&resId<p.Bag.Length&&p.Bag[resId]>0)?MaterialSprite(ResourceIcons[Mathf.Clamp(resId,0,ResourceIcons.Length-1)]):null;
+            }
             return null;
         }
 
@@ -146,6 +170,18 @@ namespace Ember
                 return p.PickaxeDurability+"/"+p.PickaxeMaxDurability;
             }
             if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?p.Items[slot-2].ToString():"—";
+            if(slot>=10&&slot<40)
+            {
+                int itemId=slot-10;
+                if(itemId==4)return Mathf.CeilToInt(p.WallHP>0?p.WallHP:150f)+" HP";
+                if(itemId==0)return Mathf.CeilToInt(p.TorchFuel>0?p.TorchFuel:45f)+"s";
+                return (p.Items!=null&&itemId<p.Items.Length&&p.Items[itemId]>0)?p.Items[itemId].ToString():"—";
+            }
+            if(slot>=50&&slot<60)
+            {
+                int resId=slot-50;
+                return (p.Bag!=null&&resId<p.Bag.Length)?p.Bag[resId].ToString():"—";
+            }
             return "—";
         }
 
@@ -207,6 +243,7 @@ namespace Ember
             heldSlot=slot;
             lastServerHeldSlot=slot;
             if(slot>=2&&slot<=5)selectedItem=slot-2;
+            else if(slot>=10&&slot<40)selectedItem=slot-10;
             intent.Equip=slot;
         }
 
@@ -216,7 +253,8 @@ namespace Ember
             bool harvesting=player.HarvestCD>0&&slot==8;
             bool hasWeaponItem=(slot==1&&player.HasWeapon)||(slot==7&&player.HasSideWeapon)||(slot==8&&player.HasPickaxe);
             bool weapon=IsHoldingWeaponSlot(slot)&&(harvesting||hasWeaponItem);
-            bool consumable=!weapon&&slot>=2&&slot<=5&&player.Items!=null&&slot-2<player.Items.Length&&player.Items[slot-2]>0;
+            int heldItemIdx=(slot>=2&&slot<=5)?(slot-2):(slot>=10&&slot<40)?(slot-10):-1;
+            bool consumable=!weapon&&heldItemIdx>=0&&player.Items!=null&&heldItemIdx<player.Items.Length&&player.Items[heldItemIdx]>0;
             float sign=player.Right?1:-1;
             int handOrder=body.sortingOrder+4;
             int heldOrder=handOrder-1;
@@ -418,7 +456,7 @@ namespace Ember
             }
             else if(consumable)
             {
-                if(slot-2==0) // Handheld Torch with standardized ergonomic grip & flickering flame
+                if(heldItemIdx==0) // Handheld Torch with standardized ergonomic grip & flickering flame
                 {
                     var tg=EmberWeaponGrips.Torch;
                     V2 torchHandPos=holdingHand+new V2(sign*tg.HandOffset.X,tg.HandOffset.Y);
@@ -438,7 +476,7 @@ namespace Ember
                 }
                 else
                 {
-                    var held=Put("heldItem"+player.Id,HeldItemSprite(slot-2),holdingHand+new V2(sign*.055f,.105f),
+                    var held=Put("heldItem"+player.Id,HeldItemSprite(heldItemIdx),holdingHand+new V2(sign*.055f,.105f),
                         Color.white,.57f,heldOrder,!player.Right);
                     held.transform.rotation=Quaternion.identity;
                     held.flipY=false;
@@ -499,6 +537,17 @@ namespace Ember
             if(slot==8)return p.HasPickaxe?p.PickaxeName:L("Ô Cuốc (Trống)","Pickaxe (Empty)");
             if(slot==6)return L("Tay không","Empty hands");
             if(slot>=2&&slot<=5)return (p.Items!=null&&slot-2<p.Items.Length&&p.Items[slot-2]>0)?(EmberLanguage.English?ItemNamesEn:ItemNamesVi)[slot-2]:L("Trống","Empty");
+            if(slot>=10&&slot<40)
+            {
+                int itemId=slot-10;
+                return Catalog.GetItemDisplayName(itemId);
+            }
+            if(slot>=50&&slot<60)
+            {
+                int resId=slot-50;
+                string[] resEn={"Lumen Dust","Core","Umbra Shard","Wood","Ore"};
+                return (EmberLanguage.English?resEn:Catalog.ResourceNames)[Mathf.Clamp(resId,0,4)];
+            }
             return L("Trống","Empty");
         }
 
@@ -653,7 +702,7 @@ namespace Ember
             return used;
         }
 
-        int EquipSlotForCell(BackpackCell cell)=>cell.Kind==1?cell.Id:cell.Kind==2?(cell.Id<4?cell.Id+2:0):0;
+        int EquipSlotForCell(BackpackCell cell)=>cell.Kind==1?cell.Id:cell.Kind==2?(cell.Id<4?cell.Id+2:10+cell.Id):cell.Kind==3?(50+cell.Id):0;
 
         Sprite CellSprite(Player p,BackpackCell cell)
         {

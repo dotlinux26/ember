@@ -214,7 +214,7 @@ namespace Ember
                             World=new EmberWorld(State.Seed,State.Size,State.Difficulty);
                             World.S=State;
                         }
-                        if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=8)heldSlot=Local.HeldSlot;
+                        if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=60)heldSlot=Local.HeldSlot;
                         jitterBuffer.Push(Time.realtimeSinceStartupAsDouble,State,localId);
                     }
                 };
@@ -593,7 +593,8 @@ namespace Ember
             bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom||heldSlot==6)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
             bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
-            if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=selectedItem;
+            int itmToUse=(heldSlot>=2&&heldSlot<=5)?(heldSlot-2):(heldSlot>=10&&heldSlot<40)?(heldSlot-10):selectedItem;
+            if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=itmToUse;
             bool pressedInteract=Press(Key.E);
             if(pressedInteract&&Local!=null&&!Local.Ghost)
             {
@@ -665,7 +666,7 @@ namespace Ember
             }
             ApplyTouchInput();
         }
-        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=-1;intent.Equip=0;intent.DepositRes=-1;intent.DepositAmt=0;}
+        void ClearActions(){intent.Attack=intent.Skill=intent.Dash=intent.Interact=intent.Refuel=intent.Deposit=intent.ToggleLamp=intent.PassLamp=intent.Push=intent.Revive=intent.Reload=false;intent.Craft=intent.Use=intent.Trade=-1;intent.Equip=0;intent.DepositRes=-1;intent.DepositAmt=0;}
         bool IsNearTree(Player p)
         {
             if(p==null||currentTiles==null||State==null)return false;
@@ -1593,6 +1594,7 @@ namespace Ember
                     Put("ironskin_aura"+p.Id,Primitive("ring"),pPos+new V2(0,.5f),new Color(.95f,.8f,.25f,.50f),1.6f,-1);
                 }
             }
+            DrawBuildPreviewGhost(Local);
             var projsArr=State.Projectiles;
             if(projsArr!=null)for(int qi=0;qi<projsArr.Length;qi++)
             {
@@ -1675,6 +1677,68 @@ namespace Ember
             foreach(var pair in renderers)if(!touched.Contains(pair.Key)&&pair.Value!=null&&pair.Value.gameObject!=null&&pair.Value.enabled)pair.Value.enabled=false;
             // Reclaim transient node/enemy renderers instead of retaining an entire run.
             if(renderers.Count>1400)foreach(var key in renderers.Where(p=>p.Value==null||p.Value.gameObject==null||!p.Value.enabled).Select(p=>p.Key).ToArray()){if(renderers.TryGetValue(key,out var sr)&&sr!=null&&sr.gameObject!=null)Destroy(sr.gameObject);renderers.Remove(key);}
+        }
+        void DrawBuildPreviewGhost(Player p)
+        {
+            if(p==null||p.Ghost||p.Extracted||p.Items==null)return;
+            int slot=p.Id==localId?heldSlot:p.HeldSlot;
+            int buildItem=-1;
+            if(slot==2)buildItem=0; // Torch
+            else if(slot>=10&&slot<40)
+            {
+                int itm=slot-10;
+                if(itm==0||itm==4||itm==5||itm==6)buildItem=itm;
+            }
+            if(buildItem<0||buildItem>=p.Items.Length||p.Items[buildItem]<=0)return;
+
+            float offsetDist=(buildItem==4||buildItem==6)?1.2f:1.0f;
+            V2 ghostPos=p.Pos+new V2(p.Right?offsetDist:-offsetDist,0f);
+
+            byte[] tiles = currentTiles ?? (host && World != null ? World.Tiles : (State != null ? EmberWorld.MakeTiles(State.Seed, State.Size) : null));
+            int mapSize = State?.Size ?? 64;
+            bool valid = tiles != null && IsNavWalkable(tiles, mapSize, ghostPos);
+            if(valid&&State?.Structures!=null)
+            {
+                for(int i=0;i<State.Structures.Length;i++)
+                {
+                    var s=State.Structures[i];
+                    if((s.Kind==2||s.Kind==4||s.Kind==10)&&V2.Distance(s.Pos,ghostPos)<0.85f)
+                    {
+                        valid=false;
+                        break;
+                    }
+                }
+            }
+
+            float pulse=0.82f+0.18f*Mathf.Sin(clock*5f);
+            Color ghostCol=valid
+                ?new Color(0.25f,0.85f,1.0f,0.52f*pulse)
+                :new Color(1.0f,0.30f,0.25f,0.58f*pulse);
+            Color ringCol=valid
+                ?new Color(0.20f,0.95f,0.80f,0.48f*pulse)
+                :new Color(1.0f,0.25f,0.20f,0.52f*pulse);
+
+            V2 footPos=ghostPos+new V2(0f,-0.22f);
+            var footDisc=Put("buildGhost_footDisc",Primitive("circle"),footPos,new Color(ringCol.r,ringCol.g,ringCol.b,0.22f*pulse),1.25f,4985);
+            if(emissionMaterial!=null)footDisc.sharedMaterial=emissionMaterial;
+
+            var footRing=Put("buildGhost_footRing",Primitive("ring"),footPos,ringCol,1.35f,4986);
+            if(emissionMaterial!=null)footRing.sharedMaterial=emissionMaterial;
+
+            string structArt=buildItem==0?"torch_ground":buildItem==4?"wall":buildItem==5?"trap":"chest";
+            float structScale=buildItem==4?1.4f:buildItem==6?1.35f:buildItem==0?1.2f:1.0f;
+            int ghostOrder=5002-Mathf.RoundToInt(ghostPos.Y*10);
+
+            var ghostSr=Put("buildGhost_sprite",Primitive(structArt),ghostPos,ghostCol,structScale,ghostOrder,flip:!p.Right);
+            if(emissionMaterial!=null)ghostSr.sharedMaterial=emissionMaterial;
+
+            if(buildItem==0)
+            {
+                int flameFrame=(int)(clock*8f)%8;
+                Sprite flameSprite=EnemyFrame("torch_fire",flameFrame);
+                var flameSr=Put("buildGhost_flame",flameSprite,ghostPos+new V2(0,.08f),new Color(1f,0.8f,0.3f,0.6f*pulse),structScale,ghostOrder+1,!p.Right);
+                if(emissionMaterial!=null)flameSr.sharedMaterial=emissionMaterial;
+            }
         }
         static void Blit16(Color32[] dest,int px,int tx,int ty,Color32[] src,int srcW,int sc,int sr,bool blend=false)
         {
