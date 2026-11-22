@@ -92,7 +92,7 @@ namespace Ember
                              L("Rút lui: ","Extractions: ")+pendingRestore.Extractions+" ("+winRate+"%)   |   "+
                              L("Khai thác: ","Gathered: ")+pendingRestore.TotalGathered+"   |   "+
                              L("Chế tạo: ","Crafted: ")+pendingRestore.TotalCrafted+"   |   "+
-                             L("Công thức: ","Recipes: ")+pendingRestore.Recipes.Length+"/7";
+                             L("Công thức: ","Recipes: ")+pendingRestore.Recipes.Length+"/"+Catalog.Recipes.Length;
             PixelPanel(new Rect(x+20,curY,width-40,30),new Color(.14f,.18f,.28f));
             UiLabel(new Rect(x+28,curY+4,width-56,22),statsText,small);
             curY+=36;

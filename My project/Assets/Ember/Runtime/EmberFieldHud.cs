@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 namespace Ember
@@ -7,6 +6,10 @@ namespace Ember
     {
         static readonly string[] ActionIcons={"torch","flare","sedative","revival"};
         static readonly Color FieldPaper=new Color(.085f,.068f,.14f,.97f);
+        GUIStyle hudBeaconHeaderStyle,hudBeaconEnergyStyle,hudArrowStyle,hudPctStyle,hudCollapseBtnStyle;
+        GUIStyle hudWaveStyle,hudMarqueeOutlineStyle,hudAnnounceStyle,hudMapIconStyle,hudMapHeaderStyle;
+        GUIStyle hudBuffLabelStyle,hudSlotLabelStyle,hudModalTitleStyle,hudModalStatusStyle,hudModalMeterLabelStyle;
+        GUIStyle hudModalQuickBtnStyle,hudModalFooterStyle,hudDepositNameStyle,hudDepositRateStyle,hudDepositOwnedStyle,hudDepositBtnStyle;
 
         string SkillRangeText(Vessel vessel)
         {
@@ -147,9 +150,9 @@ namespace Ember
             PixelPanel(panelRect,new Color(.08f,.06f,.14f,.94f));
 
             // Header title
-            var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
-            headerStyle.normal.textColor=new Color(.92f,.90f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+4,panelRect.width-8,16),tierTitle,headerStyle);
+            if(hudBeaconHeaderStyle==null)hudBeaconHeaderStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+            hudBeaconHeaderStyle.normal.textColor=new Color(.92f,.90f,1f);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+4,panelRect.width-8,16),tierTitle,hudBeaconHeaderStyle);
 
             // Energy meter
             float chargeRatio=Mathf.Clamp01(curCharge/(float)targetCharge);
@@ -160,19 +163,31 @@ namespace Ember
             Panel(new Rect(barBg.x+1,barBg.y+1,(mw-2)*chargeRatio,3),meterCol);
 
             // Energy text under meter
-            var energyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
-            energyStyle.normal.textColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
-            GUI.Label(new Rect(panelRect.x+4,panelRect.y+28,panelRect.width-8,16),energyText,energyStyle);
+            if(hudBeaconEnergyStyle==null)hudBeaconEnergyStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
+            hudBeaconEnergyStyle.normal.textColor=overcharged?new Color(.4f,1f,.88f):new Color(.78f,.92f,1f);
+            GUI.Label(new Rect(panelRect.x+4,panelRect.y+28,panelRect.width-8,16),energyText,hudBeaconEnergyStyle);
         }
 
         void DrawInteractPrompt(Player p)
         {
             V2 targetPos;
             string caption;
-            var merchant=State.Structures?.Where(s=>EmberMerchant.IsMerchant(s)&&V2.Distance(s.Pos,p.Pos)<EmberMerchant.MerchantInteractionDistance)
-                .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
-            var mysteryChest=State.Structures?.Where(s=>s.Kind==12&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.2f)
-                .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
+            Structure merchant=null,mysteryChest=null,chest=null,groundTorch=null,groundWall=null;
+            float merchantDist=EmberMerchant.MerchantInteractionDistance,mysteryDist=2.2f,chestDist=2f,torchDist=2.0f,wallDist=2.0f;
+            if(State.Structures!=null)
+            {
+                for(int si=0;si<State.Structures.Length;si++)
+                {
+                    var s=State.Structures[si];
+                    if(s==null)continue;
+                    float d=V2.Distance(s.Pos,p.Pos);
+                    if(EmberMerchant.IsMerchant(s)&&d<merchantDist){merchantDist=d;merchant=s;}
+                    if(s.Kind==12&&s.HP>0&&d<mysteryDist){mysteryDist=d;mysteryChest=s;}
+                    if(s.Kind==4&&d<chestDist){chestDist=d;chest=s;}
+                    if(s.Kind==0&&s.Life>0&&d<torchDist){torchDist=d;groundTorch=s;}
+                    if(s.Kind==2&&s.HP>0&&d<wallDist){wallDist=d;groundWall=s;}
+                }
+            }
             if(mysteryChest!=null)
             {
                 targetPos=mysteryChest.Pos+new V2(0,.65f);
@@ -190,12 +205,6 @@ namespace Ember
             }
             else
             {
-                var chest=State.Structures.Where(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2)
-                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
-                var groundTorch=State.Structures.Where(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f)
-                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
-                var groundWall=State.Structures.Where(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<2.0f)
-                    .OrderBy(s=>V2.Distance(s.Pos,p.Pos)).FirstOrDefault();
                 if(chest!=null)
                 {
                     targetPos=chest.Pos+new V2(0,.65f);
@@ -213,8 +222,18 @@ namespace Ember
                 }
                 else
                 {
-                    var node=State.Nodes.Where(n=>V2.Distance(n.Pos,p.Pos)<2.4f)
-                        .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
+                    Node node=null;
+                    float nodeDist=2.4f;
+                    if(State.Nodes!=null)
+                    {
+                        for(int ni=0;ni<State.Nodes.Length;ni++)
+                        {
+                            var n=State.Nodes[ni];
+                            if(n==null)continue;
+                            float d=V2.Distance(n.Pos,p.Pos);
+                            if(d<nodeDist){nodeDist=d;node=n;}
+                        }
+                    }
                     if(node!=null)
                     {
                         // Undropped resource veins/bushes/mushrooms have dynamic interactive glow when approached.
@@ -283,8 +302,31 @@ namespace Ember
             GUI.contentColor=oldColor;
             if(GUI.Button(box,GUIContent.none,GUIStyle.none))
             {
-                bool hasNearbyStructure=(State?.Structures!=null&&State.Structures.Any(s=>((s.Kind==0&&s.Life>0)||s.Kind==2||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,p.Pos)<2.5f))
-                    ||(State?.Nodes!=null&&State.Nodes.Any(n=>(n.Dropped||(!n.Dropped&&n.DropKind==2&&n.DropId==16))&&V2.Distance(n.Pos,p.Pos)<2.5f));
+                bool hasNearbyStructure=false;
+                if(State?.Structures!=null)
+                {
+                    for(int si=0;si<State.Structures.Length;si++)
+                    {
+                        var s=State.Structures[si];
+                        if(s!=null&&((s.Kind==0&&s.Life>0)||s.Kind==2||s.Kind==4||(s.Kind==12&&s.HP>0))&&V2.Distance(s.Pos,p.Pos)<2.5f)
+                        {
+                            hasNearbyStructure=true;
+                            break;
+                        }
+                    }
+                }
+                if(!hasNearbyStructure&&State?.Nodes!=null)
+                {
+                    for(int ni=0;ni<State.Nodes.Length;ni++)
+                    {
+                        var n=State.Nodes[ni];
+                        if(n!=null&&(n.Dropped||(!n.Dropped&&n.DropKind==2&&n.DropId==16))&&V2.Distance(n.Pos,p.Pos)<2.5f)
+                        {
+                            hasNearbyStructure=true;
+                            break;
+                        }
+                    }
+                }
                 if(merchant!=null&&!EmberMerchant.DialogOpen)
                 {
                     EmberMerchant.DialogOpen=true;
@@ -330,7 +372,7 @@ namespace Ember
                 };
                 overheadGlow=new GUIStyle(overheadName){normal={textColor=Cyan}};
             }
-            var text=new GUIContent(player.Name);
+            var text=new GUIContent(player.Name??"");
             float nameWidth=Mathf.Clamp(overheadName.CalcSize(text).x+14,52,170);
             var name=new Rect(Mathf.Round(x-nameWidth/2),y-43,nameWidth,23);
             var oldColor=GUI.color;
@@ -585,15 +627,15 @@ namespace Ember
                 PixelPanel(arrowBadge,hoverBubble?new Color(.52f,.32f,.78f,.98f):new Color(.26f,.18f,.42f,.95f));
                 var oldContent=GUI.contentColor;
                 GUI.contentColor=hoverBubble?Gold:new Color(1f,.92f,.55f);
-                var arrowStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
-                GUI.Label(arrowBadge,">",arrowStyle);
+                if(hudArrowStyle==null)hudArrowStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
+                GUI.Label(arrowBadge,">",hudArrowStyle);
                 GUI.contentColor=oldContent;
 
                 // Percentage text under the bubble
                 string pctText=Mathf.RoundToInt(Mathf.Clamp01(progress)*100)+"%";
-                var pctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
-                pctStyle.normal.textColor=hoverBubble?Gold:new Color(.90f,.92f,1f);
-                GUI.Label(new Rect(center.x-26,center.y+26,52,16),pctText,pctStyle);
+                if(hudPctStyle==null)hudPctStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=13};
+                hudPctStyle.normal.textColor=hoverBubble?Gold:new Color(.90f,.92f,1f);
+                GUI.Label(new Rect(center.x-26,center.y+26,52,16),pctText,hudPctStyle);
 
                 // Click to expand
                 if(GUI.Button(clickArea,new GUIContent("",heading+"\n"+hint+"\n"+L("Click để mở rộng nhiệm vụ","Click to expand quest")),GUIStyle.none))
@@ -619,8 +661,8 @@ namespace Ember
             PixelPanel(collapseBtn,hoverCollapse?new Color(.48f,.30f,.72f,.98f):new Color(.26f,.19f,.42f,.95f));
             var oldCol=GUI.contentColor;
             GUI.contentColor=hoverCollapse?Gold:new Color(.90f,.92f,1f);
-            var btnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=16};
-            GUI.Label(collapseBtn,"—",btnStyle);
+            if(hudCollapseBtnStyle==null)hudCollapseBtnStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=16};
+            GUI.Label(collapseBtn,"—",hudCollapseBtnStyle);
             GUI.contentColor=oldCol;
             if(GUI.Button(collapseBtn,new GUIContent("",L("Thu gọn hiển thị nhiệm vụ","Collapse quest display")),GUIStyle.none))
             {
@@ -656,14 +698,35 @@ namespace Ember
                 }
             }
 
-            if(player.Pet==(int)Pet.Bat&&State.Enemies.Any(e=>e.HP>0&&V2.Distance(e.Pos,player.Pos)<10))
+            bool hasNearbyEnemy=false;
+            if(player.Pet==(int)Pet.Bat&&State.Enemies!=null)
+            {
+                for(int ei=0;ei<State.Enemies.Length;ei++)
+                {
+                    var e=State.Enemies[ei];
+                    if(e!=null&&e.HP>0&&V2.Distance(e.Pos,player.Pos)<10){hasNearbyEnemy=true;break;}
+                }
+            }
+            if(hasNearbyEnemy)
             {
                 DrawFieldNotice(y,"pet_bat",L("Dơi phát hiện quái ở gần","Bat spotted a nearby enemy"));
             }
             else if(player.Pet==(int)Pet.CrystalCat&&(int)State.Time%30<5)
             {
-                var core=State.Nodes.Where(n=>n.Resource==Resource.Core)
-                    .OrderBy(n=>V2.Distance(n.Pos,player.Pos)).FirstOrDefault();
+                Node core=null;
+                float bestCoreDist=float.MaxValue;
+                if(State.Nodes!=null)
+                {
+                    for(int ni=0;ni<State.Nodes.Length;ni++)
+                    {
+                        var n=State.Nodes[ni];
+                        if(n!=null&&n.Resource==Resource.Core)
+                        {
+                            float d=V2.Distance(n.Pos,player.Pos);
+                            if(d<bestCoreDist){bestCoreDist=d;core=n;}
+                        }
+                    }
+                }
                 if(core==null)return;
                 var direction=(core.Pos-player.Pos).Normal;
                 var at=ScreenPos(player.Pos);
@@ -750,10 +813,10 @@ namespace Ember
                 PixelPanel(waveBox,new Color(.16f,.10f,.24f,.95f));
                 if(Event.current.type==EventType.Repaint)
                 {
-                    var waveStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,fontStyle=FontStyle.Bold};
-                    waveStyle.normal.textColor=eclipse?Coral:new Color(1f,.88f,.45f);
+                    if(hudWaveStyle==null)hudWaveStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=11,fontStyle=FontStyle.Bold};
+                    hudWaveStyle.normal.textColor=eclipse?Coral:new Color(1f,.88f,.45f);
                     string text=eclipse?L($"NGUYỆT THỰC {Mathf.CeilToInt(State.Wave)}s",$"ECLIPSE {Mathf.CeilToInt(State.Wave)}s"):L("ĐỢT ","WAVE ")+State.PeriodicWave;
-                    GUI.Label(waveBox,text,waveStyle);
+                    GUI.Label(waveBox,text,hudWaveStyle);
                 }
             }
         }
@@ -761,12 +824,20 @@ namespace Ember
         void DrawMarqueeOutlineLabel(Rect rect,string text,GUIStyle baseStyle,Color textColor,Color shadowColor,float speed=52f)
         {
             if(string.IsNullOrEmpty(text))return;
-            var style=new GUIStyle(baseStyle)
+            if(hudMarqueeOutlineStyle==null)
             {
-                wordWrap=false,
-                clipping=TextClipping.Clip,
-                alignment=TextAnchor.MiddleCenter
-            };
+                hudMarqueeOutlineStyle=new GUIStyle(baseStyle)
+                {
+                    wordWrap=false,
+                    clipping=TextClipping.Clip,
+                    alignment=TextAnchor.MiddleCenter
+                };
+            }
+            hudMarqueeOutlineStyle.font=baseStyle.font;
+            hudMarqueeOutlineStyle.fontSize=baseStyle.fontSize;
+            hudMarqueeOutlineStyle.fontStyle=baseStyle.fontStyle;
+            hudMarqueeOutlineStyle.alignment=TextAnchor.MiddleCenter;
+            var style=hudMarqueeOutlineStyle;
             float textW=style.CalcSize(new GUIContent(text)).x;
             if(textW<=rect.width-6f)
             {
@@ -856,13 +927,8 @@ namespace Ember
                             ?L($"[B] NẠP NĂNG LƯỢNG (Đang có {cores} Lõi · Click mở menu)","[B] DEPOSIT ENERGY ({cores} Cores · Click to open)")
                             :L("[B] NẠP NĂNG LƯỢNG HẢI ĐĂNG (Click mở menu)","[B] BEACON ENERGY DEPOSIT (Click to open)");
 
-                    var beaconPromptStyle=new GUIStyle(small)
-                    {
-                        alignment=TextAnchor.MiddleCenter,
-                        fontStyle=FontStyle.Bold,
-                        fontSize=15
-                    };
-                    DrawMarqueeOutlineLabel(textRect,prompt,beaconPromptStyle,blinkCol,new Color(0f,0f,0f,.95f),52f);
+                    if(hudAnnounceStyle==null)hudAnnounceStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=15};
+                    DrawMarqueeOutlineLabel(textRect,prompt,hudAnnounceStyle,blinkCol,new Color(0f,0f,0f,.95f),52f);
                 }
                 return;
             }
@@ -878,15 +944,10 @@ namespace Ember
                 else if(evt.Contains("Hộ Vệ")||evt.Contains("Sentinel")||evt.Contains("Lõi")||evt.Contains("Core"))evtColor=Cyan;
                 else if(evt.Contains("Đợt")||evt.Contains("Wave"))evtColor=new Color(1f,.85f,.35f);
 
-                var evtStyle=new GUIStyle(small)
-                {
-                    alignment=TextAnchor.MiddleCenter,
-                    fontStyle=FontStyle.Bold,
-                    fontSize=15
-                };
+                if(hudAnnounceStyle==null)hudAnnounceStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=15};
                 float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
                 Rect evtRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
-                DrawMarqueeOutlineLabel(evtRect,evt,evtStyle,evtColor,new Color(0f,0f,0f,.95f),52f);
+                DrawMarqueeOutlineLabel(evtRect,evt,hudAnnounceStyle,evtColor,new Color(0f,0f,0f,.95f),52f);
                 return;
             }
 
@@ -900,15 +961,10 @@ namespace Ember
                 }
                 if(clock-noticeTime<3.8f)
                 {
-                    var noticeStyle=new GUIStyle(small)
-                    {
-                        alignment=TextAnchor.MiddleCenter,
-                        fontStyle=FontStyle.Bold,
-                        fontSize=15
-                    };
+                    if(hudAnnounceStyle==null)hudAnnounceStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=15};
                     float bannerW=Mathf.Clamp(Screen.width-360f,340f,560f);
                     Rect noticeRect=new Rect(centerX-bannerW*0.5f,topY,bannerW,26f);
-                    DrawMarqueeOutlineLabel(noticeRect,notice,noticeStyle,new Color(1f,.92f,.55f),new Color(0f,0f,0f,.95f),52f);
+                    DrawMarqueeOutlineLabel(noticeRect,notice,hudAnnounceStyle,new Color(1f,.92f,.55f),new Color(0f,0f,0f,.95f),52f);
                 }
             }
         }
@@ -952,8 +1008,8 @@ namespace Ember
                 RegisterHudRect(collRect);
                 bool hoverMap=collRect.Contains(Event.current.mousePosition);
                 PixelPanel(collRect,hoverMap?new Color(.38f,.26f,.58f,.98f):new Color(.16f,.12f,.25f,.95f));
-                var mapIconStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=13,fontStyle=FontStyle.Bold,normal={textColor=Color.white}};
-                GUI.Label(collRect,"MAP",mapIconStyle);
+                if(hudMapIconStyle==null)hudMapIconStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,fontSize=13,fontStyle=FontStyle.Bold,normal={textColor=Color.white}};
+                GUI.Label(collRect,"MAP",hudMapIconStyle);
                 if(GUI.Button(collRect,new GUIContent("",L("Mở bản đồ","Open minimap")),GUIStyle.none))
                     minimapCollapsed=false;
                 return;
@@ -994,9 +1050,9 @@ namespace Ember
 
             // Header label & crisp 18x18 square collapse button (flat 2px minus bar)
             string mapTitle=L($"Bản đồ · {visibleMonsters} quái",$"Minimap · {visibleMonsters} mobs");
-            var headerStyle=new GUIStyle(small){alignment=TextAnchor.MiddleLeft,fontStyle=FontStyle.Bold,clipping=TextClipping.Overflow};
-            headerStyle.normal.textColor=new Color(.92f,.90f,1f);
-            GUI.Label(new Rect(mapX+jx+6,mapY+jy+2,mapSize-30,22),mapTitle,headerStyle);
+            if(hudMapHeaderStyle==null)hudMapHeaderStyle=new GUIStyle(small){alignment=TextAnchor.MiddleLeft,fontStyle=FontStyle.Bold,clipping=TextClipping.Overflow};
+            hudMapHeaderStyle.normal.textColor=new Color(.92f,.90f,1f);
+            GUI.Label(new Rect(mapX+jx+6,mapY+jy+2,mapSize-30,22),mapTitle,hudMapHeaderStyle);
 
             Rect collBtn=new Rect(mapX+jx+mapSize-20,mapY+jy+4,18,18);
             bool hoverMinimapColl=collBtn.Contains(Event.current.mousePosition);
@@ -1387,9 +1443,9 @@ namespace Ember
                 PixelPanel(badgeRect,new Color(.08f,.28f,.36f,.95f));
                 float ratio=Mathf.Clamp01(t/30f);
                 Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),Cyan);
-                var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
-                labelStyle.normal.textColor=new Color(.4f,1f,.95f);
-                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
+                if(hudBuffLabelStyle==null)hudBuffLabelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                hudBuffLabelStyle.normal.textColor=new Color(.4f,1f,.95f);
+                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,hudBuffLabelStyle);
                 curX+=badgeW+6;
                 if(curX+150>Screen.width-150){curX=startX;curY+=27;}
             }
@@ -1404,9 +1460,9 @@ namespace Ember
                 PixelPanel(badgeRect,new Color(.36f,.20f,.08f,.95f));
                 float ratio=Mathf.Clamp01(t/45f);
                 Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),Gold);
-                var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
-                labelStyle.normal.textColor=new Color(1f,.88f,.45f);
-                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
+                if(hudBuffLabelStyle==null)hudBuffLabelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                hudBuffLabelStyle.normal.textColor=new Color(1f,.88f,.45f);
+                GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,hudBuffLabelStyle);
                 curX+=badgeW+6;
                 if(curX+150>Screen.width-150){curX=startX;curY+=27;}
             }
@@ -1423,9 +1479,9 @@ namespace Ember
                     PixelPanel(badgeRect,new Color(.22f,.10f,.32f,.95f));
                     float ratio=Mathf.Clamp01(veilTime/15f);
                     Panel(new Rect(badgeRect.x+2,badgeRect.yMax-3,(badgeRect.width-4)*ratio,2),new Color(.75f,.40f,1f));
-                    var labelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
-                    labelStyle.normal.textColor=new Color(.85f,.65f,1f);
-                    GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,labelStyle);
+                    if(hudBuffLabelStyle==null)hudBuffLabelStyle=new GUIStyle(small){fontStyle=FontStyle.Bold};
+                    hudBuffLabelStyle.normal.textColor=new Color(.85f,.65f,1f);
+                    GUI.Label(new Rect(badgeRect.x+6,badgeRect.y+2,badgeRect.width-12,20),text,hudBuffLabelStyle);
                     curX+=badgeW+6;
                     if(curX+150>Screen.width-150){curX=startX;curY+=27;}
                 }
@@ -1471,7 +1527,7 @@ namespace Ember
             float upperWidth=Mathf.Min(180,(Screen.width-40)/2f);
             float upperY=CompactFieldHud?45:12;
             DrawFieldMeter(16,upperY,upperWidth,L("Hoảng loạn","Dread"),p.Dread,100,new Color(.65f,.4f,.85f));
-            if(heldSlot==2&&p.Items[0]>0)
+            if(heldSlot==2&&p.Items!=null&&p.Items.Length>0&&p.Items[0]>0)
                 DrawFieldMeter(22+upperWidth,upperY,upperWidth,L("Nhiên liệu đuốc","Torch fuel"),State.Fuel,100,Gold);
             DrawActiveBuffs(p,16,upperY+36);
 
@@ -1480,7 +1536,14 @@ namespace Ember
             if(network)DrawPartyBubbles();
             DrawMinimap(p);
 
-            bool anyDowned=State.Players.Any(q=>q.Ghost);
+            bool anyDowned=false;
+            if(State.Players!=null)
+            {
+                for(int pi=0;pi<State.Players.Length;pi++)
+                {
+                    if(State.Players[pi]!=null&&State.Players[pi].Ghost){anyDowned=true;break;}
+                }
+            }
             if(anyDowned&&p.Pos.Length<=5)
             {
                 bool explore=State.Phase==Phase.Explore;
@@ -1501,7 +1564,8 @@ namespace Ember
             {
                 float left=x+9+i*step;
                 PixelArt(new Rect(left,y+5,22,22),ResourceIcons[i]);
-                UiLabel(new Rect(left+25,y+6,step-23,22),p.Bag[i].ToString(),small);
+                int bagVal=p.Bag!=null&&i<p.Bag.Length?p.Bag[i]:0;
+                UiLabel(new Rect(left+25,y+6,step-23,22),bagVal.ToString(),small);
             }
             int maxCap=Mathf.FloorToInt(p.Capacity);
             bool overloaded=p.Load>p.Capacity;
@@ -1548,7 +1612,8 @@ namespace Ember
                 DrawFieldMeter(16,upper,compact,"HP",p.HP,p.MaxHP,Coral);
                 DrawFieldMeter(23+compact,upper,compact,L("Thể lực","Stamina"),p.Stamina,100,Cyan);
             }
-            var slotLabelStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Overflow};
+            if(hudSlotLabelStyle==null)hudSlotLabelStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Overflow};
+            var slotLabelStyle=hudSlotLabelStyle;
             for(int i=0;i<count;i++)
             {
                 bool skill=i==4;
@@ -1617,9 +1682,9 @@ namespace Ember
 
             // 1. Header: Title & Close [✕] Button
             float headerY = modal.y + 10f;
-            var modalTitleStyle = new GUIStyle(title) { fontSize = 19, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
-            modalTitleStyle.normal.textColor = Gold;
-            UiLabel(new Rect(modal.x + 16, headerY, modal.width - 60, 30), L("Nạp Năng Lượng Hải Đăng", "Beacon Energy Deposit"), modalTitleStyle);
+            if(hudModalTitleStyle == null) hudModalTitleStyle = new GUIStyle(title) { fontSize = 19, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            hudModalTitleStyle.normal.textColor = Gold;
+            UiLabel(new Rect(modal.x + 16, headerY, modal.width - 60, 30), L("Nạp Năng Lượng Hải Đăng", "Beacon Energy Deposit"), hudModalTitleStyle);
 
             if (GUI.Button(new Rect(modal.x + modal.width - 36, headerY + 2, 26, 26), "✕", GUI.skin.button))
             {
@@ -1639,14 +1704,14 @@ namespace Ember
                 ? (EmberLanguage.English ? $"{curCharge} / {targetCharge} Energy (OVERCHARGED · READY)" : $"{curCharge} / {targetCharge} NL (QUÁ TẢI · SẴN SÀNG)")
                 : (EmberLanguage.English ? $"{curCharge} / {targetCharge} Energy ({safePercent}% safety)" : $"{curCharge} / {targetCharge} NL ({safePercent}% an toàn)");
 
-            var statusStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
-            statusStyle.normal.textColor = overcharged ? Cyan : Color.Lerp(new Color(0.8f, 0.85f, 1f), Gold, chargeRatio);
+            if(hudModalStatusStyle == null) hudModalStatusStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };
+            hudModalStatusStyle.normal.textColor = overcharged ? Cyan : Color.Lerp(new Color(0.8f, 0.85f, 1f), Gold, chargeRatio);
 
-            var meterLabelStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
-            meterLabelStyle.normal.textColor = new Color(0.85f, 0.88f, 0.95f);
+            if(hudModalMeterLabelStyle == null) hudModalMeterLabelStyle = new GUIStyle(small) { fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            hudModalMeterLabelStyle.normal.textColor = new Color(0.85f, 0.88f, 0.95f);
 
-            UiLabel(new Rect(modal.x + 16, meterY, 150, 20), L("Năng lượng trụ:", "Beacon Energy:"), meterLabelStyle);
-            UiLabel(new Rect(modal.x + 170, meterY, modal.width - 186, 20), statusText, statusStyle);
+            UiLabel(new Rect(modal.x + 16, meterY, 150, 20), L("Năng lượng trụ:", "Beacon Energy:"), hudModalMeterLabelStyle);
+            UiLabel(new Rect(modal.x + 170, meterY, modal.width - 186, 20), statusText, hudModalStatusStyle);
 
             // Progress Bar
             float barY = meterY + 22f;
@@ -1699,26 +1764,26 @@ namespace Ember
             float quickW = modal.width - 32f;
             bool canQuickDeposit = p.Bag[1] > 0;
             GUI.enabled = canQuickDeposit;
-            var quickBtnStyle = new GUIStyle(GUI.skin.button) { fontStyle = FontStyle.Bold, fontSize = 13 };
-            if (canQuickDeposit) quickBtnStyle.normal.textColor = Gold;
+            if(hudModalQuickBtnStyle == null) hudModalQuickBtnStyle = new GUIStyle(GUI.skin.button) { fontStyle = FontStyle.Bold, fontSize = 13 };
+            hudModalQuickBtnStyle.normal.textColor = canQuickDeposit ? Gold : GUI.skin.button.normal.textColor;
 
             string quickText = p.Bag[1] > 0
                 ? L($"⚡ Nạp Tất Cả Lõi Tinh Thể ({p.Bag[1]} viên · +{p.Bag[1] * 50} NL)",
                     $"⚡ Quick Deposit All Cores ({p.Bag[1]} cores · +{p.Bag[1] * 50} Energy)")
                 : L("⚡ Nạp Tất Cả Lõi (Hết Lõi)", "⚡ Quick Deposit All Cores (Empty)");
 
-            if (GUI.Button(new Rect(modal.x + 16, bottomY, quickW, 32), quickText, quickBtnStyle))
+            if (GUI.Button(new Rect(modal.x + 16, bottomY, quickW, 32), quickText, hudModalQuickBtnStyle))
             {
                 TriggerDeposit(1, p.Bag[1]);
             }
             GUI.enabled = true;
 
             // 5. Footnote
-            var footerStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
-            footerStyle.normal.textColor = new Color(0.7f, 0.7f, 0.8f);
+            if(hudModalFooterStyle == null) hudModalFooterStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontSize = 11 };
+            hudModalFooterStyle.normal.textColor = new Color(0.7f, 0.7f, 0.8f);
             UiLabel(new Rect(modal.x + 16, bottomY + 34f, quickW, 18),
                 L("Phím tắt: Bấm [B] hoặc [Esc] để đóng menu nạp", "Shortcut: Press [B] or [Esc] to close"),
-                footerStyle);
+                hudModalFooterStyle);
         }
 
         void DrawDepositResourceRow(float rx, float ry, float rw, float rh,
@@ -1740,17 +1805,17 @@ namespace Ember
             // Name & Owned
             float textX = iconRect.xMax + 8f;
             float textW = 108f;
-            var nameStyle = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 12 };
-            nameStyle.normal.textColor = owned > 0 ? Color.white : new Color(0.6f, 0.6f, 0.65f);
-            UiLabel(new Rect(textX, cardRect.y + 7, textW, 18), name, nameStyle);
+            if(hudDepositNameStyle == null) hudDepositNameStyle = new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = 12 };
+            hudDepositNameStyle.normal.textColor = owned > 0 ? Color.white : new Color(0.6f, 0.6f, 0.65f);
+            UiLabel(new Rect(textX, cardRect.y + 7, textW, 18), name, hudDepositNameStyle);
 
-            var rateStyle = new GUIStyle(small) { fontSize = 11 };
-            rateStyle.normal.textColor = Cyan;
-            UiLabel(new Rect(textX, cardRect.y + 25, textW, 16), rate, rateStyle);
+            if(hudDepositRateStyle == null) hudDepositRateStyle = new GUIStyle(small) { fontSize = 11 };
+            hudDepositRateStyle.normal.textColor = Cyan;
+            UiLabel(new Rect(textX, cardRect.y + 25, textW, 16), rate, hudDepositRateStyle);
 
-            var ownedStyle = new GUIStyle(small) { fontSize = 11 };
-            ownedStyle.normal.textColor = owned > 0 ? Gold : new Color(0.55f, 0.55f, 0.60f);
-            UiLabel(new Rect(textX, cardRect.y + 43, textW, 16), L($"Đang có: {owned}", $"Owned: {owned}"), ownedStyle);
+            if(hudDepositOwnedStyle == null) hudDepositOwnedStyle = new GUIStyle(small) { fontSize = 11 };
+            hudDepositOwnedStyle.normal.textColor = owned > 0 ? Gold : new Color(0.55f, 0.55f, 0.60f);
+            UiLabel(new Rect(textX, cardRect.y + 43, textW, 16), L($"Đang có: {owned}", $"Owned: {owned}"), hudDepositOwnedStyle);
 
             // Action Buttons
             float btnH = 28f;
@@ -1761,15 +1826,19 @@ namespace Ember
             int btnCount = (btn1Text != null ? 1 : 0) + (btn2Text != null ? 1 : 0) + (btn3Text != null ? 1 : 0);
             float singleBtnW = (btnAreaW - (btnCount - 1) * 3f) / btnCount;
 
-            var btnStyle = new GUIStyle(GUI.skin.button)
+            if(hudDepositBtnStyle == null)
             {
-                fontSize = 11,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(0, 0, 0, 0),
-                margin = new RectOffset(0, 0, 0, 0),
-                clipping = TextClipping.Overflow
-            };
+                hudDepositBtnStyle = new GUIStyle(GUI.skin.button)
+                {
+                    fontSize = 11,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter,
+                    padding = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(0, 0, 0, 0),
+                    clipping = TextClipping.Overflow
+                };
+            }
+            var btnStyle = hudDepositBtnStyle;
 
             float curBtnX = btnAreaX;
             if (btn1Text != null)

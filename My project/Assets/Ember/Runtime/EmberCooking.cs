@@ -298,6 +298,9 @@ namespace Ember
 #if UNITY_5_3_OR_NEWER
     public sealed partial class EmberGame
     {
+        static readonly string[] CookDotStrings = { "", ".", "..", "..." };
+        GUIStyle cookBarLabelStyle;
+
         /// <summary>
         /// Visual overhead progress bar and rising steam puffs for cooking items.
         /// </summary>
@@ -305,6 +308,16 @@ namespace Ember
         {
             if (Event.current.type != EventType.Repaint || State?.Nodes == null) return;
             V2 focus = CameraTarget()?.Pos ?? new V2();
+            if (cookBarLabelStyle == null)
+            {
+                cookBarLabelStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 10,
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = { textColor = new Color(1f, 0.9f, 0.7f, 0.95f) }
+                };
+            }
+            if (small?.font != null && cookBarLabelStyle.font != small.font) cookBarLabelStyle.font = small.font;
 
             for (int i = 0; i < State.Nodes.Length; i++)
             {
@@ -325,16 +338,9 @@ namespace Ember
 
                 // Cooking label / steam animation
                 int steamDot = (int)(Time.time * 3f) % 4;
-                string dots = new string('.', steamDot);
+                string dots = CookDotStrings[steamDot];
                 string cookText = L("Đang nấu" + dots, "Cooking" + dots);
-                var cookStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 10,
-                    alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = new Color(1f, 0.9f, 0.7f, 0.95f) }
-                };
-                if(small?.font != null) cookStyle.font = small.font;
-                GUI.Label(new Rect(x - 30, y - 20, 60, 14), cookText, cookStyle);
+                GUI.Label(new Rect(x - 30, y - 20, 60, 14), cookText, cookBarLabelStyle);
             }
         }
 

@@ -148,10 +148,8 @@ namespace Ember
                 HP = 300f
             };
 
-            // Add structure to world
-            var list = world.S.Structures != null ? world.S.Structures.ToList() : new List<Structure>();
-            list.Add(chest);
-            world.S.Structures = list.ToArray();
+            // Add structure to world via authoritative host helper
+            world.SpawnStructure(chest);
 
             // 2. Cosmic Beacon / Lightning Strike Visuals
             ActiveLightnings.Add(new LightningStrike
@@ -166,29 +164,23 @@ namespace Ember
             });
 
             // Add transient cosmic light so the chest glows and emits light in the deep dark
-            if (world.S.Lights != null)
+            world.SpawnTransientLight(new TransientLight
             {
-                var lightsList = world.S.Lights.ToList();
-                lightsList.Add(new TransientLight
-                {
-                    Id = chestId + 500,
-                    ColorKind = LightColorKind.RuneGold,
-                    Pos = dropPos,
-                    Radius = 11.5f,
-                    Intensity = 1.0f,
-                    Life = 180f,
-                    MaxLife = 180f,
-                    GrantsSafety = true
-                });
-                world.S.Lights = lightsList.ToArray();
-            }
+                Id = chest.Id + 500,
+                ColorKind = LightColorKind.RuneGold,
+                Pos = dropPos,
+                Radius = 11.5f,
+                Intensity = 1.0f,
+                Life = 180f,
+                MaxLife = 180f,
+                GrantsSafety = true
+            });
 
             // 3. Spawn strong shadow monsters guarding the Relic Chest
             SpawnShadowGuardians(world, dropPos, rng);
 
             // Announce event to all players
-            world.S.Event = LastAlertMessageVi + "|" + LastAlertMessageEn;
-            world.S.EventTick = world.S.Tick;
+            world.AddWorldEvent(LastAlertMessageVi, LastAlertMessageEn);
 
             return true;
         }
@@ -198,9 +190,7 @@ namespace Ember
         /// </summary>
         static void SpawnShadowGuardians(EmberWorld world, V2 center, System.Random rng)
         {
-            if (world?.S?.Enemies == null) return;
-            var enemyList = world.S.Enemies.ToList();
-            int baseId = enemyList.Count > 0 ? enemyList.Max(e => e.Id) + 1 : 200;
+            if (world?.S == null) return;
 
             // Guard 1 & 2: Elite VoidStalkers (high damage stealth monsters)
             for (int i = 0; i < 2; i++)
@@ -209,9 +199,8 @@ namespace Ember
                 float dist = 2.2f + (float)rng.NextDouble() * 1.2f;
                 V2 pos = center + new V2((float)Math.Cos(guardAngle) * dist, (float)Math.Sin(guardAngle) * dist);
 
-                enemyList.Add(new Enemy
+                world.SpawnEnemy(new Enemy
                 {
-                    Id = baseId++,
                     Pos = pos,
                     HP = 135f,
                     MaxHP = 135f,
@@ -225,9 +214,8 @@ namespace Ember
             {
                 double guardAngle = Math.PI * 0.5 + (rng.NextDouble() * 0.8 - 0.4);
                 V2 pos = center + new V2((float)Math.Cos(guardAngle) * 3.2f, (float)Math.Sin(guardAngle) * 3.2f);
-                enemyList.Add(new Enemy
+                world.SpawnEnemy(new Enemy
                 {
-                    Id = baseId++,
                     Pos = pos,
                     HP = 110f,
                     MaxHP = 110f,
@@ -241,9 +229,8 @@ namespace Ember
             {
                 double guardAngle = -Math.PI * 0.5 + (rng.NextDouble() * 0.8 - 0.4);
                 V2 pos = center + new V2((float)Math.Cos(guardAngle) * 2.5f, (float)Math.Sin(guardAngle) * 2.5f);
-                enemyList.Add(new Enemy
+                world.SpawnEnemy(new Enemy
                 {
-                    Id = baseId++,
                     Pos = pos,
                     HP = 120f,
                     MaxHP = 120f,
@@ -252,8 +239,6 @@ namespace Ember
                     AttackCD = 1.2f
                 });
             }
-
-            world.S.Enemies = enemyList.ToArray();
         }
 
         /// <summary>
@@ -304,23 +289,14 @@ namespace Ember
             player.Dread = Math.Max(0f, player.Dread - 60f);
 
             // 5. Emit popups & burst FX
-            if (world.S.Popups != null)
-            {
-                var popups = world.S.Popups.ToList();
-                int nextPopupId = popups.Count > 0 ? popups.Max(p => p.Id) + 1 : 1;
-                popups.Add(new CombatPopup { Id = nextPopupId++, Kind = 2, Amount = 50, Pos = chest.Pos, Life = 2f, MaxLife = 2f });
-                popups.Add(new CombatPopup { Id = nextPopupId++, Kind = 3, Amount = 4, SubKind = (int)Resource.Core, Pos = chest.Pos + new V2(0, 0.8f), Life = 2.5f, MaxLife = 2.5f });
-                popups.Add(new CombatPopup { Id = nextPopupId++, Kind = 3, Amount = 5, SubKind = (int)Resource.Umbra, Pos = chest.Pos + new V2(0.6f, 1.2f), Life = 2.5f, MaxLife = 2.5f });
-                world.S.Popups = popups.ToArray();
-            }
+            world.EmitPopupDirect(new CombatPopup { Kind = 2, Amount = 50, Pos = chest.Pos, Life = 2f, MaxLife = 2f });
+            world.EmitPopupDirect(new CombatPopup { Kind = 3, Amount = 4, SubKind = (int)Resource.Core, Pos = chest.Pos + new V2(0, 0.8f), Life = 2.5f, MaxLife = 2.5f });
+            world.EmitPopupDirect(new CombatPopup { Kind = 3, Amount = 5, SubKind = (int)Resource.Umbra, Pos = chest.Pos + new V2(0.6f, 1.2f), Life = 2.5f, MaxLife = 2.5f });
 
             // Mark chest consumed
             chest.HP = 0;
             chest.Life = 0;
-            if (world.S.Structures != null)
-            {
-                world.S.Structures = world.S.Structures.Where(s => s.Id != chest.Id).ToArray();
-            }
+            world.RemoveStructureById(chest.Id);
 
             HasActiveRelic = false;
             TotalRelicsClaimed++;
@@ -328,9 +304,8 @@ namespace Ember
             // Broadcast announcement
             string openVi = "Đã khai mở Hộp Cổ Thất Lạc! Đội thám hiểm nhận 3 Void Tokens, Lõi & Mảnh Tối quý hiếm!";
             string openEn = "Ancient Relic Opened! Recovered 3 Void Tokens, Rare Cores & Umbra Shards!";
-            world.S.Event = openVi + "|" + openEn;
             world.S.EventActor = player.Name;
-            world.S.EventTick = world.S.Tick;
+            world.AddWorldEvent(openVi, openEn);
 
             return true;
         }
@@ -444,13 +419,10 @@ namespace Ember
                         : "[E] Khai Mở Hộp Cổ Thất Lạc";
                     GUI.Label(promptRect, "✦  " + prompt + "  ✦", relicPromptStyle);
 
-                    // Check interaction key
+                    // Check interaction key - send authoritative Interact intent to host
                     if (Input.GetKeyDown(KeyCode.E) || (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.E))
                     {
-                        if (World != null)
-                        {
-                            EmberEvents.OpenRelicChest(World, localPlayer, chest, Profile);
-                        }
+                        intent.Interact = true;
                     }
                 }
             }

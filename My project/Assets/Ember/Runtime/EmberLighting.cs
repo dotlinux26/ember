@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -9,6 +8,13 @@ namespace Ember
     {
         readonly Dictionary<string,Light2D> lights=new Dictionary<string,Light2D>();
         readonly HashSet<Light2D> activeLights=new HashSet<Light2D>();
+        readonly Structure[] topLightStructures=new Structure[24];
+        readonly float[] topLightStructureDists=new float[24];
+        readonly TransientLight[] topTransientLights=new TransientLight[16];
+        readonly float[] topTransientLightDists=new float[16];
+        readonly Projectile[] topEnemyProjectiles=new Projectile[8];
+        readonly float[] topEnemyProjectileDists=new float[8];
+        readonly List<string> staleLightKeys=new List<string>();
         MaterialPropertyBlock outlineProperties,crystalProperties;
         Material outlineMaterial,emissionMaterial,crystalFillMaterial;
         void SetupLighting()
@@ -46,6 +52,21 @@ namespace Ember
                 default:return new Color(1f,.78f,.48f);
             }
         }
+        static int InsertTopK<T>(T[] items,float[] dists,int count,int maxCount,T item,float dist)
+        {
+            if(count<maxCount)
+            {
+                int i=count;
+                while(i>0&&dists[i-1]>dist){items[i]=items[i-1];dists[i]=dists[i-1];i--;}
+                items[i]=item;dists[i]=dist;
+                return count+1;
+            }
+            if(dist>=dists[maxCount-1])return count;
+            int idx=maxCount-1;
+            while(idx>0&&dists[idx-1]>dist){items[idx]=items[idx-1];dists[idx]=dists[idx-1];idx--;}
+            items[idx]=item;dists[idx]=dist;
+            return count;
+        }
         void RenderLighting()
         {
             activeLights.Clear();
@@ -58,36 +79,87 @@ namespace Ember
             {
                 Color accent=BossAccentColor(State.BossType);
                 Illuminate("bossArena",State.BossArenaCenter,State.BossArenaRadius+2.5f,Color.Lerp(accent,Color.white,.22f),.55f);
-                var boss=State.Enemies?.FirstOrDefault(e=>e.Id==State.BossId&&e.HP>0);
+                Enemy boss=null;
+                if(State.Enemies!=null)
+                {
+                    for(int i=0;i<State.Enemies.Length;i++)
+                    {
+                        var e=State.Enemies[i];
+                        if(e!=null&&e.Id==State.BossId&&e.HP>0){boss=e;break;}
+                    }
+                }
                 if(boss!=null)Illuminate("worldBoss",VisualEnemyPos(boss),5.5f,accent,.95f);
             }
-            foreach(var p in State.Players)
+            if(State.Players!=null)
             {
-                if(p.Extracted||p.Ghost)continue;
-                V2 pPos=VisualPlayerPos(p);
-                float flicker=local!=null&&!local.Ghost&&local.Id!=p.Id&&local.Dread>=60&&!local.Safe?.55f+.45f*Mathf.PerlinNoise(clock*7,p.Id):1;
-                if(p.HasHeldTorch&&(State.Fuel>0||State.LastLight>0))Illuminate("lamp"+p.Id,pPos,p.Lantern==Lantern.Relic?9:6,p.Lantern==Lantern.Relic?Cyan:p.Lantern==Lantern.Inferno?new Color(1,.43f,.16f):new Color(1,.78f,.48f),1.2f*flicker);
-                else if(p.Hat==(int)Hat.Candle)Illuminate("candle"+p.Id,pPos,1.5f,Gold,.7f);
+                for(int i=0;i<State.Players.Length;i++)
+                {
+                    var p=State.Players[i];
+                    if(p.Extracted||p.Ghost)continue;
+                    V2 pPos=VisualPlayerPos(p);
+                    float flicker=local!=null&&!local.Ghost&&local.Id!=p.Id&&local.Dread>=60&&!local.Safe?.55f+.45f*Mathf.PerlinNoise(clock*7,p.Id):1;
+                    if(p.HasHeldTorch&&(State.Fuel>0||State.LastLight>0))Illuminate("lamp"+p.Id,pPos,p.Lantern==Lantern.Relic?9:6,p.Lantern==Lantern.Relic?Cyan:p.Lantern==Lantern.Inferno?new Color(1,.43f,.16f):new Color(1,.78f,.48f),1.2f*flicker);
+                    else if(p.Hat==(int)Hat.Candle)Illuminate("candle"+p.Id,pPos,1.5f,Gold,.7f);
+                }
             }
-            foreach(var s in State.Structures.Where(s=>s.Kind<2||s.Kind==5).OrderBy(s=>focus==null?0:V2.Distance(s.Pos,focus.Pos)).Take(24))Illuminate("structure"+s.Id,s.Pos,s.Kind==1?9:s.Kind==5?2:5,s.Kind==5?Cyan:Gold,s.Kind==5?.3f:1.1f);
-            foreach(var l in (State.Lights??System.Array.Empty<TransientLight>()).OrderBy(l=>focus==null?0:V2.Distance(l.Pos,focus.Pos)).Take(16))
+            if(State.Structures!=null&&State.Structures.Length>0)
             {
-                if(l.Life<=0||l.MaxLife<=0)continue;
-                float elapsed=l.MaxLife-l.Life;
-                float fadeIn=Mathf.Clamp01(elapsed/.12f);
-                float fadeOut=Mathf.Clamp01(l.Life/Mathf.Min(.45f,l.MaxLife*.35f));
-                float envelope=fadeIn*fadeOut;
-                float radius=l.Radius*(.75f+.25f*envelope);
-                Illuminate("fxlight"+l.Id,l.Pos,radius,TransientLightColor(l.ColorKind),l.Intensity*envelope);
+                int structCount=0;
+                for(int i=0;i<State.Structures.Length;i++)
+                {
+                    var s=State.Structures[i];
+                    if(s==null||(s.Kind>=2&&s.Kind!=5))continue;
+                    float dist=focus==null?0f:V2.Distance(s.Pos,focus.Pos);
+                    structCount=InsertTopK(topLightStructures,topLightStructureDists,structCount,24,s,dist);
+                }
+                for(int i=0;i<structCount;i++)
+                {
+                    var s=topLightStructures[i];
+                    Illuminate("structure"+s.Id,s.Pos,s.Kind==1?9:s.Kind==5?2:5,s.Kind==5?Cyan:Gold,s.Kind==5?.3f:1.1f);
+                    topLightStructures[i]=null;
+                }
+            }
+            if(State.Lights!=null&&State.Lights.Length>0)
+            {
+                int lightCount=0;
+                for(int i=0;i<State.Lights.Length;i++)
+                {
+                    var l=State.Lights[i];
+                    if(l==null)continue;
+                    float dist=focus==null?0f:V2.Distance(l.Pos,focus.Pos);
+                    lightCount=InsertTopK(topTransientLights,topTransientLightDists,lightCount,16,l,dist);
+                }
+                for(int i=0;i<lightCount;i++)
+                {
+                    var l=topTransientLights[i];
+                    topTransientLights[i]=null;
+                    if(l.Life<=0||l.MaxLife<=0)continue;
+                    float elapsed=l.MaxLife-l.Life;
+                    float fadeIn=Mathf.Clamp01(elapsed/.12f);
+                    float fadeOut=Mathf.Clamp01(l.Life/Mathf.Min(.45f,l.MaxLife*.35f));
+                    float envelope=fadeIn*fadeOut;
+                    float radius=l.Radius*(.75f+.25f*envelope);
+                    Illuminate("fxlight"+l.Id,l.Pos,radius,TransientLightColor(l.ColorKind),l.Intensity*envelope);
+                }
             }
             if(State.Projectiles!=null&&State.Projectiles.Length>0)
             {
                 V2 focusPos=focus!=null?VisualPlayerPos(focus):new V2();
-                int slot=0;
-                foreach(var shot in State.Projectiles.Where(s=>s.FromEnemy).OrderBy(s=>V2.Distance(s.Pos,focusPos)).Take(8))
+                int projCount=0;
+                for(int i=0;i<State.Projectiles.Length;i++)
                 {
+                    var shot=State.Projectiles[i];
+                    if(shot==null||!shot.FromEnemy)continue;
+                    float dist=V2.Distance(shot.Pos,focusPos);
+                    projCount=InsertTopK(topEnemyProjectiles,topEnemyProjectileDists,projCount,8,shot,dist);
+                }
+                int slot=0;
+                for(int i=0;i<projCount;i++)
+                {
+                    var shot=topEnemyProjectiles[i];
+                    topEnemyProjectiles[i]=null;
                     V2 sPos=VisualProjectilePos(shot);
-                    if(V2.Distance(sPos,focusPos)>20f)break;
+                    if(V2.Distance(sPos,focusPos)>20f)continue;
                     float radius=shot.ColorKind>=4?1.85f:2.15f;
                     Illuminate("eshot"+slot,sPos,radius,EnemyOrbColor(shot.ColorKind),.55f);
                     slot++;
@@ -95,7 +167,18 @@ namespace Ember
             }
             foreach(var light in lights.Values)
                 if(light.enabled&&!activeLights.Contains(light))light.enabled=false;
-            if(lights.Count>64)foreach(var key in lights.Where(p=>!p.Value.enabled).Select(p=>p.Key).ToArray()){Destroy(lights[key].gameObject);lights.Remove(key);}
+            if(lights.Count>64)
+            {
+                staleLightKeys.Clear();
+                foreach(var kv in lights)
+                    if(kv.Value==null||!kv.Value.enabled)staleLightKeys.Add(kv.Key);
+                for(int i=0;i<staleLightKeys.Count;i++)
+                {
+                    string key=staleLightKeys[i];
+                    if(lights.TryGetValue(key,out var l)&&l!=null)Destroy(l.gameObject);
+                    lights.Remove(key);
+                }
+            }
         }
         void Outline(SpriteRenderer renderer,Sprite sprite)
         {

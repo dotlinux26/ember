@@ -21,6 +21,14 @@ namespace Ember
         public int PingMs{get;private set;}=-1;
         int pingSeq;double nextPingAt,pingSentAt;
         UdpClient udp;IPEndPoint server;byte[] secret,sessionKey,epoch;ulong packetCounter;string handshake;
+        EmberCrypto.GcmCipher gcmCipher;HMACSHA256 secretHmac;
+        readonly byte[] sendBuf=new byte[2048],decryptBuf=new byte[2048];
+        readonly List<string> stalePeers=new List<string>();
+        readonly List<long> stalePending=new List<long>();
+        readonly List<KeyValuePair<long,Assembly>> repairQueue=new List<KeyValuePair<long,Assembly>>();
+        readonly List<int> expiredOutgoing=new List<int>();
+        readonly List<long> staleStates=new List<long>();
+        readonly StringBuilder nackSb=new StringBuilder(128);
         readonly HashSet<ulong> hostPackets=new HashSet<ulong>();ulong hostHighest;
         EmberRoomRoute route;bool broadcasting;string previousRouteError;
         Task<IPAddress[]> stunDns;IPEndPoint stunServer;byte[] stunTransaction,stunRequest;double stunRetry;int stunAttempts,stunService;double openedAt=-1;
@@ -36,17 +44,19 @@ namespace Ember
         readonly Dictionary<long,string[]> recentStates=new Dictionary<long,string[]>();
         readonly Dictionary<int,Outbound> outgoing=new Dictionary<int,Outbound>();
         sealed class Outbound{public string Type,Payload;public double Next;public int Tries;}
-        int nextPlayer=2,sequence;long accepted=-1;double now;
+        int nextPlayer=2,sequence,acceptedBinaryTick=-1;long accepted=-1;double now;
         public Action<int,string> Joined;public Action<int> Left;public Action<int,string> Input;public Action<int,Command> CommandInput;public Action<string> State;public Action<byte[]> BinaryState;public Action<int,bool> ReadyChanged;
         public Func<string,bool> CanRejoin;
-        sealed class Peer{public int Id;public IPEndPoint Address;public string Handshake;public double Seen,RepairAt;public int RepairBudget;public int Sequence=-1,HighestAction=-1;public HashSet<int> Actions=new HashSet<int>();public HashSet<ulong> Packets=new HashSet<ulong>();public ulong HighestPacket;}
+        sealed class Peer{public int Id;public IPEndPoint Address;public string Handshake;public double Seen,RepairAt,BinaryRateWindowStart;public int RepairBudget,BinaryRateCount;public int Sequence=-1,HighestAction=-1;public HashSet<int> Actions=new HashSet<int>();public HashSet<ulong> Packets=new HashSet<ulong>();public ulong HighestPacket;}
         sealed class Assembly{public byte[][] Parts;public double Since,NextRepair;}
         public void Open(bool host,string address,string password)
         {
-            Dispose();Host=host;LocalId=host?1:0;Error=null;PingMs=host?0:-1;pingSeq=0;nextPingAt=0;pingSentAt=0;Capacity=Math.Max(1,Math.Min(4,Capacity));AcceptingJoins=true;LastStateTime=0;using(var sha=SHA256.Create())secret=sha.ComputeHash(Encoding.UTF8.GetBytes("Ember LAN v2:"+password));
+            Dispose();Host=host;LocalId=host?1:0;Error=null;PingMs=host?0:-1;pingSeq=0;nextPingAt=0;pingSentAt=0;Capacity=Math.Max(1,Math.Min(4,Capacity));AcceptingJoins=true;LastStateTime=0;accepted=-1;acceptedBinaryTick=-1;using(var sha=SHA256.Create())secret=sha.ComputeHash(Encoding.UTF8.GetBytes("Ember LAN v2:"+password));
+            secretHmac=new HMACSHA256(secret);
             udp=new UdpClient(host?Port:0);udp.Client.Blocking=false;udp.Client.ReceiveBufferSize=1024*1024;
             try{udp.Client.IOControl(-1744830452,new byte[]{0,0,0,0},null);}catch{}
             epoch=host?EmberCrypto.Random(16):null;sessionKey=host?EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2"):null;
+            if(sessionKey!=null)gcmCipher=new EmberCrypto.GcmCipher(sessionKey);
             handshake=Convert.ToBase64String(EmberCrypto.Random(16));
             if(!host)server=new IPEndPoint(IPAddress.Parse(address),Port);
             SentPackets=ReceivedPackets=SentBytes=ReceivedBytes=RejectedPackets=Retries=DroppedPackets=SnapshotRepairs=0;
@@ -72,16 +82,16 @@ namespace Ember
                     ReceivedPackets++;ReceivedBytes+=packet.Length;
                     if(stunServer!=null&&from.Equals(stunServer)){try{PublicEndpoint=EmberStunClient.Parse(packet,stunTransaction);route?.SetPublicEndpoint(PublicEndpoint);Trace?.Invoke("stun.mapped","public endpoint discovered");}catch(FormatException){RejectedPackets++;}continue;}
                     if(route!=null&&route.Handle(ref packet,ref from,now))continue;
-                    if(packet.Length<33||packet.Length>2048){RejectedPackets++;continue;}bool encrypted=packet[0]==69&&packet[1]==66&&packet[2]==50;byte[] body;
-                    if(encrypted){body=Decrypt(packet,from);if(body==null)continue;}
-                    else {body=packet.Take(packet.Length-32).ToArray();byte[] tag;using(var hmac=new HMACSHA256(secret))tag=hmac.ComputeHash(body);int diff=0;for(int i=0;i<32;i++)diff|=tag[i]^packet[body.Length+i];if(diff!=0)continue;}
-                    if(body.Length>=2&&body[0]==0xEB)
+                    if(packet.Length<33||packet.Length>2048){RejectedPackets++;continue;}bool encrypted=packet[0]==69&&packet[1]==66&&packet[2]==50;byte[] body;int bodyLen;
+                    if(encrypted){body=Decrypt(packet,from,out bodyLen);if(body==null)continue;}
+                    else {body=packet;bodyLen=packet.Length-32;byte[] tag=secretHmac.ComputeHash(packet,0,bodyLen);int diff=0;for(int i=0;i<32;i++)diff|=tag[i]^packet[bodyLen+i];if(diff!=0)continue;}
+                    if(bodyLen>=2&&body[0]==0xEB)
                     {
-                        if(Host)ReceiveHostBinary(from,body);
-                        else if(from.Equals(server))ReceiveClientBinary(body);
+                        if(Host)ReceiveHostBinary(from,body,bodyLen);
+                        else if(from.Equals(server))ReceiveClientBinary(body,bodyLen);
                         continue;
                     }
-                    string text=Encoding.UTF8.GetString(body);var split=text.Split(new[]{'|'},3);if(split.Length<3)continue;
+                    string text=Encoding.UTF8.GetString(body,0,bodyLen);var split=text.Split(new[]{'|'},3);if(split.Length<3)continue;
                     if(!encrypted&&split[0]!="JOIN"&&split[0]!="ID"&&split[0]!="REJECT")continue;
                     if(Host)ReceiveHost(from,split);else if(from.Equals(server))ReceiveClient(split);
                 }
@@ -89,18 +99,49 @@ namespace Ember
                 catch(CryptographicException){RejectedPackets++;}
                 catch(Exception ex){Error="Rejected packet: "+ex.Message;}
             }
-            if(Host)foreach(var key in peers.Where(p=>now-p.Value.Seen>10).Select(p=>p.Key).ToArray()){Trace?.Invoke("peer.timeout","id="+peers[key].Id);Left?.Invoke(peers[key].Id);peers.Remove(key);}
-            foreach(var key in pending.Where(p=>now-p.Value.Since>2).Select(p=>p.Key).ToArray())pending.Remove(key);
-            if(!Host&&LocalId>0)foreach(var item in pending.OrderBy(p=>p.Value.Since).Take(2).ToArray())
+            if(Host&&peers.Count>0)
             {
-                var assembly=item.Value;if(now<assembly.NextRepair)continue;assembly.NextRepair=now+.15;
-                var missing=Enumerable.Range(0,assembly.Parts.Length).Where(i=>assembly.Parts[i]==null).Take(64).ToArray();
-                if(missing.Length>0)Send(server,"NACK|"+item.Key+"|"+string.Join(",",missing));
+                stalePeers.Clear();
+                foreach(var kv in peers)if(now-kv.Value.Seen>10)stalePeers.Add(kv.Key);
+                for(int i=0;i<stalePeers.Count;i++){string key=stalePeers[i];Trace?.Invoke("peer.timeout","id="+peers[key].Id);Left?.Invoke(peers[key].Id);peers.Remove(key);}
             }
-            if(!Host)foreach(var item in outgoing.ToArray())if(now>=item.Value.Next)
+            if(pending.Count>0)
             {
-                var m=item.Value;if(m.Tries++>30){Error="Không nhận được xác nhận từ host.";outgoing.Remove(item.Key);continue;}
-                Retries++;if(m.Tries==3||m.Tries==10)Trace?.Invoke("action.retry","sequence="+item.Key+" tries="+m.Tries);Send(server,m.Type+"|"+item.Key+"|"+m.Payload);m.Next=now+.15;
+                stalePending.Clear();
+                foreach(var kv in pending)if(now-kv.Value.Since>2)stalePending.Add(kv.Key);
+                for(int i=0;i<stalePending.Count;i++)pending.Remove(stalePending[i]);
+            }
+            if(!Host&&LocalId>0&&pending.Count>0)
+            {
+                repairQueue.Clear();
+                foreach(var kv in pending)repairQueue.Add(kv);
+                if(repairQueue.Count>1)repairQueue.Sort((a,b)=>a.Value.Since.CompareTo(b.Value.Since));
+                int maxRepairs=Math.Min(2,repairQueue.Count);
+                for(int r=0;r<maxRepairs;r++)
+                {
+                    var item=repairQueue[r];
+                    var assembly=item.Value;if(now<assembly.NextRepair)continue;assembly.NextRepair=now+.15;
+                    nackSb.Clear();nackSb.Append("NACK|").Append(item.Key).Append('|');
+                    int missingCount=0;
+                    for(int i=0;i<assembly.Parts.Length&&missingCount<64;i++)
+                    {
+                        if(assembly.Parts[i]==null){if(missingCount>0)nackSb.Append(',');nackSb.Append(i);missingCount++;}
+                    }
+                    if(missingCount>0)Send(server,nackSb.ToString());
+                }
+            }
+            if(!Host&&outgoing.Count>0)
+            {
+                expiredOutgoing.Clear();
+                foreach(var item in outgoing)
+                {
+                    if(now>=item.Value.Next)
+                    {
+                        var m=item.Value;if(m.Tries++>30){Error="Không nhận được xác nhận từ host.";expiredOutgoing.Add(item.Key);continue;}
+                        Retries++;if(m.Tries==3||m.Tries==10)Trace?.Invoke("action.retry","sequence="+item.Key+" tries="+m.Tries);Send(server,m.Type+"|"+item.Key+"|"+m.Payload);m.Next=now+.15;
+                    }
+                }
+                for(int i=0;i<expiredOutgoing.Count;i++)outgoing.Remove(expiredOutgoing[i]);
             }
             if(!Host&&LocalId>0&&now>=nextPingAt)
             {
@@ -109,11 +150,13 @@ namespace Ember
             }
             if(!Host&&now-openedAt>12&&(LocalId==0||now-LastStateTime>12)&&Error==null)Error="Mất kết nối host. Hãy kiểm tra địa chỉ và mật khẩu phòng.";
         }
-        void ReceiveHostBinary(IPEndPoint from,byte[] body)
+        void ReceiveHostBinary(IPEndPoint from,byte[] body,int bodyLen)
         {
             string key=from.ToString();
-            if(body[1]==0x02&&peers.TryGetValue(key,out var p)&&body.Length>=16)
+            if(body[1]==0x02&&peers.TryGetValue(key,out var p)&&bodyLen>=16)
             {
+                if(now-p.BinaryRateWindowStart>=1.0||now<p.BinaryRateWindowStart){p.BinaryRateWindowStart=now;p.BinaryRateCount=0;}
+                if(++p.BinaryRateCount>150){RejectedPackets++;return;}
                 int seq=body[2]|(body[3]<<8)|(body[4]<<16)|(body[5]<<24);
                 if(seq>p.Sequence)
                 {
@@ -133,7 +176,7 @@ namespace Ember
                     if((act&(1<<8))!=0)cmd.Push=true;
                     if((act&(1<<9))!=0)cmd.Revive=true;
                     if((act&(1<<10))!=0)cmd.Reload=true;
-                    if(body.Length>=25)
+                    if(bodyLen>=25)
                     {
                         byte flags=body[16];
                         cmd.HasClientPos=(flags&(1<<0))!=0;
@@ -149,17 +192,23 @@ namespace Ember
                 }
             }
         }
-        void ReceiveClientBinary(byte[] body)
+        void ReceiveClientBinary(byte[] body,int bodyLen)
         {
             if(body[1]==0x01)
             {
-                if(body.Length>=6)
+                if(bodyLen>=6)
                 {
                     int serverTick=BitConverter.ToInt32(body,2);
-                    if(serverTick>accepted)accepted=serverTick;
+                    if(serverTick<acceptedBinaryTick)return;
+                    acceptedBinaryTick=serverTick;
                 }
                 LastStateTime=now;
-                BinaryState?.Invoke(body);
+                if(BinaryState!=null)
+                {
+                    byte[] copy=new byte[bodyLen];
+                    Buffer.BlockCopy(body,0,copy,0,bodyLen);
+                    BinaryState.Invoke(copy);
+                }
             }
         }
         void ReceiveHost(IPEndPoint from,string[] message)
@@ -202,7 +251,7 @@ namespace Ember
             {
                 var idParts=m[2].Split(',');if(idParts.Length!=3||idParts[2]!=handshake||!int.TryParse(idParts[0],out int id)||id<2)return;
                 var nextEpoch=Convert.FromBase64String(idParts[1]);if(nextEpoch.Length!=16)return;
-                if(epoch!=null&&!epoch.SequenceEqual(nextEpoch))return;bool fresh=LocalId==0;epoch=nextEpoch;LocalId=id;sessionKey=EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2");if(fresh)Trace?.Invoke("peer.assigned","id="+id);return;
+                if(epoch!=null&&!epoch.SequenceEqual(nextEpoch))return;bool fresh=LocalId==0;epoch=nextEpoch;LocalId=id;sessionKey=EmberCrypto.Hkdf(secret,epoch,"Ember AES-GCM session v2");gcmCipher?.Dispose();gcmCipher=new EmberCrypto.GcmCipher(sessionKey);if(fresh)Trace?.Invoke("peer.assigned","id="+id);return;
             }
             if(m[0]=="REJECT"){Error=m[2]=="FULL"?"Phòng đã đủ người.":m[2]=="STARTED"?"Trận đã bắt đầu; hãy chờ phòng mới.":"Yêu cầu vào phòng không hợp lệ.";return;}
             if(m[0]=="PONG"){if(int.TryParse(m[1],out int seq)&&seq==pingSeq){int rtt=(int)Math.Round(Math.Max(0,(now-pingSentAt)*1000.0));PingMs=PingMs<0?rtt:(int)Math.Round(PingMs*.65+rtt*.35);}return;}
@@ -236,10 +285,11 @@ namespace Ember
         }
         public void Join(string identity){if(!Host&&udp!=null&&(route==null||route.Ready))Send(server,"JOIN|0|"+handshake+"."+identity);}
         public void SendInput(string input){if(!Host&&udp!=null&&LocalId>0)Send(server,"INPUT|"+(++sequence)+"|"+input);}
+        readonly byte[] inputBuf=new byte[25];
         public void SendInputBinary(uint seq,Command cmd)
         {
             if(Host||udp==null||LocalId<=0||cmd==null)return;
-            byte[] b=new byte[25];
+            byte[] b=inputBuf;
             b[0]=0xEB;b[1]=0x02;
             b[2]=(byte)seq;b[3]=(byte)(seq>>8);b[4]=(byte)(seq>>16);b[5]=(byte)(seq>>24);
             Buffer.BlockCopy(BitConverter.GetBytes(cmd.X),0,b,6,4);
@@ -264,7 +314,7 @@ namespace Ember
             b[16]=flags;
             Buffer.BlockCopy(BitConverter.GetBytes(cmd.ClientX),0,b,17,4);
             Buffer.BlockCopy(BitConverter.GetBytes(cmd.ClientY),0,b,21,4);
-            SendRaw(server,b);
+            SendRaw(server,b,25);
         }
         public void SendAction(string input)=>Reliable("ACTION",input);
         public void SetReady(bool ready)=>Reliable("READY",ready?"1":"0");
@@ -279,21 +329,29 @@ namespace Ember
         public void BroadcastSnapshot(byte[] data)
         {
             if(!Host||udp==null||peers.Count==0||data==null)return;
-            var destinations=route?.Relay==true?peers.Values.Take(1):peers.Values;
-            broadcasting=route?.Relay==true;
+            bool isRelay=route?.Relay==true;
+            broadcasting=isRelay;
             try
             {
-                foreach(var p in destinations)
+                if(isRelay)
                 {
-                    if(data.Length>=10)
+                    if(data.Length>=10){data[6]=0;data[7]=0;data[8]=0;data[9]=0;}
+                    foreach(var p in peers.Values){SendRaw(p.Address,data,data.Length);break;}
+                }
+                else
+                {
+                    foreach(var p in peers.Values)
                     {
-                        uint ack=(uint)Math.Max(0,p.Sequence);
-                        data[6]=(byte)ack;
-                        data[7]=(byte)(ack>>8);
-                        data[8]=(byte)(ack>>16);
-                        data[9]=(byte)(ack>>24);
+                        if(data.Length>=10)
+                        {
+                            uint ack=(uint)Math.Max(0,p.Sequence);
+                            data[6]=(byte)ack;
+                            data[7]=(byte)(ack>>8);
+                            data[8]=(byte)(ack>>16);
+                            data[9]=(byte)(ack>>24);
+                        }
+                        SendRaw(p.Address,data,data.Length);
                     }
-                    SendRaw(p.Address,data);
                 }
             }
             finally{broadcasting=false;}
@@ -305,41 +363,69 @@ namespace Ember
             const int chunk=850;int count=(data.Length+chunk-1)/chunk;
             if(count>1024)throw new InvalidDataException("Compressed snapshot exceeds transport limit");
             var messages=new string[count];for(int i=0;i<count;i++)messages[i]="STATE|"+tick+"|"+i+","+count+","+Convert.ToBase64String(data,i*chunk,Math.Min(chunk,data.Length-i*chunk));
-            recentStates[tick]=messages;foreach(var old in recentStates.Keys.OrderByDescending(k=>k).Skip(20).ToArray())recentStates.Remove(old);
-            var destinations=route?.Relay==true?peers.Values.Take(1):peers.Values;
-            broadcasting=route?.Relay==true;
-            try{foreach(var p in destinations)foreach(string message in messages)Send(p.Address,message);}finally{broadcasting=false;}
+            recentStates[tick]=messages;
+            if(recentStates.Count>20)
+            {
+                staleStates.Clear();
+                foreach(var k in recentStates.Keys)staleStates.Add(k);
+                staleStates.Sort();
+                int removeCount=staleStates.Count-20;
+                for(int i=0;i<removeCount;i++)recentStates.Remove(staleStates[i]);
+            }
+            bool isRelay=route?.Relay==true;
+            broadcasting=isRelay;
+            try
+            {
+                foreach(var p in peers.Values)
+                {
+                    foreach(string message in messages)Send(p.Address,message);
+                    if(isRelay)break;
+                }
+            }
+            finally{broadcasting=false;}
         }
-        public void SendRaw(IPEndPoint to,byte[] body)
+        public void SendRaw(IPEndPoint to,byte[] body)=>SendRaw(to,body,body!=null?body.Length:0);
+        void SendRaw(IPEndPoint to,byte[] body,int bodyLen)
         {
-            if(to==null||body==null||sessionKey==null)return;
-            var header=new byte[31];header[0]=69;header[1]=66;header[2]=50;Buffer.BlockCopy(epoch,0,header,3,16);
-            int id=Host?1:LocalId;header[19]=(byte)(id>>24);header[20]=(byte)(id>>16);header[21]=(byte)(id>>8);header[22]=(byte)id;
-            EmberCrypto.Write64(header,23,++packetCounter);
-            var nonce=header.Skip(19).Take(12).ToArray();
-            byte[] packet=header.Concat(EmberCrypto.Seal(sessionKey,nonce,body,header)).ToArray();
-            SentPackets++;SentBytes+=packet.Length;
+            if(to==null||body==null||gcmCipher==null||bodyLen+47>sendBuf.Length)return;
+            sendBuf[0]=69;sendBuf[1]=66;sendBuf[2]=50;
+            Buffer.BlockCopy(epoch,0,sendBuf,3,16);
+            int id=Host?1:LocalId;
+            sendBuf[19]=(byte)(id>>24);sendBuf[20]=(byte)(id>>16);sendBuf[21]=(byte)(id>>8);sendBuf[22]=(byte)id;
+            EmberCrypto.Write64(sendBuf,23,++packetCounter);
+            int sealedLen=gcmCipher.SealPacket(sendBuf,19,body,0,bodyLen,sendBuf,0,31,sendBuf,31);
+            int packetLen=31+sealedLen;
+            SentPackets++;SentBytes+=packetLen;
             if(DebugDropPercent>0&&(SentPackets*37)%100<Math.Min(90,DebugDropPercent)){DroppedPackets++;return;}
-            if(route!=null)route.Send(to,packet,broadcasting);else udp.Send(packet,packet.Length,to);
+            if(route!=null)route.Send(to,sendBuf,packetLen,broadcasting);else udp.Send(sendBuf,packetLen,to);
         }
         void Send(IPEndPoint to,string text)
         {
             if(to==null)return;
             byte[] body=Encoding.UTF8.GetBytes(text);
             if(text.StartsWith("JOIN|")||text.StartsWith("ID|")||text.StartsWith("REJECT|"))
-            {byte[] tag;using(var hmac=new HMACSHA256(secret))tag=hmac.ComputeHash(body);byte[] packet=body.Concat(tag).ToArray();SentPackets++;SentBytes+=packet.Length;if(DebugDropPercent>0&&(SentPackets*37)%100<Math.Min(90,DebugDropPercent)){DroppedPackets++;return;}if(route!=null)route.Send(to,packet,broadcasting);else udp.Send(packet,packet.Length,to);}
-            else SendRaw(to,body);
+            {
+                byte[] tag=secretHmac.ComputeHash(body);
+                Buffer.BlockCopy(body,0,sendBuf,0,body.Length);
+                Buffer.BlockCopy(tag,0,sendBuf,body.Length,32);
+                int packetLen=body.Length+32;
+                SentPackets++;SentBytes+=packetLen;
+                if(DebugDropPercent>0&&(SentPackets*37)%100<Math.Min(90,DebugDropPercent)){DroppedPackets++;return;}
+                if(route!=null)route.Send(to,sendBuf,packetLen,broadcasting);else udp.Send(sendBuf,packetLen,to);
+            }
+            else SendRaw(to,body,body.Length);
         }
-        byte[] Decrypt(byte[] packet,IPEndPoint from)
+        byte[] Decrypt(byte[] packet,IPEndPoint from,out int plainLen)
         {
-            if(packet.Length<47||sessionKey==null)return null;for(int i=0;i<16;i++)if(packet[3+i]!=epoch[i])return null;
+            plainLen=0;
+            if(packet.Length<47||gcmCipher==null)return null;for(int i=0;i<16;i++)if(packet[3+i]!=epoch[i])return null;
             int sender=(packet[19]<<24)|(packet[20]<<16)|(packet[21]<<8)|packet[22];var counter=EmberCrypto.Read64(packet,23);HashSet<ulong> seen;ulong highest;Peer peer=null;
             if(Host){if(!peers.TryGetValue(from.ToString(),out peer)||peer.Id!=sender)return null;seen=peer.Packets;highest=peer.HighestPacket;}
             else {if(!from.Equals(server)||sender!=1)return null;seen=hostPackets;highest=hostHighest;}
             if(seen.Contains(counter)||(highest>1024&&counter<highest-1024))return null;
-            var header=packet.Take(31).ToArray();var plain=EmberCrypto.Open(sessionKey,header.Skip(19).Take(12).ToArray(),packet.Skip(31).ToArray(),header);
-            highest=Math.Max(highest,counter);seen.Add(counter);seen.RemoveWhere(n=>highest>1024&&n<highest-1024);if(peer!=null)peer.HighestPacket=highest;else hostHighest=highest;return plain;
+            plainLen=gcmCipher.OpenPacket(packet,19,packet,31,packet.Length-31,packet,0,31,decryptBuf,0);
+            highest=Math.Max(highest,counter);seen.Add(counter);seen.RemoveWhere(n=>highest>1024&&n<highest-1024);if(peer!=null)peer.HighestPacket=highest;else hostHighest=highest;return decryptBuf;
         }
-        public void Dispose(){udp?.Dispose();udp=null;route=null;stunDns=null;stunServer=null;stunRequest=stunTransaction=null;stunAttempts=stunService=0;openedAt=-1;PublicEndpoint=null;PingMs=-1;pingSeq=0;nextPingAt=0;pingSentAt=0;peers.Clear();pending.Clear();recentStates.Clear();outgoing.Clear();hostPackets.Clear();hostHighest=packetCounter=0;sessionKey=null;epoch=null;accepted=-1;sequence=0;nextPlayer=2;now=0;}
+        public void Dispose(){udp?.Dispose();udp=null;route=null;stunDns=null;stunServer=null;stunRequest=stunTransaction=null;stunAttempts=stunService=0;openedAt=-1;PublicEndpoint=null;PingMs=-1;pingSeq=0;nextPingAt=0;pingSentAt=0;peers.Clear();pending.Clear();recentStates.Clear();outgoing.Clear();hostPackets.Clear();hostHighest=packetCounter=0;gcmCipher?.Dispose();gcmCipher=null;secretHmac?.Dispose();secretHmac=null;sessionKey=null;epoch=null;accepted=-1;acceptedBinaryTick=-1;sequence=0;nextPlayer=2;now=0;}
     }
 }

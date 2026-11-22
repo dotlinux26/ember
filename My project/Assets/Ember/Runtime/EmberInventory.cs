@@ -180,11 +180,28 @@ namespace Ember
         {
             if(p==null||!HasHarvestTool(p))return false;
             if(State==null||(State.Phase==Phase.Extraction&&p.Pos.Length<3))return false;
-            if(State.Structures!=null&&State.Structures.Any(s=>s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2))return false;
-            if(State.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,p.Pos)<2.5f))return false;
-            var node=State.Nodes?.Where(n=>V2.Distance(n.Pos,p.Pos)<2.8f)
-                .OrderBy(n=>V2.Distance(n.Pos,p.Pos)).FirstOrDefault();
-            if(node!=null&&!node.Dropped&&!(node.DropKind==2&&node.DropId==16))return true;
+            if(State.Structures!=null)
+            {
+                for(int si=0;si<State.Structures.Length;si++)
+                {
+                    var s=State.Structures[si];
+                    if(s!=null&&s.Kind==4&&V2.Distance(s.Pos,p.Pos)<2)return false;
+                }
+            }
+            Node nearestNode=null;
+            float nearestDist=2.8f;
+            if(State.Nodes!=null)
+            {
+                for(int ni=0;ni<State.Nodes.Length;ni++)
+                {
+                    var n=State.Nodes[ni];
+                    if(n==null)continue;
+                    float d=V2.Distance(n.Pos,p.Pos);
+                    if(!n.Dropped&&n.DropKind==2&&n.DropId==16&&d<2.5f)return false;
+                    if(d<nearestDist){nearestDist=d;nearestNode=n;}
+                }
+            }
+            if(nearestNode!=null&&!nearestNode.Dropped&&!(nearestNode.DropKind==2&&nearestNode.DropId==16))return true;
             if(currentTiles!=null)
             {
                 int size=State.Size;
@@ -320,19 +337,43 @@ namespace Ember
                 else
                 {
                     float range=WeaponRangeFor(activeWeapon);
-                    var target=State.Enemies.Where(e=>e.HP>0&&V2.Distance(e.Pos,player.Pos)<range)
-                        .OrderBy(e=>V2.Distance(e.Pos,player.Pos)).FirstOrDefault();
-                    V2? aim=target?.Pos;
-                    if(player.Mad&&!player.Safe)
+                    Enemy target=null;
+                    float targetDist=range;
+                    if(State.Enemies!=null)
                     {
-                        var ally=State.Players.Where(q=>q.Id!=player.Id&&!q.Safe&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,player.Pos)<range)
-                            .OrderBy(q=>V2.Distance(q.Pos,player.Pos)).FirstOrDefault();
-                        if(ally!=null&&(target==null||V2.Distance(ally.Pos,player.Pos)<V2.Distance(target.Pos,player.Pos)))aim=ally.Pos;
+                        for(int ei=0;ei<State.Enemies.Length;ei++)
+                        {
+                            var e=State.Enemies[ei];
+                            if(e==null||e.HP<=0)continue;
+                            float d=V2.Distance(e.Pos,player.Pos);
+                            if(d<targetDist){targetDist=d;target=e;}
+                        }
                     }
-                    if(slot==8&&!aim.HasValue)
+                    V2? aim=target?.Pos;
+                    if(player.Mad&&!player.Safe&&State.Players!=null)
                     {
-                        var node=State.Nodes.Where(n=>V2.Distance(n.Pos,player.Pos)<range)
-                            .OrderBy(n=>V2.Distance(n.Pos,player.Pos)).FirstOrDefault();
+                        Player ally=null;
+                        float allyDist=range;
+                        for(int pi=0;pi<State.Players.Length;pi++)
+                        {
+                            var q=State.Players[pi];
+                            if(q==null||q.Id==player.Id||q.Safe||q.Ghost||q.Extracted)continue;
+                            float d=V2.Distance(q.Pos,player.Pos);
+                            if(d<allyDist){allyDist=d;ally=q;}
+                        }
+                        if(ally!=null&&(target==null||allyDist<targetDist))aim=ally.Pos;
+                    }
+                    if(slot==8&&!aim.HasValue&&State.Nodes!=null)
+                    {
+                        Node node=null;
+                        float nodeDist=range;
+                        for(int ni=0;ni<State.Nodes.Length;ni++)
+                        {
+                            var n=State.Nodes[ni];
+                            if(n==null)continue;
+                            float d=V2.Distance(n.Pos,player.Pos);
+                            if(d<nodeDist){nodeDist=d;node=n;}
+                        }
                         if(node!=null)aim=node.Pos;
                     }
 
@@ -611,29 +652,15 @@ namespace Ember
             if(host&&World!=null)
             {
                 World.DropItem(p,cell.Kind,cell.Id,amount);
+                SyncBackpack(p);
             }
             else
             {
-                if(cell.Kind==3)
-                {
-                    int r=Mathf.Clamp(cell.Id,0,p.Bag.Length-1);
-                    int actual=Mathf.Min(amount,p.Bag[r]);
-                    p.Bag[r]-=actual;
-                }
-                else if(cell.Kind==2)
-                {
-                    int c=Mathf.Clamp(cell.Id,0,p.Items.Length-1);
-                    int actual=Mathf.Min(amount,p.Items[c]);
-                    p.Items[c]-=actual;
-                }
-                else if(cell.Kind==1)
-                {
-                    if(cell.Id==1){p.HasWeapon=false;if(heldSlot==1)heldSlot=6;}
-                    else if(cell.Id==7){p.HasSideWeapon=false;if(heldSlot==7)heldSlot=6;}
-                    else if(cell.Id==8){p.HasPickaxe=false;if(heldSlot==8)heldSlot=6;}
-                }
+                intent.DropKind=cell.Kind;
+                intent.DropId=cell.Id;
+                intent.DropAmt=amount;
+                notice=L("Đã gửi yêu cầu vứt vật phẩm...","Requested item drop...");
             }
-            SyncBackpack(p);
         }
 
         static int StackLimitFor(int kind,int id)
@@ -869,8 +896,8 @@ namespace Ember
             RegisterHudRect(box);
 
             int usedSlots=UsedBackpackSlots();
-            var titleStyle=new GUIStyle(title){wordWrap=false};
-            UiLabel(new Rect(box.x+14,box.y+6,160,34),L("Kho Đồ","Inventory"),titleStyle);
+            if(invTitleStyle==null)invTitleStyle=new GUIStyle(title){wordWrap=false};
+            UiLabel(new Rect(box.x+14,box.y+6,160,34),L("Kho Đồ","Inventory"),invTitleStyle);
             var countChip=new Rect(box.x+152,box.y+11,148,26);
             PixelPanel(countChip,new Color(.19f,.13f,.30f));
             UiLabel(new Rect(countChip.x+6,countChip.y+3,countChip.width-12,20),
@@ -1160,12 +1187,16 @@ namespace Ember
             string titleName=cell.Kind==1&&cell.Id==8?p.PickaxeName:CellTitle(p,cell);
             UiLabel(new Rect(menuRect.x+38,menuRect.y+7,mw-46,24),titleName,small);
 
-            var menuBtnStyle=new GUIStyle(GUI.skin.button)
+            if(invContextMenuBtnStyle==null)
             {
-                fontSize=12,
-                padding=new RectOffset(4,4,2,2),
-                alignment=TextAnchor.MiddleCenter
-            };
+                invContextMenuBtnStyle=new GUIStyle(GUI.skin.button)
+                {
+                    fontSize=12,
+                    padding=new RectOffset(4,4,2,2),
+                    alignment=TextAnchor.MiddleCenter
+                };
+            }
+            var menuBtnStyle=invContextMenuBtnStyle;
 
             float curY=menuRect.y+36;
             if(cell.Kind==2)
@@ -1268,6 +1299,8 @@ namespace Ember
             }
         }
 
+        GUIStyle invTitleStyle,invContextMenuBtnStyle,craftTitleStyle,craftTabStyle,craftDescStyle;
+
         int craftCategory = 0; // 0 All, 1 Survival & Foraging, 2 Structures, 3 Gear & Weapons
 
         void DrawCraftingMenu(Player p)
@@ -1279,7 +1312,7 @@ namespace Ember
             RegisterHudRect(panel);
 
             // Header
-            var craftTitleStyle = new GUIStyle(title) { fontSize = 20, alignment = TextAnchor.MiddleLeft };
+            if(craftTitleStyle == null) craftTitleStyle = new GUIStyle(title) { fontSize = 20, alignment = TextAnchor.MiddleLeft };
             float headerY = panel.y + 10f;
             UiLabel(new Rect(panel.x + 14, headerY, panel.width - 50, 32), L("Bàn Chế Tạo [Tab]", "Crafting Table [Tab]"), craftTitleStyle);
             if (GUI.Button(new Rect(panel.x + panel.width - 36, headerY + 2, 26, 26), "✕", GUI.skin.button))
@@ -1293,14 +1326,15 @@ namespace Ember
                 ? new[] { "All", "Survival", "Build", "Gear" }
                 : new[] { "Tất cả", "Dã ngoại", "Công trình", "Trang bị" };
             float tabW = (panel.width - 24f) / 4f;
+            if(craftTabStyle == null) craftTabStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow };
             for (int c = 0; c < 4; c++)
             {
                 var tabRect = new Rect(panel.x + 12 + c * tabW, catY, tabW - 2, 24);
                 bool active = craftCategory == c;
                 Panel(tabRect, active ? new Color(.48f, .32f, .72f, .95f) : new Color(.18f, .14f, .28f, .85f));
-                var tabStyle = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, clipping = TextClipping.Overflow, fontStyle = active ? FontStyle.Bold : FontStyle.Normal };
-                tabStyle.normal.textColor = active ? Gold : new Color(.85f, .85f, .95f);
-                GUI.Label(tabRect, catNames[c], tabStyle);
+                craftTabStyle.fontStyle = active ? FontStyle.Bold : FontStyle.Normal;
+                craftTabStyle.normal.textColor = active ? Gold : new Color(.85f, .85f, .95f);
+                GUI.Label(tabRect, catNames[c], craftTabStyle);
                 if (GUI.Button(tabRect, GUIContent.none, GUIStyle.none)) craftCategory = c;
             }
 
@@ -1340,9 +1374,12 @@ namespace Ember
                 string desc = RecipeDescription(i);
                 if (!string.IsNullOrEmpty(desc))
                 {
-                    var descStyle = new GUIStyle(small) { fontSize = 10, clipping = TextClipping.Overflow };
-                    descStyle.normal.textColor = new Color(.82f, .85f, .95f, .85f);
-                    GUI.Label(new Rect(card.x + 50, card.y + 26, card.width - 56, 22), desc, descStyle);
+                    if(craftDescStyle == null)
+                    {
+                        craftDescStyle = new GUIStyle(small) { fontSize = 10, clipping = TextClipping.Overflow };
+                        craftDescStyle.normal.textColor = new Color(.82f, .85f, .95f, .85f);
+                    }
+                    GUI.Label(new Rect(card.x + 50, card.y + 26, card.width - 56, 22), desc, craftDescStyle);
                 }
 
                 // Cost chips

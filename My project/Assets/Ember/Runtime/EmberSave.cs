@@ -106,7 +106,13 @@ namespace Ember
         public static void WriteAtomic(string path,byte[] data)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));string tmp=path+".tmp";File.WriteAllBytes(tmp,data);
-            if(File.Exists(path))File.Replace(tmp,path,path+".previous");else File.Move(tmp,path);
+            if(File.Exists(path))
+            {
+                try{File.Replace(tmp,path,path+".previous");}
+                catch(IOException){File.Copy(tmp,path,true);File.Delete(tmp);}
+                catch(UnauthorizedAccessException){File.Copy(tmp,path,true);File.Delete(tmp);}
+            }
+            else File.Move(tmp,path);
         }
         public static string Export(string directory,string destination,string json,string password)
         {

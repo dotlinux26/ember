@@ -54,11 +54,12 @@ namespace Ember
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
         public int Craft=-1,Use=-1,Equip,Trade=-1; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive, 14 energy drink...
         public int DepositRes=-1,DepositAmt=0;
+        public int DropKind,DropId,DropAmt;
         public bool HasClientPos;
         public float ClientX,ClientY;
         public bool ClientRight;
         public bool ClientDashing;
-        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0||DepositRes>=0;
+        public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0||DepositRes>=0||DropAmt>0;
     }
     [Serializable] public sealed class Player
     {
@@ -84,6 +85,7 @@ namespace Ember
         public float PerkStrength(Perk perk)=>1+.2f*Math.Max(0,Rank(perk)-1);
         public bool Ghost=>HP<=0; public bool Has(Perk perk)=>Array.IndexOf(Perks,(int)perk)>=0;
         public VesselStats Stats=>Catalog.StatsFor(Vessel);
+        public float DashStaminaCost()=>StaminaBuffTimer>0?0f:25f*Stats.StaminaCostMultiplier*(Has(Perk.GhostStep)?1f-.2f*PerkStrength(Perk.GhostStep):1f);
         public float BaseCapacity=>30f+Stats.Gathering*5f;
         public int Load=>Bag.Sum(); public float Capacity=>BaseCapacity*(Has(Perk.StrongBack)?1+.3f*PerkStrength(Perk.StrongBack):1);
         public bool HasHeldTorch=>(HeldSlot==2||(HeldSlot==8&&PrevHeldSlot==2&&HarvestCD>0))&&Items[0]>0&&LampOn&&!Ghost&&!Extracted;
@@ -207,7 +209,7 @@ namespace Ember
     [Serializable] public sealed class Snapshot
     {
         public int Seed,Size,Tick,Capacity=4,BossesDefeated,TeamExtracted; public string RoomName="Ember";public Phase Phase; public Difficulty Difficulty; public float Time,Fuel,BeaconHP,Charge,ChargeTarget=100,Wave,Blackout,LastLight;
-        public Player[] Players; public Enemy[] Enemies; public Node[] Nodes; public Structure[] Structures; public Effect[] Effects;public Projectile[] Projectiles=Array.Empty<Projectile>();
+        public Player[] Players=Array.Empty<Player>(); public Enemy[] Enemies=Array.Empty<Enemy>(); public Node[] Nodes=Array.Empty<Node>(); public Structure[] Structures=Array.Empty<Structure>(); public Effect[] Effects=Array.Empty<Effect>();public Projectile[] Projectiles=Array.Empty<Projectile>();
         public string Event,EventActor,EventTarget;public int EventTick;
         public bool Sandbox;
         public bool BossArenaActive;
@@ -224,6 +226,7 @@ namespace Ember
         public HarvestTarget[] HarvestTargets=Array.Empty<HarvestTarget>();
         public int PeriodicWave=1;
         public DisconnectedSeat[] Disconnected=Array.Empty<DisconnectedSeat>();
+        public int[] RepairedBridges=Array.Empty<int>();
     }
     [Serializable] public sealed class PendingMeteor
     {
@@ -657,12 +660,27 @@ namespace Ember
         public const float Step=1f/30,ReviveChargeCost=100,ReviveBeaconHpCost=150,CoreChargeValue=25;
         public const float BossEventInterval=600f,BossArenaDefaultRadius=12.5f;
         public static float GetBossEventInterval(Difficulty d)=>d==Difficulty.Hard?120f:d==Difficulty.Normal?300f:600f;
+        [ThreadStatic] static byte[] tlsPackBuf;
+        [ThreadStatic] static MemoryStream tlsPackMs;
+        [ThreadStatic] static BinaryWriter tlsPackBw;
+        [ThreadStatic] static List<(int Index, float DistSq)> tlsEnemyCandidates;
+        [ThreadStatic] static List<(int Index, float DistSq)> tlsProjCandidates;
+        [ThreadStatic] static List<(int Index, float DistSq)> tlsStructCandidates;
+        static readonly Comparison<(int Index, float DistSq)> CompareDistSq = (a, b) => a.DistSq.CompareTo(b.DistSq);
+
         public static byte[] PackDelta(Snapshot s, uint ackedSeq)
         {
             if(s==null)return Array.Empty<byte>();
-            const int MaxPayloadBytes=1080;
-            using(var ms=new MemoryStream(1024))
-            using(var bw=new BinaryWriter(ms))
+            const int MaxPayloadBytes=1340;
+            if(tlsPackBuf==null)
+            {
+                tlsPackBuf=new byte[2048];
+                tlsPackMs=new MemoryStream(tlsPackBuf,0,tlsPackBuf.Length,true,true);
+                tlsPackBw=new BinaryWriter(tlsPackMs,System.Text.Encoding.UTF8,true);
+            }
+            var ms=tlsPackMs;
+            var bw=tlsPackBw;
+            ms.Position=0;
             {
                 bw.Write((byte)0xEB);
                 bw.Write((byte)0x01);
@@ -746,12 +764,14 @@ namespace Ember
                     }
                 }
 
-                // Enemies: Prioritize nearest to players / active boss, clamped to budget (max 14)
+                // Enemies: Prioritize nearest to players / active boss, clamped to budget (max 28)
                 int eTotal=s.Enemies!=null?s.Enemies.Length:0;
                 int eCount=0;
                 if(eTotal>0)
                 {
-                    var eCandidates=new (int Index,float DistSq)[eTotal];
+                    if(tlsEnemyCandidates==null)tlsEnemyCandidates=new List<(int Index, float DistSq)>(64);
+                    var eCandidates=tlsEnemyCandidates;
+                    eCandidates.Clear();
                     for(int i=0;i<eTotal;i++)
                     {
                         var e=s.Enemies[i];
@@ -777,12 +797,12 @@ namespace Ember
                         }
                         if(e.IsWorldBoss)minDistSq-=1000000f;
                         else if(e.Elite)minDistSq-=500000f;
-                        eCandidates[i]=(i,minDistSq);
+                        eCandidates.Add((i,minDistSq));
                     }
-                    Array.Sort(eCandidates,(a,b)=>a.DistSq.CompareTo(b.DistSq));
+                    eCandidates.Sort(CompareDistSq);
                     int remE=MaxPayloadBytes-(int)ms.Position;
-                    int enemyBudget=Math.Max(0,remE-220); // Headroom for projectiles and transient events
-                    eCount=Math.Min(eTotal,Math.Min(14,enemyBudget/21));
+                    int enemyBudget=Math.Max(0,remE-240); // Headroom for projectiles, structures, bridges & transient events
+                    eCount=Math.Min(eTotal,Math.Min(28,enemyBudget/21));
                     bw.Write((byte)eCount);
                     for(int i=0;i<eCount;i++)
                     {
@@ -802,12 +822,14 @@ namespace Ember
                 }
                 else bw.Write((byte)0);
 
-                // Projectiles: Prioritize nearest to players, clamped to budget (max 10)
+                // Projectiles: Prioritize nearest to players, clamped to budget (max 18)
                 int prTotal=s.Projectiles!=null?s.Projectiles.Length:0;
                 int sCount=0;
                 if(prTotal>0)
                 {
-                    var prCandidates=new (int Index,float DistSq)[prTotal];
+                    if(tlsProjCandidates==null)tlsProjCandidates=new List<(int Index, float DistSq)>(32);
+                    var prCandidates=tlsProjCandidates;
+                    prCandidates.Clear();
                     for(int i=0;i<prTotal;i++)
                     {
                         var pr=s.Projectiles[i];
@@ -825,12 +847,12 @@ namespace Ember
                                 }
                             }
                         }
-                        prCandidates[i]=(i,minDistSq);
+                        prCandidates.Add((i,minDistSq));
                     }
-                    Array.Sort(prCandidates,(a,b)=>a.DistSq.CompareTo(b.DistSq));
+                    prCandidates.Sort(CompareDistSq);
                     int remPr=MaxPayloadBytes-(int)ms.Position;
-                    int prBudget=Math.Max(0,remPr-40);
-                    sCount=Math.Min(prTotal,Math.Min(10,prBudget/22));
+                    int prBudget=Math.Max(0,remPr-80);
+                    sCount=Math.Min(prTotal,Math.Min(18,prBudget/22));
                     bw.Write((byte)sCount);
                     for(int i=0;i<sCount;i++)
                     {
@@ -848,11 +870,11 @@ namespace Ember
                 }
                 else bw.Write((byte)0);
 
-                // Combat Popups: Prioritize only if remaining byte budget permits (max 4)
+                // Combat Popups: Prioritize only if remaining byte budget permits (max 6)
                 int popTotal=s.Popups!=null?s.Popups.Length:0;
                 int remPop=MaxPayloadBytes-(int)ms.Position;
-                int popReserve=(s.BossTelegraphs!=null&&s.BossTelegraphs.Length>0)?36:10;
-                int popCount=Math.Min(popTotal,Math.Min(4,Math.Max(0,remPop-popReserve)/23));
+                int popReserve=(s.BossTelegraphs!=null&&s.BossTelegraphs.Length>0)?48:20;
+                int popCount=Math.Min(popTotal,Math.Min(6,Math.Max(0,remPop-popReserve)/23));
                 bw.Write((byte)popCount);
                 for(int i=0;i<popCount;i++)
                 {
@@ -866,10 +888,10 @@ namespace Ember
                     bw.Write(pop.MaxLife);
                 }
 
-                // Boss Telegraphs: Prioritize only if remaining byte budget permits (max 2)
+                // Boss Telegraphs: Prioritize only if remaining byte budget permits (max 6)
                 int telTotal=s.BossTelegraphs!=null?s.BossTelegraphs.Length:0;
                 int remTel=MaxPayloadBytes-(int)ms.Position;
-                int telCount=Math.Min(telTotal,Math.Min(2,Math.Max(0,remTel-10)/35));
+                int telCount=Math.Min(telTotal,Math.Min(6,Math.Max(0,remTel-20)/35));
                 bw.Write((byte)telCount);
                 for(int i=0;i<telCount;i++)
                 {
@@ -886,10 +908,10 @@ namespace Ember
                     bw.Write(tel.Duration);
                 }
 
-                // Transient Lights: Prioritize only if remaining byte budget permits (max 2)
+                // Transient Lights: Prioritize only if remaining byte budget permits (max 6)
                 int lightTotal=s.Lights!=null?s.Lights.Length:0;
                 int remLight=MaxPayloadBytes-(int)ms.Position;
-                int lightCount=Math.Min(lightTotal,Math.Min(2,Math.Max(0,remLight-10)/28));
+                int lightCount=Math.Min(lightTotal,Math.Min(6,Math.Max(0,remLight-20)/28));
                 bw.Write((byte)lightCount);
                 for(int i=0;i<lightCount;i++)
                 {
@@ -905,10 +927,10 @@ namespace Ember
                     bw.Write(l.GrantsSafety);
                 }
 
-                // Effects: Prioritize only if remaining byte budget permits (max 2)
+                // Effects: Prioritize only if remaining byte budget permits (max 6)
                 int fxTotal=s.Effects!=null?s.Effects.Length:0;
                 int remFx=MaxPayloadBytes-(int)ms.Position;
-                int fxCount=Math.Min(fxTotal,Math.Min(2,Math.Max(0,remFx-10)/21));
+                int fxCount=Math.Min(fxTotal,Math.Min(6,Math.Max(0,remFx-20)/21));
                 bw.Write((byte)fxCount);
                 for(int i=0;i<fxCount;i++)
                 {
@@ -921,7 +943,7 @@ namespace Ember
                     bw.Write(fx.Life);
                 }
 
-                // Dropped Nodes: Prioritize only if remaining byte budget permits (max 4)
+                // Dropped Nodes: Prioritize only if remaining byte budget permits (max 8)
                 int droppedNodeCount=0;
                 if(s.Nodes!=null)
                 {
@@ -929,7 +951,7 @@ namespace Ember
                         if(s.Nodes[i].Dropped)droppedNodeCount++;
                 }
                 int remNode=MaxPayloadBytes-(int)ms.Position;
-                int writeNodes=Math.Min(droppedNodeCount,Math.Min(4,Math.Max(0,remNode-1)/16));
+                int writeNodes=Math.Min(droppedNodeCount,Math.Min(8,Math.Max(0,remNode-20)/16));
                 bw.Write((byte)writeNodes);
                 if(s.Nodes!=null&&writeNodes>0)
                 {
@@ -949,8 +971,67 @@ namespace Ember
                     }
                 }
 
+                // Structures: up to 16 closest to players (25 bytes each)
+                int stTotal=s.Structures!=null?s.Structures.Length:0;
+                int stCount=0;
+                if(stTotal>0)
+                {
+                    if(tlsStructCandidates==null)tlsStructCandidates=new List<(int Index, float DistSq)>(32);
+                    var stCandidates=tlsStructCandidates;
+                    stCandidates.Clear();
+                    for(int i=0;i<stTotal;i++)
+                    {
+                        var st=s.Structures[i];
+                        if(st==null)continue;
+                        float minDistSq=float.MaxValue;
+                        if(s.Players!=null)
+                        {
+                            for(int p=0;p<s.Players.Length;p++)
+                            {
+                                var pl=s.Players[p];
+                                if(pl!=null)
+                                {
+                                    float dx=st.Pos.X-pl.Pos.X, dy=st.Pos.Y-pl.Pos.Y;
+                                    float d2=dx*dx+dy*dy;
+                                    if(d2<minDistSq)minDistSq=d2;
+                                }
+                            }
+                        }
+                        stCandidates.Add((i,minDistSq));
+                    }
+                    stCandidates.Sort(CompareDistSq);
+                    int remSt=MaxPayloadBytes-(int)ms.Position;
+                    stCount=Math.Min(stCandidates.Count,Math.Min(16,Math.Max(0,remSt-8)/25));
+                    bw.Write((byte)stCount);
+                    for(int i=0;i<stCount;i++)
+                    {
+                        var st=s.Structures[stCandidates[i].Index];
+                        bw.Write(st.Id);
+                        bw.Write((byte)st.Kind);
+                        bw.Write(st.Pos.X);
+                        bw.Write(st.Pos.Y);
+                        bw.Write(st.Life);
+                        bw.Write(st.MaxLife);
+                        bw.Write(st.HP);
+                    }
+                }
+                else bw.Write((byte)0);
+
+                // RepairedBridges: count byte + up to 32 int tile indices
+                int rbTotal=s.RepairedBridges!=null?s.RepairedBridges.Length:0;
+                int remRb=MaxPayloadBytes-(int)ms.Position;
+                int rbCount=Math.Min(rbTotal,Math.Min(32,Math.Max(0,remRb-1)/4));
+                bw.Write((byte)rbCount);
+                for(int i=0;i<rbCount;i++)
+                {
+                    bw.Write(s.RepairedBridges[i]);
+                }
+
                 bw.Flush();
-                return ms.ToArray();
+                int len=(int)ms.Position;
+                var result=new byte[len];
+                Buffer.BlockCopy(tlsPackBuf,0,result,0,len);
+                return result;
             }
         }
 
@@ -987,19 +1068,28 @@ namespace Ember
                         s.BossArenaRadius=br.ReadSingle();
                     }
 
-                    // Players
+                    // Players (preserve existing Player instances matched by Id)
                     int pCount=br.ReadByte();
-                    if(s.Players==null||s.Players.Length!=pCount)
-                    {
-                        var oldPlayers=s.Players;
-                        s.Players=new Player[pCount];
-                        for(int i=0;i<pCount;i++)
-                            s.Players[i]=oldPlayers!=null&&i<oldPlayers.Length?oldPlayers[i]:new Player();
-                    }
+                    var oldPlayers=s.Players;
+                    var nextPlayers=new Player[pCount];
                     for(int i=0;i<pCount;i++)
                     {
-                        var p=s.Players[i]??(s.Players[i]=new Player());
-                        p.Id=br.ReadByte();
+                        byte pid=br.ReadByte();
+                        Player p=null;
+                        if(oldPlayers!=null)
+                        {
+                            for(int oi=0;oi<oldPlayers.Length;oi++)
+                            {
+                                if(oldPlayers[oi]!=null&&oldPlayers[oi].Id==pid)
+                                {
+                                    p=oldPlayers[oi];
+                                    break;
+                                }
+                            }
+                        }
+                        if(p==null)p=new Player{Id=pid};
+                        nextPlayers[i]=p;
+                        p.Id=pid;
                         p.PartySlot=br.ReadByte();
                         p.Vessel=(Vessel)br.ReadByte();
                         p.Pos=new V2(br.ReadSingle(),br.ReadSingle());
@@ -1038,19 +1128,17 @@ namespace Ember
                         p.TeleportSeq=br.ReadInt32();
 
                         int bCount=br.ReadByte();
-                        if(bCount>0)
+                        if(p.Buffs==null)p.Buffs=new List<ActiveBuff>();
+                        else p.Buffs.Clear();
+                        for(int b=0;b<bCount;b++)
                         {
-                            if(p.Buffs==null)p.Buffs=new List<ActiveBuff>();
-                            else p.Buffs.Clear();
-                            for(int b=0;b<bCount;b++)
-                            {
-                                var kind=(BuffKind)br.ReadByte();
-                                float dur=br.ReadSingle();
-                                float val=br.ReadSingle();
-                                p.Buffs.Add(new ActiveBuff{Kind=kind,Duration=dur,MaxDuration=dur,Value=val,Stacks=1});
-                            }
+                            var kind=(BuffKind)br.ReadByte();
+                            float dur=br.ReadSingle();
+                            float val=br.ReadSingle();
+                            p.Buffs.Add(new ActiveBuff{Kind=kind,Duration=dur,MaxDuration=dur,Value=val,Stacks=1});
                         }
                     }
+                    s.Players=nextPlayers;
 
                     // Enemies
                     int eCount=br.ReadByte();
@@ -1202,6 +1290,77 @@ namespace Ember
                             }
                         }
                     }
+                    if(ms.Position<length)
+                    {
+                        int stCount=br.ReadByte();
+                        if(stCount>0)
+                        {
+                            if(stCount<16||s.Structures==null||s.Structures.Length<=16)
+                            {
+                                var nextStructs=new Structure[stCount];
+                                for(int i=0;i<stCount;i++)
+                                {
+                                    int id=br.ReadInt32();
+                                    Structure st=null;
+                                    if(s.Structures!=null)
+                                    {
+                                        for(int j=0;j<s.Structures.Length;j++)
+                                            if(s.Structures[j]!=null&&s.Structures[j].Id==id){st=s.Structures[j];break;}
+                                    }
+                                    if(st==null)st=new Structure{Id=id};
+                                    st.Id=id;
+                                    st.Kind=br.ReadByte();
+                                    st.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                                    st.Life=br.ReadSingle();
+                                    st.MaxLife=br.ReadSingle();
+                                    st.HP=br.ReadSingle();
+                                    nextStructs[i]=st;
+                                }
+                                s.Structures=nextStructs;
+                            }
+                            else
+                            {
+                                var merged=new List<Structure>(s.Structures);
+                                for(int i=0;i<stCount;i++)
+                                {
+                                    int id=br.ReadInt32();
+                                    int idx=merged.FindIndex(x=>x!=null&&x.Id==id);
+                                    var st=idx>=0?merged[idx]:new Structure{Id=id};
+                                    st.Id=id;
+                                    st.Kind=br.ReadByte();
+                                    st.Pos=new V2(br.ReadSingle(),br.ReadSingle());
+                                    st.Life=br.ReadSingle();
+                                    st.MaxLife=br.ReadSingle();
+                                    st.HP=br.ReadSingle();
+                                    if(idx<0)merged.Add(st);
+                                }
+                                s.Structures=merged.ToArray();
+                            }
+                        }
+                        else
+                        {
+                            s.Structures=Array.Empty<Structure>();
+                        }
+                    }
+                    if(ms.Position<length)
+                    {
+                        int rbCount=br.ReadByte();
+                        if(rbCount>0)
+                        {
+                            var rbSet=new HashSet<int>();
+                            if(s.RepairedBridges!=null)
+                                for(int i=0;i<s.RepairedBridges.Length;i++)rbSet.Add(s.RepairedBridges[i]);
+                            for(int i=0;i<rbCount;i++)rbSet.Add(br.ReadInt32());
+                            s.RepairedBridges=rbSet.ToArray();
+                        }
+                        else if(s.RepairedBridges==null)s.RepairedBridges=Array.Empty<int>();
+                    }
+                    if(s.Structures==null)s.Structures=Array.Empty<Structure>();
+                    if(s.RepairedBridges==null)s.RepairedBridges=Array.Empty<int>();
+                    if(s.Nodes==null)s.Nodes=Array.Empty<Node>();
+                    if(s.Effects==null)s.Effects=Array.Empty<Effect>();
+                    if(s.Enemies==null)s.Enemies=Array.Empty<Enemy>();
+                    if(s.Projectiles==null)s.Projectiles=Array.Empty<Projectile>();
                     return true;
                 }
             }
@@ -1214,7 +1373,9 @@ namespace Ember
         static readonly V2 BeaconColliderPos=new V2(0,.35f);
         const float BeaconColliderRadius=1.35f;
         public Snapshot S=new Snapshot();
+        public bool ClientShadowMode;
         public byte[] Tiles; public readonly int[] Chest=new int[5];
+        readonly HashSet<int> repairedBridges=new HashSet<int>();
         readonly List<Player> players=new List<Player>(); readonly List<Enemy> enemies=new List<Enemy>();
         readonly List<Node> nodes=new List<Node>(); readonly List<Structure> structures=new List<Structure>(); readonly List<Effect> effects=new List<Effect>(); readonly List<TreeRespawn> treeRespawns=new List<TreeRespawn>(); readonly List<HarvestTarget> harvestTargets=new List<HarvestTarget>();
         readonly List<Projectile> projectiles=new List<Projectile>();
@@ -1303,6 +1464,14 @@ namespace Ember
             var w=new EmberWorld();
             w.S=data.Snapshot;
             w.Tiles=MakeTiles(w.S.Seed,w.S.Size);
+            if(w.S.RepairedBridges!=null)
+            {
+                for(int i=0;i<w.S.RepairedBridges.Length;i++)
+                {
+                    int idx=w.S.RepairedBridges[i];
+                    if(idx>=0&&idx<w.Tiles.Length){w.Tiles[idx]=5;w.repairedBridges.Add(idx);}
+                }
+            }
             Array.Copy(data.Chest,w.Chest,5);
             w.players.AddRange(w.S.Players);
             if(!string.IsNullOrEmpty(installationId)&&w.players.Count>0)w.players[0].InstallationId=installationId;
@@ -1985,12 +2154,90 @@ namespace Ember
             commands[id]=new Command{X=c.X,Y=c.Y,HasClientPos=hasClientPos,ClientX=c.ClientX,ClientY=c.ClientY,ClientRight=c.ClientRight,ClientDashing=c.ClientDashing};inputAt[id]=S.Time;
             if(c.HasActions){if(!actions.TryGetValue(id,out var queue)){queue=new Queue<Command>();actions[id]=queue;}if(queue.Count<32)queue.Enqueue(c);}
         }
+        public void SyncClientTilesFromSnapshot(Snapshot s)
+        {
+            if(s==null||s.Size<=0)return;
+            int len=s.Size*s.Size;
+            if(Tiles==null||Tiles.Length!=len||S.Seed!=s.Seed||S.Size!=s.Size)
+            {
+                S.Seed=s.Seed;
+                S.Size=s.Size;
+                Tiles=MakeTiles(s.Seed,s.Size);
+            }
+            if(s.RepairedBridges!=null)
+            {
+                for(int i=0;i<s.RepairedBridges.Length;i++)
+                {
+                    int idx=s.RepairedBridges[i];
+                    if(idx>=0&&idx<len)Tiles[idx]=5;
+                }
+            }
+            if(s.TreeRespawns!=null)
+            {
+                for(int i=0;i<s.TreeRespawns.Length;i++)
+                {
+                    var tr=s.TreeRespawns[i];
+                    if(tr.Tx>=0&&tr.Ty>=0&&tr.Tx<s.Size&&tr.Ty<s.Size)
+                        Tiles[tr.Ty*s.Size+tr.Tx]=0;
+                }
+            }
+        }
+        public void SpawnStructure(Structure st)
+        {
+            if(st==null)return;
+            if(st.Id<=0)st.Id=nextId++;
+            else nextId=Math.Max(nextId,st.Id+1);
+            structures.Add(st);
+            Publish();
+        }
+        public void SpawnEnemy(Enemy en)
+        {
+            if(en==null)return;
+            if(en.Id<=0)en.Id=nextId++;
+            else nextId=Math.Max(nextId,en.Id+1);
+            enemies.Add(en);
+            Publish();
+        }
+        public void SpawnTransientLight(TransientLight tl)
+        {
+            if(tl==null)return;
+            if(tl.Id<=0)tl.Id=nextId++;
+            else nextId=Math.Max(nextId,tl.Id+1);
+            transientLights.Add(tl);
+            Publish();
+        }
+        public void EmitPopupDirect(CombatPopup pop)
+        {
+            if(pop==null)return;
+            if(pop.Id<=0)pop.Id=nextId++;
+            else nextId=Math.Max(nextId,pop.Id+1);
+            combatPopups.Add(pop);
+            Publish();
+        }
+        public void RemoveStructureById(int id)
+        {
+            structures.RemoveAll(s=>s.Id==id);
+            Publish();
+        }
+        public void AddWorldEvent(string vi,string en)
+        {
+            S.Event=(vi??"")+"|"+(en??"");
+            S.EventTick=S.Tick;
+            Publish();
+        }
         public bool Walkable(V2 p, bool allowWater = false)
         {
             int x=(int)Math.Floor(p.X+S.Size/2f),y=(int)Math.Floor(p.Y+S.Size/2f);
             if(x<3||y<3||x>=S.Size-3||y>=S.Size-3)return false;
+            if(Tiles==null||Tiles.Length<S.Size*S.Size)return false;
             byte tile=Tiles[y*S.Size+x];
             if((tile==1&&!allowWater)||tile==3||tile==4||tile==7)return false;
+            if(ClientShadowMode)
+            {
+                var sts=S.Structures;
+                if(sts!=null)for(int i=0;i<sts.Length;i++){var s=sts[i];if(s!=null&&s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f)return false;}
+                return true;
+            }
             return !structures.Any(s=>s.Kind==2&&s.HP>0&&V2.Distance(s.Pos,p)<.8f);
         }
         public V2 Move(V2 from,V2 delta,Player body=null,Enemy monster=null,bool ignoreEnemies=false)
@@ -2026,10 +2273,22 @@ namespace Ember
                     if(V2.Distance(to,S.BossArenaCenter)>maxR&&V2.Distance(to,S.BossArenaCenter)>V2.Distance(from,S.BossArenaCenter))return false;
                 }
             }
-            foreach(var player in players)
-                if(player!=body&&!player.Ghost&&!player.Extracted&&ApproachesBody(from,to,player.Pos,.55f))return false;
-            foreach(var enemy in enemies)
-                if(!ignoreEnemies&&enemy!=monster&&enemy.HP>0&&ApproachesBody(from,to,enemy.Pos,enemy.Kind==EnemyKind.Boss?.85f:.55f))return false;
+            if(ClientShadowMode)
+            {
+                if(S.Players!=null)
+                    foreach(var player in S.Players)
+                        if(player!=null&&player!=body&&(body==null||player.Id!=body.Id)&&!player.Ghost&&!player.Extracted&&ApproachesBody(from,to,player.Pos,.55f))return false;
+                if(!ignoreEnemies&&S.Enemies!=null)
+                    foreach(var enemy in S.Enemies)
+                        if(enemy!=null&&enemy!=monster&&(monster==null||enemy.Id!=monster.Id)&&enemy.HP>0&&ApproachesBody(from,to,enemy.Pos,enemy.Kind==EnemyKind.Boss?.85f:.55f))return false;
+            }
+            else
+            {
+                foreach(var player in players)
+                    if(player!=body&&!player.Ghost&&!player.Extracted&&ApproachesBody(from,to,player.Pos,.55f))return false;
+                foreach(var enemy in enemies)
+                    if(!ignoreEnemies&&enemy!=monster&&enemy.HP>0&&ApproachesBody(from,to,enemy.Pos,enemy.Kind==EnemyKind.Boss?.85f:.55f))return false;
+            }
             return true;
         }
 
@@ -2343,14 +2602,14 @@ namespace Ember
             {
                 var position=p.Pos+new V2(p.Right?4:-4,2);if(Walkable(position)){p.MiragePos=position;p.MirageLife=14;}p.MirageCD=20;
             }
-            float dashCost=p.StaminaBuffTimer>0?0f:(25*stats.StaminaCostMultiplier*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1));
+            float dashCost=p.DashStaminaCost();
             if(c.Dash&&p.DashCD<=0&&p.Stamina>=dashCost)
             {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=stats.DashCooldown;p.DashTime=.16f;p.Invulnerable=.16f;}
             if(c.HasClientPos)
             {
                 if(p.DashTime>0)p.DashTime=Math.Max(0f,p.DashTime-dt);
                 V2 delta=new V2(c.ClientX,c.ClientY)-p.Pos;
-                float maxStep=Math.Max(3.5f,speed*dt*4f);
+                float maxStep=Math.Max(1.6f,(c.ClientDashing||p.DashTime>0?17f:speed)*dt*2.5f+0.8f);
                 if(delta.Length>maxStep)delta=delta.Normal*maxStep;
                 p.Pos=Move(p.Pos,delta,p,ignoreEnemies:c.ClientDashing||p.DashTime>0);
             }
@@ -2424,6 +2683,11 @@ namespace Ember
                 {
                     var mChest=structures.First(s=>s.Kind==MysteryChestKind&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<MysteryChestInteractionDistance);
                     OpenMysteryChest(p,mChest);
+                }
+                else if(structures.Any(s=>s.Kind==EmberEvents.RelicChestKind&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<=EmberEvents.RelicInteractionDistance+0.5f))
+                {
+                    var rChest=structures.First(s=>s.Kind==EmberEvents.RelicChestKind&&s.HP>0&&V2.Distance(s.Pos,p.Pos)<=EmberEvents.RelicInteractionDistance+0.5f);
+                    EmberEvents.OpenRelicChest(this,p,rChest,null);
                 }
                 else if(structures.Any(s=>s.Kind==0&&s.Life>0&&V2.Distance(s.Pos,p.Pos)<2.0f))
                 {
@@ -2514,6 +2778,7 @@ namespace Ember
                 p.ReloadTimer=Catalog.WeaponReloadTime(p.ActiveWeapon);
             }
             if(c.Use>=0&&c.Use<24)Use(p,c.Use);
+            if(c.DropAmt>0)DropItem(p,c.DropKind,c.DropId,c.DropAmt);
             if(c.Push)PushEnemy(p);
             if(c.Attack&&p.AttackCD<=0&&p.CastTime<=0)
             {
@@ -2820,6 +3085,7 @@ namespace Ember
                         {
                             p.Bag[(int)Resource.Wood]-=4;p.Bag[(int)Resource.Ore]-=2;
                             Tiles[bestTy*size+bestTx]=5;
+                            repairedBridges.Add(bestTy*size+bestTx);
                             FX(p.Pos,new V2(bestTx-size/2f+.5f,bestTy-size/2f+.5f),1);
                             Announce(EmberLanguage.English?"Wooden bridge repaired! Access restored.":"Đã sửa xong cầu vượt biển! Mở thông lối đi.");
                             Publish();return true;
@@ -3318,8 +3584,9 @@ namespace Ember
             }
             p.AttackCD=weapon==Weapon.ShadowBlades?.2f:weapon==Weapon.LumenGun?.32f:.5f;
             float damage=(weapon==Weapon.Stick?18:weapon==Weapon.CrystalAxe?36:25)*DamageMultiplier(p);
-            var target=Target(p,p.Range);
-            var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(p.Pos,q.Pos)<p.Range).OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
+            float meleeTolerance=(!p.Ranged&&p.Id!=1)?0.3f:0f;
+            var target=Target(p,p.Range+meleeTolerance);
+            var ally=players.Where(q=>CanHarm(p,q)&&V2.Distance(p.Pos,q.Pos)<p.Range+meleeTolerance).OrderBy(q=>V2.Distance(q.Pos,p.Pos)).FirstOrDefault();
             if(ally!=null&&(target==null||V2.Distance(ally.Pos,p.Pos)<V2.Distance(target.Pos,p.Pos)))
             {
                 if(p.Ranged){ConsumeAmmoAndShoot(p,ally.Pos,damage);return;}
@@ -4080,6 +4347,307 @@ namespace Ember
         public void Announce(string text,string actor="",string target=""){S.Event=text;S.EventActor=actor;S.EventTarget=target;S.EventTick=S.Tick;}
         public void FX(V2 from,V2 to,int kind)=>effects.Add(new Effect{From=from,To=to,Kind=kind,Life=.3f});
         static float Clamp(float v,float min,float max)=>Math.Max(min,Math.Min(max,v));
-        public void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.HarvestTargets=harvestTargets.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();}
+        public void Publish(){S.Players=players.ToArray();S.Enemies=enemies.ToArray();S.Nodes=nodes.ToArray();S.Structures=structures.ToArray();S.Effects=effects.ToArray();S.Projectiles=projectiles.ToArray();S.BossTelegraphs=bossTelegraphs.ToArray();S.Lights=transientLights.ToArray();S.Popups=combatPopups.ToArray();S.TreeRespawns=treeRespawns.ToArray();S.HarvestTargets=harvestTargets.ToArray();S.Disconnected=disconnectedSeats.Values.OrderBy(d=>d.PartySlot).ToArray();S.RepairedBridges=repairedBridges.Count>0?repairedBridges.ToArray():Array.Empty<int>();}
+    }
+
+    public sealed class EntityInterpolationBuffer
+    {
+        public struct EntityState
+        {
+            public V2 Pos;
+            public V2 Vel;
+        }
+
+        public sealed class Frame
+        {
+            public double Timestamp;
+            public double ServerTime;
+            public readonly Dictionary<int, EntityState> Players = new Dictionary<int, EntityState>();
+            public readonly Dictionary<int, EntityState> Enemies = new Dictionary<int, EntityState>();
+            public readonly Dictionary<int, EntityState> Projectiles = new Dictionary<int, EntityState>();
+        }
+
+        readonly List<Frame> frames = new List<Frame>();
+        readonly Dictionary<int, V2> playerErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> enemyErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> projErrors = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedPlayer = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedEnemy = new Dictionary<int, V2>();
+        readonly Dictionary<int, V2> lastRenderedProj = new Dictionary<int, V2>();
+        readonly HashSet<int> extrapolatingPlayers = new HashSet<int>();
+        readonly HashSet<int> extrapolatingEnemies = new HashSet<int>();
+        readonly HashSet<int> extrapolatingProjs = new HashSet<int>();
+        readonly Dictionary<int, (int TeleportSeq, bool Ghost)> lastPlayerState = new Dictionary<int, (int, bool)>();
+
+        double lastArrival = -1;
+        double lastServerTime = -1;
+        double serverClockOffset = 0;
+        double lastEvalNow = -1;
+        double lastRenderServerTime = -1;
+        float frameDt = 0.016f;
+        int lastPushedTick = -1;
+        double smoothedJitter = 0.005;
+        double targetDelay = 0.055;
+
+        static float ClampF(float v, float min, float max) => v < min ? min : v > max ? max : v;
+
+        static V2 ClampVel(V2 v, float maxSpeed)
+        {
+            float len = v.Length;
+            return len > maxSpeed && len > 0.0001f ? v * (maxSpeed / len) : v;
+        }
+
+        public void Clear()
+        {
+            frames.Clear();
+            playerErrors.Clear();
+            enemyErrors.Clear();
+            projErrors.Clear();
+            lastRenderedPlayer.Clear();
+            lastRenderedEnemy.Clear();
+            lastRenderedProj.Clear();
+            extrapolatingPlayers.Clear();
+            extrapolatingEnemies.Clear();
+            extrapolatingProjs.Clear();
+            lastPlayerState.Clear();
+            lastArrival = -1;
+            lastServerTime = -1;
+            serverClockOffset = 0;
+            lastEvalNow = -1;
+            lastRenderServerTime = -1;
+            frameDt = 0.016f;
+            lastPushedTick = -1;
+            smoothedJitter = 0.005;
+            targetDelay = 0.055;
+        }
+
+        public void Push(double arrivalTime, Snapshot s, int localId)
+        {
+            if(s == null) return;
+            if(s.Tick > 0 && s.Tick <= lastPushedTick && frames.Count > 0) return;
+
+            double serverTime = s.Tick > 0 ? s.Tick * (double)EmberWorld.Step : arrivalTime;
+            double sampleOffset = arrivalTime - serverTime;
+            if(lastServerTime < 0 || Math.Abs(sampleOffset - serverClockOffset) > 0.5)
+            {
+                serverClockOffset = sampleOffset;
+                lastRenderServerTime = -1;
+            }
+            else
+            {
+                serverClockOffset += (sampleOffset - serverClockOffset) * 0.05;
+            }
+
+            if(lastArrival > 0 && serverTime > lastServerTime)
+            {
+                double arrivalDt = arrivalTime - lastArrival;
+                double serverDt = serverTime - lastServerTime;
+                double jitter = Math.Abs(arrivalDt - serverDt);
+                smoothedJitter = smoothedJitter * 0.85 + jitter * 0.15;
+                targetDelay = Math.Max(0.055, Math.Min(0.150, 0.045 + smoothedJitter * 2.5));
+            }
+            lastArrival = arrivalTime;
+            lastServerTime = serverTime;
+            lastPushedTick = s.Tick;
+
+            var prevFrame = frames.Count > 0 ? frames[frames.Count - 1] : null;
+            float simDt = prevFrame != null ? (float)(serverTime - prevFrame.ServerTime) : EmberWorld.Step;
+            if(simDt <= 0.0001f && prevFrame != null) simDt = (float)(arrivalTime - prevFrame.Timestamp);
+            var frame = new Frame { Timestamp = arrivalTime, ServerTime = serverTime };
+
+            if(s.Players != null)
+            {
+                foreach(var p in s.Players)
+                {
+                    if(p == null || p.Id == localId) continue;
+                    bool teleportedOrRevived = false;
+                    if(lastPlayerState.TryGetValue(p.Id, out var prevState))
+                    {
+                        if(prevState.TeleportSeq != p.TeleportSeq || prevState.Ghost != p.Ghost)
+                        {
+                            teleportedOrRevived = true;
+                            lastRenderedPlayer.Remove(p.Id);
+                            playerErrors.Remove(p.Id);
+                            extrapolatingPlayers.Remove(p.Id);
+                        }
+                    }
+                    lastPlayerState[p.Id] = (p.TeleportSeq, p.Ghost);
+
+                    V2 vel = p.Move * p.Stats.MoveSpeed;
+                    if(!teleportedOrRevived && prevFrame != null && prevFrame.Players.TryGetValue(p.Id, out var prev))
+                    {
+                        if(simDt > 0.001f && V2.Distance(prev.Pos, p.Pos) < 4.5f)
+                        {
+                            V2 derivedVel = (p.Pos - prev.Pos) / simDt;
+                            if(derivedVel.Length > 0.1f) vel = derivedVel;
+                        }
+                    }
+                    frame.Players[p.Id] = new EntityState { Pos = p.Pos, Vel = ClampVel(vel, 18.5f) };
+                }
+            }
+
+            if(s.Enemies != null)
+            {
+                foreach(var e in s.Enemies)
+                {
+                    if(e == null) continue;
+                    V2 vel = new V2();
+                    if(prevFrame != null && prevFrame.Enemies.TryGetValue(e.Id, out var prev))
+                    {
+                        if(simDt > 0.001f && V2.Distance(prev.Pos, e.Pos) < 4.5f)
+                        {
+                            vel = (e.Pos - prev.Pos) / simDt;
+                        }
+                    }
+                    frame.Enemies[e.Id] = new EntityState { Pos = e.Pos, Vel = ClampVel(vel, 14f) };
+                }
+            }
+
+            if(s.Projectiles != null)
+            {
+                foreach(var pr in s.Projectiles)
+                {
+                    if(pr == null) continue;
+                    frame.Projectiles[pr.Id] = new EntityState { Pos = pr.Pos, Vel = ClampVel(pr.Velocity, 28f) };
+                }
+            }
+
+            frames.Add(frame);
+            while(frames.Count > 15 && serverTime - frames[0].ServerTime > 0.5)
+                frames.RemoveAt(0);
+        }
+
+        public V2 GetPlayerPos(int id, double now, V2 fallback)
+            => GetEntityPos(id, now, f => f.Players, extrapolatingPlayers, playerErrors, lastRenderedPlayer, fallback, smoothOutput: true);
+
+        public V2 GetEnemyPos(int id, double now, V2 fallback)
+            => GetEntityPos(id, now, f => f.Enemies, extrapolatingEnemies, enemyErrors, lastRenderedEnemy, fallback, smoothOutput: false);
+
+        public V2 GetProjectilePos(int id, double now, V2 fallback)
+            => GetEntityPos(id, now, f => f.Projectiles, extrapolatingProjs, projErrors, lastRenderedProj, fallback, smoothOutput: false);
+
+        double GetRenderServerTime(double now)
+        {
+            if(lastEvalNow < 0 || Math.Abs(now - lastEvalNow) > 0.00001)
+            {
+                if(lastEvalNow >= 0 && now > lastEvalNow)
+                    frameDt = ClampF((float)(now - lastEvalNow), 0.001f, 0.1f);
+                lastEvalNow = now;
+                double candidate = (now - serverClockOffset) - targetDelay;
+                if(lastRenderServerTime > 0 && candidate < lastRenderServerTime)
+                    candidate = lastRenderServerTime;
+                lastRenderServerTime = candidate;
+            }
+            return lastRenderServerTime;
+        }
+
+        V2 GetEntityPos(
+            int id,
+            double now,
+            Func<Frame, Dictionary<int, EntityState>> getDict,
+            HashSet<int> extrapSet,
+            Dictionary<int, V2> errors,
+            Dictionary<int, V2> lastRendered,
+            V2 fallback,
+            bool smoothOutput)
+        {
+            double renderServerTime = GetRenderServerTime(now);
+            bool wasExtrap = extrapSet.Contains(id);
+            V2 pos = InterpolateEntity(id, renderServerTime, getDict, fallback, out bool isExtrap);
+            if(isExtrap)
+            {
+                extrapSet.Add(id);
+            }
+            else
+            {
+                if(wasExtrap)
+                {
+                    extrapSet.Remove(id);
+                    if(lastRendered.TryGetValue(id, out var lastVis))
+                    {
+                        V2 err = lastVis - pos;
+                        if(err.Length > 0.03f && err.Length < 4.0f) errors[id] = err;
+                    }
+                }
+                else if(lastRendered.TryGetValue(id, out var lastVis))
+                {
+                    float snapDist = V2.Distance(pos, lastVis);
+                    if(snapDist > 0.8f && snapDist < 4.0f)
+                    {
+                        errors[id] = lastVis - pos;
+                    }
+                }
+            }
+            pos = ApplyErrorBlending(id, pos, errors);
+            if(smoothOutput && lastRendered.TryGetValue(id, out var prevOut) && V2.Distance(prevOut, pos) < 3.5f)
+            {
+                float alpha = 1f - (float)Math.Exp(-20.0 * frameDt);
+                pos = prevOut + (pos - prevOut) * alpha;
+            }
+            lastRendered[id] = pos;
+            return pos;
+        }
+
+        V2 ApplyErrorBlending(int id, V2 pos, Dictionary<int, V2> errors)
+        {
+            if(errors.TryGetValue(id, out var err))
+            {
+                float decay = (float)Math.Exp(-15.0 * frameDt);
+                err *= decay;
+                if(err.Length < 0.005f) errors.Remove(id);
+                else errors[id] = err;
+                return pos + err;
+            }
+            return pos;
+        }
+
+        V2 InterpolateEntity(int id, double renderTime, Func<Frame, Dictionary<int, EntityState>> getDict, V2 fallback, out bool isExtrapolating)
+        {
+            isExtrapolating = false;
+            if(frames.Count == 0) return fallback;
+
+            var newest = frames[frames.Count - 1];
+            var newestDict = getDict(newest);
+            if(!newestDict.TryGetValue(id, out var newestState)) return fallback;
+
+            if(frames.Count == 1 || renderTime >= newest.ServerTime)
+            {
+                isExtrapolating = true;
+                float dtExtrap = ClampF((float)(renderTime - newest.ServerTime), 0f, 0.12f);
+                if(dtExtrap <= 0.0001f) return newestState.Pos;
+                float effDt = (1f - (float)Math.Exp(-6.0 * dtExtrap)) / 6f;
+                return newestState.Pos + newestState.Vel * effDt;
+            }
+
+            var oldest = frames[0];
+            if(renderTime <= oldest.ServerTime)
+            {
+                var oldestDict = getDict(oldest);
+                return oldestDict.TryGetValue(id, out var oldState) ? oldState.Pos : newestState.Pos;
+            }
+
+            for(int i = 0; i < frames.Count - 1; i++)
+            {
+                var f0 = frames[i];
+                var f1 = frames[i + 1];
+                if(f0.ServerTime <= renderTime && renderTime <= f1.ServerTime)
+                {
+                    var d0 = getDict(f0);
+                    var d1 = getDict(f1);
+                    bool has0 = d0.TryGetValue(id, out var s0);
+                    bool has1 = d1.TryGetValue(id, out var s1);
+                    if(has0 && has1)
+                    {
+                        double dt = f1.ServerTime - f0.ServerTime;
+                        if(dt <= 0.0001 || V2.Distance(s0.Pos, s1.Pos) >= 4.5f) return s1.Pos;
+                        float t = ClampF((float)((renderTime - f0.ServerTime) / dt), 0f, 1f);
+                        return s0.Pos + (s1.Pos - s0.Pos) * t;
+                    }
+                    if(has1) return s1.Pos;
+                    if(has0) return s0.Pos;
+                }
+            }
+            return newestState.Pos;
+        }
     }
 }

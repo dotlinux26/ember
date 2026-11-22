@@ -1490,6 +1490,260 @@ using (var binClient = new EmberLan())
     Check(receivedCmd != null && receivedCmd.Dash && Math.Abs(receivedCmd.X - (-0.5f)) < 0.001f && Math.Abs(receivedCmd.Y - 0.75f) < 0.001f, "SendInputBinary round-trips Dash and movement axes");
 }
 
+// 17. Decoupled Binary vs Full JSON State Delivery, Snapshot Non-Null Arrays, UnpackDelta Id Matching & Server-Time Interpolation
+using (var syncHost = new EmberLan())
+using (var syncClient = new EmberLan())
+{
+    int binCount = 0;
+    string fullJsonReceived = null;
+    syncClient.BinaryState = _ => binCount++;
+    syncClient.State = s => fullJsonReceived = s;
+    syncHost.Open(true, "", "sync-pass");
+    syncClient.Open(false, "127.0.0.1", "sync-pass");
+    syncClient.Join("SyncClient");
+    for (int i = 0; i < 30; i++) { syncHost.Poll(i * 0.01); syncClient.Poll(i * 0.01); Thread.Sleep(2); }
+    Check(syncClient.LocalId == 2, "Sync regression client joined host");
+
+    var binSnap = new EmberWorld(42).S;
+    binSnap.Tick = 1500;
+    syncHost.BroadcastSnapshot(EmberWorld.PackDelta(binSnap, 0));
+    for (int i = 0; i < 15 && binCount == 0; i++) { syncClient.Poll(0.4 + i * 0.01); Thread.Sleep(2); }
+    Check(binCount == 1, "Client received BinaryState at tick 1500");
+
+    // Full JSON STATE| with snapshot sequence 90 (< 1500) must NOT be dropped after higher binary tick
+    syncHost.Broadcast("{\"Seed\":42,\"Tick\":1501,\"Structures\":[],\"Nodes\":[]}", 90);
+    for (int i = 0; i < 30 && fullJsonReceived == null; i++) { syncClient.Poll(0.6 + i * 0.01); Thread.Sleep(2); }
+    Check(fullJsonReceived != null && fullJsonReceived.Contains("\"Seed\":42"), "Full JSON STATE seq 90 still delivered after BinaryState tick 1500");
+}
+
+var freshSnap = new Snapshot();
+Check(freshSnap.Players != null && freshSnap.Enemies != null && freshSnap.Nodes != null && freshSnap.Structures != null && freshSnap.Effects != null,
+    "New Snapshot initializes non-null arrays by default");
+
+// UnpackDelta matches players by Id when count changes and clears Buffs when bCount == 0
+var idWorld = new EmberWorld(77);
+var idP1 = idWorld.AddPlayer(1, "HostName", Vessel.Wanderer);
+var idP2 = idWorld.AddPlayer(2, "FriendName", Vessel.MoonMender);
+idWorld.StartRun();
+idP1.Items[0] = 3;
+idP2.Items[4] = 2;
+idP2.Bag[1] = 7;
+idP2.ApplyBuff(BuffKind.Swiftness, 10f, 0.35f);
+idWorld.Publish();
+byte[] deltaWithBuff = EmberWorld.PackDelta(idWorld.S, 0);
+Snapshot clientSnap = new Snapshot
+{
+    Players = new[]
+    {
+        new Player { Id = 99, Name = "StaleGhost" },
+        new Player { Id = 2, Name = "FriendName", Bag = new[] { 0, 7, 0, 0, 0 }, Items = new int[24] }
+    }
+};
+clientSnap.Players[1].Items[4] = 2;
+uint unpackAck;
+Check(EmberWorld.UnpackDelta(deltaWithBuff, 0, deltaWithBuff.Length, ref clientSnap, out unpackAck), "UnpackDelta succeeds with Id mismatch oldPlayers");
+var syncedFriend = clientSnap.Players.FirstOrDefault(pl => pl.Id == 2);
+Check(syncedFriend != null && syncedFriend.Name == "FriendName" && syncedFriend.Bag[1] == 7 && syncedFriend.Items[4] == 2 && syncedFriend.Buffs.Count == 1,
+    "UnpackDelta matches player by Id preserving Bag/Items/Name and reading Buffs");
+idP2.ClearBuffs();
+idWorld.Publish();
+byte[] deltaNoBuff = EmberWorld.PackDelta(idWorld.S, 0);
+EmberWorld.UnpackDelta(deltaNoBuff, 0, deltaNoBuff.Length, ref clientSnap, out unpackAck);
+Check(syncedFriend.Buffs.Count == 0, "UnpackDelta clears expired buffs when bCount == 0");
+
+// EntityInterpolationBuffer under simulated 100ms ping + jitter burst (ticks arriving 2ms apart)
+var interp = new EntityInterpolationBuffer();
+Snapshot MakeRemoteSnap(int tick, float x) => new Snapshot
+{
+    Tick = tick,
+    Players = new[] { new Player { Id = 2, Pos = new V2(x, 0f), Move = new V2(1f, 0f), Vessel = Vessel.Wanderer } }
+};
+double baseArrival = 10.100;
+interp.Push(baseArrival, MakeRemoteSnap(30, 0.0f), 1);
+// Wait 100ms stall, then 3 buffered ticks arrive in a 2ms burst
+double tNow = baseArrival + 0.100;
+V2 stallPos = interp.GetPlayerPos(2, baseArrival + 0.080, new V2(0f, 0f));
+Check(stallPos.X >= -0.01f && stallPos.X <= 1.5f, "Interpolation stall stays bounded");
+interp.Push(tNow, MakeRemoteSnap(31, 0.2f), 1);
+interp.Push(tNow + 0.002, MakeRemoteSnap(32, 0.4f), 1);
+interp.Push(tNow + 0.004, MakeRemoteSnap(33, 0.6f), 1);
+float prevX = stallPos.X;
+bool monotonicNoOvershoot = true;
+for (int step = 1; step <= 8; step++)
+{
+    V2 sampled = interp.GetPlayerPos(2, tNow + 0.005 + step * 0.016, new V2(0.6f, 0f));
+    if (sampled.X < prevX - 0.02f || sampled.X > 0.72f) monotonicNoOvershoot = false;
+    prevX = sampled.X;
+}
+Check(monotonicNoOvershoot, "EntityInterpolationBuffer interpolates smoothly without velocity explosion or overshoot during 100ms burst");
+
+// 18. Audit Fixes Verification (B1-B6, Cooking, RunSave, GcmCipher, Legacy 0x02, 20+ Enemies Delta, Binary Relay)
+{
+    // B1: ClientShadowMode physics parity against S.Structures, S.Players, S.Enemies
+    var shadowWorld = new EmberWorld(42, 60, Difficulty.Normal);
+    shadowWorld.ClientShadowMode = true;
+    shadowWorld.S = new Snapshot
+    {
+        Seed = 42,
+        Size = 60,
+        Phase = Phase.Explore,
+        Players = new[]
+        {
+            new Player { Id = 1, Pos = new V2(5f, 5f), HP = 100f, MaxHP = 100f, Bag = new int[5], Items = new int[24] },
+            new Player { Id = 2, Pos = new V2(7.0f, 5f), HP = 100f, MaxHP = 100f, Bag = new int[5], Items = new int[24] }
+        },
+        Enemies = new[]
+        {
+            new Enemy { Id = 99, Kind = EnemyKind.Shade, Pos = new V2(5f, 7.0f), HP = 40f, MaxHP = 40f }
+        },
+        Structures = new[]
+        {
+            new Structure { Id = 50, Kind = 2, Pos = new V2(5f, 3.0f), HP = 150f }
+        }
+    };
+    var shadowLocal = shadowWorld.S.Players[0];
+    V2 hitWall = shadowWorld.Move(shadowLocal.Pos, new V2(0f, -2.0f), shadowLocal);
+    Check(hitWall.Y > 3.5f, "B1: ClientShadowMode collides with Stone Wall in S.Structures");
+    V2 hitPlayer = shadowWorld.Move(shadowLocal.Pos, new V2(2.0f, 0f), shadowLocal);
+    Check(hitPlayer.X < 6.7f, "B1: ClientShadowMode collides with remote player in S.Players");
+    V2 hitEnemy = shadowWorld.Move(shadowLocal.Pos, new V2(0f, 2.0f), shadowLocal);
+    Check(hitEnemy.Y < 6.7f, "B1: ClientShadowMode collides with enemy in S.Enemies");
+
+    // B2: Repaired bridges replicate in Snapshot, PackDelta/UnpackDelta, and SyncClientTilesFromSnapshot
+    var bridgeWorld = EmberWorld.RestoreRun(new RunSaveData
+    {
+        Version = 1,
+        Snapshot = new Snapshot
+        {
+            Seed = 42,
+            Size = 60,
+            Phase = Phase.Explore,
+            Players = new[] { new Player { Id = 1, Pos = new V2(6.5f, 0.5f), HP = 100f, MaxHP = 100f, Bag = new int[5], Items = new int[24] } }
+        },
+        Chest = new int[5]
+    });
+    var bridgeP = bridgeWorld.S.Players[0];
+    int bSize = bridgeWorld.S.Size;
+    int s18Tx = bSize / 2 + 6, s18Ty = bSize / 2;
+    int bIdx = s18Ty * bSize + s18Tx;
+    bridgeWorld.Tiles[bIdx] = 7; // Broken bridge
+    bridgeP.Bag[(int)Resource.Wood] = 10;
+    bridgeP.Bag[(int)Resource.Ore] = 5;
+    bridgeWorld.Submit(1, new Command { Interact = true });
+    bridgeWorld.Tick();
+    Check(bridgeWorld.Tiles[bIdx] == 5 && bridgeWorld.S.RepairedBridges.Contains(bIdx), "B2: Repairing broken bridge sets tile=5 and records RepairedBridges");
+    byte[] bridgeDelta = EmberWorld.PackDelta(bridgeWorld.S, 1);
+    Snapshot bridgeClientSnap = null;
+    EmberWorld.UnpackDelta(bridgeDelta, 0, bridgeDelta.Length, ref bridgeClientSnap, out _);
+    Check(bridgeClientSnap.RepairedBridges != null && bridgeClientSnap.RepairedBridges.Contains(bIdx), "B2: PackDelta/UnpackDelta preserves RepairedBridges");
+    var clientShadowBridge = new EmberWorld(42, 60, Difficulty.Normal) { ClientShadowMode = true };
+    clientShadowBridge.Tiles[bIdx] = 7;
+    clientShadowBridge.SyncClientTilesFromSnapshot(bridgeClientSnap);
+    Check(clientShadowBridge.Tiles[bIdx] == 5, "B2: SyncClientTilesFromSnapshot updates client bridge tile to 5");
+
+    // B3 & B6: RelicDrop, Merchant, ExecuteTrade survive Tick()+Publish(), and RelicChest opens via Command.Interact
+    var eventWorld = new EmberWorld(42, 60, Difficulty.Normal);
+    var eventP = eventWorld.AddPlayer(1, "Explorer", Vessel.Wanderer);
+    eventWorld.StartRun();
+    bool relicSpawned = EmberEvents.SpawnAncientRelic(eventWorld, new V2(4f, 4f));
+    EmberMerchant.SpawnMerchantNearBeacon(eventWorld, 60f);
+    eventWorld.Tick(); // Publish() runs here
+    var s18RelicChest = eventWorld.S.Structures.FirstOrDefault(s => s.Kind == EmberEvents.RelicChestKind);
+    var merchantSt = eventWorld.S.Structures.FirstOrDefault(EmberMerchant.IsMerchant);
+    Check(relicSpawned && s18RelicChest != null, "B3: EmberEvents.SpawnAncientRelic survives Tick()+Publish()");
+    Check(merchantSt != null, "B6: EmberMerchant.SpawnMerchantNearBeacon survives Tick()+Publish()");
+    eventP.Pos = s18RelicChest.Pos;
+    int dustBefore = eventP.Bag[(int)Resource.Dust];
+    eventWorld.Submit(1, new Command { Interact = true });
+    eventWorld.Tick();
+    Check(eventP.Bag[(int)Resource.Dust] > dustBefore && !eventWorld.S.Structures.Any(s => s.Id == s18RelicChest.Id), "B3: RelicChest opens authoritatively via Command.Interact");
+
+    // B4: Authoritative DropItem via Command and Player.DashStaminaCost()
+    var s18DropWorld = new EmberWorld(42, 60, Difficulty.Normal);
+    var dropP = s18DropWorld.AddPlayer(1, "Dropper", Vessel.Wanderer, new[] { (int)Perk.GhostStep });
+    s18DropWorld.StartRun();
+    dropP.Bag[(int)Resource.Wood] = 5;
+    dropP.Pos = new V2(4f, 4f);
+    s18DropWorld.Submit(1, new Command { DropKind = 3, DropId = (int)Resource.Wood, DropAmt = 2 });
+    s18DropWorld.Tick();
+    Check(dropP.Bag[(int)Resource.Wood] == 3 && s18DropWorld.S.Nodes.Any(n => n.Dropped && n.Resource == Resource.Wood && n.Amount == 2), "B4: Command.DropAmt drops wood into ground Node authoritatively");
+    float ghostStepCost = dropP.DashStaminaCost();
+    Check(ghostStepCost > 0f && ghostStepCost < 25f, "B4: Player.DashStaminaCost() applies GhostStep discount");
+    dropP.StaminaBuffTimer = 5f;
+    Check(dropP.DashStaminaCost() == 0f, "B4: Player.DashStaminaCost() returns 0 during StaminaBuffTimer");
+
+    // Cooking + RunSave round-trip
+    var cookWorld = new EmberWorld(42, 60, Difficulty.Normal);
+    var cookP = cookWorld.AddPlayer(1, "Chef", Vessel.Wanderer);
+    cookWorld.StartRun();
+    cookP.Items[15] = 1;
+    cookWorld.DropItem(cookP, 2, 15, 1); // Drop raw apple near lit/active heat
+    var rawAppleNode = cookWorld.S.Nodes.FirstOrDefault(n => n.Dropped && n.DropKind == 2 && n.DropId == 15);
+    Check(rawAppleNode != null, "Cooking: Raw apple dropped as Node");
+    rawAppleNode.Pos = new V2(0.5f, 0f);
+    cookWorld.S.Fuel = 100f;
+    for (int i = 0; i < 160; i++) cookWorld.UpdateCooking(0.033f);
+    cookWorld.Publish();
+    Check(cookWorld.S.Nodes.Any(n => n.Dropped && n.DropId == 17), "Cooking: UpdateCooking transforms raw apple into Roasted Apple (id 17)");
+
+    var s18ExportedRun = cookWorld.ExportRun(2);
+    EmberWorld.ValidateRunSave(s18ExportedRun);
+    var restoredRun = EmberWorld.RestoreRun(s18ExportedRun);
+    Check(restoredRun.S.Seed == 42 && restoredRun.S.Players.Length == 1, "RunSave: ExportRun/ValidateRunSave/RestoreRun round-trips cleanly");
+
+    // EmberCrypto.GcmCipher NIST vector & tamper rejection
+    using (var gcmCipher = new EmberCrypto.GcmCipher(new byte[16]))
+    {
+        byte[] outBuf = new byte[32];
+        int sealedLen = gcmCipher.SealPacket(new byte[12], 0, new byte[16], 0, 16, Array.Empty<byte>(), 0, 0, outBuf, 0);
+        Check(sealedLen == 32 && Convert.ToHexString(outBuf, 0, 32).ToLowerInvariant() == "0388dace60b6a392f328c2b971b2fe78ab6e47d42cec13bdf53a67b21257bddf", "GcmCipher: Matches NIST AES-GCM single-block vector");
+        outBuf[0] ^= 1;
+        bool gcmTamper = false;
+        try { gcmCipher.OpenPacket(new byte[12], 0, outBuf, 0, 32, Array.Empty<byte>(), 0, 0, new byte[16], 0); }
+        catch (CryptographicException) { gcmTamper = true; }
+        Check(gcmTamper, "GcmCipher: Rejects tampered ciphertext");
+    }
+
+    // Legacy 0x02 binary input packet backwards compatibility
+    using (var legHost = new EmberLan())
+    using (var legClient = new EmberLan())
+    {
+        Command legCmd = null;
+        legHost.CommandInput = (_, c2) => legCmd = c2;
+        legHost.Open(true, "", "leg-pass");
+        legClient.Open(false, "127.0.0.1", "leg-pass");
+        legClient.Join("Legacy");
+        for (int i = 0; i < 30; i++) { legHost.Poll(i * 0.01); legClient.Poll(i * 0.01); Thread.Sleep(2); }
+        legClient.SendInputBinary(1, new Command { X = 1f, Y = 0f, HasClientPos = false });
+        for (int i = 0; i < 10 && legCmd == null; i++) { legHost.Poll(0.4 + i * 0.01); Thread.Sleep(2); }
+        Check(legCmd != null && !legCmd.HasClientPos && Math.Abs(legCmd.X - 1f) < 0.001f, "EmberLan: 0x02 packet with HasClientPos=false parses cleanly");
+    }
+
+    // PackDelta/UnpackDelta preserves >14 enemies (20 enemies) and Structures
+    var denseSnap = new Snapshot
+    {
+        Seed = 7,
+        Size = 60,
+        Phase = Phase.Explore,
+        Players = new[] { new Player { Id = 1, Pos = new V2(0, 0), HP = 100, MaxHP = 100 } },
+        Enemies = Enumerable.Range(1, 20).Select(i => new Enemy { Id = i, Kind = EnemyKind.Shade, Pos = new V2(i * 0.5f, 0), HP = 30, MaxHP = 30 }).ToArray(),
+        Structures = new[] { new Structure { Id = 101, Kind = 2, Pos = new V2(2, 2), HP = 150f, Life = 0, MaxLife = 0 } }
+    };
+    byte[] denseDelta = EmberWorld.PackDelta(denseSnap, 9);
+    Snapshot denseOut = null;
+    EmberWorld.UnpackDelta(denseDelta, 0, denseDelta.Length, ref denseOut, out _);
+    Check(denseOut.Enemies.Length == 20, "PackDelta/UnpackDelta preserves 20 enemies (>14 cap)");
+    Check(denseOut.Structures != null && denseOut.Structures.Any(s => s.Id == 101 && s.Kind == 2), "PackDelta/UnpackDelta preserves Structures");
+
+    // EntityInterpolationBuffer snaps cleanly on TeleportSeq / Ghost->Alive even < 4 units
+    var reviveInterp = new EntityInterpolationBuffer();
+    reviveInterp.Push(1.0, new Snapshot { Tick = 1, Players = new[] { new Player { Id = 2, Pos = new V2(0f, 0f), HP = 0f, TeleportSeq = 1 } } }, 1);
+    _ = reviveInterp.GetPlayerPos(2, 1.08, new V2(0f, 0f)); // populates lastRenderedPlayer[2]
+    reviveInterp.Push(1.033, new Snapshot { Tick = 2, Players = new[] { new Player { Id = 2, Pos = new V2(2.0f, 0f), HP = 50f, TeleportSeq = 2 } } }, 1);
+    V2 afterRevivePos = reviveInterp.GetPlayerPos(2, 1.15, new V2(2.0f, 0f));
+    Check(Math.Abs(afterRevivePos.X - 2.0f) < 0.05f, "EntityInterpolationBuffer snaps immediately on TeleportSeq/Ghost->Alive (<4 units)");
+}
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

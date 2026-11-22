@@ -10,7 +10,9 @@ namespace Ember
         RunSaveData savedRunPreview;
         float runAutoSaveClock=RunAutoSaveInterval;
         readonly object runSaveIoLock=new object();
-        volatile bool runSaveInFlight;
+        readonly object runSaveQueueLock=new object();
+        bool runSaveInFlight;
+        string pendingRunSaveJson,pendingRunSavePath,pendingRunSavePwd;
 
         string RunSavePath=>Path.Combine(Application.persistentDataPath,"run.ember");
 
@@ -43,7 +45,6 @@ namespace Ember
         void SaveActiveRun(bool showNotice=false,bool asyncWrite=false)
         {
             if(!CanSaveCurrentSoloRun())return;
-            if(asyncWrite&&runSaveInFlight)return;
             try
             {
                 var data=World.ExportRun(heldSlot);
@@ -54,17 +55,48 @@ namespace Ember
                 runAutoSaveClock=RunAutoSaveInterval;
                 if(asyncWrite)
                 {
-                    runSaveInFlight=true;
-                    System.Threading.Tasks.Task.Run(()=>
+                    bool startWorker=false;
+                    lock(runSaveQueueLock)
                     {
-                        try
+                        pendingRunSaveJson=json;
+                        pendingRunSavePath=path;
+                        pendingRunSavePwd=pwd;
+                        if(!runSaveInFlight)
                         {
-                            byte[] protectedBytes=EmberSave.Protect(json,pwd);
-                            lock(runSaveIoLock){EmberSave.WriteAtomic(path,protectedBytes);}
+                            runSaveInFlight=true;
+                            startWorker=true;
                         }
-                        catch(Exception ex){Debug.LogWarning("Async run save failed: "+ex.Message);}
-                        finally{runSaveInFlight=false;}
-                    });
+                    }
+                    if(startWorker)
+                    {
+                        System.Threading.Tasks.Task.Run(()=>
+                        {
+                            while(true)
+                            {
+                                string nextJson,nextPath,nextPwd;
+                                lock(runSaveQueueLock)
+                                {
+                                    nextJson=pendingRunSaveJson;
+                                    nextPath=pendingRunSavePath;
+                                    nextPwd=pendingRunSavePwd;
+                                    pendingRunSaveJson=null;
+                                    pendingRunSavePath=null;
+                                    pendingRunSavePwd=null;
+                                    if(nextJson==null)
+                                    {
+                                        runSaveInFlight=false;
+                                        break;
+                                    }
+                                }
+                                try
+                                {
+                                    byte[] protectedBytes=EmberSave.Protect(nextJson,nextPwd);
+                                    lock(runSaveIoLock){EmberSave.WriteAtomic(nextPath,protectedBytes);}
+                                }
+                                catch(Exception ex){Debug.LogWarning("Async run save failed: "+ex.Message);}
+                            }
+                        });
+                    }
                 }
                 else
                 {

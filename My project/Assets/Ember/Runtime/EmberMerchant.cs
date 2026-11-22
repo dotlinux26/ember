@@ -263,9 +263,7 @@ namespace Ember
                 HP = 1000f
             };
 
-            var list = world.S.Structures != null ? world.S.Structures.ToList() : new List<Structure>();
-            list.Add(merchantStruct);
-            world.S.Structures = list.ToArray();
+            world.SpawnStructure(merchantStruct);
         }
 
         /// <summary>
@@ -345,7 +343,7 @@ namespace Ember
             TotalTradesCount++;
 
             // 4. Popups & Announcements
-            if (world?.S != null)
+            if (world != null)
             {
                 string tradeName = EmberLanguage.English ? trade.NameEn : trade.NameVi;
                 string rewardLabel = EmberLanguage.English ? trade.RewardLabelEn : trade.RewardLabelVi;
@@ -354,25 +352,17 @@ namespace Ember
                 {
                     string unlockVi = "✦ CỬA HÀNG BÍ MẬT CỦA THƯƠNG NHÂN ĐÃ MỞ KHÓA! (Danh vọng " + Reputation + " điểm) ✦";
                     string unlockEn = "✦ MERCHANT SECRET STASH UNLOCKED! (Reputation: " + Reputation + " pts) ✦";
-                    world.S.Event = unlockVi + "|" + unlockEn;
-                    world.S.EventTick = world.S.Tick;
+                    world.AddWorldEvent(unlockVi, unlockEn);
                 }
                 else
                 {
                     string msgVi = "Giao dịch thành công: " + tradeName + " (" + rewardLabel + ") · +15 Danh vọng!";
                     string msgEn = "Trade complete: " + tradeName + " (" + rewardLabel + ") · +15 Reputation!";
-                    world.S.Event = msgVi + "|" + msgEn;
-                    world.S.EventTick = world.S.Tick;
+                    world.AddWorldEvent(msgVi, msgEn);
                 }
 
                 // Emit popups
-                if (world.S.Popups != null)
-                {
-                    var popups = world.S.Popups.ToList();
-                    int nextPopupId = popups.Count > 0 ? popups.Max(pop => pop.Id) + 1 : 1;
-                    popups.Add(new CombatPopup { Id = nextPopupId++, Kind = 2, Amount = 15, Pos = p.Pos + new V2(0, 0.8f), Life = 2.2f, MaxLife = 2.2f });
-                    world.S.Popups = popups.ToArray();
-                }
+                world.EmitPopupDirect(new CombatPopup { Kind = 2, Amount = 15, Pos = p.Pos + new V2(0, 0.8f), Life = 2.2f, MaxLife = 2.2f });
             }
 
             return true;
