@@ -1365,6 +1365,131 @@ buildWorld.Tick();
 Check(builder.HP == 75f, "Apple restores +25 HP");
 Check(builder.Items[15] == 2, "Apple consumed from inventory");
 
+// 16. Client-Authoritative Movement, Anti-Wall-Clip, TeleportSeq & Binary Input Packet Checks
+var authWorld = new EmberWorld(42);
+var authP = authWorld.AddPlayer(1, "Auth", Vessel.Wanderer);
+var ghostP = authWorld.AddPlayer(2, "Ghost", Vessel.MoonMender);
+authWorld.StartRun();
+Check(authP.TeleportSeq == 1 && ghostP.TeleportSeq == 1, "Players start with TeleportSeq == 1");
+
+// Client-authoritative movement updates host Player.Pos and Player.Right cleanly
+authP.Pos = new V2(5f, 5f);
+authWorld.Submit(1, new Command
+{
+    X = 1f,
+    Y = 0f,
+    HasClientPos = true,
+    ClientX = 6.2f,
+    ClientY = 5.4f,
+    ClientRight = false,
+    ClientDashing = false
+});
+authWorld.Tick();
+Check(Math.Abs(authP.Pos.X - 6.2f) < 0.05f && Math.Abs(authP.Pos.Y - 5.4f) < 0.05f, "Client-authoritative HasClientPos updates host Player.Pos cleanly");
+Check(!authP.Right, "Client-authoritative ClientRight updates host Player.Right");
+
+// Anti-wall-clip & extreme jump sanity validation
+V2 preJumpPos = authP.Pos;
+authWorld.Submit(1, new Command
+{
+    X = 1f,
+    Y = 0f,
+    HasClientPos = true,
+    ClientX = preJumpPos.X + 40f,
+    ClientY = preJumpPos.Y,
+    ClientRight = true
+});
+authWorld.Tick();
+Check(V2.Distance(preJumpPos, authP.Pos) <= 3.6f, "Extreme client position jump is clamped to maxStep");
+
+// Client reporting coordinate inside abyss is blocked by World.Move
+V2 preAbyssPos = authP.Pos;
+authWorld.Submit(1, new Command
+{
+    X = 1f,
+    Y = 0f,
+    HasClientPos = true,
+    ClientX = 124f,
+    ClientY = 0f,
+    ClientRight = true
+});
+authWorld.Tick();
+Check(authWorld.Walkable(authP.Pos) && V2.Distance(preAbyssPos, authP.Pos) <= 3.6f, "Client coordinate in abyss/wall is blocked/clamped by World.Move");
+
+// Dash stamina still consumed server-side when Dash=true with HasClientPos=true
+float stamBeforeDash = authP.Stamina;
+authWorld.Submit(1, new Command
+{
+    X = 1f,
+    Y = 0f,
+    Dash = true,
+    HasClientPos = true,
+    ClientX = authP.Pos.X + 0.5f,
+    ClientY = authP.Pos.Y,
+    ClientRight = true,
+    ClientDashing = true
+});
+authWorld.Tick();
+Check(authP.Stamina < stamBeforeDash && authP.DashCD > 0f, "Server-side dash stamina and cooldown still run with HasClientPos");
+
+// TeleportSeq increments on revive (Use item 3) and SpaceWraith skill, and round-trips through PackDelta/UnpackDelta
+ghostP.HP = 0f;
+authWorld.Tick();
+Check(ghostP.Ghost, "Player becomes Ghost when HP == 0");
+authP.Pos = new V2(0f, 0f);
+authP.Items[3] = 1;
+authWorld.Submit(1, new Command { Use = 3 });
+authWorld.Tick();
+Check(!ghostP.Ghost && ghostP.TeleportSeq == 2, "Reviving ghost with item 3 increments TeleportSeq");
+
+var wraithWorld = new EmberWorld(42);
+var wraith = wraithWorld.AddPlayer(1, "Wraith", Vessel.SpaceWraith);
+wraithWorld.StartRun();
+wraith.Pos = new V2(8f, 0f);
+int wraithSeqBefore = wraith.TeleportSeq;
+wraithWorld.Submit(1, new Command { Skill = true });
+wraithWorld.Tick();
+Check(wraith.TeleportSeq == wraithSeqBefore + 1, "SpaceWraith blink-to-beacon increments TeleportSeq");
+
+wraithWorld.DebugEnabled = true;
+wraithWorld.DebugAction("beacon", 1);
+Check(wraith.TeleportSeq == wraithSeqBefore + 2, "Debug beacon teleport increments TeleportSeq");
+
+byte[] deltaBytes = EmberWorld.PackDelta(authWorld.S, 77);
+Snapshot unpackedSnap = null;
+EmberWorld.UnpackDelta(deltaBytes, 0, deltaBytes.Length, ref unpackedSnap, out uint unpackedAck);
+Check(unpackedAck == 77 && unpackedSnap != null, "PackDelta/UnpackDelta round-trips ackedSeq and snapshot");
+var unpackedGhost = unpackedSnap.Players.FirstOrDefault(pl => pl.Id == ghostP.Id);
+Check(unpackedGhost != null && unpackedGhost.TeleportSeq == 2, "PackDelta/UnpackDelta preserves Player.TeleportSeq");
+
+// Binary input packet (SendInputBinary / ReceiveHostBinary) round-trip carrying client coordinates and flags
+using (var binHost = new EmberLan())
+using (var binClient = new EmberLan())
+{
+    Command receivedCmd = null;
+    binHost.CommandInput = (id, cmd) => receivedCmd = cmd;
+    binHost.Open(true, "", "bin-pass");
+    binClient.Open(false, "127.0.0.1", "bin-pass");
+    binClient.Join("BinClient");
+    for (int i = 0; i < 30; i++) { binHost.Poll(i * 0.01); binClient.Poll(i * 0.01); Thread.Sleep(2); }
+    Check(binClient.LocalId == 2, "Binary input test client joined host");
+    binClient.SendInputBinary(15, new Command
+    {
+        X = -0.5f,
+        Y = 0.75f,
+        Dash = true,
+        HasClientPos = true,
+        ClientX = 12.25f,
+        ClientY = -7.5f,
+        ClientRight = false,
+        ClientDashing = true
+    });
+    for (int i = 0; i < 10 && receivedCmd == null; i++) { binHost.Poll(0.4 + i * 0.01); Thread.Sleep(2); }
+    Check(receivedCmd != null && receivedCmd.HasClientPos && !receivedCmd.ClientRight && receivedCmd.ClientDashing, "SendInputBinary round-trips HasClientPos, ClientRight, and ClientDashing flags");
+    Check(receivedCmd != null && Math.Abs(receivedCmd.ClientX - 12.25f) < 0.001f && Math.Abs(receivedCmd.ClientY - (-7.5f)) < 0.001f, "SendInputBinary round-trips ClientX and ClientY coordinates");
+    Check(receivedCmd != null && receivedCmd.Dash && Math.Abs(receivedCmd.X - (-0.5f)) < 0.001f && Math.Abs(receivedCmd.Y - 0.75f) < 0.001f, "SendInputBinary round-trips Dash and movement axes");
+}
+
 Console.WriteLine($"ALL {checks} CHECKS PASSED");
 
 sealed class FixedDraw : Random

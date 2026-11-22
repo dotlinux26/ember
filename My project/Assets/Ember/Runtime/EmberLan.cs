@@ -133,6 +133,15 @@ namespace Ember
                     if((act&(1<<8))!=0)cmd.Push=true;
                     if((act&(1<<9))!=0)cmd.Revive=true;
                     if((act&(1<<10))!=0)cmd.Reload=true;
+                    if(body.Length>=25)
+                    {
+                        byte flags=body[16];
+                        cmd.HasClientPos=(flags&(1<<0))!=0;
+                        cmd.ClientRight=(flags&(1<<1))!=0;
+                        cmd.ClientDashing=(flags&(1<<2))!=0;
+                        cmd.ClientX=BitConverter.ToSingle(body,17);
+                        cmd.ClientY=BitConverter.ToSingle(body,21);
+                    }
                     if(CommandInput!=null)CommandInput(p.Id,cmd);
 #if UNITY_5_3_OR_NEWER || UNITY_EDITOR
                     else Input?.Invoke(p.Id,UnityEngine.JsonUtility.ToJson(cmd));
@@ -230,7 +239,7 @@ namespace Ember
         public void SendInputBinary(uint seq,Command cmd)
         {
             if(Host||udp==null||LocalId<=0||cmd==null)return;
-            byte[] b=new byte[16];
+            byte[] b=new byte[25];
             b[0]=0xEB;b[1]=0x02;
             b[2]=(byte)seq;b[3]=(byte)(seq>>8);b[4]=(byte)(seq>>16);b[5]=(byte)(seq>>24);
             Buffer.BlockCopy(BitConverter.GetBytes(cmd.X),0,b,6,4);
@@ -248,6 +257,13 @@ namespace Ember
             if(cmd.Revive)act|=(1<<9);
             if(cmd.Reload)act|=(1<<10);
             b[14]=(byte)act;b[15]=(byte)(act>>8);
+            byte flags=0;
+            if(cmd.HasClientPos)flags|=(1<<0);
+            if(cmd.ClientRight)flags|=(1<<1);
+            if(cmd.ClientDashing)flags|=(1<<2);
+            b[16]=flags;
+            Buffer.BlockCopy(BitConverter.GetBytes(cmd.ClientX),0,b,17,4);
+            Buffer.BlockCopy(BitConverter.GetBytes(cmd.ClientY),0,b,21,4);
             SendRaw(server,b);
         }
         public void SendAction(string input)=>Reliable("ACTION",input);

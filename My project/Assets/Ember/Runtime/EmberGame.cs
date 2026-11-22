@@ -34,10 +34,11 @@ namespace Ember
         uint localInputSeq;
         V2 localPredictedPos;
         bool localPredictedPosInitialized;
+        int lastHandledTeleportSeq=-1;
+        bool wasLocalGhost;
+        bool localRight=true;
         float localDashCD,localDashTime;
         V2 localDashDir;
-        struct PendingInput{public uint Seq;public float Dt;public V2 Move;public bool Dash;public V2 DashDir;public V2 PredictedPos;}
-        readonly List<PendingInput> pendingInputs=new List<PendingInput>(128);
         Phase lastObservedPhase;
         float renderInterp=1f;
         Vector2Int visibleChunk=new Vector2Int(int.MinValue,int.MinValue);
@@ -96,7 +97,6 @@ namespace Ember
             if(!Environment.GetCommandLineArgs().Contains("--ember-lang=en"))
             {
                 EmberLanguage.English=false; // Default to Vietnamese!
-                PlayerPrefs.SetInt("Ember.Language",0);
             }
             Application.runInBackground=true;QualitySettings.vSyncCount=0;
             cam=Camera.main;if(cam==null)cam=new GameObject("Ember camera").AddComponent<Camera>();
@@ -185,7 +185,7 @@ namespace Ember
                 if(usePublicBroker){joinRoomCode=joinRoomCode.Trim().ToUpperInvariant();if(joinRoomCode.Length!=6)throw new ArgumentException("Mã phòng gồm 6 ký tự.");lan.OpenPublic(false,brokerAddress,joinRoomCode,password);}else lan.Open(false,address,password);
                 network=true;host=false;localId=0;menu=false;State=null;readyWanted=false;
                 prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
-                teleportFadeTimer=0f;localPredictedPosInitialized=false;pendingInputs.Clear();jitterBuffer.Clear();
+                teleportFadeTimer=0f;localPredictedPosInitialized=false;lastHandledTeleportSeq=-1;wasLocalGhost=false;localDashTime=0f;localDashCD=0f;jitterBuffer.Clear();
                 SaveLastCoopSession();
                 lan.BinaryState=data=>
                 {
@@ -196,10 +196,10 @@ namespace Ember
                         if(World==null&&State!=null)
                         {
                             World=new EmberWorld(State.Seed,State.Size,State.Difficulty);
-                            World.S=State;
                         }
+                        if(World!=null&&State!=null)World.S=State;
                         jitterBuffer.Push(Time.realtimeSinceStartupAsDouble,State,localId);
-                        if(Local!=null)ReconcileServerState(Local,ackedSeq);
+                        if(Local!=null)SyncClientAuthoritativeState(Local);
                     }
                 };
                 lan.State=json=>
@@ -213,58 +213,48 @@ namespace Ember
                             Trace("debug.remote_sandbox","host test room: local profile writes disabled");
                         }
                         bool firstState=State==null;
+                        bool sameWorld=State!=null&&snapshot.Seed==State.Seed&&snapshot.Phase==State.Phase;
+                        if(sameWorld&&snapshot.Tick<State.Tick)return;
                         State=snapshot;
                         localId=lan.LocalId;
                         if(World==null)
                         {
                             World=new EmberWorld(State.Seed,State.Size,State.Difficulty);
-                            World.S=State;
                         }
+                        World.S=State;
                         if(firstState&&Local!=null&&Local.HeldSlot>=1&&Local.HeldSlot<=60)heldSlot=Local.HeldSlot;
                         jitterBuffer.Push(Time.realtimeSinceStartupAsDouble,State,localId);
+                        if(Local!=null)SyncClientAuthoritativeState(Local);
                     }
                 };
                 joinClock=0;notice="Đang kết nối LAN/VPN...";
             }catch(Exception ex){notice=ex.Message;}
         }
-        void ReconcileServerState(Player serverLocal,uint ackedSeq)
+        void SyncClientAuthoritativeState(Player serverLocal)
         {
             if(serverLocal==null)return;
-            if(!localPredictedPosInitialized)
+            bool phaseChanged=State!=null&&State.Phase!=lastObservedPhase;
+            bool ghostChanged=serverLocal.Ghost||wasLocalGhost!=serverLocal.Ghost;
+            bool teleported=serverLocal.TeleportSeq!=lastHandledTeleportSeq;
+            if(!localPredictedPosInitialized||phaseChanged||ghostChanged||teleported)
             {
                 localPredictedPos=serverLocal.Pos;
                 localPredictedPosInitialized=true;
-                pendingInputs.Clear();
+                lastHandledTeleportSeq=serverLocal.TeleportSeq;
+                wasLocalGhost=serverLocal.Ghost;
+                localRight=serverLocal.Right;
+                if(teleported||serverLocal.Ghost)localDashTime=0f;
                 return;
             }
-            int ackIndex=pendingInputs.FindIndex(p=>p.Seq==ackedSeq);
-            if(ackIndex>=0)
-            {
-                var ackedInput=pendingInputs[ackIndex];
-                float dev=V2.Distance(serverLocal.Pos,ackedInput.PredictedPos);
-                if(dev>0.05f)
-                {
-                    V2 replayPos=serverLocal.Pos;
-                    float speed=Local!=null?Local.Stats.MoveSpeed:6f;
-                    for(int i=ackIndex+1;i<pendingInputs.Count;i++)
-                    {
-                        var cmd=pendingInputs[i];
-                        if(cmd.Dash)replayPos=World!=null?World.Move(replayPos,cmd.DashDir*17*cmd.Dt,Local,ignoreEnemies:true):replayPos+cmd.DashDir*17*cmd.Dt;
-                        else replayPos=World!=null?World.Move(replayPos,cmd.Move*speed*cmd.Dt,Local):replayPos+cmd.Move*speed*cmd.Dt;
-                        cmd.PredictedPos=replayPos;
-                        pendingInputs[i]=cmd;
-                    }
-                    localPredictedPos=replayPos;
-                    if(Local!=null)Local.Pos=localPredictedPos;
-                }
-                pendingInputs.RemoveRange(0,ackIndex+1);
-            }
-            else if(ackedSeq>0&&pendingInputs.Count>0&&ackedSeq>=pendingInputs[pendingInputs.Count-1].Seq)
+            if(V2.Distance(serverLocal.Pos,localPredictedPos)>4.0f)
             {
                 localPredictedPos=serverLocal.Pos;
-                if(Local!=null)Local.Pos=localPredictedPos;
-                pendingInputs.Clear();
+                localRight=serverLocal.Right;
+                localDashTime=0f;
+                return;
             }
+            serverLocal.Pos=localPredictedPos;
+            serverLocal.Right=localRight;
         }
         [Serializable] sealed class JoinInfo{public string Name,PlayerId;public bool Sandbox;public int Vessel,Hat=-1,Pet=-1;public int[] Perks,Ranks,Recipes;public bool Awake;}
         void CapturePrevPositions()
@@ -359,42 +349,42 @@ namespace Ember
                     lastObservedPhase=State.Phase;
                     prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
                     teleportFadeTimer=0f;localPredictedPosInitialized=false;
-                    pendingInputs.Clear();jitterBuffer.Clear();
+                    lastHandledTeleportSeq=-1;wasLocalGhost=false;localDashTime=0f;
+                    jitterBuffer.Clear();
                 }
                 if(Local!=null&&!Local.Ghost)
                 {
-                    if(!localPredictedPosInitialized)
+                    if(!localPredictedPosInitialized||wasLocalGhost||Local.TeleportSeq!=lastHandledTeleportSeq)
                     {
                         localPredictedPos=Local.Pos;
                         localPredictedPosInitialized=true;
+                        lastHandledTeleportSeq=Local.TeleportSeq;
+                        wasLocalGhost=false;
+                        localRight=Local.Right;
+                        localDashTime=0f;
                     }
                     float dt=Time.deltaTime;
                     localDashCD=Mathf.Max(0f,localDashCD-dt);
                     V2 inputDir=new V2(intent.X,intent.Y);
                     if(inputDir.Length>1)inputDir=inputDir.Normal;
+                    if(Mathf.Abs(inputDir.X)>0.01f)localRight=inputDir.X>0;
                     float speed=Local.Stats.MoveSpeed;
                     if(Local.StaminaBuffTimer>0&&!Local.HasBuff(BuffKind.Swiftness))speed*=1.35f;
                     if(Local.HasBuff(BuffKind.Swiftness))speed*=(1f+Local.BuffValue(BuffKind.Swiftness));
                     if(Local.Load>Local.Capacity)speed*=.55f;
 
-                    localInputSeq++;
                     bool doDash=intent.Dash&&localDashCD<=0&&Local.Stamina>=20;
                     V2 newPredicted=localPredictedPos;
-                    bool isDashing=false;
-                    V2 activeDashDir=localDashDir;
                     if(localDashTime>0)
                     {
-                        isDashing=true;
                         localDashTime-=dt;
                         newPredicted=World!=null?World.Move(localPredictedPos,localDashDir*17*dt,Local,ignoreEnemies:true):localPredictedPos+localDashDir*17*dt;
                     }
                     else if(doDash)
                     {
-                        localDashDir=EmberWorld.EightWay(inputDir.Length>.1f?inputDir:new V2(Local.Right?1:-1,0));
-                        activeDashDir=localDashDir;
+                        localDashDir=EmberWorld.EightWay(inputDir.Length>.1f?inputDir:new V2(localRight?1:-1,0));
                         localDashCD=Local.Stats.DashCooldown;
                         localDashTime=.16f;
-                        isDashing=true;
                         newPredicted=World!=null?World.Move(localPredictedPos,localDashDir*17*dt,Local,ignoreEnemies:true):localPredictedPos+localDashDir*17*dt;
                     }
                     else
@@ -403,16 +393,29 @@ namespace Ember
                     }
                     localPredictedPos=newPredicted;
                     Local.Pos=localPredictedPos;
-
-                    if(pendingInputs.Count>=120)pendingInputs.RemoveAt(0);
-                    pendingInputs.Add(new PendingInput{Seq=localInputSeq,Dt=dt,Move=inputDir,Dash=isDashing,DashDir=activeDashDir,PredictedPos=localPredictedPos});
+                    Local.Right=localRight;
                 }
+                bool activeSend=(Local!=null&&!Local.Ghost&&(Mathf.Abs(intent.X)>0.01f||Mathf.Abs(intent.Y)>0.01f||localDashTime>0||intent.HasActions));
+                float sendInterval=activeSend?(1f/60f):(1f/30f);
+                sendClock=Mathf.Min(sendClock,sendInterval);
                 sendClock-=Time.deltaTime;
                 if(sendClock<=0)
                 {
+                    localInputSeq++;
                     if(intent.HasActions&&State?.Phase!=Phase.Sanctuary)lan.SendAction(JsonUtility.ToJson(intent));
-                    lan.SendInputBinary(localInputSeq,new Command{X=intent.X,Y=intent.Y,Dash=intent.Dash});
-                    sendClock=1f/30f;
+                    bool hasClientPos=localPredictedPosInitialized&&Local!=null&&!Local.Ghost;
+                    lan.SendInputBinary(localInputSeq,new Command
+                    {
+                        X=intent.X,
+                        Y=intent.Y,
+                        Dash=intent.Dash,
+                        HasClientPos=hasClientPos,
+                        ClientX=localPredictedPos.X,
+                        ClientY=localPredictedPos.Y,
+                        ClientRight=localRight,
+                        ClientDashing=localDashTime>0
+                    });
+                    sendClock=sendInterval;
                     ClearActions();
                 }
             }
@@ -463,7 +466,7 @@ namespace Ember
                 lan.AcceptingJoins=false;
                 prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
                 teleportFadeTimer=0f;localPredictedPosInitialized=false;
-                pendingInputs.Clear();jitterBuffer.Clear();
+                lastHandledTeleportSeq=-1;wasLocalGhost=false;localDashTime=0f;localDashCD=0f;jitterBuffer.Clear();
                 ClearActions();
             }
         }
@@ -478,7 +481,7 @@ namespace Ember
             network=false;host=true;localId=1;menu=true;State=null;path.Clear();
             prevPlayerPos.Clear();prevEnemyPos.Clear();prevProjPos.Clear();
             teleportFadeTimer=0f;localPredictedPosInitialized=false;
-            pendingInputs.Clear();jitterBuffer.Clear();
+            lastHandledTeleportSeq=-1;wasLocalGhost=false;localDashTime=0f;localDashCD=0f;jitterBuffer.Clear();
             ClearActions();
         }
         static AudioClip MakeTone(float hz,float seconds)
@@ -540,10 +543,10 @@ namespace Ember
             }
             if(Press(Key.I)){inventoryOpen=!inventoryOpen;if(!inventoryOpen){pendingQuickAssign=0;dragFromCell=-1;draggingItem=false;}craftOpen=false;beaconDepositOpen=false;path.Clear();}
             if(Press(Key.Tab)){craftOpen=!craftOpen;inventoryOpen=false;beaconDepositOpen=false;pendingQuickAssign=0;}
-            if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else ActivateQuickSlot(0);}
-            if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else ActivateQuickSlot(1);}
-            if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else ActivateQuickSlot(2);}
-            if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else ActivateQuickSlot(3);}
+            if(Press(Key.Digit1)||Press(Key.Numpad1)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(0,pendingQuickAssign);else EquipSlot(quickSlots[0]);}
+            if(Press(Key.Digit2)||Press(Key.Numpad2)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(1,pendingQuickAssign);else EquipSlot(quickSlots[1]);}
+            if(Press(Key.Digit3)||Press(Key.Numpad3)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(2,pendingQuickAssign);else EquipSlot(quickSlots[2]);}
+            if(Press(Key.Digit4)||Press(Key.Numpad4)){if(inventoryOpen&&pendingQuickAssign>0)BindQuickSlot(3,pendingQuickAssign);else EquipSlot(quickSlots[3]);}
             if(Press(Key.B)&&beaconDepositOpen){beaconDepositOpen=false;}
             if(inventoryOpen||beaconDepositOpen){intent.X=intent.Y=0;return;}
             if(Press(Key.R))ranges=!ranges;
@@ -598,7 +601,7 @@ namespace Ember
             bool isNearShroom=State?.Nodes!=null&&State.Nodes.Any(n=>!n.Dropped&&n.DropKind==2&&n.DropId==16&&V2.Distance(n.Pos,Local.Pos)<2.5f);
             bool attack=wantAttack&&(IsHoldingWeaponSlot(heldSlot)||isNearShroom||heldSlot==6)&&Local.AttackCD<=0&&!Local.Reloading;
             intent.Attack|=attack;if(attack&&audioSource!=null&&tone!=null)audioSource.PlayOneShot(tone,.2f);
-            bool wantUse=(Press(Key.K)||(Mouse.current!=null&&(Mouse.current.leftButton.wasPressedThisFrame||Mouse.current.rightButton.wasPressedThisFrame)&&!overUI));
+            bool wantUse=(Press(Key.K)||(Mouse.current!=null&&Mouse.current.leftButton.wasPressedThisFrame&&!overUI));
             int itmToUse=(heldSlot>=2&&heldSlot<=5)?(heldSlot-2):(heldSlot>=10&&heldSlot<40)?(heldSlot-10):selectedItem;
             if((wantUse||Press(Key.U))&&CanUseSelectedItem(Local))intent.Use=itmToUse;
             bool pressedInteract=Press(Key.E);
@@ -1697,8 +1700,8 @@ namespace Ember
             }
             if(buildItem<0||buildItem>=p.Items.Length||p.Items[buildItem]<=0)return;
 
-            float offsetDist=(buildItem==4||buildItem==6)?1.2f:buildItem==5?1.0f:0f;
-            V2 ghostPos=buildItem==0?p.Pos:p.Pos+new V2(p.Right?offsetDist:-offsetDist,0f);
+            float offsetDist=(buildItem==4||buildItem==6)?1.2f:1.0f;
+            V2 ghostPos=p.Pos+new V2(p.Right?offsetDist:-offsetDist,0f);
 
             byte[] tiles = currentTiles ?? (host && World != null ? World.Tiles : (State != null ? EmberWorld.MakeTiles(State.Seed, State.Size) : null));
             int mapSize = State?.Size ?? 64;
@@ -3050,6 +3053,7 @@ namespace Ember
         readonly HashSet<int> extrapolatingProjs = new HashSet<int>();
 
         double lastArrival = -1;
+        int lastPushedTick = -1;
         double smoothedJitter = 0.010;
         double targetDelay = 0.066;
 
@@ -3066,6 +3070,7 @@ namespace Ember
             extrapolatingEnemies.Clear();
             extrapolatingProjs.Clear();
             lastArrival = -1;
+            lastPushedTick = -1;
             smoothedJitter = 0.010;
             targetDelay = 0.066;
         }
@@ -3073,14 +3078,19 @@ namespace Ember
         public void Push(double arrivalTime, Snapshot s, int localId)
         {
             if(s == null) return;
+            if(s.Tick > 0 && s.Tick <= lastPushedTick && frames.Count > 0) return;
             if(lastArrival > 0)
             {
                 double interval = arrivalTime - lastArrival;
-                double jitter = Math.Abs(interval - (1.0 / 30.0));
-                smoothedJitter = smoothedJitter * 0.9 + jitter * 0.1;
-                targetDelay = Math.Max(0.060, Math.Min(0.080, smoothedJitter * 2.0 + 2.0 * (1.0 / 30.0)));
+                if(interval > 0.005)
+                {
+                    double jitter = Math.Abs(interval - (1.0 / 30.0));
+                    smoothedJitter = smoothedJitter * 0.9 + jitter * 0.1;
+                    targetDelay = Math.Max(0.060, Math.Min(0.080, smoothedJitter * 2.0 + 2.0 * (1.0 / 30.0)));
+                }
             }
             lastArrival = arrivalTime;
+            lastPushedTick = s.Tick;
 
             var prevFrame = frames.Count > 0 ? frames[frames.Count - 1] : null;
             var frame = new Frame { Timestamp = arrivalTime };

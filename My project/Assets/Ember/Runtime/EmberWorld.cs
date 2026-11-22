@@ -54,12 +54,17 @@ namespace Ember
         public float X,Y; public bool Attack,Skill,Dash,Interact,Refuel,Deposit,ToggleLamp,PassLamp,Push,Revive,Reload;
         public int Craft=-1,Use=-1,Equip,Trade=-1; // consumables: 0 torch, 1 flare, 2 sedative, 3 revive, 14 energy drink...
         public int DepositRes=-1,DepositAmt=0;
+        public bool HasClientPos;
+        public float ClientX,ClientY;
+        public bool ClientRight;
+        public bool ClientDashing;
         public bool HasActions=>Attack||Skill||Dash||Interact||Refuel||Deposit||ToggleLamp||PassLamp||Push||Revive||Reload||Craft>=0||Use>=0||Equip>0||Trade>=0||DepositRes>=0;
     }
     [Serializable] public sealed class Player
     {
         public int Id,PartySlot; [NonSerialized] public string InstallationId; public string Name="Traveler"; public Vessel Vessel;
         public V2 Pos,Move; public bool Right=true,Safe,Extracted,CarriesLantern,LampOn=true,Ready;
+        public int TeleportSeq;
         public float HP=100,MaxHP=100,Stamina=100,Dread,AttackCD,SkillCD,DashCD,DashTime,CastTime,Invulnerable,ShieldTime,Shield,HarvestCD;
         public float PushCD,ReloadTimer;
         public float StaminaBuffTimer,WarmthBuffTimer;
@@ -729,6 +734,7 @@ namespace Ember
                     bw.Write(p.Shield);
                     bw.Write((short)p.Hat);
                     bw.Write((short)p.Pet);
+                    bw.Write(p.TeleportSeq);
 
                     int bCount=p.Buffs!=null?Math.Min(p.Buffs.Count,4):0;
                     bw.Write((byte)bCount);
@@ -1029,6 +1035,7 @@ namespace Ember
                         p.Shield=br.ReadSingle();
                         p.Hat=br.ReadInt16();
                         p.Pet=br.ReadInt16();
+                        p.TeleportSeq=br.ReadInt32();
 
                         int bCount=br.ReadByte();
                         if(bCount>0)
@@ -1757,7 +1764,7 @@ namespace Ember
                 case 4:
                 {
                     FX(p.Pos, p.Pos, 3);
-                    p.Pos = new V2(0f, -1.8f);
+                    TeleportPlayer(p, new V2(0f, -1.8f));
                     FX(p.Pos, p.Pos, 1);
                     string msgVi = "✦ Ma thuật cổ xưa đá bay bạn về Trụ Khởi Sinh!";
                     string msgEn = "✦ Ancient magic kicks you back to the Beacon!";
@@ -1797,7 +1804,7 @@ namespace Ember
             if(displayName.Length==0)displayName="Traveler";
             int partySlot=1;
             while(players.Any(member=>member.PartySlot==partySlot)||disconnectedSeats.Values.Any(seat=>seat.PartySlot==partySlot))partySlot++;
-            var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=BeaconSpawnSpot(partySlot-1,2.3f),Awake=awake};
+            var p=new Player{Id=id,PartySlot=partySlot,InstallationId=identity,Name=displayName,Vessel=vessel,Perks=perks??Array.Empty<int>(),Hat=hat,Pet=pet,PerkRanks=ranks??Array.Empty<int>(),Recipes=recipes,Pos=BeaconSpawnSpot(partySlot-1,2.3f),TeleportSeq=1,Awake=awake};
             p.MaxHP=100;p.HP=p.MaxHP;
             p.CarriesLantern=players.Count==0;
             p.Ready=players.Count==0;
@@ -1904,6 +1911,7 @@ namespace Ember
                 Vessel=seat.Vessel,
                 Awake=seat.Awake,
                 Pos=spawnPos,
+                TeleportSeq=1,
                 HP=wasGhost?0f:Math.Max(30f,Math.Min(seat.MaxHP,seat.HP)),
                 MaxHP=seat.MaxHP,
                 Stamina=100,
@@ -1963,10 +1971,18 @@ namespace Ember
             Publish();
             return true;
         }
+        void TeleportPlayer(Player p,V2 dest)
+        {
+            if(p==null)return;
+            p.Pos=dest;
+            p.TeleportSeq++;
+            if(commands.TryGetValue(p.Id,out var cmd))cmd.HasClientPos=false;
+        }
         public void Submit(int id,Command c)
         {
             if(c==null||PlayerById(id)==null)return;if(float.IsNaN(c.X)||float.IsNaN(c.Y)||float.IsInfinity(c.X)||float.IsInfinity(c.Y))return;
-            commands[id]=new Command{X=c.X,Y=c.Y};inputAt[id]=S.Time;
+            bool hasClientPos=c.HasClientPos&&!float.IsNaN(c.ClientX)&&!float.IsNaN(c.ClientY)&&!float.IsInfinity(c.ClientX)&&!float.IsInfinity(c.ClientY);
+            commands[id]=new Command{X=c.X,Y=c.Y,HasClientPos=hasClientPos,ClientX=c.ClientX,ClientY=c.ClientY,ClientRight=c.ClientRight,ClientDashing=c.ClientDashing};inputAt[id]=S.Time;
             if(c.HasActions){if(!actions.TryGetValue(id,out var queue)){queue=new Queue<Command>();actions[id]=queue;}if(queue.Count<32)queue.Enqueue(c);}
         }
         public bool Walkable(V2 p, bool allowWater = false)
@@ -2085,7 +2101,7 @@ namespace Ember
                 if(scenario==0){p.HeldSlot=2;p.Items[0]=Math.Max(1,p.Items[0]);}
                 V2 position=scenario==0?BeaconSpawnSpot(slot,2.3f):new V2(12+slot*1.25f,0);
                 for(int radius=0;radius<20&&!Walkable(position);radius++)position=new V2(12+slot*1.25f,radius*.5f);
-                p.Pos=position;p.Dread=p.Id==playerId?(scenario==1?65:scenario==2?95:scenario==3?35:0):0;p.Safe=IsSafe(p.Pos);p.MirageCD=0;slot++;
+                TeleportPlayer(p,position);p.Dread=p.Id==playerId?(scenario==1?65:scenario==2?95:scenario==3?35:0):0;p.Safe=IsSafe(p.Pos);p.MirageCD=0;slot++;
             }
             DebugFreezeDread=true;S.Fuel=100;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;S.Blackout=0;
             Announce("DEBUG scenario "+scenario);Publish();return true;
@@ -2098,7 +2114,7 @@ namespace Ember
                 case "supplies":for(int i=0;i<5;i++)p.Bag[i]=100;for(int i=0;i<p.Items.Length;i++)p.Items[i]=10;break;
                 case "heal":p.HP=p.MaxHP;p.Dread=0;p.Stamina=100;p.SkillCD=p.DashCD=0;break;
                 case "ghost":p.HP=0;break;
-                case "beacon":p.Pos=BeaconSpawnSpot(0,2.3f);p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
+                case "beacon":TeleportPlayer(p,BeaconSpawnSpot(0,2.3f));p.LampOn=true;S.BeaconHP=S.Charge>=S.ChargeTarget?600:0;break;
                 case "eclipse":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=90;S.Phase=Phase.Eclipse;break;
                 case "portal":S.Charge=S.ChargeTarget;S.BeaconHP=600;S.Wave=0;S.Phase=Phase.Extraction;break;
                 case "blackout":DebugInfiniteFuel=false;S.Fuel=0;S.LastLight=0;S.BeaconHP=0;lastLightSpent=true;break;
@@ -2304,11 +2320,12 @@ namespace Ember
             if(p.StaminaBuffTimer>0)p.Stamina=100f;
             if(p.HeldSlot!=8)p.PrevHeldSlot=p.HeldSlot;
             if(!commands.TryGetValue(p.Id,out var movement))movement=new Command();
-            if(inputAt.TryGetValue(p.Id,out var received)&&S.Time-received>.5f){movement.X=movement.Y=0;}
-            Command c=new Command{X=movement.X,Y=movement.Y};
-            if(actions.TryGetValue(p.Id,out var queue)&&queue.Count>0){c=queue.Dequeue();c.X=movement.X;c.Y=movement.Y;}
+            if(inputAt.TryGetValue(p.Id,out var received)&&S.Time-received>.5f){movement.X=movement.Y=0;movement.HasClientPos=false;}
+            Command c=new Command{X=movement.X,Y=movement.Y,HasClientPos=movement.HasClientPos,ClientX=movement.ClientX,ClientY=movement.ClientY,ClientRight=movement.ClientRight,ClientDashing=movement.ClientDashing};
+            if(actions.TryGetValue(p.Id,out var queue)&&queue.Count>0){c=queue.Dequeue();c.X=movement.X;c.Y=movement.Y;c.HasClientPos=movement.HasClientPos;c.ClientX=movement.ClientX;c.ClientY=movement.ClientY;c.ClientRight=movement.ClientRight;c.ClientDashing=movement.ClientDashing;}
             p.Move=new V2(c.X,c.Y);if(p.Move.Length>1)p.Move=p.Move.Normal;
-            if(Math.Abs(p.Move.X)>.01f)p.Right=p.Move.X>0;
+            if(c.HasClientPos&&!p.Ghost&&!p.Extracted)p.Right=c.ClientRight;
+            else if(Math.Abs(p.Move.X)>.01f)p.Right=p.Move.X>0;
             float speed=stats.MoveSpeed;
             if(p.StaminaBuffTimer>0&&!p.HasBuff(BuffKind.Swiftness))speed*=1.35f;
             if(p.HasBuff(BuffKind.Swiftness))speed*=(1f+p.BuffValue(BuffKind.Swiftness));
@@ -2329,7 +2346,18 @@ namespace Ember
             float dashCost=p.StaminaBuffTimer>0?0f:(25*stats.StaminaCostMultiplier*(p.Has(Perk.GhostStep)?1-.2f*p.PerkStrength(Perk.GhostStep):1));
             if(c.Dash&&p.DashCD<=0&&p.Stamina>=dashCost)
             {p.Stamina-=dashCost;p.DashDir=EightWay(p.Move.Length>.1f?p.Move:new V2(p.Right?1:-1,0));p.DashCD=stats.DashCooldown;p.DashTime=.16f;p.Invulnerable=.16f;}
-            if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
+            if(c.HasClientPos)
+            {
+                if(p.DashTime>0)p.DashTime=Math.Max(0f,p.DashTime-dt);
+                V2 delta=new V2(c.ClientX,c.ClientY)-p.Pos;
+                float maxStep=Math.Max(3.5f,speed*dt*4f);
+                if(delta.Length>maxStep)delta=delta.Normal*maxStep;
+                p.Pos=Move(p.Pos,delta,p,ignoreEnemies:c.ClientDashing||p.DashTime>0);
+            }
+            else
+            {
+                if(p.DashTime>0){p.DashTime-=dt;p.Pos=Move(p.Pos,p.DashDir*17*dt,p,ignoreEnemies:true);}else p.Pos=Move(p.Pos,p.Move*speed*dt,p);
+            }
             for(int ni=nodes.Count-1;ni>=0;ni--)
             {
                 if(ni<nodes.Count&&nodes[ni].Dropped&&V2.Distance(nodes[ni].Pos,p.Pos)<0.45f)
@@ -3111,7 +3139,7 @@ namespace Ember
                 S.BeaconHP=Math.Max(1,S.BeaconHP-ReviveBeaconHpCost);
                 Announce(" được hồi sinh tại hải đăng (-150 HP trụ).",dead.Name);
             }
-            dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=BeaconSpawnSpot(dead.PartySlot,2.6f);dead.Invulnerable=3;
+            dead.HP=dead.MaxHP*.5f;dead.Dread=0;TeleportPlayer(dead,BeaconSpawnSpot(dead.PartySlot,2.6f));dead.Invulnerable=3;
             FX(new V2(),dead.Pos,2);
         }
         public void Use(Player p,int item)
@@ -3131,7 +3159,7 @@ namespace Ember
             if(effectiveItem==3)
             {
                 if(p.Pos.Length>5)return;var dead=players.Find(q=>q.Ghost);if(dead==null)return;
-                dead.HP=dead.MaxHP*.5f;dead.Dread=0;dead.Pos=p.Pos;dead.Invulnerable=3;
+                dead.HP=dead.MaxHP*.5f;dead.Dread=0;TeleportPlayer(dead,p.Pos);dead.Invulnerable=3;
             }
             else if(effectiveItem==2)p.Dread=Math.Max(0,p.Dread-40);
             else if(effectiveItem==0||effectiveItem==1)
@@ -3424,13 +3452,13 @@ namespace Ember
                 var q=players.Find(q=>q.Id!=p.Id&&!q.Ghost&&!q.Extracted&&V2.Distance(q.Pos,p.Pos)<p.SkillRange);
                 if(S.BossArenaActive)
                 {
-                    if(q!=null)q.Pos=FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,q.PartySlot);
-                    p.Pos=FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,p.PartySlot+3);
+                    if(q!=null)TeleportPlayer(q,FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,q.PartySlot));
+                    TeleportPlayer(p,FindArenaSpot(S.BossArenaCenter,2.5f,S.BossArenaRadius-2.5f,p.PartySlot+3));
                 }
                 else
                 {
-                    if(q!=null)q.Pos=BeaconSpawnSpot(q.PartySlot,2.4f);
-                    p.Pos=BeaconSpawnSpot(p.PartySlot-1,2.4f);
+                    if(q!=null)TeleportPlayer(q,BeaconSpawnSpot(q.PartySlot,2.4f));
+                    TeleportPlayer(p,BeaconSpawnSpot(p.PartySlot-1,2.4f));
                 }
                 p.SkillCD=60;FX(p.Pos,p.Pos,2);
                 EmitSkillLight(p,p.Pos);
@@ -3648,7 +3676,7 @@ namespace Ember
                     {dest=cand;placed=true;break;}
                 }
                 if(!placed)dest=FindArenaSpot(arenaCenter,1.5f,4.5f,i+3);
-                lp.Pos=dest;
+                TeleportPlayer(lp,dest);
                 lp.MirageLife=0;
                 lp.Invulnerable=Math.Max(lp.Invulnerable,1.6f);
                 FX(lp.Pos,lp.Pos,2);
